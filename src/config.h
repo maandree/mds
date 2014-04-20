@@ -20,10 +20,18 @@
 
 
 /**
+ * The name under which this package is installed
+ */
+#ifndef PKGNAME
+#define PKGNAME  "mds"
+#endif
+
+
+/**
  * The root directory of all runtime data stored by MDS
  */
 #ifndef MDS_RUNTIME_ROOT_DIRECTORY
-#define MDS_RUNTIME_ROOT_DIRECTORY  "/run/mds"
+#define MDS_RUNTIME_ROOT_DIRECTORY  "/run/" PKGNAME
 #endif
 
 

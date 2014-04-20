@@ -10,7 +10,10 @@ version of the display server you can start running the
 new version without having to restart the display server.
 Moreover, it allows you to replace components with your
 own versions or add new components, with exception of
-parts that need the special privileges.
+parts that need the special privileges and one special
+component, the program that starts it all, but that file
+will have no mission except restarting the master server
+if it crashes once it has started the master server.
 
 Is this vaporware? Probably I often bored with graphical
 projects. Graphics sucks.

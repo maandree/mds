@@ -91,10 +91,59 @@ int main(int argc_, const char** argv_)
       fd = open(pathname, O_CREAT | O_EXCL);
       if (fd == -1)
 	{
-	  /* TODO reuse display index not no longer used */
+	  /* Reuse display index not no longer used. */
+	  size_t read_len;
+	  f = fopen(pathname, "r");
+	  if (f == NULL) /* Race, or error? */
+	    {
+	      perror(*argv);
+	      continue;
+	    }
+	  read_len = read(piddata, 1, sizeof(piddata) / sizeof(char), f);
+	  if (ferror(f)) /* Failed to read. */
+	    perror(*argv);
+	  else if (feof(f) == 0) /* Did not read everything. */
+	    fprintf(stderr,
+		    "%s: the content of a PID file is longer than expected.\n",
+		    *argv);
+	  else
+	    {
+	      pid_t pid = 0;
+	      size_t i, n = read_len - 1;
+	      for (i = 0; i < n; i++)
+		{
+		  char c = piddata[i];
+		  if (('0' <= c) && (c <= '9'))
+		    pid = pid * 10 + (c & 15);
+		  else
+		    {
+		      fprintf(stderr,
+			      "%s: the content of a PID file is invalid.\n",
+			      *argv);
+		      goto bad;
+		    }
+		}
+	      if (piddata[n] != '\n')
+		{
+		  fprintf(stderr,
+			  "%s: the content of a PID file is invalid.\n",
+			  *argv);
+		  goto bad;
+		}
+	      if (kill(pid, 0) < 0) /* Check if the PID is still allocated to any process. */
+		if (errno == ESRCH) /* PID is not used. */
+		  {
+		    fclose(f);
+		    close(fd);
+		    break;
+		  }
+	    }
+	bad:
+	  fclose(f);
 	  continue;
 	}
       close(fd);
+      break;
     }
   if (display == DISPLAY_MAX)
     {
