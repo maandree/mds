@@ -77,5 +77,14 @@
 #endif
 
 
+/**
+ * The name of the environment variable that
+ * indicates the index of the display
+ */
+#ifndef DISPLAY_ENV
+#define DISPLAY_ENV  "MDS_DISPLAY"
+#endif
+
+
 #endif
 

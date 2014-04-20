@@ -25,23 +25,40 @@
 #include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <string.h>
+#include <stdlib.h>
+
+
+/**
+ * Number of elements in `argv`
+ */
+static int argc;
+
+/**
+ * Command line arguments
+ */
+static const char** argv;
 
 
 /**
  * Entry point of the program
  * 
- * @param   argc  Number of elements in `argv`
- * @param   argv  Command line arguments
- * @return        Non-zero on error
+ * @param   argc_  Number of elements in `argv_`
+ * @param   argv_  Command line arguments
+ * @return         Non-zero on error
  */
-int main(int argc, const char** argv)
+int main(int argc_, const char** argv_)
 {
   char pathname[PATH_MAX];
+  char piddata[64];
   unsigned int display;
-  FILE *f;
   int fd;
+  FILE *f;
   
-  (void) argv;
+  
+  argc = argc_;
+  argv = argv_;
+  
   
   /* Sanity check the number of command line arguments. */
   if (argc > ARGC_LIMIT)
@@ -77,7 +94,6 @@ int main(int argc, const char** argv)
 	  /* TODO reuse display index not no longer used */
 	  continue;
 	}
-      
       close(fd);
     }
   if (display == DISPLAY_MAX)
@@ -86,12 +102,31 @@ int main(int argc, const char** argv)
 	      "%s: Sorry, too many displays on the system.\n",
 	      *argv);
       return 1;
-      /* Yes, the directory could have been removed, but probably not. */
+      /* Yes, the directory could have been removed, but it probably was not. */
     }
   
-  /* TODO: Create PID file. */
+  /* Create PID file. */
+  f = fopen(pathname, "w");
+  if (f == NULL)
+    {
+      perror(*argv);
+      return 1;
+    }
+  snprintf(piddata, sizeof(piddata) / sizeof(char), "%u\n", getpid());
+  if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
+    {
+      fclose(f);
+      if (unlink(pathname) < 0)
+	perror(*argv);
+      return -1;
+    }
+  fflush(f);
+  fclose(f);
   
-  /* TODO: Save MDS_DISPLAY environment variable. */
+  /* Save MDS_DISPLAY environment variable. */
+  snprintf(pathname, sizeof(pathname) / sizeof(char), /* Excuse the reuse without renaming. */
+	   "%s=%u", DISPLAY_ENV, display);
+  putenv(pathname);
   
   /* Drop privileges. They most not be propagated non-authorised components. */
   /* setgid should not be set, but just to be safe we are restoring both user and group. */
