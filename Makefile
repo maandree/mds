@@ -4,32 +4,32 @@
 # without any warranty.
 
 
-# The package path prefix, if you want to install to another root, set DESTDIR to that root
+# The package path prefix, if you want to install to another root, set DESTDIR to that root.
 PREFIX ?= /usr
-# The command path excluding prefix
+# The command path excluding prefix.
 BIN ?= /bin
-# The library path excluding prefix
+# The library path excluding prefix.
 LIB ?= /lib
-# The executable library path excluding prefix
+# The executable library path excluding prefix.
 LIBEXEC ?= /libexec
-# The resource path excluding prefix
+# The resource path excluding prefix.
 DATA ?= /share
-# The command path including prefix
+# The command path including prefix.
 BINDIR ?= $(PREFIX)$(BIN)
-# The library path including prefix
+# The library path including prefix.
 LIBDIR ?= $(PREFIX)$(LIB)
-# The executable library path including prefix
+# The executable library path including prefix.
 LIBEXECDIR ?= $(PREFIX)$(LIBEXEC)
-# The resource path including prefix
+# The resource path including prefix.
 DATADIR ?= $(PREFIX)$(DATA)
-# The generic documentation path including prefix
+# The generic documentation path including prefix.
 DOCDIR ?= $(DATADIR)/doc
-# The info manual documentation path including prefix
+# The info manual documentation path including prefix.
 INFODIR ?= $(DATADIR)/info
-# The license base path including prefix
+# The license base path including prefix.
 LICENSEDIR ?= $(DATADIR)/licenses
 
-# The name of the package as it should be installed
+# The name of the package as it should be installed.
 PKGNAME ?= blueshift
 
 
