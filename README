@@ -1,0 +1,17 @@
+msd [pronounced /m.s.d/] (or µsd [pronounced /micro.s.d/])
+stand for “micro-display server”. It is a toy project of a
+display server with an architecture resembling that of a
+microkernel.
+
+The reason for having a display server architectured as a
+microkernel is so that components of the display server
+can be replaced online. That is, when you install a newer
+version of the display server you can start running the
+new version without having to restart the display server.
+Moreover, it allows you to replace components with your
+own versions or add new components, with exception of
+parts that need the setuid flag set.
+
+Is this vaporware? Probably I often bored with graphical
+projects. Graphics sucks.
+
