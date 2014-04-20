@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 
 
 /**
@@ -184,7 +185,7 @@ int main(int argc_, const char** argv_)
   snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.socket",
 	   MDS_RUNTIME_ROOT_DIRECTORY, display);
   address.sun_family = AF_UNIX;
-  strcpy(address.sun_path, path);
+  strcpy(address.sun_path, pathname);
   unlink(pathname);
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if ((fchmod(fd, S_IRWXU) < 0) ||
@@ -195,6 +196,14 @@ int main(int argc_, const char** argv_)
       return 1;
     }
   if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)
+    {
+      perror(*argv);
+      close(fd);
+      return 1;
+    }
+  
+  /* Start listening on socket. */
+  if (listen(fd, SOMAXCONN) < 0)
     {
       perror(*argv);
       close(fd);
