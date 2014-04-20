@@ -10,7 +10,7 @@ version of the display server you can start running the
 new version without having to restart the display server.
 Moreover, it allows you to replace components with your
 own versions or add new components, with exception of
-parts that need the setuid flag set.
+parts that need the special privileges.
 
 Is this vaporware? Probably I often bored with graphical
 projects. Graphics sucks.
