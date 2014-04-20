@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 
 
 /**
@@ -99,7 +100,7 @@ int main(int argc_, const char** argv_)
 	      perror(*argv);
 	      continue;
 	    }
-	  read_len = read(piddata, 1, sizeof(piddata) / sizeof(char), f);
+	  read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
 	  if (ferror(f)) /* Failed to read. */
 	    perror(*argv);
 	  else if (feof(f) == 0) /* Did not read everything. */
