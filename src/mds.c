@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <sys/socket.h>
 
 
 /**
@@ -50,6 +51,7 @@ static const char** argv;
  */
 int main(int argc_, const char** argv_)
 {
+  struct sockaddr_un address;
   char pathname[PATH_MAX];
   char piddata[64];
   unsigned int display;
@@ -178,11 +180,33 @@ int main(int argc_, const char** argv_)
 	   "%s=%u", DISPLAY_ENV, display);
   putenv(pathname);
   
+  /* Create display socket. */
+  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.socket",
+	   MDS_RUNTIME_ROOT_DIRECTORY, display);
+  address.sun_family = AF_UNIX;
+  strcpy(address.sun_path, path);
+  unlink(pathname);
+  fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if ((fchmod(fd, S_IRWXU) < 0) ||
+      (fchown(fd, getuid(), NOBODY_GROUP_GID) < 0))
+    {
+      perror(*argv);
+      close(fd);
+      return 1;
+    }
+  if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)
+    {
+      perror(*argv);
+      close(fd);
+      return 1;
+    }
+  
   /* Drop privileges. They most not be propagated non-authorised components. */
   /* setgid should not be set, but just to be safe we are restoring both user and group. */
   if ((seteuid(getuid()) < 0) || (setegid(getgid()) < 0))
     {
       perror(*argv);
+      close(fd);
       return 1;
     }
   

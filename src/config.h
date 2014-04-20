@@ -50,7 +50,15 @@
 #define ROOT_GROUP_GID  0
 #endif
 
-/* There two names above are redundant, but hat is to avoid errors. */
+
+/**
+ * The group ID for the nobody group
+ */
+#ifndef NOBODY_GROUP_GID
+#define NOBODY_GROUP_GID  ROOT_GROUP_GID
+#endif
+
+/* There three names above are redundant, but hat is to avoid errors. */
 
 
 /**
