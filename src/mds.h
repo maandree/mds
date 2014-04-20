@@ -20,6 +20,15 @@
 
 
 /**
+ * Start master server and respawn it if it crashes
+ * 
+ * @param   fd  The file descriptor of the socket
+ * @return      Non-zero on error
+ */
+int spawn_and_respawn_server(int fd);
+
+
+/**
  * Create directory for socket files, PID files and such
  * 
  * @return  Non-zero on error

@@ -30,6 +30,8 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/wait.h>
+#include <time.h>
 
 
 /**
@@ -40,7 +42,7 @@ static int argc;
 /**
  * Command line arguments
  */
-static const char** argv;
+static char** argv;
 
 
 /**
@@ -50,7 +52,7 @@ static const char** argv;
  * @param   argv_  Command line arguments
  * @return         Non-zero on error
  */
-int main(int argc_, const char** argv_)
+int main(int argc_, char** argv_)
 {
   struct sockaddr_un address;
   char pathname[PATH_MAX];
@@ -58,6 +60,7 @@ int main(int argc_, const char** argv_)
   unsigned int display;
   int fd;
   FILE *f;
+  int rc;
   
   
   argc = argc_;
@@ -178,7 +181,7 @@ int main(int argc_, const char** argv_)
   
   /* Save MDS_DISPLAY environment variable. */
   snprintf(pathname, sizeof(pathname) / sizeof(char), /* Excuse the reuse without renaming. */
-	   "%s=%u", DISPLAY_ENV, display);
+	   "%s=:%u", DISPLAY_ENV, display);
   putenv(pathname);
   
   /* Create display socket. */
@@ -219,6 +222,122 @@ int main(int argc_, const char** argv_)
       return 1;
     }
   
+  /* Start master server and respawn it if it crashes. */
+  rc = spawn_and_respawn_server(fd);
+  
+  /* Shutdown, close and remove the socket. */
+  shutdown(fd, SHUT_RDWR);
+  close(fd);
+  unlink(pathname);
+  
+  return rc;
+}
+
+
+/**
+ * Start master server and respawn it if it crashes
+ * 
+ * @param   fd  The file descriptor of the socket
+ * @return      Non-zero on error
+ */
+int spawn_and_respawn_server(int fd)
+{
+  struct timespec time_start;
+  struct timespec time_end;
+  char* child_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
+  char pathname[PATH_MAX];
+  char fdstr[64];
+  int i;
+  pid_t pid;
+  int status;
+  int time_error = 0;
+  int first_spawn = 1;
+  
+  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/mds-master", LIBEXECDIR);
+  child_args[0] = pathname;
+  
+  for (i = 1; i < argc; i++)
+    child_args[i] = argv[i];
+  
+  child_args[argc + 0] = strdup("--initial-spawn");
+  child_args[argc + 1] = strdup("--socket-fd");
+  snprintf(fdstr, sizeof(fdstr) / sizeof(char), "%i", fd);
+  child_args[argc + 2] = fdstr;
+  child_args[argc + 3] = NULL;
+  
+#if (LIBEXEC_ARGC_EXTRA_LIMIT < 3)
+# error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 3.
+#endif
+  
+  for (;;)
+    {
+      pid = fork();
+      if (pid == (pid_t)-1)
+	{
+	  perror(*argv);
+	  return 1;
+	}
+      
+      if (pid)
+	{
+	  /* Get the current time. (Start of child process.) */
+	  time_error = (clock_gettime(CLOCK_MONOTONIC, &time_start) < 0);
+	  if (time_error)
+	    perror(*argv);
+	  
+	  /* Wait for master server to die. */
+	  if (waitpid(pid, &status, 0) == (pid_t)-1)
+	    {
+	      perror(*argv);
+	      return 1;
+	    }
+	  
+	  /* If the server exited normally or SIGTERM, do not respawn. */
+	  if (WIFEXITED(status) || (WEXITSTATUS(status) && WTERMSIG(status)))
+	    break;
+	  
+	  /* Get the current time. (End of child process.) */
+	  time_error |= (clock_gettime(CLOCK_MONOTONIC, &time_end) < 0);
+	  
+	  /* Do not respawn if we could not read the time. */
+	  if (time_error)
+	    {
+	      perror(*argv);
+	      fprintf(stderr,
+		      "%s: %s died abnormally, not respoawning because we could not read the time.\n",
+		      *argv, pathname);
+	      return 1;
+	    }
+	  
+	  /* Respawn if the server did not die too fast. */
+	  if (time_end.tv_sec - time_start.tv_sec < RESPAWN_TIME_LIMIT_SECONDS)
+	    fprintf(stderr, "%s: %s died abnormally, respawning.\n", *argv, pathname);
+	  else
+	    {
+	      fprintf(stderr,
+		      "%s: %s died abnormally, died too fast, not respawning.\n",
+		      *argv, pathname);
+	      return 1;
+	    }
+	  
+	  if (first_spawn)
+	    {
+	      first_spawn = 0;
+	      free(child_args[argc + 0]);
+	      child_args[argc + 0] = strdup("--respawn");
+	    }
+	}
+      else
+	{
+	  /* Start master server. */
+	  execv(pathname, child_args);
+	  perror(*argv);
+	  return 1;
+	}
+    }
+  
+  free(child_args[argc + 0]);
+  free(child_args[argc + 1]);
   return 0;
 }
 

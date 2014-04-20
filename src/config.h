@@ -86,6 +86,14 @@
 
 
 /**
+ * The number of additional arguments a libexec server may have
+ */
+#ifndef LIBEXEC_ARGC_EXTRA_LIMIT
+#define LIBEXEC_ARGC_EXTRA_LIMIT  5
+#endif
+
+
+/**
  * The maximum number of display allowed on the system
  */
 #ifndef DISPLAY_MAX
@@ -99,6 +107,22 @@
  */
 #ifndef DISPLAY_ENV
 #define DISPLAY_ENV  "MDS_DISPLAY"
+#endif
+
+
+/**
+ * The directory where all servers are installed
+ */
+#ifndef LIBEXECDIR
+#define LIBEXECDIR  "/usr/libexec"
+#endif
+
+
+/**
+ * The minimum time that most have elapsed for respawning to be allowed.
+ */
+#ifndef RESPAWN_TIME_LIMIT_SECONDS
+#define RESPAWN_TIME_LIMIT_SECONDS  5
 #endif
 
 
