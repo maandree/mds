@@ -64,14 +64,15 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 .PHONY: all
 all: bin/mds
 
+
 bin/mds: obj/mds.o
 	mkdir -p bin
 	gcc $(C_FLAGS) -o $@ $^
 
 
-obj/mds.o: src/mds.c
+obj/%.o: src/%.c src/*.h
 	mkdir -p obj
-	gcc $(C_FLAGS) -c -o $@ $^
+	gcc $(C_FLAGS) -c -o $@ $<
 
 
 

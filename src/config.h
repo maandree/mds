@@ -23,7 +23,7 @@
  * The root directory of all runtime data stored by MDS
  */
 #ifndef MDS_RUNTIME_ROOT_DIRECTORY
-#define MDS_RUNTIME_ROOT_DIRECTORY "/run/mds"
+#define MDS_RUNTIME_ROOT_DIRECTORY  "/run/mds"
 #endif
 
 
@@ -32,6 +32,48 @@
  */
 #ifndef ROOT_USER_UID
 #define ROOT_USER_UID  0
+#endif
+
+
+/**
+ * The group ID for the root group
+ */
+#ifndef ROOT_GROUP_GID
+#define ROOT_GROUP_GID  0
+#endif
+
+/* There two names above are redundant, but hat is to avoid errors. */
+
+
+/**
+ * The byte length of the authentication token
+ */
+#ifndef TOKEN_LENGTH
+#define TOKEN_LENGTH  1024
+#endif
+
+
+/**
+ * Random number generator to use for generating a token
+ */
+#ifndef TOKEN_RANDOM
+#define TOKEN_RANDOM  "/dev/urandom"
+#endif
+
+
+/**
+ * The maximum number of command line arguments to allow
+ */
+#ifndef ARGC_LIMIT
+#define ARGC_LIMIT  50
+#endif
+
+
+/**
+ * The maximum number of display allowed on the system
+ */
+#ifndef DISPLAY_MAX
+#define DISPLAY_MAX  1000
 #endif
 
 
