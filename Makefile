@@ -56,7 +56,7 @@ STD = gnu99
 C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
           -ftree-vrp -fstrict-aliasing -fipa-pure-const -fstack-usage       \
           -fstrict-overflow -funsafe-loop-optimizations -fno-builtin        \
-	  -D_GNU_SOURCE
+	  -D_GNU_SOURCE -pthread
 
 
 # Build rules.

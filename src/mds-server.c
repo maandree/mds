@@ -25,6 +25,10 @@
 #include <limits.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <errno.h>
+#include <pthread.h>
+#include <sys/socket.h>
+
 
 
 /**
@@ -36,6 +40,32 @@ static int argc;
  * Command line arguments
  */
 static char** argv;
+
+
+/**
+ * The program run state, 1 when running,
+ * 0 when shutting down
+ */
+static volatile int running = 1;
+
+/**
+ * The number of running slaves
+ */
+static int running_slaves = 0;
+
+/**
+ * Mutex for slave counter
+ */
+static pthread_mutex_t slave_mutex;
+
+/**
+ * Condition for slave counter
+ */
+static pthread_cond_t slave_cond;
+
+
+
+/* TODO make the server update without all slaves dying on SIGUSR1 */
 
 
 /**
@@ -53,6 +83,7 @@ int main(int argc_, char** argv_)
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
   pid_t pid;
+  pthread_t _slave_thread;
   
   
   argc = argc_;
@@ -155,79 +186,95 @@ int main(int argc_, char** argv_)
 	}
       if (pid == 0) /* Child process exec:s, the parent continues without waiting for it. */
 	{
-	  char pathname[PATH_MAX];
-	  struct passwd* pwd;
-	  char* env;
-	  char* home;
-	  unparsed_args[0] = pathname;
-	  
-	  /* Test $XDG_CONFIG_HOME. */
-	  if ((env = getenv_nonempty("XDG_CONFIG_HOME")) != NULL)
-	    {
-	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
-	      execv(unparsed_args[0], unparsed_args);
-	    }
-	  
-	  /* Test $HOME. */
-	  if ((env = getenv_nonempty("HOME")) != NULL)
-	    {
-	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", env, INITRC_FILE);
-	      execv(unparsed_args[0], unparsed_args);
-	      
-	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
-	      execv(unparsed_args[0], unparsed_args);
-	    }
-	  
-	  /* Test ~. */
-	  pwd = getpwuid(getuid()); /* Ignore error. */
-	  if (pwd != NULL)
-	    {
-	      home = pwd->pw_dir;
-	      if ((home != NULL) && (*home != '\0'))
-		{
-		  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", home, INITRC_FILE);
-		  execv(unparsed_args[0], unparsed_args);
-		  
-		  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", home, INITRC_FILE);
-		  execv(unparsed_args[0], unparsed_args);
-		}
-	    }
-	  
-	  /* Test $XDG_CONFIG_DIRS. */
-	  if ((env = getenv_nonempty("XDG_CONFIG_DIRS")) != NULL)
-	    {
-	      char* begin = env;
-	      char* end;
-	      int len;
-	      for (;;)
-		{
-		  end = strchrnul(begin, ':');
-		  len = (int)(end - begin);
-		  if (len > 0)
-		    {
-		      snprintf(pathname, sizeof(pathname) / sizeof(char), "%.*s/%s", len, begin, INITRC_FILE);
-		      execv(unparsed_args[0], unparsed_args);
-		    }
-		  if (*end == '\0')
-		    break;
-		  begin = end + 1;
-		}
-	    }
-	  
-	  /* Test /etc. */
-	  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%s", SYSCONFDIR, INITRC_FILE);
-	  execv(unparsed_args[0], unparsed_args);
-	  
-	  /* Everything failed. */
-	  fprintf(stderr,
-		  "%s: unable to run %s file, you might as well kill me.\n",
-		  *argv, INITRC_FILE);
+	  run_initrc(unparsed_args);
 	  return 1;
 	}
     }
   
   
+  /* Create mutex and condition for slave counter. */
+  pthread_mutex_init(&slave_mutex, NULL);
+  pthread_cond_init(&slave_cond, NULL);
+  
+  
+  /* Accepting incoming connections. */
+  while (running)
+    {
+      /* Accept connection. */
+      int client_fd = accept(socket_fd, NULL, NULL);
+      
+      /* Handle errors and shutdown. */
+      if (client_fd == -1)
+	{
+	  switch (errno)
+	    {
+	    case EINTR:
+	      /* Interrupted. */
+	      break;
+	      
+	    case ECONNABORTED:
+	    case EINVAL:
+	      /* Closing. */
+	      running = 0;
+	      break;
+	      
+	    default:
+	      /* Error. */
+	      perror(*argv);
+	      break;
+	    }
+	  continue;
+	}
+      
+      /* Increase number of running slaves. */
+      pthread_mutex_lock(&slave_mutex);
+      running_slaves++;
+      pthread_mutex_unlock(&slave_mutex);
+      
+      /* Start slave thread. */
+      errno = pthread_create(&_slave_thread, NULL, slave_loop, (void*)(intptr_t)client_fd);
+      if (errno)
+	{
+	  perror(*argv);
+	  pthread_mutex_lock(&slave_mutex);
+	  running_slaves--;
+	  pthread_mutex_unlock(&slave_mutex);
+	}
+    }
+  
+  
+  /* Wait for all slaves to close. */
+  pthread_mutex_lock(&slave_mutex);
+  while (running_slaves > 0)
+    pthread_cond_wait(&slave_cond, &slave_mutex);
+  pthread_mutex_unlock(&slave_mutex);
+  
   return 0;
+}
+
+
+/**
+ * Master function for slave threads
+ * 
+ * @param   data  Input data
+ * @return        Outout data
+ */
+void* slave_loop(void* data)
+{
+  int socket_fd = (int)(intptr_t)data;
+  
+  /* TODO */
+  
+  /* Close socket. */
+  close(socket_fd);
+  
+  /* Decrease the slave count. */
+  pthread_mutex_lock(&slave_mutex);
+  running_slaves--;
+  pthread_cond_signal(&slave_cond);
+  pthread_mutex_unlock(&slave_mutex);
+  
+  return NULL;
 }
 
 
@@ -243,5 +290,82 @@ char* getenv_nonempty(const char* var)
   if ((rc == NULL) || (*rc == '\0'))
     return NULL;
   return rc;
+}
+
+
+/**
+ * Exec into the mdsinitrc script
+ * 
+ * @param  args  The arguments to the child process
+ */
+void run_initrc(char** args)
+{
+  char pathname[PATH_MAX];
+  struct passwd* pwd;
+  char* env;
+  char* home;
+  args[0] = pathname;
+  
+  
+  /* Test $XDG_CONFIG_HOME. */
+  if ((env = getenv_nonempty("XDG_CONFIG_HOME")) != NULL)
+    {
+      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
+      execv(args[0], args);
+    }
+  
+  /* Test $HOME. */
+  if ((env = getenv_nonempty("HOME")) != NULL)
+    {
+      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", env, INITRC_FILE);
+      execv(args[0], args);
+      
+      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
+      execv(args[0], args);
+    }
+  
+  /* Test ~. */
+  pwd = getpwuid(getuid()); /* Ignore error. */
+  if (pwd != NULL)
+    {
+      home = pwd->pw_dir;
+      if ((home != NULL) && (*home != '\0'))
+	{
+	  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", home, INITRC_FILE);
+	  execv(args[0], args);
+	  
+	  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", home, INITRC_FILE);
+	  execv(args[0], args);
+	}
+    }
+  
+  /* Test $XDG_CONFIG_DIRS. */
+  if ((env = getenv_nonempty("XDG_CONFIG_DIRS")) != NULL)
+    {
+      char* begin = env;
+      char* end;
+      int len;
+      for (;;)
+	{
+	  end = strchrnul(begin, ':');
+	  len = (int)(end - begin);
+	  if (len > 0)
+	    {
+	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%.*s/%s", len, begin, INITRC_FILE);
+	      execv(args[0], args);
+	    }
+	  if (*end == '\0')
+	    break;
+	  begin = end + 1;
+	}
+    }
+  
+  /* Test /etc. */
+  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%s", SYSCONFDIR, INITRC_FILE);
+  execv(args[0], args);
+  
+  
+  /* Everything failed. */
+  fprintf(stderr, "%s: unable to run %s file, you might as well kill me.\n", *argv, INITRC_FILE);
 }
 
