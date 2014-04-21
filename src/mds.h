@@ -27,13 +27,29 @@
  */
 int spawn_and_respawn_server(int fd);
 
+/**
+ * Create a directory owned by the root user and root group
+ * 
+ * @param   pathname  The pathname of the directory to create
+ * @return            Non-zero on error
+ */
+int create_directory_root(const char* pathname);
 
 /**
- * Create directory for socket files, PID files and such
+ * Create a directory owned by the real user and nobody group
  * 
- * @return  Non-zero on error
+ * @param   pathname  The pathname of the directory to create
+ * @return            Non-zero on error
  */
-int create_runtime_root_directory(void);
+int create_directory_user(const char* pathname);
+
+/**
+ * Recursively remove a directory
+ * 
+ * @param   pathname  The pathname of the directory to remove
+ * @return            Non-zero on error
+ */
+int unlink_recursive(const char* pathname);
 
 
 #endif

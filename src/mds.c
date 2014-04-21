@@ -32,6 +32,7 @@
 #include <sys/un.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <dirent.h>
 
 
 /**
@@ -54,11 +55,11 @@ static char** argv;
  */
 int main(int argc_, char** argv_)
 {
+  int fd = -1;
   struct sockaddr_un address;
   char pathname[PATH_MAX];
   char piddata[64];
   unsigned int display;
-  int fd;
   FILE *f;
   int rc;
   
@@ -86,7 +87,7 @@ int main(int argc_, char** argv_)
     }
   
   /* Create directory for socket files, PID files and such. */
-  if (create_runtime_root_directory())
+  if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
     return 1;
   
   /* Determine display index. */
@@ -179,6 +180,14 @@ int main(int argc_, char** argv_)
   fflush(f);
   fclose(f);
   
+  /* Create data storage directory. */
+  if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY))
+    goto fail;
+  snprintf(pathname, sizeof(pathname) / sizeof(char),
+	   "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
+  if (unlink_recursive(pathname) || create_directory_user(pathname))
+    goto fail;
+  
   /* Save MDS_DISPLAY environment variable. */
   snprintf(pathname, sizeof(pathname) / sizeof(char), /* Excuse the reuse without renaming. */
 	   "%s=:%u", DISPLAY_ENV, display);
@@ -193,49 +202,48 @@ int main(int argc_, char** argv_)
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if ((fchmod(fd, S_IRWXU) < 0) ||
       (fchown(fd, getuid(), NOBODY_GROUP_GID) < 0))
-    {
-      perror(*argv);
-      close(fd);
-      return 1;
-    }
+    goto fail;
   if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)
-    {
-      perror(*argv);
-      close(fd);
-      return 1;
-    }
+    goto fail;
   
   /* Start listening on socket. */
   if (listen(fd, SOMAXCONN) < 0)
-    {
-      perror(*argv);
-      close(fd);
-      return 1;
-    }
+    goto fail;
   
   /* Drop privileges. They most not be propagated non-authorised components. */
   /* setgid should not be set, but just to be safe we are restoring both user and group. */
   if ((seteuid(getuid()) < 0) || (setegid(getgid()) < 0))
-    {
-      perror(*argv);
-      close(fd);
-      return 1;
-    }
+    goto fail;
   
   /* Start master server and respawn it if it crashes. */
   rc = spawn_and_respawn_server(fd);
-  
+
+ done:  
   /* Shutdown, close and remove the socket. */
-  shutdown(fd, SHUT_RDWR);
-  close(fd);
-  unlink(pathname);
+  if (fd != -1)
+    {
+      shutdown(fd, SHUT_RDWR);
+      close(fd);
+      unlink(pathname);
+    }
   
   /* Remove PID file. */
   snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.pid",
 	   MDS_RUNTIME_ROOT_DIRECTORY, display);
   unlink(pathname);
   
+  /* Remove directories */
+  rmdir(MDS_RUNTIME_ROOT_DIRECTORY); /* Do not care if it fails, it is probably used by another display. */
+  rmdir(MDS_STORAGE_ROOT_DIRECTORY); /* Do not care if it fails, it is probably used by another display. */
+  snprintf(pathname, sizeof(pathname) / sizeof(char),
+	   "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
+  unlink_recursive(pathname); /* An error will be printed on error, do nothing more. */
+  
   return rc;
+
+ fail:
+  rc = 1;
+  goto done;
 }
 
 
@@ -347,15 +355,16 @@ int spawn_and_respawn_server(int fd)
 
 
 /**
- * Create directory for socket files, PID files and such
+ * Create a directory owned by the root user and root group
  * 
- * @return  Non-zero on error
+ * @param   pathname  The pathname of the directory to create
+ * @return            Non-zero on error
  */
-int create_runtime_root_directory(void)
+int create_directory_root(const char* pathname)
 {
   struct stat attr;
   
-  if (stat(MDS_RUNTIME_ROOT_DIRECTORY, &attr) == 0)
+  if (stat(pathname, &attr) == 0)
     {
       /* Cannot create the directory, its pathname refers to an existing. */
       if (S_ISDIR(attr.st_mode) == 0)
@@ -363,14 +372,14 @@ int create_runtime_root_directory(void)
 	  /* But it is not a directory so we cannot continue. */
 	  fprintf(stderr,
 		  "%s: %s already exists but is not a directory.\n",
-		  MDS_RUNTIME_ROOT_DIRECTORY, *argv);
+		  pathname, *argv);
 	  return 1;
 	}
     }
   else
     {
       /* Directory is missing, create it. */
-      if (mkdir(MDS_RUNTIME_ROOT_DIRECTORY, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
+      if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
 	{
 	  if (errno != EEXIST) /* Unlikely race condition. */
 	    {
@@ -380,7 +389,7 @@ int create_runtime_root_directory(void)
 	}
       else
 	/* Set ownership. */
-	if (chown(MDS_RUNTIME_ROOT_DIRECTORY, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
+	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
 	  {
 	    perror(*argv);
 	    return 1;
@@ -388,5 +397,95 @@ int create_runtime_root_directory(void)
     }
   
   return 0;
+}
+
+
+/**
+ * Create a directory owned by the real user and nobody group
+ * 
+ * @param   pathname  The pathname of the directory to create
+ * @return            Non-zero on error
+ */
+int create_directory_user(const char* pathname)
+{
+  struct stat attr;
+  
+  if (stat(pathname, &attr) == 0)
+    {
+      /* Cannot create the directory, its pathname refers to an existing. */
+      if (S_ISDIR(attr.st_mode) == 0)
+	{
+	  /* But it is not a directory so we cannot continue. */
+	  fprintf(stderr,
+		  "%s: %s already exists but is not a directory.\n",
+		  pathname, *argv);
+	  return 1;
+	}
+    }
+  else
+    {
+      /* Directory is missing, create it. */
+      if (mkdir(pathname, S_IRWXU) < 0)
+	{
+	  if (errno != EEXIST) /* Unlikely race condition. */
+	    {
+	      perror(*argv);
+	      return 1;
+	    }
+	}
+      else
+	/* Set ownership. */
+	if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
+	  {
+	    perror(*argv);
+	    return 1;
+	  }
+    }
+  
+  return 0;
+}
+
+
+/**
+ * Recursively remove a directory
+ * 
+ * @param   pathname  The pathname of the directory to remove
+ * @return            Non-zero on error
+ */
+int unlink_recursive(const char* pathname)
+{
+  DIR* dir = opendir(pathname);
+  int rc = 0;
+  struct dirent* file;
+  
+  if (dir == NULL)
+    {
+      perror(*argv);
+      return 1;
+    }
+  
+  while ((file = readdir(dir)) != NULL)
+    if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+      if (unlink(file->d_name) < 0)
+	{
+	  if (errno == EISDIR)
+	    unlink_recursive(file->d_name);
+	  else
+	    {
+	      perror(*argv);
+	      rc = 1;
+	      goto done;
+	    }
+	}
+  
+  if (rmdir(pathname) < 0)
+    {
+      perror(*argv);
+      rc = 1;
+    }
+
+ done:  
+  closedir(dir);
+  return rc;
 }
 

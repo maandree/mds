@@ -28,10 +28,42 @@
 
 
 /**
+ * The directory where all servers are installed
+ */
+#ifndef LIBEXECDIR
+#define LIBEXECDIR  "/usr/libexec"
+#endif
+
+
+/**
+ * The system's directory for non-persistent temporary files
+ */
+#ifndef TMPDIR
+#define TMPDIR  "/tmp"
+#endif
+
+
+/**
+ * The system's directory for runtime data
+ */
+#ifndef RUNDIR
+#define RUNDIR  "/run"
+#endif
+
+
+/**
  * The root directory of all runtime data stored by MDS
  */
 #ifndef MDS_RUNTIME_ROOT_DIRECTORY
-#define MDS_RUNTIME_ROOT_DIRECTORY  "/run/" PKGNAME
+#define MDS_RUNTIME_ROOT_DIRECTORY  RUNDIR "/" PKGNAME
+#endif
+
+
+/**
+ * The root directory of temporarily stored data stored by MDS servers
+ */
+#ifndef MDS_STORAGE_ROOT_DIRECTORY
+#define MDS_STORAGE_ROOT_DIRECTORY  TMPDIR "/.{system-directory}." PKGNAME
 #endif
 
 
@@ -58,7 +90,7 @@
 #define NOBODY_GROUP_GID  ROOT_GROUP_GID
 #endif
 
-/* There three names above are redundant, but hat is to avoid errors. */
+/* There three names above are redundant, but that is to avoid errors. */
 
 
 /**
@@ -107,14 +139,6 @@
  */
 #ifndef DISPLAY_ENV
 #define DISPLAY_ENV  "MDS_DISPLAY"
-#endif
-
-
-/**
- * The directory where all servers are installed
- */
-#ifndef LIBEXECDIR
-#define LIBEXECDIR  "/usr/libexec"
 #endif
 
 
