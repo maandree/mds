@@ -246,7 +246,7 @@ int spawn_and_respawn_server(int fd)
   struct timespec time_end;
   char* child_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   char pathname[PATH_MAX];
-  char fdstr[64];
+  char fdstr[12 /* strlen("--socket-fd=") */ + 64];
   int i;
   pid_t pid;
   int status;
@@ -260,13 +260,12 @@ int spawn_and_respawn_server(int fd)
     child_args[i] = argv[i];
   
   child_args[argc + 0] = strdup("--initial-spawn");
-  child_args[argc + 1] = strdup("--socket-fd");
-  snprintf(fdstr, sizeof(fdstr) / sizeof(char), "%i", fd);
-  child_args[argc + 2] = fdstr;
-  child_args[argc + 3] = NULL;
+  snprintf(fdstr, sizeof(fdstr) / sizeof(char), "--socket-fd=%i", fd);
+  child_args[argc + 1] = fdstr;
+  child_args[argc + 2] = NULL;
   
-#if (LIBEXEC_ARGC_EXTRA_LIMIT < 3)
-# error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 3.
+#if (LIBEXEC_ARGC_EXTRA_LIMIT < 2)
+# error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 2.
 #endif
   
   for (;;)
