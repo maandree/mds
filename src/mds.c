@@ -230,6 +230,11 @@ int main(int argc_, char** argv_)
   close(fd);
   unlink(pathname);
   
+  /* Remove PID file. */
+  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.pid",
+	   MDS_RUNTIME_ROOT_DIRECTORY, display);
+  unlink(pathname);
+  
   return rc;
 }
 
