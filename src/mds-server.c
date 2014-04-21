@@ -56,6 +56,15 @@ int main(int argc_, char** argv_)
   argv = argv_;
   
   
+  /* Drop privileges like it's hot. */
+  if ((geteuid() == getuid() ? 0 : seteuid(getuid())) ||
+      (getegid() == getgid() ? 0 : setegid(getgid())))
+    {
+      perror(*argv);
+      return 1;
+    }
+  
+  
   /* Sanity check the number of command line arguments. */
   if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT)
     {
