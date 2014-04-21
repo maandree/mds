@@ -45,6 +45,11 @@ static int argc;
  */
 static char** argv;
 
+/**
+ * The master server
+ */
+static const char* master_server = LIBEXECDIR "/mds-master";
+
 
 /**
  * Entry point of the program
@@ -56,12 +61,14 @@ static char** argv;
 int main(int argc_, char** argv_)
 {
   int fd = -1;
+  int got_master_server = 0;
   struct sockaddr_un address;
   char pathname[PATH_MAX];
   char piddata[64];
   unsigned int display;
   FILE *f;
   int rc;
+  int j;
   
   
   argc = argc_;
@@ -75,6 +82,22 @@ int main(int argc_, char** argv_)
 	      "%s: that number of arguments is ridiculous, I will not allow it.\n",
 	      *argv);
       return 1;
+    }
+  
+  /* Parse command line arguments. */
+  for (j = 1; j < argc; j++)
+    {
+      char* arg = argv[j];
+      if (strstr(arg, "--master-server=") == arg) /* Master server. */
+	{
+	  if (got_master_server)
+	    {
+	      fprintf(stderr, "%s: duplicate declaration of %s.\n", *argv, "--master-server");
+	      return 1;
+	    }
+	  got_master_server = 1;
+	  master_server = arg + strlen("--master-server=");
+	}
     }
   
   /* Stymied if the effective user is not root. */
@@ -240,7 +263,7 @@ int main(int argc_, char** argv_)
   unlink_recursive(pathname); /* An error will be printed on error, do nothing more. */
   
   return rc;
-
+  
  fail:
   rc = 1;
   goto done;
@@ -258,7 +281,6 @@ int spawn_and_respawn_server(int fd)
   struct timespec time_start;
   struct timespec time_end;
   char* child_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
-  char pathname[PATH_MAX];
   char fdstr[12 /* strlen("--socket-fd=") */ + 64];
   int i;
   pid_t pid;
@@ -266,12 +288,9 @@ int spawn_and_respawn_server(int fd)
   int time_error = 0;
   int first_spawn = 1;
   
-  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/mds-master", LIBEXECDIR);
-  child_args[0] = pathname;
-  
+  child_args[0] = strdup(master_server);
   for (i = 1; i < argc; i++)
     child_args[i] = argv[i];
-  
   child_args[argc + 0] = strdup("--initial-spawn");
   snprintf(fdstr, sizeof(fdstr) / sizeof(char), "--socket-fd=%i", fd);
   child_args[argc + 1] = fdstr;
@@ -317,18 +336,18 @@ int spawn_and_respawn_server(int fd)
 	      perror(*argv);
 	      fprintf(stderr,
 		      "%s: %s died abnormally, not respoawning because we could not read the time.\n",
-		      *argv, pathname);
+		      *argv, master_server);
 	      return 1;
 	    }
 	  
 	  /* Respawn if the server did not die too fast. */
 	  if (time_end.tv_sec - time_start.tv_sec < RESPAWN_TIME_LIMIT_SECONDS)
-	    fprintf(stderr, "%s: %s died abnormally, respawning.\n", *argv, pathname);
+	    fprintf(stderr, "%s: %s died abnormally, respawning.\n", *argv, master_server);
 	  else
 	    {
 	      fprintf(stderr,
 		      "%s: %s died abnormally, died too fast, not respawning.\n",
-		      *argv, pathname);
+		      *argv, master_server);
 	      return 1;
 	    }
 	  
@@ -342,12 +361,13 @@ int spawn_and_respawn_server(int fd)
       else
 	{
 	  /* Start master server. */
-	  execv(pathname, child_args);
+	  execv(master_server, child_args);
 	  perror(*argv);
 	  return 1;
 	}
     }
   
+  free(child_args[0]);
   free(child_args[argc + 0]);
   free(child_args[argc + 1]);
   return 0;
