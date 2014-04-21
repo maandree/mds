@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <unistd.h>
+#include <pwd.h>
 
 
 /**
@@ -46,11 +47,12 @@ static char** argv;
  */
 int main(int argc_, char** argv_)
 {
-  char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
-  int i;
   int is_respawn = -1;
   int socket_fd = -1;
-  int unparsed_args_ptr = 0;
+  int unparsed_args_ptr = 1;
+  char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
+  int i;
+  pid_t pid;
   
   
   argc = argc_;
@@ -142,6 +144,104 @@ int main(int argc_, char** argv_)
     }
   
   
+  if (is_respawn == 0)
+    {
+      /* Run mdsinitrc. */
+      pid = fork();
+      if (pid == (pid_t)-1)
+	{
+	  perror(*argv);
+	  return 1;
+	}
+      if (pid == 0) /* Child process exec:s, the parent continues without waiting for it. */
+	{
+	  char pathname[PATH_MAX];
+	  struct passwd* pwd;
+	  char* env;
+	  char* home;
+	  unparsed_args[0] = pathname;
+	  
+	  /* Test $XDG_CONFIG_HOME. */
+	  if ((env = getenv_nonempty("XDG_CONFIG_HOME")) != NULL)
+	    {
+	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
+	      execv(unparsed_args[0], unparsed_args);
+	    }
+	  
+	  /* Test $HOME. */
+	  if ((env = getenv_nonempty("HOME")) != NULL)
+	    {
+	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", env, INITRC_FILE);
+	      execv(unparsed_args[0], unparsed_args);
+	      
+	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
+	      execv(unparsed_args[0], unparsed_args);
+	    }
+	  
+	  /* Test ~. */
+	  pwd = getpwuid(getuid()); /* Ignore error. */
+	  if (pwd != NULL)
+	    {
+	      home = pwd->pw_dir;
+	      if ((home != NULL) && (*home != '\0'))
+		{
+		  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", home, INITRC_FILE);
+		  execv(unparsed_args[0], unparsed_args);
+		  
+		  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", home, INITRC_FILE);
+		  execv(unparsed_args[0], unparsed_args);
+		}
+	    }
+	  
+	  /* Test $XDG_CONFIG_DIRS. */
+	  if ((env = getenv_nonempty("XDG_CONFIG_DIRS")) != NULL)
+	    {
+	      char* begin = env;
+	      char* end;
+	      int len;
+	      for (;;)
+		{
+		  end = strchrnul(begin, ':');
+		  len = (int)(end - begin);
+		  if (len > 0)
+		    {
+		      snprintf(pathname, sizeof(pathname) / sizeof(char), "%.*s/%s", len, begin, INITRC_FILE);
+		      execv(unparsed_args[0], unparsed_args);
+		    }
+		  if (*end == '\0')
+		    break;
+		  begin = end + 1;
+		}
+	    }
+	  
+	  /* Test /etc. */
+	  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%s", SYSCONFDIR, INITRC_FILE);
+	  execv(unparsed_args[0], unparsed_args);
+	  
+	  /* Everything failed. */
+	  fprintf(stderr,
+		  "%s: unable to run %s file, you might as well kill me.\n",
+		  *argv, INITRC_FILE);
+	  return 1;
+	}
+    }
+  
+  
   return 0;
+}
+
+
+/**
+ * Read an environment variable, but handle it as undefined if empty
+ * 
+ * @param   var  The environment variable's name
+ * @return       The environment variable's value, `NULL` if empty or not defined
+ */
+char* getenv_nonempty(const char* var)
+{
+  char* rc = getenv(var);
+  if ((rc == NULL) || (*rc == '\0'))
+    return NULL;
+  return rc;
 }
 

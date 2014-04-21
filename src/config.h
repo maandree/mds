@@ -52,6 +52,14 @@
 
 
 /**
+ * The system's directory for site-specific configurations
+ */
+#ifndef SYSCONFDIR
+#define SYSCONFDIR  "/etc"
+#endif
+
+
+/**
  * The root directory of all runtime data stored by MDS
  */
 #ifndef MDS_RUNTIME_ROOT_DIRECTORY
@@ -143,10 +151,20 @@
 
 
 /**
- * The minimum time that most have elapsed for respawning to be allowed.
+ * The minimum time that most have elapsed
+ * for respawning to be allowed
  */
 #ifndef RESPAWN_TIME_LIMIT_SECONDS
 #define RESPAWN_TIME_LIMIT_SECONDS  5
+#endif
+
+
+/**
+ * The dot-prefixless basename of the initrc
+ * file that the master server executes
+ */
+#ifndef INITRC_FILE
+#define INITRC_FILE  "mdsinitrc"
 #endif
 
 
