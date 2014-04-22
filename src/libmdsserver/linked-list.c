@@ -18,6 +18,7 @@
 #include "linked-list.h"
 
 #include <string.h>
+#include <errno.h>
 
 
 /**
@@ -263,7 +264,8 @@ int linked_list_pack(linked_list_t* this)
  * amortised time complexity.
  * 
  * @param   this  The list
- * @return        The next free position
+ * @return        The next free position,
+ *                `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
 static ssize_t linked_list_get_next(linked_list_t* this)
 {
@@ -271,6 +273,12 @@ static ssize_t linked_list_get_next(linked_list_t* this)
     return this->reusable[--(this->reuse_head)];
   if (this->end == this->capacity)
     {
+      if ((ssize_t)(this->end) < 0)
+	{
+	  errno = ENOMEM;
+	  return LINKED_LIST_UNUSED;
+	}
+      
       this->capacity <<= 1;
       this->values = realloc(this->values, this->capacity * sizeof(size_t));
       if (this->values == NULL)
@@ -319,6 +327,8 @@ static ssize_t linked_list_unuse(linked_list_t* this, ssize_t node)
 ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t predecessor)
 {
   ssize_t node = linked_list_get_next(this);
+  if (node == LINKED_LIST_UNUSED)
+    return LINKED_LIST_UNUSED;
   this->values[node] = value;
   this->next[node] = this->next[predecessor];
   this->next[predecessor] = node;
@@ -356,6 +366,8 @@ ssize_t linked_list_remove_after(linked_list_t* this, ssize_t predecessor)
 ssize_t linked_list_insert_before(linked_list_t* this, size_t value, ssize_t successor)
 {
   ssize_t node = linked_list_get_next(this);
+  if (node == LINKED_LIST_UNUSED)
+    return LINKED_LIST_UNUSED;
   this->values[node] = value;
   this->previous[node] = this->next[successor];
   this->previous[successor] = node;
