@@ -19,9 +19,32 @@
 #define MDS_LIBMDSSERVER_HASH_TABLE_H
 
 
-#include "linked-list.h"
-
 #include <stdlib.h>
+
+
+/**
+ * A function that performs a comparison of two objects
+ * 
+ * @param   a  The first object
+ * @param   b  The second object
+ * @return     Whether the objects are equal
+ */
+typedef int compare_func(size_t a, size_t b);
+
+/**
+ * A function that hashes an object or a value
+ * 
+ * @param   value  The object or value
+ * @return         The hash of `value`
+ */
+typedef size_t hash_func(size_t value);
+
+/**
+ * A function that release an objects resources an frees it
+ * 
+ * @param  obj  The object
+ */
+typedef void free_func(size_t obj);
 
 
 /**
@@ -88,12 +111,8 @@ typedef struct hash_table
    * If this function pointer is `NULL`, the identity is used
    * 
    * Be aware, this variable cannot be marshalled
-   * 
-   * @param   value_a  The first value
-   * @param   value_b  The second value
-   * @return           Whether the values are equals
    */
-  int (*value_comparator)(size_t value_a, size_t value_b);
+  compare_func* value_comparator;
   
   /**
    * Check whether two keys are equal
@@ -101,12 +120,8 @@ typedef struct hash_table
    * If this function pointer is `NULL`, the identity is used
    * 
    * Be aware, this variable cannot be marshalled
-   * 
-   * @param   key_a  The first key
-   * @param   key_b  The second key
-   * @return         Whether the keys are equals
    */
-  int (*key_comparator)(size_t key_a, size_t key_b);
+  compare_func* key_comparator;
   
   /**
    * Calculate the hash of a key
@@ -118,7 +133,7 @@ typedef struct hash_table
    * @param   key  The key
    * @return       The hash of the key
    */
-  size_t (*hasher)(size_t key);
+  hash_func* hasher;
   
 } hash_table_t;
 
@@ -154,23 +169,14 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
   hash_table_create_tuned(this, 16)
 
 /**
- * Clone a hash table
- * 
- * @param   this  The hash table to clone
- * @param   out   Memory slot in which to store the new hash table
- * @return        Non-zero on error, `errno` will have been set accordingly
- */
-int hash_table_clone(const hash_table_t* restrict this, hash_table_t* restrict out);
-
-/**
  * Release all resources in a hash table, should
  * be done even if construction fails
  * 
- * @param  this        The hash table
- * @param  keys_out    Linked list to fill with all keys in the table, `NULL` if it should not be collected
- * @param  values_out  Linked list to fill with all values in the table, `NULL` if it should not be collected
+ * @param  this          The hash table
+ * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
+ * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
-void hash_table_destroy(hash_table_t* restrict this, linked_list_t* keys_out, linked_list_t* values_out);
+void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_func* value_freer);
 
 /**
  * Check whether a value is stored in the table
