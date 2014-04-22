@@ -1,0 +1,112 @@
+Messages in mds are text based, in UTF-8, with LF for
+line separation.
+
+Each headers is contained to exactly one line.
+
+All header names are in sentence case.
+
+A colon followed by a blank space separates the header
+name from its associated value.
+
+One blank line separates the headers from the payload.
+
+If the message does not have a payload it most still
+have a blank line after the headers. It marks the end
+of the message.
+
+The payload of the message may be in binary format.
+
+A message with a payload must have a ‘Length’ header
+that specifies the byte length of the message. Their
+most not an additional LF, or any other symbol, after
+the payload that is not inside the range specified
+by the ‘Length’ header.
+
+
+All clients have an ID that consists of two unsigned
+32-bit integers. When a client is created its ID is
+automatically 0:0, this is a special ID: it is the
+only non-unique ID and client with this ID cannot
+get responses. It can however ask for interceptions,
+which it would receive. To get a real ID it must
+ask the master server (which is the only server that
+can communicate with it when it does not have an UD)
+for an ID, this can only be done when it does not
+have an ID. To do this, it sends an message with
+two headers and no payload. One of headers is
+‘Command’ and its value should be ‘assign-id’,
+the other header is ‘Message ID’ and its value is
+an unsigned 32-bit integer of the index of the
+message starting at 0. In response the server sends
+a message with two headers and no payload, one of
+the headers is ‘ID assignment’ and its value is
+two unsigned 32-bit integers joined together
+with a colon, for example ‘0:1’, the other header
+is ‘In response to’ and its value is the message
+ID that the client sent.
+
+
+When a client closes the server multicasts a single
+header message with no payload. The header is ‘Client
+closed’ with the client's ID. Be aware that the ID
+may be 0:0, which is not unique.
+
+
+Multicasts are sent by to clients that have ask for
+the type of message this is being sent. This technique
+is also used to intercept message or receive message
+as part of a service that a server provides. Servers
+that implement the ability to connect from another
+computer are encouraged to reject this time of message
+if it could be used for spying. To tell the server
+that you want to intercept a type of message the client
+sends a message with the header and value
+‘Command: intercept’. It can also specify a priority
+that is an signed 64-bit integer, the default value is
+zero. This is done by using the header ‘Priority’. A
+higher priority means that the message is sent earlier.
+If the client wishes to be able to modify the message
+it most the header ‘Modifying’ with the value ‘yes’.
+If the client wishes to receive all messages it should
+not include a payload, otherwise it which send a
+LF delimited list of headers that it is interested it.
+In this list it is possible to limit to exact values
+byte appending a colon and blank space (‘: ’) followed
+by the value to the header name. You can also request
+that the interception stops by including the header
+and value ‘Stop: yes’.
+
+For ‘Command: intercept’ and all other messages, the
+client should include the ‘Message ID’ header.
+
+A client that as requested to be able to modify
+messages will receive the header ‘Modify ID’. This
+header may be include even for clients that has
+not requested to be able to modify the message.
+The ID is only necessary unique for the message
+and does not necessary increase when the message
+is modified. The client most respond if it has
+requested to be able to modify the message. This
+is done by sending the header ‘Modify’ and the
+header ‘Modify ID’ with the same value as for the
+message is is responding to. The value of the
+‘Modify’ header should be ‘no’ it the message
+is not modified. If the message should be modify
+it the value of the ‘Modify’ header should be
+‘yes’ and the payload should be the new message
+with all the, possibly modified, headers the new
+payload.
+
+
+Unless a client's ID is 0:0 (allowed even if it is
+0:0) it should always include the header ‘Client ID’
+and its ID as the headers value. Otherwise it is
+assumed that the client's ID is 0:0.
+
+
+Clients automatically receives messages that is
+addressed to them with priority zero and mark that
+it will not modify the message. To address a message
+to client include the header ‘To’ with the client's
+ID [that the message is addressed to] as the value.
+
