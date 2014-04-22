@@ -28,7 +28,7 @@
  * @param   str  The string
  * @return         The hash of the string
  */
-static inline size_t __attribute__((const)) string_hash(const char* str)
+static inline size_t __attribute__((pure)) string_hash(const char* str)
 {
   size_t hash = 0;
   
@@ -37,6 +37,22 @@ static inline size_t __attribute__((const)) string_hash(const char* str)
       hash = hash * 31 + (size_t)(unsigned char)*str++;
   
   return hash;
+}
+
+
+/**
+ * Check whether two char* are of equal value
+ * 
+ * @param   str_a  The first string
+ * @param   str_b  The second string
+ * @return         Whether the strings are equals
+ */
+static inline int __attribute__((pure)) string_comparator(char* str_a, char* str_b)
+{
+  if ((str_a != NULL) && (str_b != NULL) && (str_a != str_b))
+    return !strcmp((char*)str_a, (char*)str_b);
+  else
+    return str_a == str_b;
 }
 
 
