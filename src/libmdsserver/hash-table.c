@@ -17,6 +17,8 @@
  */
 #include "hash-table.h"
 
+#include <errno.h>
+
 
 /**
  * Test if a key matches the key in a bucket
@@ -59,9 +61,10 @@ static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* res
 /**
  * Grow the table
  * 
- * @param  this  The hash table
+ * @param   this  The hash table
+ * @return        Non zero on error, errno will be set accordingly
  */
-static void rehash(hash_table_t* restrict this)
+static int rehash(hash_table_t* restrict this)
 {
   hash_entry_t** old_buckets = this->buckets;
   size_t old_capacity = this->capacity;
@@ -70,9 +73,11 @@ static void rehash(hash_table_t* restrict this)
   hash_entry_t* destination;
   hash_entry_t* next;
   
+  this->buckets = calloc((old_capacity * 2 + 1), sizeof(hash_entry_t*));
+  if (this->buckets == NULL)
+    return -1;
   this->capacity = old_capacity * 2 + 1;
   this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
-  this->buckets = calloc(this->capacity, sizeof(hash_entry_t*)); /* TODO: error support */
   
   while (i)
     {
@@ -100,6 +105,7 @@ static void rehash(hash_table_t* restrict this)
     }
   
   free(old_buckets);
+  return 0;
 }
 
 
@@ -247,7 +253,8 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key)
  * @param   this   The hash table
  * @param   key    The key of the entry to add
  * @param   value  The value of the entry to add
- * @return         The previous value associated with the key, 0 if the key was not used
+ * @return         The previous value associated with the key, 0 if the key was not used.
+ *                 0 will also be returned on error, check the `errno` variable.
  */
 size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
 {
@@ -268,11 +275,16 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
   
   if (++(this->size) > this->threshold)
     {
-      rehash(this);
+      errno = 0;
+      if (rehash(this))
+	return 0;
       index = truncate_hash(this, key_hash);
     }
   
-  bucket = malloc(sizeof(hash_entry_t)); /* TODO: error support */
+  errno = 0;
+  bucket = malloc(sizeof(hash_entry_t));
+  if (bucket == NULL)
+    return 0;
   bucket->value = value;
   bucket->key = key;
   bucket->hash = key_hash;

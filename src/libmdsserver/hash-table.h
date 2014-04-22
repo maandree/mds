@@ -211,7 +211,8 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key);
  * @param   this   The hash table
  * @param   key    The key of the entry to add
  * @param   value  The value of the entry to add
- * @return         The previous value associated with the key, 0 if the key was not used
+ * @return         The previous value associated with the key, 0 if the key was not used.
+ *                 0 will also be returned on error, check the `errno` variable.
  */
 size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
 
