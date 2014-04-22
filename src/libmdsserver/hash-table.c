@@ -37,9 +37,9 @@
  * @param   key   The key to hash
  * @return        The hash of the key
  */
-static inline long __attribute__((const)) hash(const hash_table_t* this, const void* key)
+static inline size_t __attribute__((const)) hash(const hash_table_t* restrict this, size_t key)
 {
-  return this->hasher ? this->hasher(key) : (long)key;
+  return this->hasher ? this->hasher(key) : key;
 }
 
 
@@ -50,9 +50,9 @@ static inline long __attribute__((const)) hash(const hash_table_t* this, const v
  * @param   key   The key to hash
  * @return        A non-negative value less the the table's capacity
  */
-static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* restrict this, long hash)
+static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* restrict this, size_t hash)
 {
-  return ((size_t)hash) % this->capacity;
+  return hash % this->capacity;
 }
 
 
@@ -130,15 +130,16 @@ int /**/__attribute__((const))/**/ hash_table_clone(const hash_table_t* restrict
 }
 
 
+
 /**
  * Release all resources in a hash table, should
  * be done even if construction fails
  * 
- * @param  this    The hash table
- * @param  values  Whether to free all stored values
- * @param  keys    Whether to free all stored keys
+ * @param  this        The hash table
+ * @param  keys_out    Linked list to fill with all keys in the table, `NULL` if it should not be collected
+ * @param  values_out  Linked list to fill with all values in the table, `NULL` if it should not be collected
  */
-void hash_table_destroy(hash_table_t* restrict this, int values, int keys)
+void hash_table_destroy(hash_table_t* restrict this, linked_list_t* keys_out, linked_list_t* values_out)
 {
   size_t i = this->capacity;
   hash_entry_t* bucket;
@@ -151,10 +152,10 @@ void hash_table_destroy(hash_table_t* restrict this, int values, int keys)
 	  bucket = *(this->buckets + --i);
 	  while (bucket)
 	    {
-	      if (values)
-		free(bucket->value);
-	      if (keys)
-		free(bucket->key);
+	      if (keys_out != NULL)
+		linked_list_insert_end(keys_out, bucket->key); /* TODO: error support */
+	      if (values_out != NULL)
+		linked_list_insert_end(values_out, bucket->value); /* TODO: error support */
 	      bucket = (last = bucket)->next;
 	      free(last);
 	    }
@@ -171,7 +172,7 @@ void hash_table_destroy(hash_table_t* restrict this, int values, int keys)
  * @param   value  The value
  * @return         Whether the value is stored in the table
  */
-int hash_table_contains_value(const hash_table_t* restrict this, void* restrict value)
+int hash_table_contains_value(const hash_table_t* restrict this, size_t value)
 {
   size_t i = this->capacity;
   hash_entry_t* bucket;
@@ -200,9 +201,9 @@ int hash_table_contains_value(const hash_table_t* restrict this, void* restrict 
  * @param   key   The key
  * @return        Whether the key is used
  */
-int hash_table_contains_key(const hash_table_t* restrict this, void* restrict key)
+int hash_table_contains_key(const hash_table_t* restrict this, size_t key)
 {
-  long key_hash = hash(this, key);
+  size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
   hash_entry_t* bucket = *(this->buckets + index);
   
@@ -222,11 +223,11 @@ int hash_table_contains_key(const hash_table_t* restrict this, void* restrict ke
  * 
  * @param   this  The hash table
  * @param   key   The key associated with the value
- * @return        The value associated with the key, `NULL` i the key was not used
+ * @return        The value associated with the key, 0 if the key was not used
  */
-void* hash_table_get(const hash_table_t* restrict this, const void* restrict key)
+size_t hash_table_get(const hash_table_t* restrict this, size_t key)
 {
-  long key_hash = hash(this, key);
+  size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
   hash_entry_t* bucket = *(this->buckets + index);
   
@@ -237,7 +238,7 @@ void* hash_table_get(const hash_table_t* restrict this, const void* restrict key
       bucket = bucket->next;
     }
   
-  return NULL;
+  return 0;
 }
 
 
@@ -247,14 +248,14 @@ void* hash_table_get(const hash_table_t* restrict this, const void* restrict key
  * @param   this   The hash table
  * @param   key    The key of the entry to add
  * @param   value  The value of the entry to add
- * @return         The previous value associated with the key, `NULL` i the key was not used
+ * @return         The previous value associated with the key, 0 if the key was not used
  */
-void* hash_table_put(hash_table_t* restrict this, void* restrict key, void* restrict value)
+size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
 {
-  long key_hash = hash(this, key);
+  size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
   hash_entry_t* bucket = *(this->buckets + index);
-  void* rc;
+  size_t rc;
   
   while (bucket)
     if (TEST_KEY(this, bucket, key, key_hash))
@@ -272,14 +273,14 @@ void* hash_table_put(hash_table_t* restrict this, void* restrict key, void* rest
       index = truncate_hash(this, key_hash);
     }
   
-  bucket = malloc(sizeof(hash_entry_t)); /* TODO */
+  bucket = malloc(sizeof(hash_entry_t)); /* TODO: error support */
   bucket->value = value;
   bucket->key = key;
   bucket->hash = key_hash;
   bucket->next = *(this->buckets + index);
   *(this->buckets + index) = bucket;
   
-  return NULL;
+  return 0;
 }
 
 
@@ -288,15 +289,15 @@ void* hash_table_put(hash_table_t* restrict this, void* restrict key, void* rest
  * 
  * @param   this  The hash table
  * @param   key   The key of the entry to remove
- * @return        The previous value associated with the key, `NULL` i the key was not used
+ * @return        The previous value associated with the key, 0 if the key was not used
  */
-void* hash_table_remove(hash_table_t* restrict this, const void* restrict key)
+size_t hash_table_remove(hash_table_t* restrict this, size_t key)
 {
-  long key_hash = hash(this, key);
+  size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
   hash_entry_t* bucket = *(this->buckets + index);
   hash_entry_t* last = NULL;
-  void* rc;
+  size_t rc;
   
   while (bucket)
     {
@@ -315,7 +316,7 @@ void* hash_table_remove(hash_table_t* restrict this, const void* restrict key)
       bucket = bucket->next;
     }
   
-  return NULL;
+  return 0;
 }
 
 

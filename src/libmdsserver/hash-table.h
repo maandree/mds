@@ -19,6 +19,8 @@
 #define MDS_LIBMDSSERVER_HASH_TABLE_H
 
 
+#include "linked-list.h"
+
 #include <stdlib.h>
 
 
@@ -30,17 +32,17 @@ typedef struct hash_entry
   /**
    * A key
    */
-  void* key;
+  size_t key;
   
   /**
    * The value associated with the key
    */
-  void* value;
+  size_t value;
   
   /**
    * The truncated hash value of the key
    */
-  long hash;
+  size_t hash;
   
   /**
    * The next entry in the bucket
@@ -51,7 +53,7 @@ typedef struct hash_entry
 
 
 /**
- * Value lookup table based on hash value, that do not support `NULL` keys nor `NULL` values
+ * Value lookup table based on hash value, that do not support `0` keys nor `0` values
  */
 typedef struct hash_table
 {
@@ -91,7 +93,7 @@ typedef struct hash_table
    * @param   value_b  The second value
    * @return           Whether the values are equals
    */
-  int (*value_comparator)(const void* value_a, const void* value_b);
+  int (*value_comparator)(size_t value_a, size_t value_b);
   
   /**
    * Check whether two keys are equal
@@ -104,7 +106,7 @@ typedef struct hash_table
    * @param   key_b  The second key
    * @return         Whether the keys are equals
    */
-  int (*key_comparator)(const void* key_a, const void* key_b);
+  int (*key_comparator)(size_t key_a, size_t key_b);
   
   /**
    * Calculate the hash of a key
@@ -116,7 +118,7 @@ typedef struct hash_table
    * @param   key  The key
    * @return       The hash of the key
    */
-  long (*hasher)(const void* key);
+  size_t (*hasher)(size_t key);
   
 } hash_table_t;
 
@@ -164,11 +166,11 @@ int hash_table_clone(const hash_table_t* restrict this, hash_table_t* restrict o
  * Release all resources in a hash table, should
  * be done even if construction fails
  * 
- * @param  this    The hash table
- * @param  values  Whether to free all stored values
- * @param  keys    Whether to free all stored keys
+ * @param  this        The hash table
+ * @param  keys_out    Linked list to fill with all keys in the table, `NULL` if it should not be collected
+ * @param  values_out  Linked list to fill with all values in the table, `NULL` if it should not be collected
  */
-void hash_table_destroy(hash_table_t* restrict this, int values, int keys);
+void hash_table_destroy(hash_table_t* restrict this, linked_list_t* keys_out, linked_list_t* values_out);
 
 /**
  * Check whether a value is stored in the table
@@ -177,7 +179,7 @@ void hash_table_destroy(hash_table_t* restrict this, int values, int keys);
  * @param   value  The value
  * @return         Whether the value is stored in the table
  */
-int hash_table_contains_value(const hash_table_t* restrict this, void* restrict value) __attribute__((pure));
+int hash_table_contains_value(const hash_table_t* restrict this, size_t value) __attribute__((pure));
 
 /**
  * Check whether a key is used in the table
@@ -186,16 +188,16 @@ int hash_table_contains_value(const hash_table_t* restrict this, void* restrict 
  * @param   key   The key
  * @return        Whether the key is used
  */
-int hash_table_contains_key(const hash_table_t* restrict this, void* restrict key) __attribute__((pure));
+int hash_table_contains_key(const hash_table_t* restrict this, size_t key) __attribute__((pure));
 
 /**
  * Look up a value in the table
  * 
  * @param   this  The hash table
  * @param   key   The key associated with the value
- * @return        The value associated with the key, `NULL` i the key was not used
+ * @return        The value associated with the key, 0 if the key was not used
  */
-void* hash_table_get(const hash_table_t* restrict this, const void* restrict key);
+size_t hash_table_get(const hash_table_t* restrict this, size_t key);
 
 /**
  * Add an entry to the table
@@ -203,18 +205,18 @@ void* hash_table_get(const hash_table_t* restrict this, const void* restrict key
  * @param   this   The hash table
  * @param   key    The key of the entry to add
  * @param   value  The value of the entry to add
- * @return         The previous value associated with the key, `NULL` i the key was not used
+ * @return         The previous value associated with the key, 0 if the key was not used
  */
-void* hash_table_put(hash_table_t* restrict this, void* restrict key, void* restrict value);
+size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
 
 /**
  * Remove an entry in the table
  * 
  * @param   this  The hash table
  * @param   key   The key of the entry to remove
- * @return        The previous value associated with the key, `NULL` i the key was not used
+ * @return        The previous value associated with the key, 0 if the key was not used
  */
-void* hash_table_remove(hash_table_t* restrict this, const void* restrict key);
+size_t hash_table_remove(hash_table_t* restrict this, size_t key);
 
 /**
  * Remove all entries in the table
