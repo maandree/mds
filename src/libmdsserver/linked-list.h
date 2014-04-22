@@ -115,7 +115,7 @@ typedef struct linked_list
  * @param   capacity  The minimum initial capacity of the linked list, 0 for default
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_create(linked_list_t* this, size_t capacity);
+int linked_list_create(linked_list_t* restrict this, size_t capacity);
 
 /**
  * Release all resources in a linked list, should
@@ -123,7 +123,7 @@ int linked_list_create(linked_list_t* this, size_t capacity);
  * 
  * @param  this  The linked list
  */
-void linked_list_destroy(linked_list_t* this);
+void linked_list_destroy(linked_list_t* restrict this);
 
 /**
  * Clone a linked list
@@ -148,7 +148,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
  * @param   this  The list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_pack(linked_list_t* this);
+int linked_list_pack(linked_list_t* restrict this);
     
 /**
  * Insert a value in the beginning of the list
@@ -179,7 +179,7 @@ int linked_list_pack(linked_list_t* this);
  * @return               The node that has been created and inserted,
  *                       `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t predecessor);
+ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssize_t predecessor);
 
 /**
  * Remove the node after a specified, reference, node
@@ -188,7 +188,7 @@ ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t pred
  * @param   predecessor  The reference node
  * @return               The node that has been removed
  */
-ssize_t linked_list_remove_after(linked_list_t* this, ssize_t predecessor);    
+ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);    
 
 /**
  * Insert a value before a specified, reference, node
@@ -199,7 +199,7 @@ ssize_t linked_list_remove_after(linked_list_t* this, ssize_t predecessor);
  * @return             The node that has been created and inserted,
  *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-ssize_t linked_list_insert_before(linked_list_t* this, size_t value, ssize_t successor);
+ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor);
 
 /**
  * Remove the node before a specified, reference, node
@@ -208,7 +208,7 @@ ssize_t linked_list_insert_before(linked_list_t* this, size_t value, ssize_t suc
  * @param   successor  The reference node
  * @return             The node that has been removed
  */
-ssize_t linked_list_remove_before(linked_list_t* this, ssize_t successor);    
+ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);    
 
 /**
  * Remove the node from the list
@@ -216,7 +216,7 @@ ssize_t linked_list_remove_before(linked_list_t* this, ssize_t successor);
  * @param  this  The list
  * @param  node  The node to remove
  */
-void linked_list_remove(linked_list_t* this, ssize_t node);
+void linked_list_remove(linked_list_t* restrict this, ssize_t node);
 
 /**
  * Insert a value in the end of the list
@@ -244,7 +244,7 @@ void linked_list_remove(linked_list_t* this, ssize_t node);
  * @param   this  The list
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t linked_list_marshal_size(const linked_list_t* this) __attribute__((pure));
+size_t linked_list_marshal_size(const linked_list_t* restrict this) __attribute__((pure));
 
 /**
  * Marshals a linked list

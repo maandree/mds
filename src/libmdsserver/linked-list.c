@@ -58,7 +58,7 @@ static size_t to_power_of_two(size_t value)
  * @param   capacity  The minimum initial capacity of the linked list, 0 for default
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_create(linked_list_t* this, size_t capacity)
+int linked_list_create(linked_list_t* restrict this, size_t capacity)
 {
   /* Use default capacity of zero is specified. */
   if (capacity == 0)
@@ -96,7 +96,7 @@ int linked_list_create(linked_list_t* this, size_t capacity)
  * 
  * @param  this  The linked list
  */
-void linked_list_destroy(linked_list_t* this)
+void linked_list_destroy(linked_list_t* restrict this)
 {
   if (this->reusable != NULL)  free(this->reusable);
   if (this->values   != NULL)  free(this->values);
@@ -184,7 +184,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
  * @param   this  The list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_pack(linked_list_t* this)
+int linked_list_pack(linked_list_t* restrict this)
 {
   size_t size = this->end - this->reuse_head;
   size_t cap = to_power_of_two(size);
@@ -267,7 +267,7 @@ int linked_list_pack(linked_list_t* this)
  * @return        The next free position,
  *                `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-static ssize_t linked_list_get_next(linked_list_t* this)
+static ssize_t linked_list_get_next(linked_list_t* restrict this)
 {
   if (this->reuse_head > 0)
     return this->reusable[--(this->reuse_head)];
@@ -304,7 +304,7 @@ static ssize_t linked_list_get_next(linked_list_t* this)
  * @param   node  The position
  * @return        The position
  */
-static ssize_t linked_list_unuse(linked_list_t* this, ssize_t node)
+static ssize_t linked_list_unuse(linked_list_t* restrict this, ssize_t node)
 {
   if (node < 0)
     return node;
@@ -345,7 +345,7 @@ ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t pred
  * @param   predecessor  The reference node
  * @return               The node that has been removed
  */
-ssize_t linked_list_remove_after(linked_list_t* this, ssize_t predecessor)
+ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor)
 {
   ssize_t node = this->next[predecessor];
   this->next[predecessor] = this->next[node];
@@ -363,7 +363,7 @@ ssize_t linked_list_remove_after(linked_list_t* this, ssize_t predecessor)
  * @return             The node that has been created and inserted,
  *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-ssize_t linked_list_insert_before(linked_list_t* this, size_t value, ssize_t successor)
+ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor)
 {
   ssize_t node = linked_list_get_next(this);
   if (node == LINKED_LIST_UNUSED)
@@ -384,7 +384,7 @@ ssize_t linked_list_insert_before(linked_list_t* this, size_t value, ssize_t suc
  * @param   successor  The reference node
  * @return             The node that has been removed
  */
-ssize_t linked_list_remove_before(linked_list_t* this, ssize_t successor)
+ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor)
 {
   ssize_t node = this->previous[successor];
   this->previous[successor] = this->previous[node];
@@ -399,7 +399,7 @@ ssize_t linked_list_remove_before(linked_list_t* this, ssize_t successor)
  * @param  this  The list
  * @param  node  The node to remove
  */
-void linked_list_remove(linked_list_t* this, ssize_t node)
+void linked_list_remove(linked_list_t* restrict this, ssize_t node)
 {
   this->next[this->previous[node]] = this->next[node];
   this->previous[this->next[node]] = this->previous[node];
@@ -413,7 +413,7 @@ void linked_list_remove(linked_list_t* this, ssize_t node)
  * @param   this  The list
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t linked_list_marshal_size(const linked_list_t* this)
+size_t linked_list_marshal_size(const linked_list_t* restrict this)
 {
   return sizeof(size_t) * (4 + this->reuse_head + 3 * this->end);
 }
