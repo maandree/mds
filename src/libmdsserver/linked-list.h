@@ -132,7 +132,7 @@ void linked_list_destroy(linked_list_t* this);
  * @param   out   Memory slot in which to store the new linked list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_clone(linked_list_t* this, linked_list_t* out);
+int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out);
 
 /**
  * Pack the list so that there are no reusable
@@ -237,6 +237,32 @@ void linked_list_remove(linked_list_t* this, ssize_t node);
  */
 #define linked_list_remove_end(this)  \
   (linked_list_remove_before(this, this->edge))
+
+/**
+ * Calculate the buffer size need to marshal a linked list
+ * 
+ * @param   this  The list
+ * @return        The number of bytes to allocate to the output buffer
+ */
+size_t linked_list_marshal_size(const linked_list_t* this) __attribute__((pure));
+
+/**
+ * Marshals a linked list
+ * 
+ * @param  this  The list
+ * @param  data  Output buffer for the marshalled data
+ */
+void linked_list_marshal(const linked_list_t* restrict this, char* restrict data);
+
+/**
+ * Unmarshals a linked list
+ * 
+ * @param   this  Memory slot in which to store the new linked list
+ * @param   data  In buffer with the marshalled data
+ * @return        Non-zero one error, errno will be set accordingly.
+ *                Destroy the list on error.
+ */
+int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
 
 
 #endif

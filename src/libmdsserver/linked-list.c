@@ -117,7 +117,7 @@ void linked_list_destroy(linked_list_t* this)
  * @param   out   Memory slot in which to store the new linked list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_clone(linked_list_t* this, linked_list_t* out)
+int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out)
 {
   size_t n = this->capacity * sizeof(ssize_t);
   size_t*  new_values;
@@ -404,5 +404,89 @@ void linked_list_remove(linked_list_t* this, ssize_t node)
   this->next[this->previous[node]] = this->next[node];
   this->previous[this->next[node]] = this->previous[node];
   linked_list_unuse(this, node);
+}
+
+
+/**
+ * Calculate the buffer size need to marshal a linked list
+ * 
+ * @param   this  The list
+ * @return        The number of bytes to allocate to the output buffer
+ */
+size_t linked_list_marshal_size(const linked_list_t* this)
+{
+  return sizeof(size_t) * (4 + this->reuse_head + 3 * this->end);
+}
+
+
+/**
+ * Marshals a linked list
+ * 
+ * @param  this  The list
+ * @param  data  Output buffer for the marshalled data
+ */
+void linked_list_marshal(const linked_list_t* restrict this, char* restrict data)
+{
+  ((size_t*)data)[0] = this->capacity;
+  ((size_t*)data)[1] = this->end;
+  ((size_t*)data)[2] = this->reuse_head;
+  ((ssize_t*)data)[3] = this->edge;
+  data += 4 * sizeof(size_t) / sizeof(char);
+  
+  memcpy(data, this->reusable, this->reuse_head * sizeof(ssize_t));
+  data += this->reuse_head * sizeof(ssize_t) / sizeof(char);
+  
+  memcpy(data, this->values, this->end * sizeof(size_t));
+  data += this->end * sizeof(size_t) / sizeof(char);
+  
+  memcpy(data, this->next, this->end * sizeof(ssize_t));
+  data += this->end * sizeof(ssize_t) / sizeof(char);
+  
+  memcpy(data, this->previous, this->end * sizeof(ssize_t));
+}
+
+
+/**
+ * Unmarshals a linked list
+ * 
+ * @param   this  Memory slot in which to store the new linked list
+ * @param   data  In buffer with the marshalled data
+ * @return        Non-zero one error, errno will be set accordingly.
+ *                Destroy the list on error.
+ */
+int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
+{
+  size_t n;
+  
+  this->reusable = NULL;
+  this->values = NULL;
+  this->next = NULL;
+  this->previous = NULL;
+  
+  this->capacity   = ((size_t*)data)[0];
+  this->end        = ((size_t*)data)[1];
+  this->reuse_head = ((size_t*)data)[2];
+  this->edge       = ((ssize_t*)data)[3];
+  data += 4 * sizeof(size_t) / sizeof(char);
+  
+  n = this->capacity * sizeof(size_t);
+  
+  if ((this->reusable = malloc(n)) == NULL)  return -1;
+  if ((this->values   = malloc(n)) == NULL)  return -1;
+  if ((this->next     = malloc(n)) == NULL)  return -1;
+  if ((this->previous = malloc(n)) == NULL)  return -1;
+  
+  memcpy(this->reusable, data, this->reuse_head * sizeof(ssize_t));
+  data += this->reuse_head * sizeof(ssize_t) / sizeof(char);
+  
+  memcpy(this->values, data, this->end * sizeof(size_t));
+  data += this->end * sizeof(size_t) / sizeof(char);
+  
+  memcpy(this->next, data, this->end * sizeof(ssize_t));
+  data += this->end * sizeof(ssize_t) / sizeof(char);
+  
+  memcpy(this->previous, data, this->end * sizeof(ssize_t));
+  
+  return 0;
 }
 
