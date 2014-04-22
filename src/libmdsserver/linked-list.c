@@ -120,10 +120,10 @@ void linked_list_destroy(linked_list_t* restrict this)
 int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out)
 {
   size_t n = this->capacity * sizeof(ssize_t);
-  size_t*  new_values;
-  ssize_t* new_next;
-  ssize_t* new_previous;
-  ssize_t* new_reusable;
+  size_t*  restrict new_values;
+  ssize_t* restrict new_next;
+  ssize_t* restrict new_previous;
+  ssize_t* restrict new_reusable;
   
   out->values = NULL;
   out->next = NULL;
@@ -191,7 +191,7 @@ int linked_list_pack(linked_list_t* restrict this)
   ssize_t head = 0;
   size_t i = 0;
   ssize_t node;
-  size_t* vals;
+  size_t* restrict vals;
   
   vals = malloc(cap * sizeof(size_t));
   if (vals == NULL)
@@ -207,9 +207,9 @@ int linked_list_pack(linked_list_t* restrict this)
   
   if (cap != this->capacity)
     {
-      ssize_t* new_next;
-      ssize_t* new_previous;
-      ssize_t* new_reusable;
+      ssize_t* restrict new_next;
+      ssize_t* restrict new_previous;
+      ssize_t* restrict new_reusable;
       
       new_next = malloc(cap * sizeof(ssize_t));
       if (new_next == NULL)

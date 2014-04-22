@@ -174,7 +174,7 @@ void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_
 int hash_table_contains_value(const hash_table_t* restrict this, size_t value)
 {
   size_t i = this->capacity;
-  hash_entry_t* bucket;
+  hash_entry_t* restrict bucket;
   
   while (i)
     {
@@ -204,7 +204,7 @@ int hash_table_contains_key(const hash_table_t* restrict this, size_t key)
 {
   size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* bucket = this->buckets[index];
+  hash_entry_t* restrict bucket = this->buckets[index];
   
   while (bucket)
     {
@@ -228,7 +228,7 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key)
 {
   size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* bucket = this->buckets[index];
+  hash_entry_t* restrict bucket = this->buckets[index];
   
   while (bucket)
     {
@@ -253,7 +253,7 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
 {
   size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* bucket = *(this->buckets + index);
+  hash_entry_t* restrict bucket = this->buckets[index];
   size_t rc;
   
   while (bucket)
@@ -294,7 +294,7 @@ size_t hash_table_remove(hash_table_t* restrict this, size_t key)
 {
   size_t key_hash = hash(this, key);
   size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* bucket = *(this->buckets + index);
+  hash_entry_t* bucket = this->buckets[index];
   hash_entry_t* last = NULL;
   size_t rc;
   
@@ -367,7 +367,7 @@ size_t hash_table_marshal_size(const hash_table_t* restrict this)
   
   for (i = 0; i < n; i++)
     {
-      hash_entry_t* bucket = this->buckets[i];
+      hash_entry_t* restrict bucket = this->buckets[i];
       while (bucket != NULL)
 	{
 	  bucket = bucket->next;
@@ -399,7 +399,7 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
   
   for (i = 0; i < n; i++)
     {
-      hash_entry_t* bucket = this->buckets[i];
+      hash_entry_t* restrict bucket = this->buckets[i];
       size_t m = 0;
       while (bucket != NULL)
 	{
@@ -446,11 +446,11 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data)
   for (i = 0; i < n; i++)
     {
       size_t m = ((size_t*)data)[0];
-      hash_entry_t* bucket;
+      hash_entry_t* restrict bucket;
       data += 1 * sizeof(size_t) / sizeof(char);
       
       this->buckets[i] = bucket = malloc(sizeof(hash_entry_t));
-      if (this->buckets[i] == NULL)
+      if (bucket == NULL)
 	return -1;
       
       while (m--)
