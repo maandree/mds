@@ -62,7 +62,7 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 # Build rules.
 
 .PHONY: all
-all: bin/mds bin/mds-server obj/libmdsserver/linked-list.o
+all: bin/mds bin/mds-server obj/libmdsserver/linked-list.o obj/libmdsserver/hash-table.o
 
 
 bin/%: obj/%.o

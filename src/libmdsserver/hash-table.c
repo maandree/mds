@@ -1,0 +1,392 @@
+/**
+ * mds — A micro-display server
+ * Copyright © 2014  Mattias Andrée (maandree@member.fsf.org)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#include "hash-table.h"
+
+
+/**
+ * Test if a key matches the key in a bucket
+ * 
+ * @param  T  The instance of the hash table
+ * @param  B  The bucket
+ * @param  K  The key
+ * @param  H  The hash of the key
+ */
+#define TEST_KEY(T, B, K, H) \
+  ((B->key == K) || (T->key_comparator && (B->hash == H) && T->key_comparator(B->key, K)))
+
+
+/**
+ * Calculate the hash of a key
+ * 
+ * @param   this  The hash table
+ * @param   key   The key to hash
+ * @return        The hash of the key
+ */
+static inline long __attribute__((const)) hash(const hash_table_t* this, const void* key)
+{
+  return this->hasher ? this->hasher(key) : (long)key;
+}
+
+
+/**
+ * Truncates the hash of a key to constrain it to the buckets
+ * 
+ * @param   this  The hash table
+ * @param   key   The key to hash
+ * @return        A non-negative value less the the table's capacity
+ */
+static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* restrict this, long hash)
+{
+  return ((size_t)hash) % this->capacity;
+}
+
+
+/**
+ * Grow the table
+ * 
+ * @param  this  The hash table
+ */
+static void rehash(hash_table_t* restrict this)
+{
+  hash_entry_t** old_buckets = this->buckets;
+  size_t old_capacity = this->capacity;
+  size_t i = old_capacity, index;
+  hash_entry_t* bucket;
+  hash_entry_t* destination;
+  hash_entry_t* next;
+  
+  this->capacity = old_capacity * 2 + 1;
+  this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
+  this->buckets = calloc(this->capacity, sizeof(hash_entry_t*));
+  
+  while (i)
+    {
+      bucket = *(this->buckets + --i);
+      while (bucket)
+	{
+	  index = truncate_hash(this, bucket->hash);
+	  if ((destination = *(this->buckets + index)))
+	    {
+	      next = destination->next;
+	      while (next)
+		{
+		  destination = next;
+		  next = destination->next;
+		}
+	      destination->next = bucket;
+	    }
+	  else
+	    *(this->buckets + index) = bucket;
+	  
+	  next = bucket->next;
+	  bucket->next = NULL;
+	  bucket = next;
+	}
+    }
+  
+  free(old_buckets);
+}
+
+
+/**
+ * Create a hash table
+ * 
+ * @param   this              Memory slot in which to store the new hash table
+ * @param   initial_capacity  The initial capacity of the table
+ * @param   load_factor       The load factor of the table, i.e. when to grow the table
+ * @return                    Non-zero on error, `errno` will have been set accordingly
+ */
+int /**/__attribute__((const))/**/ hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_capacity, float load_factor)
+{
+  (void) this; (void) initial_capacity; (void) load_factor; return 0; /* TODO */
+}
+
+
+/**
+ * Clone a hash table
+ * 
+ * @param   this  The hash table to clone
+ * @param   out   Memory slot in which to store the new hash table
+ * @return        Non-zero on error, `errno` will have been set accordingly
+ */
+int /**/__attribute__((const))/**/ hash_table_clone(const hash_table_t* restrict this, hash_table_t* restrict out)
+{
+  (void) this; (void) out; return 0; /* TODO */
+}
+
+
+/**
+ * Release all resources in a hash table, should
+ * be done even if construction fails
+ * 
+ * @param  this    The hash table
+ * @param  values  Whether to free all stored values
+ * @param  keys    Whether to free all stored keys
+ */
+void hash_table_destroy(hash_table_t* restrict this, int values, int keys)
+{
+  size_t i = this->capacity;
+  hash_entry_t* bucket;
+  hash_entry_t* last;
+  
+  if (this->buckets != NULL)
+    {
+      while (i)
+	{
+	  bucket = *(this->buckets + --i);
+	  while (bucket)
+	    {
+	      if (values)
+		free(bucket->value);
+	      if (keys)
+		free(bucket->key);
+	      bucket = (last = bucket)->next;
+	      free(last);
+	    }
+	}
+      free(this->buckets);
+    }
+}
+
+
+/**
+ * Check whether a value is stored in the table
+ * 
+ * @param   this   The hash table
+ * @param   value  The value
+ * @return         Whether the value is stored in the table
+ */
+int hash_table_contains_value(const hash_table_t* restrict this, void* restrict value)
+{
+  size_t i = this->capacity;
+  hash_entry_t* bucket;
+  
+  while (i)
+    {
+      bucket = *(this->buckets + --i);
+      while (bucket)
+	{
+	  if (bucket->value == value)
+	    return 1;
+	  if (this->value_comparator && this->value_comparator(bucket->value, value))
+	    return 1;
+	  bucket = bucket->next;
+	}
+    }
+  
+  return 0;
+}
+
+
+/**
+ * Check whether a key is used in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key
+ * @return        Whether the key is used
+ */
+int hash_table_contains_key(const hash_table_t* restrict this, void* restrict key)
+{
+  long key_hash = hash(this, key);
+  size_t index = truncate_hash(this, key_hash);
+  hash_entry_t* bucket = *(this->buckets + index);
+  
+  while (bucket)
+    {
+      if (TEST_KEY(this, bucket, key, key_hash))
+	return 1;
+      bucket = bucket->next;
+    }
+  
+  return 0;
+}
+
+
+/**
+ * Look up a value in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key associated with the value
+ * @return        The value associated with the key, `NULL` i the key was not used
+ */
+void* hash_table_get(const hash_table_t* restrict this, const void* restrict key)
+{
+  long key_hash = hash(this, key);
+  size_t index = truncate_hash(this, key_hash);
+  hash_entry_t* bucket = *(this->buckets + index);
+  
+  while (bucket)
+    {
+      if (TEST_KEY(this, bucket, key, key_hash))
+	return bucket->value;
+      bucket = bucket->next;
+    }
+  
+  return NULL;
+}
+
+
+/**
+ * Add an entry to the table
+ * 
+ * @param   this   The hash table
+ * @param   key    The key of the entry to add
+ * @param   value  The value of the entry to add
+ * @return         The previous value associated with the key, `NULL` i the key was not used
+ */
+void* hash_table_put(hash_table_t* restrict this, void* restrict key, void* restrict value)
+{
+  long key_hash = hash(this, key);
+  size_t index = truncate_hash(this, key_hash);
+  hash_entry_t* bucket = *(this->buckets + index);
+  void* rc;
+  
+  while (bucket)
+    if (TEST_KEY(this, bucket, key, key_hash))
+      {
+	rc = bucket->value;
+	bucket->value = value;
+	return rc;
+      }
+    else
+      bucket = bucket->next;
+  
+  if (++(this->size) > this->threshold)
+    {
+      rehash(this);
+      index = truncate_hash(this, key_hash);
+    }
+  
+  bucket = malloc(sizeof(hash_entry_t)); /* TODO */
+  bucket->value = value;
+  bucket->key = key;
+  bucket->hash = key_hash;
+  bucket->next = *(this->buckets + index);
+  *(this->buckets + index) = bucket;
+  
+  return NULL;
+}
+
+
+/**
+ * Remove an entry in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key of the entry to remove
+ * @return        The previous value associated with the key, `NULL` i the key was not used
+ */
+void* hash_table_remove(hash_table_t* restrict this, const void* restrict key)
+{
+  long key_hash = hash(this, key);
+  size_t index = truncate_hash(this, key_hash);
+  hash_entry_t* bucket = *(this->buckets + index);
+  hash_entry_t* last = NULL;
+  void* rc;
+  
+  while (bucket)
+    {
+      if (TEST_KEY(this, bucket, key, key_hash))
+	{
+	  if (last == NULL)
+	    *(this->buckets + index) = bucket->next;
+	  else
+	    last->next = bucket->next;
+	  this->size--;
+	  rc = bucket->value;
+	  free(bucket);
+	  return rc;
+	}
+      last = bucket;
+      bucket = bucket->next;
+    }
+  
+  return NULL;
+}
+
+
+/**
+ * Remove all entries in the table
+ * 
+ * @param  this  The hash table
+ */
+void hash_table_clear(hash_table_t* restrict this)
+{
+  hash_entry_t** buf;
+  hash_entry_t* bucket;
+  size_t i, ptr;
+  
+  if (this->size)
+    {
+      buf = alloca((this->size + 1) * sizeof(hash_entry_t*));
+      i = this->capacity;
+      while (i)
+	{
+	  bucket = *(this->buckets + --i);
+	  ptr = 0;
+	  *(buf + ptr++) = bucket;
+	  while (bucket)
+	    {
+	      bucket = bucket->next;
+	      *(buf + ptr++) = bucket;
+	    }
+	  while (ptr)
+	    free(*(buf + --ptr));
+	  *(this->buckets + i) = NULL;
+	}
+      this->size = 0;
+    }
+}
+
+
+/**
+ * Calculate the buffer size need to marshal a hash table
+ * 
+ * @param   this  The hash table
+ * @return        The number of bytes to allocate to the output buffer
+ */
+size_t /**/__attribute__((const))/**/ hash_table_marshal_size(const hash_table_t* restrict this)
+{
+  (void) this; return 0; /* TODO */
+}
+
+
+/**
+ * Marshals a hash table
+ * 
+ * @param  this  The hash table
+ * @param  data  Output buffer for the marshalled data
+ */
+void /**/__attribute__((const))/**/ hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
+{
+  (void) this; (void) data; /* TODO */
+}
+
+
+/**
+ * Unmarshals a hash table
+ * 
+ * @param   this  Memory slot in which to store the new hash table
+ * @param   data  In buffer with the marshalled data
+ * @return        Non-zero one error, errno will be set accordingly.
+ *                Destroy the list on error.
+ */
+int /**/__attribute__((const))/**/ hash_table_unmarshal(hash_table_t* restrict this, char* restrict data)
+{
+  (void) this; (void) data; return 0; /* TODO */
+}
+
