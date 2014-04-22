@@ -62,15 +62,15 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 # Build rules.
 
 .PHONY: all
-all: bin/mds bin/mds-server
+all: bin/mds bin/mds-server bin/libmdsserver/linked-list
 
 
 bin/%: obj/%.o
-	mkdir -p bin
+	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -o $@ $^
 
 obj/%.o: src/%.c src/%.h src/config.h
-	mkdir -p obj
+	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -c -o $@ $<
 
 
