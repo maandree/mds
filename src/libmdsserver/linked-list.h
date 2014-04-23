@@ -227,7 +227,7 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node);
  *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
 #define linked_list_insert_end(this, value)  \
-  (linked_list_insert_before(this, value, this->edge))
+  (linked_list_insert_before((this), (value), (this)->edge))
 
 /**
  * Remove the node at the end of the list
@@ -236,7 +236,7 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node);
  * @return  :ssize_t             The node that has been removed
  */
 #define linked_list_remove_end(this)  \
-  (linked_list_remove_before(this, this->edge))
+  (linked_list_remove_before((this), (this)->edge))
 
 /**
  * Calculate the buffer size need to marshal a linked list

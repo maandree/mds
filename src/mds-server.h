@@ -19,6 +19,26 @@
 #define MDS_MDS_SERVER_H
 
 
+#include <stdlib.h>
+
+
+/**
+ * Client information structure
+ */
+typedef struct client
+{
+  /**
+   * The client's entry in the list of clients
+   */
+  ssize_t list_entry;
+  
+  /**
+   * The socket file descriptor for the socket connected to the client
+   */
+  int socket_fd;
+  
+} client_t;
+
 
 /**
  * Master function for slave threads

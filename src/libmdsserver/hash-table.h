@@ -165,7 +165,7 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
  * @return  :int                     Non-zero on error, `errno` will have been set accordingly
  */
 #define hash_table_create_tuned(this, initial_capacity)  \
-  hash_table_create_fine_tuned(this, initial_capacity, 0.75)
+  hash_table_create_fine_tuned(this, initial_capacity, 0.75f)
 
 /**
  * Create a hash table
