@@ -430,12 +430,13 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
 /**
  * Unmarshals a hash table
  * 
- * @param   this  Memory slot in which to store the new hash table
- * @param   data  In buffer with the marshalled data
- * @return        Non-zero one error, errno will be set accordingly.
- *                Destroy the list on error.
+ * @param   this      Memory slot in which to store the new hash table
+ * @param   data      In buffer with the marshalled data
+ * @param   remapper  Function that translates values, `NULL` if not translation takes place
+ * @return            Non-zero one error, errno will be set accordingly.
+ *                    Destroy the list on error.
  */
-int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data)
+int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper)
 {
   size_t i, n;
   
@@ -477,6 +478,8 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data)
 	    }
 	  bucket->key   = ((size_t*)data)[0];
 	  bucket->value = ((size_t*)data)[1];
+	  if (remapper != NULL)
+	    bucket->value = remapper(bucket->value);
 	  bucket->hash  = ((size_t*)data)[2];
 	  data += 3 * sizeof(size_t) / sizeof(char);
 	}

@@ -46,6 +46,14 @@ typedef size_t hash_func(size_t value);
  */
 typedef void free_func(size_t obj);
 
+/**
+ * A function that translates a object into a new object
+ * 
+ * @param   obj  The object
+ * @return  obj  The new object
+ */
+typedef size_t remap_func(size_t obj);
+
 
 /**
  * Hash table entry
@@ -251,12 +259,13 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data);
 /**
  * Unmarshals a hash table
  * 
- * @param   this  Memory slot in which to store the new hash table
- * @param   data  In buffer with the marshalled data
- * @return        Non-zero one error, errno will be set accordingly.
- *                Destroy the list on error.
+ * @param   this      Memory slot in which to store the new hash table
+ * @param   data      In buffer with the marshalled data
+ * @param   remapper  Function that translates values, `NULL` if not translation takes place
+ * @return            Non-zero one error, errno will be set accordingly.
+ *                    Destroy the list on error.
  */
-int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data);
+int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper);
 
 
 #endif
