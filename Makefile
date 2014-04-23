@@ -59,6 +59,10 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 	  -D_GNU_SOURCE -pthread
 
 
+# Object files for the libary
+LIBOBJ = linked-list hash-table
+
+
 # Build rules.
 
 .PHONY: all
@@ -74,7 +78,7 @@ obj/%.o: src/%.c src/%.h src/config.h
 	gcc $(C_FLAGS) -Isrc -c -o $@ $<
 
 
-bin/libmdsserver.so: obj/libmdsserver/linked-list.o obj/libmdsserver/hash-table.o
+bin/libmdsserver.so: $(foreach O,$(LIBOBJ),obj/libmdsserver/$(O).o)
 	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -shared -o $@ $^
 
