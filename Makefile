@@ -65,13 +65,13 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 all: bin/mds bin/mds-server bin/libmdsserver.so
 
 
-bin/%: obj/%.o
+bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -o $@ $^
+	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver obj/$*.o
 
 obj/%.o: src/%.c src/%.h src/config.h
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -c -o $@ $<
+	gcc $(C_FLAGS) -Isrc -c -o $@ $<
 
 
 bin/libmdsserver.so: obj/libmdsserver/linked-list.o obj/libmdsserver/hash-table.o
