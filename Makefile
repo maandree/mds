@@ -62,7 +62,7 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 # Build rules.
 
 .PHONY: all
-all: bin/mds bin/mds-server obj/libmdsserver/linked-list.o obj/libmdsserver/hash-table.o
+all: bin/mds bin/mds-server bin/libmdsserver.so
 
 
 bin/%: obj/%.o
@@ -72,6 +72,15 @@ bin/%: obj/%.o
 obj/%.o: src/%.c src/%.h src/config.h
 	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -c -o $@ $<
+
+
+bin/libmdsserver.so: obj/libmdsserver/linked-list.o obj/libmdsserver/hash-table.o
+	mkdir -p $(shell dirname $@)
+	gcc $(C_FLAGS) -shared -o $@ $^
+
+obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/%.h
+	mkdir -p $(shell dirname $@)
+	gcc $(C_FLAGS) -fPIC -c -o $@ $<
 
 
 
