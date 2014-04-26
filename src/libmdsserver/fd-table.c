@@ -285,7 +285,7 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
  * @param   data      In buffer with the marshalled data
  * @param   remapper  Function that translates values, `NULL` if not translation takes place
  * @return            Non-zero one error, errno will be set accordingly.
- *                    Destroy the list on error.
+ *                    Destroy the table on error.
  */
 int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper)
 {

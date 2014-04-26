@@ -435,7 +435,7 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
  * @param   data      In buffer with the marshalled data
  * @param   remapper  Function that translates values, `NULL` if not translation takes place
  * @return            Non-zero one error, errno will be set accordingly.
- *                    Destroy the list on error.
+ *                    Destroy the table on error.
  */
 int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper)
 {
