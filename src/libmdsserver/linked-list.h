@@ -259,7 +259,7 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
  * 
  * @param   this  Memory slot in which to store the new linked list
  * @param   data  In buffer with the marshalled data
- * @return        Non-zero one error, errno will be set accordingly.
+ * @return        Non-zero on error, errno will be set accordingly.
  *                Destroy the list on error.
  */
 int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
