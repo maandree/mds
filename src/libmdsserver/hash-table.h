@@ -19,40 +19,7 @@
 #define MDS_LIBMDSSERVER_HASH_TABLE_H
 
 
-#include <stdlib.h>
-
-
-/**
- * A function that performs a comparison of two objects
- * 
- * @param   a  The first object
- * @param   b  The second object
- * @return     Whether the objects are equal
- */
-typedef int compare_func(size_t a, size_t b);
-
-/**
- * A function that hashes an object or a value
- * 
- * @param   value  The object or value
- * @return         The hash of `value`
- */
-typedef size_t hash_func(size_t value);
-
-/**
- * A function that release an objects resources an frees it
- * 
- * @param  obj  The object
- */
-typedef void free_func(size_t obj);
-
-/**
- * A function that translates a object into a new object
- * 
- * @param   obj  The object
- * @return  obj  The new object
- */
-typedef size_t remap_func(size_t obj);
+#include "table-common.h"
 
 
 /**
@@ -84,7 +51,7 @@ typedef struct hash_entry
 
 
 /**
- * Value lookup table based on hash value, that do not support `0` keys nor `0` values
+ * Value lookup table based on hash value, that do not support
  */
 typedef struct hash_table
 {

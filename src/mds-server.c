@@ -19,8 +19,7 @@
 #include "config.h"
 
 #include <libmdsserver/linked-list.h>
-#include <libmdsserver/hash-table.h>
-#include <libmdsserver/hash-help.h>
+#include <libmdsserver/fd-table.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -70,7 +69,7 @@ static pthread_cond_t slave_cond;
 /**
  * Map from client socket file descriptor to all information (client_t)
  */
-static hash_table_t client_map;
+static fd_table_t client_map;
 
 /**
  * List of client information (client_t)
@@ -207,10 +206,10 @@ int main(int argc_, char** argv_)
   
   
   /* Create list and table of clients. */
-  if (hash_table_create(&client_map))
+  if (fd_table_create(&client_map))
     {
       perror(*argv);
-      hash_table_destroy(&client_map, NULL, NULL);
+      fd_table_destroy(&client_map, NULL, NULL);
       return 1;
     }
   if (linked_list_create(&client_list, 32))
@@ -280,7 +279,7 @@ int main(int argc_, char** argv_)
   
   
   /* Release resources. */
-  hash_table_destroy(&client_map, NULL, NULL);
+  fd_table_destroy(&client_map, NULL, NULL);
   linked_list_destroy(&client_list);
   
   return 0;
@@ -318,8 +317,8 @@ void* slave_loop(void* data)
       goto fail;
     }
   
-  /* Add client to hash table. */
-  tmp = hash_table_put(&client_map, (size_t)socket_fd, (size_t)(void*)information);
+  /* Add client to table. */
+  tmp = fd_table_put(&client_map, socket_fd, (size_t)(void*)information);
   pthread_mutex_unlock(&slave_mutex);
   if ((tmp == 0) && errno)
     {
@@ -338,7 +337,7 @@ void* slave_loop(void* data)
   close(socket_fd);
   if (information != NULL)
     free(information);
-  hash_table_remove(&client_map, (size_t)socket_fd);
+  fd_table_remove(&client_map, socket_fd);
   
   /* Unlist client and decrease the slave count. */
   pthread_mutex_lock(&slave_mutex);

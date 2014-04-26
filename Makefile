@@ -60,7 +60,7 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 
 
 # Object files for the libary
-LIBOBJ = linked-list hash-table
+LIBOBJ = linked-list hash-table fd-table
 
 
 # Build rules.
@@ -73,7 +73,7 @@ bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver obj/$*.o
 
-obj/%.o: src/%.c src/%.h src/config.h
+obj/%.o: src/%.c src/*.h src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -Isrc -c -o $@ $<
 
@@ -82,7 +82,7 @@ bin/libmdsserver.so: $(foreach O,$(LIBOBJ),obj/libmdsserver/$(O).o)
 	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -shared -o $@ $^
 
-obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/%.h
+obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)
 	gcc $(C_FLAGS) -fPIC -c -o $@ $<
 

@@ -17,6 +17,7 @@
  */
 #include "hash-table.h"
 
+#include <stdlib.h>
 #include <errno.h>
 
 
