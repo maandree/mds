@@ -174,10 +174,14 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
       errno = 0;
       if ((size_t)key >= this->capacity)
 	{
+	  size_t* old_values = this->values;
 	  size_t old_bitcap, new_bitcap;
 	  this->values = realloc(this->values, (this->capacity << 1) * sizeof(size_t));
 	  if (this->values == NULL)
-	    return 0;
+	    {
+	      this->values = old_values;
+	      return 0;
+	    }
 	  
 	  memset(this->values + this->capacity, 0, this->capacity * sizeof(size_t));
 	  
@@ -187,9 +191,14 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
 	  
 	  if (new_bitcap > old_bitcap)
 	    {
+	      uint64_t* old_used = this->used;
 	      this->used = realloc(this->used, new_bitcap * sizeof(size_t));
 	      if (this->used == NULL)
-		return 0;
+		{
+		  this->used = old_used;
+		  this->capacity >>= 1;
+		  return 0;
+		}
 	      
 	      memset(this->used + old_bitcap, 0, (new_bitcap - old_bitcap) * sizeof(uint64_t));
 	    }

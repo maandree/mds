@@ -273,6 +273,9 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
     return this->reusable[--(this->reuse_head)];
   if (this->end == this->capacity)
     {
+      size_t* old_values;
+      ssize_t* old;
+      
       if ((ssize_t)(this->end) < 0)
 	{
 	  errno = ENOMEM;
@@ -280,18 +283,30 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
 	}
       
       this->capacity <<= 1;
-      this->values = realloc(this->values, this->capacity * sizeof(size_t));
+      this->values = realloc(old_values = this->values, this->capacity * sizeof(size_t));
       if (this->values == NULL)
-	return LINKED_LIST_UNUSED;
-      this->next = realloc(this->next, this->capacity * sizeof(ssize_t));
+	{
+	  this->values = old_values;
+	  return LINKED_LIST_UNUSED;
+	}
+      this->next = realloc(old = this->next, this->capacity * sizeof(ssize_t));
       if (this->next == NULL)
-	return LINKED_LIST_UNUSED;
-      this->previous = realloc(this->previous, this->capacity * sizeof(ssize_t));
+	{
+	  this->next = old;
+	  return LINKED_LIST_UNUSED;
+	}
+      this->previous = realloc(old = this->previous, this->capacity * sizeof(ssize_t));
       if (this->previous == NULL)
-	return LINKED_LIST_UNUSED;
-      this->reusable = realloc(this->reusable, this->capacity * sizeof(ssize_t));
+	{
+	  this->previous = old;
+	  return LINKED_LIST_UNUSED;
+	}
+      this->reusable = realloc(old = this->reusable, this->capacity * sizeof(ssize_t));
       if (this->reusable == NULL)
-	return LINKED_LIST_UNUSED;
+	{
+	  this->reusable = old;
+	  return LINKED_LIST_UNUSED;
+	}
     }
   return (ssize_t)(this->end++);
 }
