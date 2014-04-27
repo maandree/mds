@@ -247,7 +247,7 @@ int mds_message_read(mds_message_t* this, int fd)
 	    /* But if we head left over data that is for the next message,
 	       just move the pointer back as much as we read. (Which is
 	       actually what we do even we did not have excess data.) */
-	    this->buffer_ptr -= needed;
+	    this->buffer_ptr -= need;
 	  
 	  /* If we have filled the payload, make the end of this stage,
 	     i.e. that the message is complete, and return with success. */
