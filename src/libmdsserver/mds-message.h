@@ -33,6 +33,7 @@ typedef struct mds_message
    * name and its associated value, joined by ": ". A header
    * cannot be `NULL` (unless its memory allocation failed,)
    * but `headers` itself is NULL if there are not headers.
+   * The "Length" should be included in this list.
    */
   char** headers;
   
@@ -52,19 +53,29 @@ typedef struct mds_message
   size_t payload_size;
   
   /**
-   * Internal buffer for the reading function
+   * How much of the payload that has been stored (internal data)
+   */
+  size_t payload_ptr;
+  
+  /**
+   * Internal buffer for the reading function (internal data)
    */
   char* buffer;
   
   /**
-   * The size allocated to `buffer`
+   * The size allocated to `buffer` (internal data)
    */
   size_t buffer_size;
   
   /**
-   * The number of bytes used in `buffer`
+   * The number of bytes used in `buffer` (internal data)
    */
   size_t buffer_ptr;
+  
+  /**
+   * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
+   */
+  int stage;
   
 } mds_message_t;
 
@@ -92,8 +103,13 @@ void mds_message_destroy(mds_message_t* this);
  * 
  * @param   this  Memory slot in which to store the new message
  * @param   fd    The file descriptor
- * @return        Non-zero on error, errno will be set accordingly.
- *                Destroy the message on error.
+ * @return        Non-zero on error or interruption, errno will be
+ *                set accordingly. Destroy the message on error,
+ *                be aware that the reading could have been
+ *                interrupted by a signal rather than canonical error.
+ *                If -2 is returned errno will not have been set,
+ *                -2 indicates that the message is malformated,
+ *                which is a state that cannot be recovered from.
  */
 int mds_message_read(mds_message_t* this, int fd);
 
