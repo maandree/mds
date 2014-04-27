@@ -48,11 +48,11 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
   bitcap = (this->capacity + 63) / 64;
   this->used = calloc(bitcap, sizeof(size_t));
   if (this->used == NULL)
-    return 1;
+    return -1;
   
   this->values = calloc(this->capacity, sizeof(size_t));
   if (this->values == NULL)
-    return 1;
+    return -1;
   
   return 0;
 }
@@ -301,12 +301,12 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
   
   this->values = malloc(this->capacity * sizeof(size_t));
   if (this->values == NULL)
-    return 1;
+    return -1;
   
   bitcap = (this->capacity + 63) / 64;
   this->used = malloc(bitcap * sizeof(size_t));
   if (this->used == NULL)
-    return 1;
+    return -1;
   
   memcpy(this->values, data, this->capacity * sizeof(size_t));
   data += this->capacity * sizeof(size_t) / sizeof(char);
