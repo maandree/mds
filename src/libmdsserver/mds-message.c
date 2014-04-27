@@ -38,7 +38,6 @@ int mds_message_initialise(mds_message_t* this)
   this->payload = NULL;
   this->payload_size = 0;
   this->payload_ptr = 0;
-  this->buffer = NULL;
   this->buffer_size = 128;
   this->buffer_ptr = 0;
   this->buffer = malloc(this->buffer_size * sizeof(char));
