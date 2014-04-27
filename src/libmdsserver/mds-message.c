@@ -90,6 +90,8 @@ int mds_message_read(mds_message_t* this, int fd)
 {
   size_t header_commit_buffer = 0;
   
+  /* If we are at stage 2, we are done and it is time to start over.
+     This is important because the function coul have been interrupted. */
   if (this->stage == 2)
     {
       if (this->headers != NULL)
@@ -110,42 +112,64 @@ int mds_message_read(mds_message_t* this, int fd)
       this->stage = 0;
     }
   
+  /* Read from file descriptor until we have a full message. */
   for (;;)
     {
       size_t n, i;
       ssize_t got;
       char* p;
       
+      /* Stage 0: headers. */
       if (this->stage == 0)
+	/* Read all headers that we have stored into the read buffer. */
 	while ((p = memchr(this->buffer, '\n', this->buffer_ptr)) != NULL)
 	  {
 	    size_t len = (size_t)(p - this->buffer) + 1;
 	    char* header;
 	    
+	    /* We have found an empty line, i.e. the end of the headers.*/
 	    if (len == 0)
 	      {
+		/* Remove the \n (end of empty line) we found from the buffer. */
 		memmove(this->buffer, this->buffer + 1, this->buffer_ptr -= 1);
+		
+		/* Get the length of the payload. */
 		for (i = 0; i < this->header_count; i++)
 		  if (strstr(this->headers[i], "Length: ") == this->headers[i])
 		    {
+		      /* Store the message length. */
 		      header = this->headers[i] + strlen("Length: ");
 		      this->payload_size = (size_t)atoll(header);
+		      
+		      /* Do not except a length that is not correctly formated. */
 		      for (; *header; header++)
 			if ((*header < '0') || ('9' < *header))
 			  return -2; /* Malformated value, enters unrecoverable state. */
+		      
+		      /* Stop searching for the ‘Length’ header, we have found and parsed it. */
 		      break;
 		    }
-		this->stage = 1;
 		
+		/* Allocate the payload buffer. */
 		if (this->payload_size > 0)
 		  {
 		    this->payload = malloc(this->payload_size * sizeof(char));
 		    if (this->payload == NULL)
 		      return -1;
 		  }
+		
+		/* Mark end of stage, next stage is getting the payload. */
+		this->stage = 1;
+		
+		/* Stop searching for headers. */
 		break;
 	      }
 	    
+	    /* Head have found a header. */
+	    
+	    /* One every eighth heaer found with this function call,
+	       we prepare the header list for eight more headers so
+	       that it does not need to be reallocated again and again. */
 	    if (header_commit_buffer == 0)
 	      {
 		header_commit_buffer = 8;
@@ -168,12 +192,20 @@ int mds_message_read(mds_message_t* this, int fd)
 		  }
 	      }
 	    
+	    /* Allocat the header.*/
 	    header = malloc(len * sizeof(char));
 	    if (header == NULL)
 	      return -1;
+	    /* Copy the header data into the allocated header, */
 	    memcpy(header, this->buffer, len);
+	    /* and NUL-terminate it. */
 	    header[len - 1] = '\0';
+	    
+	    /* Remove the header data from the read buffer. */
 	    memmove(this->buffer, this->buffer + len, this->buffer_ptr -= len);
+	    
+	    /* Make sure the the header syntex is correct so the the
+	       program does not need to care about it. */
 	    if ((p = memchr(header, ':', len)) == NULL)
 	      {
 		/* Buck you, rawmemchr should not segfault the program. */
@@ -185,31 +217,53 @@ int mds_message_read(mds_message_t* this, int fd)
 		free(header);
 		return -2;
 	      }
+	    
+	    /* Store the header in the heaer list. */
 	    this->headers[this->header_count++] = header;
 	    header_commit_buffer -= 1;
 	  }
       
+      /* Stage 1: payload. */
       if ((this->stage == 1) && (this->payload_ptr > 0))
 	{
+	  /* How much of the payload that has not yet been filled. */
 	  size_t need = this->payload_size - this->payload_ptr;
 	  if (this->buffer_ptr <= need)
+	    /* If we have everything that we need, just copy it into the payload buffer. */
 	    memcpy(this->payload + this->payload_ptr, this->buffer, this->buffer_ptr);
 	  else
 	    {
+	      /* Otherwise, copy what we have, and remove it from the the read buffer. */
 	      memcpy(this->payload + this->payload_ptr, this->buffer, need);
 	      memmove(this->buffer, this->buffer + need, this->buffer_ptr - need);
 	    }
+	  
+	  /* Keep track of how much we have read. */
 	  this->payload_ptr += this->buffer_ptr;
-	  this->buffer_ptr = 0;
+	  if (this->buffer_ptr <= need)
+	    /* Reset the read pointer as the read buffer is empty now. */
+	    this->buffer_ptr = 0;
+	  else
+	    /* But if we head left over data that is for the next message,
+	       just move the pointer back as much as we read. (Which is
+	       actually what we do even we did not have excess data.) */
+	    this->buffer_ptr -= needed;
+	  
+	  /* If we have filled the payload, make the end of this stage,
+	     i.e. that the message is complete, and return with success. */
 	  if (this->payload_ptr == this->payload_size)
 	    {
-	      this->stage = 3;
-	      break;
+	      this->stage = 2;
+	      return 0;
 	    }
 	}
       
+      /* If stage 1 was not completed. */
+      
+      /* Figure out how much space we have left in the read buffer. */
       n = this->buffer_size - this->buffer_ptr;
       
+      /* If we do not have too much left, grow the buffer, */
       if (n < 128)
 	{
 	  char* old_buffer = this->buffer;
@@ -221,9 +275,12 @@ int mds_message_read(mds_message_t* this, int fd)
 	      this->buffer_size >>= 1;
 	      return -1;
 	    }
+	  
+	  /* and recalculate how much space we have left. */
 	  n = this->buffer_size - this->buffer_ptr;
 	}
       
+      /* Then read from the file descriptor. */
       errno = 0;
       got = read(fd, this->buffer + this->buffer_ptr, n);
       if (errno)
@@ -232,8 +289,6 @@ int mds_message_read(mds_message_t* this, int fd)
 	  return -1;
 	}
     }
-  
-  return 0;
 }
 
 
