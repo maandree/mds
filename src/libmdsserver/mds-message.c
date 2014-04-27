@@ -376,11 +376,14 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
   this->payload_ptr = ((size_t*)data)[2];
   this->buffer_ptr = ((size_t*)data)[3];
   this->buffer_size = this->buffer_ptr;
+  data += 4 * sizeof(size_t) / sizeof(char);
+  
+  /* Make sure that the pointers are NULL so that they are
+     not freed without being allocated when the message is
+     destroyed if this function fails. */
   this->headers = NULL;
   this->payload = NULL;
   this->buffer = NULL;
-  
-  data += 4 * sizeof(size_t) / sizeof(char);
   
   this->stage = ((int*)data)[0];
   data += sizeof(int) / sizeof(char);
@@ -404,6 +407,8 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
     }
   this->buffer_size <<= 7;
   
+  /* Allocate header list, payload and read buffer. */
+  
   if (header_count > 0)
     {
       this->headers = malloc(header_count * sizeof(char*));
@@ -421,6 +426,8 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
   this->buffer = malloc(this->buffer_size * sizeof(char));
   if (this->buffer == NULL)
     return -1;
+  
+  /* Fill the header list, payload and read buffer. */
   
   for (i = 0; i < this->header_count; i++)
     {
