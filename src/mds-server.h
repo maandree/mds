@@ -40,6 +40,11 @@ typedef struct client
   int socket_fd;
   
   /**
+   * Whether the socket is open
+   */
+  int open;
+  
+  /**
    * Message read buffer for the client
    */
   mds_message_t message;

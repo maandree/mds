@@ -332,6 +332,7 @@ void* slave_loop(void* data)
   /* Fill information table. */
   information->list_entry = entry;
   information->socket_fd = socket_fd;
+  information->open = 1;
   if (mds_message_initialise(&(information->message)))
     {
       perror(*argv);
@@ -356,6 +357,7 @@ void* slave_loop(void* data)
 	else if (errno == ECONNRESET)
 	  {
 	    r = mds_message_read(&(information->message), socket_fd);
+	    information->open = 0;
 	    if (r == 0)
 	      {
 		/* TODO */
