@@ -307,7 +307,7 @@ size_t mds_message_marshal_size(mds_message_t* this, int include_buffer)
     rc += strlen(this->headers[i]);
   rc *= sizeof(char);
   rc += (include_buffer ? 4 : 2) * sizeof(size_t);
-  rc += (include_buffer ? 1 : 0) * sizeof(int);
+  rc += (include_buffer ? 2 : 1) * sizeof(int);
   return rc;
 }
 
@@ -324,6 +324,9 @@ size_t mds_message_marshal_size(mds_message_t* this, int include_buffer)
 void mds_message_marshal(mds_message_t* this, char* data, int include_buffer)
 {
   size_t i, n;
+  
+  ((int*)data)[0] = MDS_MESSAGE_T_VERSION;
+  data += sizeof(int) / sizeof(char);
   
   ((size_t*)data)[0] = this->header_count;
   ((size_t*)data)[1] = this->payload_size;
@@ -368,6 +371,9 @@ void mds_message_marshal(mds_message_t* this, char* data, int include_buffer)
 int mds_message_unmarshal(mds_message_t* this, char* data)
 {
   size_t i, n, header_count;
+  
+  /* ((int*)data)[0] == MDS_MESSAGE_T_VERSION */
+  data += sizeof(int) / sizeof(char);
   
   header_count = ((size_t*)data)[0];
   this->header_count = 0;

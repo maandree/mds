@@ -430,7 +430,7 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node)
  */
 size_t linked_list_marshal_size(const linked_list_t* restrict this)
 {
-  return sizeof(size_t) * (4 + this->reuse_head + 3 * this->end);
+  return sizeof(size_t) * (4 + this->reuse_head + 3 * this->end) + sizeof(int);
 }
 
 
@@ -442,6 +442,9 @@ size_t linked_list_marshal_size(const linked_list_t* restrict this)
  */
 void linked_list_marshal(const linked_list_t* restrict this, char* restrict data)
 {
+  ((int*)data)[0] = LINKED_LIST_T_VERSION;
+  data += sizeof(int) / sizeof(char);
+  
   ((size_t*)data)[0] = this->capacity;
   ((size_t*)data)[1] = this->end;
   ((size_t*)data)[2] = this->reuse_head;
@@ -472,6 +475,9 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
 int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
 {
   size_t n;
+  
+  /* ((int*)data)[0] == LINKED_LIST_T_VERSION */
+  data += sizeof(int) / sizeof(char);
   
   this->reusable = NULL;
   this->values = NULL;

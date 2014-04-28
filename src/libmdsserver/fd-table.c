@@ -253,7 +253,7 @@ void fd_table_clear(fd_table_t* restrict this)
 size_t fd_table_marshal_size(const fd_table_t* restrict this)
 {
   size_t bitcap = (this->capacity + 63) / 64;
-  return (this->capacity + 2) * sizeof(size_t) + bitcap * sizeof(uint64_t);
+  return (this->capacity + 2) * sizeof(size_t) + bitcap * sizeof(uint64_t) + sizeof(int);
 }
 
 
@@ -266,6 +266,9 @@ size_t fd_table_marshal_size(const fd_table_t* restrict this)
 void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
 {
   size_t bitcap = (this->capacity + 63) / 64;
+  
+  ((int*)data)[0] = FD_TABLE_T_VERSION;
+  data += sizeof(int) / sizeof(char);
   
   ((size_t*)data)[0] = this->capacity;
   ((size_t*)data)[1] = this->size;
@@ -290,6 +293,9 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
 int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper)
 {
   size_t bitcap;
+  
+  /* ((int*)data)[0] == FD_TABLE_T_VERSION */
+  data += sizeof(int) / sizeof(char);
   
   this->capacity = ((size_t*)data)[0];
   this->size = ((size_t*)data)[1];

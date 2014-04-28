@@ -24,6 +24,9 @@
 #include <stdint.h>
 
 
+
+#define FD_TABLE_T_VERSION  0
+
 /**
  * Value lookup table optimised for file descriptors as keys
  */

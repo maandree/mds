@@ -53,6 +53,8 @@
 
 
 
+#define LINKED_LIST_T_VERSION  0
+
 /**
  * Linear array sentinel doubly linked list class
  */

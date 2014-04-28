@@ -22,6 +22,8 @@
 #include <stddef.h>
 
 
+#define MDS_MESSAGE_T_VERSION  0
+
 /**
  * Message passed between a server and a client or between two of either
  */

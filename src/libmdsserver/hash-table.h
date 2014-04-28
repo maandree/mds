@@ -22,6 +22,9 @@
 #include "table-common.h"
 
 
+
+#define HASH_TABLE_T_VERSION  0
+
 /**
  * Hash table entry
  */

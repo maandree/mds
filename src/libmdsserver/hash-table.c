@@ -388,7 +388,7 @@ size_t hash_table_marshal_size(const hash_table_t* restrict this)
 	}
     }
   
-  return rc + m * 3 * sizeof(size_t);
+  return rc + m * 3 * sizeof(size_t) + sizeof(int);
 }
 
 
@@ -401,6 +401,9 @@ size_t hash_table_marshal_size(const hash_table_t* restrict this)
 void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
 {
   size_t i, n = this->capacity;
+  
+  ((int*)data)[0] = HASH_TABLE_T_VERSION;
+  data += sizeof(int) / sizeof(char);
   
   ((size_t*)data)[0] = this->capacity;
   data += 1 * sizeof(size_t) / sizeof(char);
@@ -440,6 +443,9 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
 int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper)
 {
   size_t i, n;
+  
+  /* ((int*)data)[0] == HASH_TABLE_T_VERSION */
+  data += sizeof(int) / sizeof(char);
   
   this->value_comparator = NULL;
   this->key_comparator = NULL;
