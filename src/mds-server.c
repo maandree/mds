@@ -353,14 +353,23 @@ void* slave_loop(void* data)
 	    fprintf(stderr, "%s: corrupt message received.\n", *argv);
 	    goto fail;
 	  }
-	else if (errno != EINTR)
+	else if (errno == ECONNRESET)
 	  {
-	    perror(*argv);
-	    goto fail;
+	    r = mds_message_read(&(information->message), socket_fd);
+	    if (r == 0)
+	      {
+		/* TODO */
+	      }
+	    break; /* Connection closed. */
+	  }
+	else if (errno == EINTR)
+	  {
+	    /* TODO */
 	  }
 	else
 	  {
-	    /* TODO */
+	    perror(*argv);
+	    goto fail;
 	  }
     }
   
