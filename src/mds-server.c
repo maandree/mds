@@ -22,6 +22,7 @@
 #include <libmdsserver/fd-table.h>
 #include <libmdsserver/mds-message.h>
 
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -50,7 +51,7 @@ static char** argv;
  * The program run state, 1 when running,
  * 0 when shutting down
  */
-static volatile int running = 1;
+static volatile sig_atomic_t running = 1;
 
 /**
  * The number of running slaves
