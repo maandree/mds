@@ -283,11 +283,9 @@ int mds_message_read(mds_message_t* this, int fd)
       /* Then read from the file descriptor. */
       errno = 0;
       got = read(fd, this->buffer + this->buffer_ptr, n);
+      this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
       if (errno)
-	{
-	  this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
-	  return -1;
-	}
+	return -1;
     }
 }
 
