@@ -21,6 +21,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
 
 /**
@@ -282,7 +283,7 @@ int mds_message_read(mds_message_t* this, int fd)
       
       /* Then read from the file descriptor. */
       errno = 0;
-      got = read(fd, this->buffer + this->buffer_ptr, n);
+      got = recv(fd, this->buffer + this->buffer_ptr, n, 0);
       this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
       if (errno)
 	return -1;
