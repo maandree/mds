@@ -70,7 +70,7 @@ typedef struct mds_message
   /**
    * The number of bytes used in `buffer` (internal data)
    */
-  size_t buffer_ptr;
+  size_t buffer_ptr; /* TODO: whould it be better to use a ring buffer? */
   
   /**
    * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
