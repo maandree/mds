@@ -19,6 +19,8 @@
 #define MDS_MDS_SERVER_H
 
 
+#include <libmdsserver/mds-message.h>
+
 #include <stdlib.h>
 
 
@@ -36,6 +38,11 @@ typedef struct client
    * The socket file descriptor for the socket connected to the client
    */
   int socket_fd;
+  
+  /**
+   * Message read buffer for the client
+   */
+  mds_message_t message;
   
 } client_t;
 

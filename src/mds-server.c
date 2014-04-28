@@ -20,6 +20,7 @@
 
 #include <libmdsserver/linked-list.h>
 #include <libmdsserver/fd-table.h>
+#include <libmdsserver/mds-message.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -298,6 +299,8 @@ void* slave_loop(void* data)
   ssize_t entry = LINKED_LIST_UNUSED;
   client_t* information;
   size_t tmp;
+  int r;
+  
   
   /* Create information table. */
   information = malloc(sizeof(client_t));
@@ -329,14 +332,47 @@ void* slave_loop(void* data)
   /* Fill information table. */
   information->list_entry = entry;
   information->socket_fd = socket_fd;
+  if (mds_message_initialise(&(information->message)))
+    {
+      perror(*argv);
+      goto fail;
+    }
   
-  /* TODO */
+  
+  /* Fetch messages from the slave. */
+  for (;;)
+    {
+      r = mds_message_read(&(information->message), socket_fd);
+      if (r == 0)
+	{
+	  /* TODO */
+	}
+      else
+	if (r == -2)
+	  {
+	    fprintf(stderr, "%s: corrupt message received.\n", *argv);
+	    goto fail;
+	  }
+	else if (errno != EINTR)
+	  {
+	    perror(*argv);
+	    goto fail;
+	  }
+	else
+	  {
+	    /* TODO */
+	  }
+    }
+  
   
  fail:
   /* Close socket and free resources. */
   close(socket_fd);
   if (information != NULL)
-    free(information);
+    {
+      mds_message_destroy(&(information->message));
+      free(information);
+    }
   fd_table_remove(&client_map, socket_fd);
   
   /* Unlist client and decrease the slave count. */
