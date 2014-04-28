@@ -255,7 +255,7 @@ int main(int argc_, char** argv_)
 	   MDS_RUNTIME_ROOT_DIRECTORY, display);
   unlink(pathname);
   
-  /* Remove directories */
+  /* Remove directories. */
   rmdir(MDS_RUNTIME_ROOT_DIRECTORY); /* Do not care if it fails, it is probably used by another display. */
   rmdir(MDS_STORAGE_ROOT_DIRECTORY); /* Do not care if it fails, it is probably used by another display. */
   snprintf(pathname, sizeof(pathname) / sizeof(char),
