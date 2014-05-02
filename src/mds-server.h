@@ -75,6 +75,14 @@ char* getenv_nonempty(const char* var);
  */
 void run_initrc(char** args);
 
+/**
+ * Called with the signal SIGUSR1 is caught.
+ * This function should cue a re-exec of the program.
+ * 
+ * @param  signo  The caught signal
+ */
+void sigusr1_trap(int signo);
+
 
 #endif
 

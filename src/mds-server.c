@@ -22,6 +22,7 @@
 #include <libmdsserver/fd-table.h>
 #include <libmdsserver/mds-message.h>
 
+#include <alloca.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -102,7 +103,6 @@ int main(int argc_, char** argv_)
   int unparsed_args_ptr = 1;
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
-  pid_t pid;
   pthread_t _slave_thread;
   
   
@@ -198,6 +198,8 @@ int main(int argc_, char** argv_)
   
   if (is_respawn == 0)
     {
+      pid_t pid;
+      
       /* Run mdsinitrc. */
       pid = fork();
       if (pid == (pid_t)-1)
@@ -223,17 +225,35 @@ int main(int argc_, char** argv_)
   if (linked_list_create(&client_list, 32))
     {
       perror(*argv);
+      fd_table_destroy(&client_map, NULL, NULL);
       linked_list_destroy(&client_list);
       return 1;
     }
   
   
+  /* Make the server update without all slaves dying on SIGUSR1. */
+  {
+    struct sigaction action;
+    sigset_t sigset;
+    
+    sigemptyset(&sigset);
+    action.sa_handler = sigusr1_trap;
+    action.sa_mask = sigset;
+    action.sa_flags = 0;
+    
+    if (sigaction(SIGUSR1, &action, NULL) < 0)
+      {
+	perror(*argv);
+	fd_table_destroy(&client_map, NULL, NULL);
+	linked_list_destroy(&client_list);
+	return 1;
+      }
+  }
+  
+  
   /* Create mutex and condition for slave counter. */
   pthread_mutex_init(&slave_mutex, NULL);
   pthread_cond_init(&slave_cond, NULL);
-  
-  
-  /* TODO make the server update without all slaves dying on SIGUSR1 */
   
   
   /* Accepting incoming connections. */
@@ -296,23 +316,85 @@ int main(int argc_, char** argv_)
   /* Release resources. */
   fd_table_destroy(&client_map, NULL, NULL);
   linked_list_destroy(&client_list);
+  pthread_mutex_destroy(&slave_mutex);
+  pthread_cond_destroy(&slave_cond);
   
   return 0;
   
   
  reexec:
-  /* Join with all slaves threads. */
-  pthread_mutex_lock(&slave_mutex);
-  while (running_slaves > 0)
-    pthread_cond_wait(&slave_cond, &slave_mutex);
-  pthread_mutex_unlock(&slave_mutex);
-  
-  /* TODO: marshal and exec */
-  
-  /* Returning non-zero is important, otherwise the server cannot
-     be respawn if the re-exec fails. */
-  perror(*argv);
-  return 1;
+  {
+    char* state_buf = NULL;
+    char* state_buf_;
+    size_t state_n;
+    ssize_t wrote;
+    int pipe_rw[2];
+    char readlink_buf[PATH_MAX];
+    ssize_t readlink_ptr;
+    char** reexec_args;
+    char** reexec_args_;
+    char reexec_arg[24];
+#if INT_MAX > UINT64_MAX
+# error It seems int:s are really big, you might need to increase the size of reexec_arg.
+#endif
+    
+    /* Release resources. */
+    pthread_mutex_destroy(&slave_mutex);
+    pthread_cond_destroy(&slave_cond);
+    
+    /* Join with all slaves threads. */
+    pthread_mutex_lock(&slave_mutex);
+    while (running_slaves > 0)
+      pthread_cond_wait(&slave_cond, &slave_mutex);
+    pthread_mutex_unlock(&slave_mutex);
+    
+    /* Marshal the state of the server. */ /* TODO marshal all data. */
+    state_n = 2 * sizeof(int) + 1 * sizeof(sig_atomic_t);
+    state_buf = alloca(state_n);
+    state_buf_ = state_buf;
+    ((int*)state_buf_)[0] = MDS_SERVER_VARS_VERSION;
+    ((int*)state_buf_)[1] = socket_fd;
+    state_buf_ += 2 * sizeof(int) / sizeof(char);
+    ((sig_atomic_t*)state_buf_)[0] = running;
+    state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
+    if (pipe(pipe_rw) < 0)
+      goto reexec_fail;
+    errno = 0;
+    while (state_n > 0)
+      {
+	wrote = write(pipe_rw[1], state_buf, state_n);
+	if (errno && (errno != EINTR))
+	  goto reexec_fail;
+	state_n -= (size_t)(wrote < 0 ? 0 : wrote);
+	state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+      }
+    close(pipe_rw[1]);
+    
+    /* Re-exec the server. */
+    readlink_ptr = readlink("/proc/self/exe", readlink_buf, PATH_MAX - 1);
+    if (readlink_ptr < 0)
+      goto reexec_fail;
+    /* ‘readlink() does not append a null byte to buf.’ */
+    readlink_buf[readlink_ptr] = '\0';
+    snprintf(reexec_arg, sizeof(reexec_arg) / sizeof(char),
+	     "--re-exec=%i", pipe_rw[0]);
+    reexec_args = alloca(((size_t)argc + 2) * sizeof(char*));
+    reexec_args_ = reexec_args;
+    *reexec_args_++ = *argv;
+    *reexec_args_ = reexec_arg;
+    for (i = 1; i < argc; i++)
+      reexec_args_[i] = argv[i];
+    reexec_args_[argc] = NULL;
+    execv(readlink_buf, reexec_args);
+    
+  reexec_fail:
+    perror(*argv);
+    close(pipe_rw[0]);
+    close(pipe_rw[1]);
+    /* Returning non-zero is important, otherwise the server cannot
+       be respawn if the re-exec fails. */
+    return 1;
+  }
 }
 
 
@@ -326,9 +408,27 @@ void* slave_loop(void* data)
 {
   int socket_fd = (int)(intptr_t)data;
   ssize_t entry = LINKED_LIST_UNUSED;
-  client_t* information;
+  client_t* information = NULL;
   size_t tmp;
   int r;
+  
+  
+  /* Make the server update without all slaves dying on SIGUSR1. */
+  {
+    struct sigaction action;
+    sigset_t sigset;
+    
+    sigemptyset(&sigset);
+    action.sa_handler = sigusr1_trap;
+    action.sa_mask = sigset;
+    action.sa_flags = 0;
+    
+    if (sigaction(SIGUSR1, &action, NULL) < 0)
+      {
+	perror(*argv);
+	goto fail;
+      }
+  }
   
   
   /* Create information table. */
@@ -535,5 +635,21 @@ void run_initrc(char** args)
   
   /* Everything failed. */
   fprintf(stderr, "%s: unable to run %s file, you might as well kill me.\n", *argv, INITRC_FILE);
+}
+
+
+/**
+ * Called with the signal SIGUSR1 is caught.
+ * This function should cue a re-exec of the program.
+ * 
+ * @param  signo  The caught signal
+ */
+void sigusr1_trap(int signo __attribute__((unused)))
+{
+  if (reexecing == 0)
+    {
+      reexecing = 1;
+      /* TODO send the signal to all threads. */
+    }
 }
 
