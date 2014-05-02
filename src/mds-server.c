@@ -36,6 +36,9 @@
 
 
 
+#define MDS_SERVER_VARS_VERSION  0
+
+
 /**
  * Number of elements in `argv`
  */
@@ -52,6 +55,11 @@ static char** argv;
  * 0 when shutting down
  */
 static volatile sig_atomic_t running = 1;
+
+/**
+ * Non-zero when the program is about to re-exec
+ */
+static volatile sig_atomic_t reexecing = 0;
 
 /**
  * The number of running slaves
@@ -78,9 +86,6 @@ static fd_table_t client_map;
  */
 static linked_list_t client_list;
 
-
-
-/* TODO make the server update without all slaves dying on SIGUSR1 */
 
 
 /**
@@ -124,6 +129,7 @@ int main(int argc_, char** argv_)
     }
   
   
+  /* TODO: support re-exec */
   /* Parse command line arguments. */
   for (i = 1; i < argc; i++)
     {
@@ -227,8 +233,11 @@ int main(int argc_, char** argv_)
   pthread_cond_init(&slave_cond, NULL);
   
   
+  /* TODO make the server update without all slaves dying on SIGUSR1 */
+  
+  
   /* Accepting incoming connections. */
-  while (running)
+  while (running && (reexecing == 0))
     {
       /* Accept connection. */
       int client_fd = accept(socket_fd, NULL, NULL);
@@ -240,6 +249,8 @@ int main(int argc_, char** argv_)
 	    {
 	    case EINTR:
 	      /* Interrupted. */
+	      if (reexecing)
+		goto reexec;
 	      break;
 	      
 	    case ECONNABORTED:
@@ -271,6 +282,8 @@ int main(int argc_, char** argv_)
 	  pthread_mutex_unlock(&slave_mutex);
 	}
     }
+  if (reexecing)
+    goto reexec;
   
   
   /* Wait for all slaves to close. */
@@ -285,6 +298,21 @@ int main(int argc_, char** argv_)
   linked_list_destroy(&client_list);
   
   return 0;
+  
+  
+ reexec:
+  /* Join with all slaves threads. */
+  pthread_mutex_lock(&slave_mutex);
+  while (running_slaves > 0)
+    pthread_cond_wait(&slave_cond, &slave_mutex);
+  pthread_mutex_unlock(&slave_mutex);
+  
+  /* TODO: marshal and exec */
+  
+  /* Returning non-zero is important, otherwise the server cannot
+     be respawn if the re-exec fails. */
+  perror(*argv);
+  return 1;
 }
 
 
@@ -342,7 +370,7 @@ void* slave_loop(void* data)
   
   
   /* Fetch messages from the slave. */
-  for (;;)
+  while (reexecing == 0)
     {
       r = mds_message_read(&(information->message), socket_fd);
       if (r == 0)
@@ -363,11 +391,14 @@ void* slave_loop(void* data)
 	      {
 		/* TODO */
 	      }
-	    break; /* Connection closed. */
+	    /* Connection closed. */
+	    break;
 	  }
 	else if (errno == EINTR)
 	  {
-	    /* TODO */
+	    /* Stop the thread if we are re-exec:ing the server. */
+	    if (reexecing)
+	      goto reexec;
 	  }
 	else
 	  {
@@ -375,6 +406,9 @@ void* slave_loop(void* data)
 	    goto fail;
 	  }
     }
+  /* Stop the thread if we are re-exec:ing the server. */
+  if (reexecing)
+    goto reexec;
   
   
  fail:
@@ -391,6 +425,19 @@ void* slave_loop(void* data)
   pthread_mutex_lock(&slave_mutex);
   if (entry != LINKED_LIST_UNUSED)
     linked_list_remove(&client_list, entry);
+  running_slaves--;
+  pthread_cond_signal(&slave_cond);
+  pthread_mutex_unlock(&slave_mutex);
+  
+  return NULL;
+  
+  
+ reexec:
+  /* Tell the master thread that the slave has closed,
+     this is done because re-exec causes a race-condition
+     between the acception of a slave and the execution
+     of the the slave thread. */
+  pthread_mutex_lock(&slave_mutex);
   running_slaves--;
   pthread_cond_signal(&slave_cond);
   pthread_mutex_unlock(&slave_mutex);
