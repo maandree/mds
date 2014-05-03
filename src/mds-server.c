@@ -349,7 +349,7 @@ int main(int argc_, char** argv_)
     close(pipe_rw[1]);
     
     /* Re-exec the server. */
-    readlink_ptr = readlink("/proc/self/exe", readlink_buf, PATH_MAX - 1);
+    readlink_ptr = readlink(SELF_EXE, readlink_buf, PATH_MAX - 1);
     if (readlink_ptr < 0)
       goto reexec_fail;
     /* ‘readlink() does not append a null byte to buf.’ */

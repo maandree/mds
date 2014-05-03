@@ -118,6 +118,14 @@
 
 
 /**
+ * The path of the symlink to the executed command
+ */
+#ifndef SELF_EXE
+#define SELF_EXE  "/proc/self/exe"
+#endif
+
+
+/**
  * The maximum number of command line arguments to allow
  */
 #ifndef ARGC_LIMIT
