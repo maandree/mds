@@ -343,7 +343,10 @@ int main(int argc_, char** argv_)
     
     /* Marshal the state of the server. */
     if (pipe(pipe_rw) < 0)
-      goto reexec_fail;
+      {
+	perror(*argv);
+	return 1;
+      }
     if (marshal_server(pipe_rw[1]) < 0)
       goto reexec_fail;
     close(pipe_rw[1]);
