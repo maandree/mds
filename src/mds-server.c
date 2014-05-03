@@ -653,6 +653,8 @@ int marshal_server(int fd)
   ssize_t wrote;
   ssize_t node;
   
+  
+  /* Calculate the grand size of all messages and their buffers. */
   for (node = client_list.edge;; list_elements++)
     {
       mds_message_t message;
@@ -661,39 +663,70 @@ int marshal_server(int fd)
       message = ((client_t*)(void*)(client_list.values[node]))->message;
       msg_size += mds_message_marshal_size(&message, 1);
     }
+  
+  /* Calculate the grand size of all client information. */
   state_n = sizeof(ssize_t) + 1 * sizeof(int) + 2 * sizeof(size_t);
   state_n *= list_elements;
   state_n += msg_size;
+  
+  /* Add the size of the rest of the program's state. */
   state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 3 * sizeof(size_t);
-  state_buf = malloc(state_n);
-  state_buf_ = state_buf;
+  
+  /* Allocate a buffer for all data except the client list and the client map. */
+  state_buf = state_buf_ = malloc(state_n);
+  if (state_buf == NULL)
+    goto fail;
+  
+  
+  /* Tell the new version of the program what version of the program it is marshalling. */
   ((int*)state_buf_)[0] = MDS_SERVER_VARS_VERSION;
   state_buf_ += 1 * sizeof(int) / sizeof(char);
+  
+  /* Marshal the program's running–exit state. */
   ((sig_atomic_t*)state_buf_)[0] = running;
   state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
+  
+  /* Tell the program how large the marshalled objects are and how any clients are marshalled. */
   ((size_t*)state_buf_)[0] = list_size;
   ((size_t*)state_buf_)[1] = map_size;
   ((size_t*)state_buf_)[2] = list_elements;
   state_buf_ += 3 * sizeof(size_t) / sizeof(char);
+  
+  /* Marshal the clients. */
   for (node = client_list.edge;;)
     {
       size_t value_address;
       client_t* value;
+      
+      /* Get the next client's node in the linked list. */
       if ((node = client_list.next[node]) == client_list.edge)
 	break;
+      
+      /* Get the memory address of the client. */
       value_address = client_list.values[node];
+      /* Get the client's information. */
       value = (client_t*)(void*)value_address;
+      
+      /* Get the marshalled size of the message. */
       msg_size = mds_message_marshal_size(&(value->message), 1);
+      
+      /* Marshal the address, it is used the the client list and the client map, that will be marshalled. */
       ((size_t*)state_buf_)[0] = value_address;
-      ((ssize_t*)state_buf_)[1] = value->list_entry;
-      ((size_t*)state_buf_)[2] = msg_size;
+      /* Tell the program how large the marshalled message is. */
+      ((size_t*)state_buf_)[1] = msg_size;
+      /* Marshal the client info. */
+      ((ssize_t*)state_buf_)[2] = value->list_entry;
       state_buf_ += 3 * sizeof(size_t) / sizeof(char);
       ((int*)state_buf_)[0] = value->socket_fd;
       ((int*)state_buf_)[1] = value->open;
       state_buf_ += 2 * sizeof(int) / sizeof(char);
+      /* Marshal the message. */
       mds_message_marshal(&(value->message), state_buf_, 1);
       state_buf_ += msg_size / sizeof(char);
     }
+  
+  
+  /* Send the marshalled data into the pipe. */
   while (state_n > 0)
     {
       errno = 0;
@@ -704,6 +737,8 @@ int marshal_server(int fd)
       state_buf += (size_t)(wrote < 0 ? 0 : wrote);
     }
   free(state_buf);
+  
+  /* Marshal, and send info the pipe, the client list. */
   state_buf = malloc(list_size);
   if (state_buf == NULL)
     goto fail;
@@ -718,6 +753,8 @@ int marshal_server(int fd)
       state_buf += (size_t)(wrote < 0 ? 0 : wrote);
     }
   free(state_buf);
+  
+  /* Marshal, and send info the pipe, the client map. */
   state_buf = malloc(map_size);
   if (state_buf == NULL)
     goto fail;
