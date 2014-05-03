@@ -367,15 +367,14 @@ int main(int argc_, char** argv_)
 	message = ((client_t*)(void*)(client_list.values[node]))->message;
 	msg_size += mds_message_marshal_size(&message, 1);
       }
-    state_n = sizeof(ssize_t) + 2 * sizeof(int) + 2 * sizeof(size_t);
+    state_n = sizeof(ssize_t) + 1 * sizeof(int) + 2 * sizeof(size_t);
     state_n *= list_elements;
     state_n += msg_size;
     state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 3 * sizeof(size_t);
     state_buf = malloc(state_n);
     state_buf_ = state_buf;
     ((int*)state_buf_)[0] = MDS_SERVER_VARS_VERSION;
-    ((int*)state_buf_)[1] = socket_fd;
-    state_buf_ += 2 * sizeof(int) / sizeof(char);
+    state_buf_ += 1 * sizeof(int) / sizeof(char);
     ((sig_atomic_t*)state_buf_)[0] = running;
     state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
     ((size_t*)state_buf_)[0] = list_size;
