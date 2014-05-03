@@ -100,6 +100,8 @@ int main(int argc_, char** argv_)
 {
   int is_respawn = -1;
   int socket_fd = -1;
+  int reexec_fd = -1;
+  int reexec_argi = 1;
   int unparsed_args_ptr = 1;
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
@@ -129,7 +131,6 @@ int main(int argc_, char** argv_)
     }
   
   
-  /* TODO: support re-exec */
   /* Parse command line arguments. */
   for (i = 1; i < argc; i++)
     {
@@ -174,11 +175,34 @@ int main(int argc_, char** argv_)
 	    }
 	  socket_fd = (int)r;
 	}
+      else if (strstr(arg, "--re-exec=") == arg) /* Re-exec state-marshal pipe file descriptor. */
+	{
+	  long int r;
+	  char* endptr;
+	  if (reexec_fd != -1)
+	    {
+	      fprintf(stderr, "%s: duplicate declaration of %s.\n", *argv, "--re-exec");
+	      return -1;
+	    }
+	  arg += strlen("--re-exec=");
+	  r = strtol(arg, &endptr, 10);
+	  if ((*argv == '\0') || isspace(*argv) ||
+	      (endptr - arg != (ssize_t)strlen(arg))
+	      || (r < 0) || (r > INT_MAX))
+	    {
+	      fprintf(stderr, "%s: invalid value for %s: %s.\n", *argv, "--re-exec", arg);
+	      return 1;
+	    }
+	  reexec_fd = (int)r;
+	  reexec_argi = i;
+	}
       else
 	/* Not recognised, it is probably for another server. */
 	unparsed_args[unparsed_args_ptr++] = arg;
     }
   unparsed_args[unparsed_args_ptr] = NULL;
+  if (reexec_fd >= 0)
+    is_respawn = 1;
   
   
   /* Check that manditory arguments have been specified. */
@@ -196,11 +220,11 @@ int main(int argc_, char** argv_)
     }
   
   
+  /* Run mdsinitrc. */
   if (is_respawn == 0)
     {
       pid_t pid;
       
-      /* Run mdsinitrc. */
       pid = fork();
       if (pid == (pid_t)-1)
 	{
@@ -216,18 +240,21 @@ int main(int argc_, char** argv_)
   
   
   /* Create list and table of clients. */
-  if (fd_table_create(&client_map))
+  if (reexec_fd < 0)
     {
-      perror(*argv);
-      fd_table_destroy(&client_map, NULL, NULL);
-      return 1;
-    }
-  if (linked_list_create(&client_list, 32))
-    {
-      perror(*argv);
-      fd_table_destroy(&client_map, NULL, NULL);
-      linked_list_destroy(&client_list);
-      return 1;
+      if (fd_table_create(&client_map))
+	{
+	  perror(*argv);
+	  fd_table_destroy(&client_map, NULL, NULL);
+	  return 1;
+	}
+      if (linked_list_create(&client_list, 32))
+	{
+	  perror(*argv);
+	  fd_table_destroy(&client_map, NULL, NULL);
+	  linked_list_destroy(&client_list);
+	  return 1;
+	}
     }
   
   
@@ -254,6 +281,15 @@ int main(int argc_, char** argv_)
   /* Create mutex and condition for slave counter. */
   pthread_mutex_init(&slave_mutex, NULL);
   pthread_cond_init(&slave_cond, NULL);
+  
+  
+  /* Unmarshal the state of the server. */
+  if (reexec_fd >= 0)
+    {
+      unmarshal_server(reexec_fd);
+      close(reexec_fd);
+      /* Do not exit on failure, it is not fatal, and an error has already been printed. */
+    }
   
   
   /* Accepting incoming connections. */
@@ -361,10 +397,20 @@ int main(int argc_, char** argv_)
 	     "--re-exec=%i", pipe_rw[0]);
     reexec_args = alloca(((size_t)argc + 2) * sizeof(char*));
     reexec_args_ = reexec_args;
-    *reexec_args_++ = *argv;
-    *reexec_args_ = reexec_arg;
-    for (i = 1; i < argc; i++)
-      reexec_args_[i] = argv[i];
+    if (reexec_fd < 0)
+      {
+	*reexec_args_++ = *argv;
+	*reexec_args_ = reexec_arg;
+	for (i = 1; i < argc; i++)
+	  reexec_args_[i] = argv[i];
+      }
+    else /* Don't let the --re-exec:s accumulate. */
+      {
+	*reexec_args_ = *argv;
+	for (i = 1; i < argc; i++)
+	  reexec_args_[i] = argv[i];
+	reexec_args_[reexec_argi] = reexec_arg;
+      }
     reexec_args_[argc] = NULL;
     execv(readlink_buf, reexec_args);
     
@@ -636,7 +682,7 @@ void sigusr1_trap(int signo __attribute__((unused)))
 
 
 /**
- * Marshal the servers state into a pipe
+ * Marshal the server's state into a pipe
  * 
  * @param   fd  The write end of the pipe
  * @return      Negative on error
@@ -670,7 +716,7 @@ int marshal_server(int fd)
   state_n += msg_size;
   
   /* Add the size of the rest of the program's state. */
-  state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 3 * sizeof(size_t);
+  state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 2 * sizeof(size_t);
   
   /* Allocate a buffer for all data except the client list and the client map. */
   state_buf = state_buf_ = malloc(state_n);
@@ -686,11 +732,10 @@ int marshal_server(int fd)
   ((sig_atomic_t*)state_buf_)[0] = running;
   state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
   
-  /* Tell the program how large the marshalled objects are and how any clients are marshalled. */
+  /* Tell the program how large the marshalled client list is and how any clients are marshalled. */
   ((size_t*)state_buf_)[0] = list_size;
-  ((size_t*)state_buf_)[1] = map_size;
-  ((size_t*)state_buf_)[2] = list_elements;
-  state_buf_ += 3 * sizeof(size_t) / sizeof(char);
+  ((size_t*)state_buf_)[1] = list_elements;
+  state_buf_ += 2 * sizeof(size_t) / sizeof(char);
   
   /* Marshal the clients. */
   for (node = client_list.edge;;)
@@ -776,5 +821,84 @@ int marshal_server(int fd)
   if (state_buf != NULL)
     free(state_buf);
   return -1;
+}
+
+
+/**
+ * Unmarshal the server's state from a pipe
+ * 
+ * @param  fd  The read end of the pipe
+ */
+void unmarshal_server(int fd)
+{
+  size_t list_size;
+  size_t map_size;
+  size_t list_elements;
+  size_t i;
+  
+  
+  /* TODO read the pipe */
+  
+  
+  /* Get the marshal protocal version. Not needed, there is only the one version right now. */
+  /* MDS_SERVER_VARS_VERSION == ((int*)state_buf_)[0]; */
+  state_buf_ += 1 * sizeof(int) / sizeof(char);
+  
+  /* Unmarshal the program's running–exit state. */
+  running = ((sig_atomic_t*)state_buf_)[0];
+  state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
+  
+  /* Get the marshalled size of the client list and how any clients that are marshalled. */
+  list_size = ((size_t*)state_buf_)[0];
+  list_elements = ((size_t*)state_buf_)[1];
+  state_buf_ += 2 * sizeof(size_t) / sizeof(char);
+  
+  /* Unmarshal the clients. */
+  for (i = 0; i < list_elements; i++)
+    {
+      size_t value_address;
+      size_t message_size;
+      client_t* value;
+      
+      /* Allocate the client's information. */
+      if ((value = malloc(sizeof(client_t))) == NULL)
+	{
+	  /* TODO */
+	}
+      
+      /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
+      value_address = ((size_t*)state_buf_)[0];
+      /* Get the marshalled size of the message. */
+      msg_size = ((size_t*)state_buf_)[1];
+      /* Unmarshal the client info. */
+      value->list_entry = ((ssize_t*)state_buf_)[2];
+      state_buf_ += 3 * sizeof(size_t) / sizeof(char);
+      value->socket_fd = ((int*)state_buf_)[0];
+      value->open = ((int*)state_buf_)[1];
+      state_buf_ += 2 * sizeof(int) / sizeof(char);
+      /* Unmarshal the message. */
+      if (mds_message_unmarshal(&(value->message), state_buf_))
+	{
+	  mds_message_destroy(&(value->message));
+	  free(value);
+	  /* TODO */
+	}
+      state_buf_ += msg_size / sizeof(char);
+      
+      /* TODO create map for the value remapping */
+    }
+  
+  /* Unmarshal the client list. */
+  linked_list_unmarshal(&client_list, state_buf_);
+  state_buf_ += list_size / sizeof(char);
+  
+  /* Unmarshal the client map. */
+  fd_table_unmarshal(&client_map, state_buf_, FIXME::remapper);
+  
+  
+  /* TODO remap the linked list */
+  
+  
+  /* TODO start the clients */
 }
 
