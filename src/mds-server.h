@@ -83,6 +83,14 @@ void run_initrc(char** args);
  */
 void sigusr1_trap(int signo);
 
+/**
+ * Marshal the servers state into a pipe
+ * 
+ * @param   fd  The write end of the pipe
+ * @return      Negative on error
+ */
+int marshal_server(int fd);
+
 
 #endif
 

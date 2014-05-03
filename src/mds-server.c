@@ -324,25 +324,12 @@ int main(int argc_, char** argv_)
   
  reexec:
   {
-    char* state_buf = NULL;
-    char* state_buf_;
-    size_t state_n;
-    ssize_t wrote;
     int pipe_rw[2];
     char readlink_buf[PATH_MAX];
     ssize_t readlink_ptr;
     char** reexec_args;
     char** reexec_args_;
-    char reexec_arg[24];
-    size_t list_size;
-    size_t map_size;
-    size_t list_elements;
-    size_t msg_size;
-    ssize_t node;
-    
-#if INT_MAX > UINT64_MAX
-# error It seems int:s are really big, you might need to increase the size of reexec_arg.
-#endif
+    char reexec_arg[sizeof(int) * 8 / 3 + 14];
     
     /* Release resources. */
     pthread_mutex_destroy(&slave_mutex);
@@ -355,91 +342,10 @@ int main(int argc_, char** argv_)
     pthread_mutex_unlock(&slave_mutex);
     
     /* Marshal the state of the server. */
-    list_size = linked_list_marshal_size(&client_list);
-    map_size = fd_table_marshal_size(&client_map);
-    list_elements = 0;
-    msg_size = 0;
-    for (node = client_list.edge;; list_elements++)
-      {
-	mds_message_t message;
-	if ((node = client_list.next[node]) == client_list.edge)
-	  break;
-	message = ((client_t*)(void*)(client_list.values[node]))->message;
-	msg_size += mds_message_marshal_size(&message, 1);
-      }
-    state_n = sizeof(ssize_t) + 1 * sizeof(int) + 2 * sizeof(size_t);
-    state_n *= list_elements;
-    state_n += msg_size;
-    state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 3 * sizeof(size_t);
-    state_buf = malloc(state_n);
-    state_buf_ = state_buf;
-    ((int*)state_buf_)[0] = MDS_SERVER_VARS_VERSION;
-    state_buf_ += 1 * sizeof(int) / sizeof(char);
-    ((sig_atomic_t*)state_buf_)[0] = running;
-    state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
-    ((size_t*)state_buf_)[0] = list_size;
-    ((size_t*)state_buf_)[1] = map_size;
-    ((size_t*)state_buf_)[2] = list_elements;
-    state_buf_ += 3 * sizeof(size_t) / sizeof(char);
-    for (node = client_list.edge;;)
-      {
-	size_t value_address;
-	client_t* value;
-	if ((node = client_list.next[node]) == client_list.edge)
-	  break;
-	value_address = client_list.values[node];
-	value = (client_t*)(void*)value_address;
-	msg_size = mds_message_marshal_size(&(value->message), 1);
-	((size_t*)state_buf_)[0] = value_address;
-	((ssize_t*)state_buf_)[1] = value->list_entry;
-	((size_t*)state_buf_)[2] = msg_size;
-	state_buf_ += 3 * sizeof(size_t) / sizeof(char);
-	((int*)state_buf_)[0] = value->socket_fd;
-	((int*)state_buf_)[1] = value->open;
-	state_buf_ += 2 * sizeof(int) / sizeof(char);
-	mds_message_marshal(&(value->message), state_buf_, 1);
-	state_buf_ += msg_size / sizeof(char);
-      }
     if (pipe(pipe_rw) < 0)
       goto reexec_fail;
-    while (state_n > 0)
-      {
-	errno = 0;
-	wrote = write(pipe_rw[1], state_buf, state_n);
-	if (errno && (errno != EINTR))
-	  goto reexec_fail;
-	state_n -= (size_t)(wrote < 0 ? 0 : wrote);
-	state_buf += (size_t)(wrote < 0 ? 0 : wrote);
-      }
-    free(state_buf);
-    state_buf = malloc(list_size);
-    if (state_buf == NULL)
+    if (marshal_server(pipe_rw[1]) < 0)
       goto reexec_fail;
-    linked_list_marshal(&client_list, state_buf);
-    while (list_size > 0)
-      {
-	errno = 0;
-	wrote = write(pipe_rw[1], state_buf, list_size);
-	if (errno && (errno != EINTR))
-	  goto reexec_fail;
-	list_size -= (size_t)(wrote < 0 ? 0 : wrote);
-	state_buf += (size_t)(wrote < 0 ? 0 : wrote);
-      }
-    free(state_buf);
-    state_buf = malloc(map_size);
-    if (state_buf == NULL)
-      goto reexec_fail;
-    fd_table_marshal(&client_map, state_buf);
-    while (map_size > 0)
-      {
-	errno = 0;
-	wrote = write(pipe_rw[1], state_buf, map_size);
-	if (errno && (errno != EINTR))
-	  goto reexec_fail;
-	map_size -= (size_t)(wrote < 0 ? 0 : wrote);
-	state_buf += (size_t)(wrote < 0 ? 0 : wrote);
-      }
-    free(state_buf);
     close(pipe_rw[1]);
     
     /* Re-exec the server. */
@@ -461,8 +367,6 @@ int main(int argc_, char** argv_)
     
   reexec_fail:
     perror(*argv);
-    if (state_buf != NULL)
-      free(state_buf);
     close(pipe_rw[0]);
     close(pipe_rw[1]);
     /* Returning non-zero is important, otherwise the server cannot
@@ -725,5 +629,112 @@ void sigusr1_trap(int signo __attribute__((unused)))
       reexecing = 1;
       /* TODO send the signal to all threads. */
     }
+}
+
+
+/**
+ * Marshal the servers state into a pipe
+ * 
+ * @param   fd  The write end of the pipe
+ * @return      Negative on error
+ */
+int marshal_server(int fd)
+{
+  size_t list_size = linked_list_marshal_size(&client_list);
+  size_t map_size = fd_table_marshal_size(&client_map);
+  size_t list_elements = 0;
+  size_t msg_size = 0;
+  char* state_buf = NULL;
+  char* state_buf_;
+  size_t state_n;
+  ssize_t wrote;
+  ssize_t node;
+  
+  for (node = client_list.edge;; list_elements++)
+    {
+      mds_message_t message;
+      if ((node = client_list.next[node]) == client_list.edge)
+	break;
+      message = ((client_t*)(void*)(client_list.values[node]))->message;
+      msg_size += mds_message_marshal_size(&message, 1);
+    }
+  state_n = sizeof(ssize_t) + 1 * sizeof(int) + 2 * sizeof(size_t);
+  state_n *= list_elements;
+  state_n += msg_size;
+  state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 3 * sizeof(size_t);
+  state_buf = malloc(state_n);
+  state_buf_ = state_buf;
+  ((int*)state_buf_)[0] = MDS_SERVER_VARS_VERSION;
+  state_buf_ += 1 * sizeof(int) / sizeof(char);
+  ((sig_atomic_t*)state_buf_)[0] = running;
+  state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
+  ((size_t*)state_buf_)[0] = list_size;
+  ((size_t*)state_buf_)[1] = map_size;
+  ((size_t*)state_buf_)[2] = list_elements;
+  state_buf_ += 3 * sizeof(size_t) / sizeof(char);
+  for (node = client_list.edge;;)
+    {
+      size_t value_address;
+      client_t* value;
+      if ((node = client_list.next[node]) == client_list.edge)
+	break;
+      value_address = client_list.values[node];
+      value = (client_t*)(void*)value_address;
+      msg_size = mds_message_marshal_size(&(value->message), 1);
+      ((size_t*)state_buf_)[0] = value_address;
+      ((ssize_t*)state_buf_)[1] = value->list_entry;
+      ((size_t*)state_buf_)[2] = msg_size;
+      state_buf_ += 3 * sizeof(size_t) / sizeof(char);
+      ((int*)state_buf_)[0] = value->socket_fd;
+      ((int*)state_buf_)[1] = value->open;
+      state_buf_ += 2 * sizeof(int) / sizeof(char);
+      mds_message_marshal(&(value->message), state_buf_, 1);
+      state_buf_ += msg_size / sizeof(char);
+    }
+  while (state_n > 0)
+    {
+      errno = 0;
+      wrote = write(fd, state_buf, state_n);
+      if (errno && (errno != EINTR))
+	goto fail;
+      state_n -= (size_t)(wrote < 0 ? 0 : wrote);
+      state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+    }
+  free(state_buf);
+  state_buf = malloc(list_size);
+  if (state_buf == NULL)
+    goto fail;
+  linked_list_marshal(&client_list, state_buf);
+  while (list_size > 0)
+    {
+      errno = 0;
+      wrote = write(fd, state_buf, list_size);
+      if (errno && (errno != EINTR))
+	goto fail;
+      list_size -= (size_t)(wrote < 0 ? 0 : wrote);
+      state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+    }
+  free(state_buf);
+  state_buf = malloc(map_size);
+  if (state_buf == NULL)
+    goto fail;
+  fd_table_marshal(&client_map, state_buf);
+  while (map_size > 0)
+    {
+      errno = 0;
+      wrote = write(fd, state_buf, map_size);
+      if (errno && (errno != EINTR))
+	goto fail;
+      map_size -= (size_t)(wrote < 0 ? 0 : wrote);
+      state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+    }
+  free(state_buf);
+  
+  return 0;
+  
+ fail:
+  if (state_buf != NULL)
+    free(state_buf);
+  return -1;
 }
 
