@@ -831,13 +831,53 @@ int marshal_server(int fd)
  */
 void unmarshal_server(int fd)
 {
+  char* state_buf;
+  char* state_buf_;
   size_t list_size;
   size_t map_size;
   size_t list_elements;
   size_t i;
   
   
-  /* TODO read the pipe */
+  /* Read the pipe. */
+  {
+    size_t state_buf_size = 8 << 10;
+    size_t state_buf_ptr = 0;
+    ssize_t got;
+    
+    state_buf = state_buf_ = malloc(state_buf_size * sizeof(char));
+    if (state_buf == NULL)
+      {
+	perror(*argv);
+	return;
+      }
+    
+    for (;;)
+      {
+	if (state_buf_size == state_buf_ptr)
+	  {
+	    char* old_buf = state_buf;
+	    state_buf = realloc(state_buf, (state_buf_size <<= 1) * sizeof(char));
+	    if (state_buf == NULL)
+	      {
+		perror(*argv);
+		free(old_buf);
+		return;
+	      }
+	  }
+	
+	got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
+	if (got < 0)
+	  {
+	    perror(*argv);
+	    free(state_buf);
+	    return;
+	  }
+	if (got == 0)
+	  break;
+	state_buf_ptr += got;
+      }
+  }
   
   
   /* Get the marshal protocal version. Not needed, there is only the one version right now. */
@@ -863,6 +903,7 @@ void unmarshal_server(int fd)
       /* Allocate the client's information. */
       if ((value = malloc(sizeof(client_t))) == NULL)
 	{
+	  perror(*argv);
 	  /* TODO */
 	}
       
@@ -879,6 +920,7 @@ void unmarshal_server(int fd)
       /* Unmarshal the message. */
       if (mds_message_unmarshal(&(value->message), state_buf_))
 	{
+	  perror(*argv);
 	  mds_message_destroy(&(value->message));
 	  free(value);
 	  /* TODO */
