@@ -853,55 +853,53 @@ static size_t unmarshal_remapper(size_t old)
 int unmarshal_server(int fd)
 {
   int with_error = 0;
+  size_t state_buf_size = 8 << 10;
+  size_t state_buf_ptr = 0;
+  ssize_t got;
   char* state_buf;
   char* state_buf_;
   size_t list_size;
   size_t list_elements;
   size_t i;
+  ssize_t node;
   
+  
+  /* Allocate buffer for data. */
+  state_buf = state_buf_ = malloc(state_buf_size * sizeof(char));
+  if (state_buf == NULL)
+    {
+      perror(*argv);
+      return -1;
+    }
   
   /* Read the pipe. */
-  {
-    size_t state_buf_size = 8 << 10;
-    size_t state_buf_ptr = 0;
-    ssize_t got;
-    
-    /* Allocate buffer for data. */
-    state_buf = state_buf_ = malloc(state_buf_size * sizeof(char));
-    if (state_buf == NULL)
-      {
-	perror(*argv);
-	return -1;
-      }
-    
-    for (;;)
-      {
-	/* Grow buffer if it is too small. */
-	if (state_buf_size == state_buf_ptr)
-	  {
-	    char* old_buf = state_buf;
-	    state_buf = realloc(state_buf, (state_buf_size <<= 1) * sizeof(char));
-	    if (state_buf == NULL)
-	      {
-		perror(*argv);
-		free(old_buf);
-		return -1;
-	      }
-	  }
-	
-	/* Read from the pipe into the buffer. */
-	got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
-	if (got < 0)
-	  {
-	    perror(*argv);
-	    free(state_buf);
-	    return -1;
-	  }
-	if (got == 0)
-	  break;
-	state_buf_ptr += (size_t)got;
-      }
-  }
+  for (;;)
+    {
+      /* Grow buffer if it is too small. */
+      if (state_buf_size == state_buf_ptr)
+	{
+	  char* old_buf = state_buf;
+	  state_buf = realloc(state_buf, (state_buf_size <<= 1) * sizeof(char));
+	  if (state_buf == NULL)
+	    {
+	      perror(*argv);
+	      free(old_buf);
+	      return -1;
+	    }
+	}
+      
+      /* Read from the pipe into the buffer. */
+      got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
+      if (got < 0)
+	{
+	  perror(*argv);
+	  free(state_buf);
+	  return -1;
+	}
+      if (got == 0)
+	break;
+      state_buf_ptr += (size_t)got;
+    }
   
   
   /* Create memory address remapping table. */
@@ -995,11 +993,31 @@ int unmarshal_server(int fd)
   free(state_buf);
   
   
-  /* TODO Remap the linked list and remove non-found elements for both the list and the map. */
+  /* Remap the linked list and remove non-found elements. */
+  for (node = client_list.edge;;)
+    {
+      size_t new_address;
+      if ((node = client_list.next[node]) == client_list.edge)
+	break;
+      
+      new_address = unmarshal_remapper(client_list.values[node]);
+      client_list.values[node] = new_address;
+      if (new_address == 0) /* Returned if missing (or if the address is the invalid NULL.) */
+	linked_list_remove(&client_list, node);
+    }
+  
+  /* Release the remapping table's resources. */
   hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
   
+  /* Remove non-found elements from the fd table. */
+  if (with_error)
+    for (i = 0; i < client_map.capacity; i++)
+      if (client_map.used[i / 64] & ((uint64_t)1 << (i % 64)))
+	if (client_map.values[i] == 0) /* Lets not presume that fd-table actually initialise its allocations. */
+	  client_map.used[i / 64] &= ~((uint64_t)1 << (i % 64));
   
-  /* TODO Start the clients */
+  
+  /* TODO Start the clients. */
   
   
   return -with_error;
