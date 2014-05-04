@@ -439,7 +439,8 @@ void* slave_loop(void* data)
 {
   int socket_fd = (int)(intptr_t)data;
   ssize_t entry = LINKED_LIST_UNUSED;
-  client_t* information = NULL;
+  size_t information_address = fd_table_get(&client_map, (size_t)socket_fd);
+  client_t* information = (client_t*)(void*)information_address;
   size_t tmp;
   int r;
   
@@ -462,87 +463,91 @@ void* slave_loop(void* data)
   }
   
   
-  /* Create information table. */
-  information = malloc(sizeof(client_t));
   if (information == NULL)
     {
-      perror(*argv);
-      goto fail;
-    }
-  
-  /* Add to list of clients. */
-  pthread_mutex_lock(&slave_mutex);
-  entry = linked_list_insert_end(&client_list, (size_t)(void*)information);
-  if (entry == LINKED_LIST_UNUSED)
-    {
-      perror(*argv);
+      /* Create information table. */
+      information = malloc(sizeof(client_t));
+      if (information == NULL)
+	{
+	  perror(*argv);
+	  goto fail;
+	}
+      
+      /* Add to list of clients. */
+      pthread_mutex_lock(&slave_mutex);
+      entry = linked_list_insert_end(&client_list, (size_t)(void*)information);
+      if (entry == LINKED_LIST_UNUSED)
+	{
+	  perror(*argv);
+	  pthread_mutex_unlock(&slave_mutex);
+	  goto fail;
+	}
+      
+      /* Add client to table. */
+      tmp = fd_table_put(&client_map, socket_fd, (size_t)(void*)information);
       pthread_mutex_unlock(&slave_mutex);
-      goto fail;
-    }
-  
-  /* Add client to table. */
-  tmp = fd_table_put(&client_map, socket_fd, (size_t)(void*)information);
-  pthread_mutex_unlock(&slave_mutex);
-  if ((tmp == 0) && errno)
-    {
-      perror(*argv);
-      goto fail;
-    }
-  
-  /* Fill information table. */
-  information->list_entry = entry;
-  information->socket_fd = socket_fd;
-  information->open = 1;
-  if (mds_message_initialise(&(information->message)))
-    {
-      perror(*argv);
-      goto fail;
+      if ((tmp == 0) && errno)
+	{
+	  perror(*argv);
+	  goto fail;
+	}
+      
+      /* Fill information table. */
+      information->list_entry = entry;
+      information->socket_fd = socket_fd;
+      information->open = 1;
+      if (mds_message_initialise(&(information->message)))
+	{
+	  perror(*argv);
+	  goto fail;
+	}
     }
   
   
   /* Fetch messages from the slave. */
-  while (reexecing == 0)
-    {
-      r = mds_message_read(&(information->message), socket_fd);
-      if (r == 0)
-	{
-	  /* TODO */
-	}
-      else
-	if (r == -2)
+  if (information->open)
+    while (reexecing == 0)
+      {
+	r = mds_message_read(&(information->message), socket_fd);
+	if (r == 0)
 	  {
-	    fprintf(stderr, "%s: corrupt message received.\n", *argv);
-	    goto fail;
-	  }
-	else if (errno == ECONNRESET)
-	  {
-	    r = mds_message_read(&(information->message), socket_fd);
-	    information->open = 0;
-	    if (r == 0)
-	      {
-		/* TODO */
-	      }
-	    /* Connection closed. */
-	    break;
-	  }
-	else if (errno == EINTR)
-	  {
-	    /* Stop the thread if we are re-exec:ing the server. */
-	    if (reexecing)
-	      goto reexec;
+	    /* TODO */
 	  }
 	else
-	  {
-	    perror(*argv);
-	    goto fail;
-	  }
-    }
+	  if (r == -2)
+	    {
+	      fprintf(stderr, "%s: corrupt message received.\n", *argv);
+	      goto fail;
+	    }
+	  else if (errno == ECONNRESET)
+	    {
+	      r = mds_message_read(&(information->message), socket_fd);
+	      information->open = 0;
+	      if (r == 0)
+		{
+		  /* TODO */
+		}
+	      /* Connection closed. */
+	      break;
+	    }
+	  else if (errno == EINTR)
+	    {
+	      /* Stop the thread if we are re-exec:ing the server. */
+	      if (reexecing)
+		goto reexec;
+	    }
+	  else
+	    {
+	      perror(*argv);
+	      goto fail;
+	    }
+      }
   /* Stop the thread if we are re-exec:ing the server. */
   if (reexecing)
     goto reexec;
   
   
- fail:
+ fail: /* The loop does break, this done on success as well. */
   /* Close socket and free resources. */
   close(socket_fd);
   if (information != NULL)
@@ -862,6 +867,7 @@ int unmarshal_server(int fd)
   size_t list_elements;
   size_t i;
   ssize_t node;
+  pthread_t _slave_thread;
   
   
   /* Allocate buffer for data. */
@@ -992,23 +998,6 @@ int unmarshal_server(int fd)
   /* Release the raw data. */
   free(state_buf);
   
-  
-  /* Remap the linked list and remove non-found elements. */
-  for (node = client_list.edge;;)
-    {
-      size_t new_address;
-      if ((node = client_list.next[node]) == client_list.edge)
-	break;
-      
-      new_address = unmarshal_remapper(client_list.values[node]);
-      client_list.values[node] = new_address;
-      if (new_address == 0) /* Returned if missing (or if the address is the invalid NULL.) */
-	linked_list_remove(&client_list, node);
-    }
-  
-  /* Release the remapping table's resources. */
-  hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
-  
   /* Remove non-found elements from the fd table. */
   if (with_error)
     for (i = 0; i < client_map.capacity; i++)
@@ -1016,9 +1005,43 @@ int unmarshal_server(int fd)
 	if (client_map.values[i] == 0) /* Lets not presume that fd-table actually initialise its allocations. */
 	  client_map.used[i / 64] &= ~((uint64_t)1 << (i % 64));
   
+  /* Remap the linked list and remove non-found elements, and start the clients. */
+  for (node = client_list.edge;;)
+    {
+      size_t new_address;
+      if ((node = client_list.next[node]) == client_list.edge)
+	break;
+      
+      /* Remap the linked list and remove non-found elements. */
+      new_address = unmarshal_remapper(client_list.values[node]);
+      client_list.values[node] = new_address;
+      if (new_address == 0) /* Returned if missing (or if the address is the invalid NULL.) */
+	linked_list_remove(&client_list, node);
+      else
+	{
+	  /* Start the clients. (Errors do not need to be reported.) */
+	  client_t* client = (client_t*)(void*)new_address;
+	  int socket_fd = client->socket_fd;
+	  
+	  /* Increase number of running slaves. */
+	  pthread_mutex_lock(&slave_mutex);
+	  running_slaves++;
+	  pthread_mutex_unlock(&slave_mutex);
+	  
+	  /* Start slave thread. */
+	  errno = pthread_create(&_slave_thread, NULL, slave_loop, (void*)(intptr_t)socket_fd);
+	  if (errno)
+	    {
+	      perror(*argv);
+	      pthread_mutex_lock(&slave_mutex);
+	      running_slaves--;
+	      pthread_mutex_unlock(&slave_mutex);
+	    }
+	}
+    }
   
-  /* TODO Start the clients. */
-  
+  /* Release the remapping table's resources. */
+  hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
   
   return -with_error;
 }
