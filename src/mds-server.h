@@ -94,9 +94,10 @@ int marshal_server(int fd);
 /**
  * Unmarshal the server's state from a pipe
  * 
- * @param  fd  The read end of the pipe
+ * @param   fd  The read end of the pipe
+ * @return      Negative on error
  */
-void unmarshal_server(int fd);
+int unmarshal_server(int fd);
 
 
 #endif

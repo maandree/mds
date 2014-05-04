@@ -50,7 +50,7 @@ typedef void free_func(size_t obj);
  * A function that translates a object into a new object
  * 
  * @param   obj  The object
- * @return  obj  The new object
+ * @return       The new object
  */
 typedef size_t remap_func(size_t obj);
 

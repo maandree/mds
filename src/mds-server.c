@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <libmdsserver/linked-list.h>
+#include <libmdsserver/hash-table.h>
 #include <libmdsserver/fd-table.h>
 #include <libmdsserver/mds-message.h>
 
@@ -286,9 +287,12 @@ int main(int argc_, char** argv_)
   /* Unmarshal the state of the server. */
   if (reexec_fd >= 0)
     {
-      unmarshal_server(reexec_fd);
+      int r = unmarshal_server(reexec_fd);
       close(reexec_fd);
-      /* Do not exit on failure, it is not fatal, and an error has already been printed. */
+      if (r < 0)
+	{
+	  /* TODO: close all sockets we do not know what they are. */
+	}
     }
   
   
@@ -388,7 +392,7 @@ int main(int argc_, char** argv_)
     close(pipe_rw[1]);
     
     /* Re-exec the server. */
-    readlink_ptr = readlink(SELF_EXE, readlink_buf, PATH_MAX - 1);
+    readlink_ptr = readlink(SELF_EXE, readlink_buf, (sizeof(readlink_buf) / sizeof(char)) - 1);
     if (readlink_ptr < 0)
       goto reexec_fail;
     /* ‘readlink() does not append a null byte to buf.’ */
@@ -825,16 +829,33 @@ int marshal_server(int fd)
 
 
 /**
+ * Address translation table used by `unmarshal_server` and `remapper`
+ */
+static hash_table_t unmarshal_remap_map;
+
+/**
+ * Address translator for `unmarshal_server`
+ * 
+ * @param   old  The old address
+ * @return       The new address
+ */
+static size_t unmarshal_remapper(size_t old)
+{
+  return hash_table_get(&unmarshal_remap_map, old);
+}
+
+/**
  * Unmarshal the server's state from a pipe
  * 
- * @param  fd  The read end of the pipe
+ * @param   fd  The read end of the pipe
+ * @return      Negative on error
  */
-void unmarshal_server(int fd)
+int unmarshal_server(int fd)
 {
+  int with_error = 0;
   char* state_buf;
   char* state_buf_;
   size_t list_size;
-  size_t map_size;
   size_t list_elements;
   size_t i;
   
@@ -845,15 +866,17 @@ void unmarshal_server(int fd)
     size_t state_buf_ptr = 0;
     ssize_t got;
     
+    /* Allocate buffer for data. */
     state_buf = state_buf_ = malloc(state_buf_size * sizeof(char));
     if (state_buf == NULL)
       {
 	perror(*argv);
-	return;
+	return -1;
       }
     
     for (;;)
       {
+	/* Grow buffer if it is too small. */
 	if (state_buf_size == state_buf_ptr)
 	  {
 	    char* old_buf = state_buf;
@@ -862,22 +885,33 @@ void unmarshal_server(int fd)
 	      {
 		perror(*argv);
 		free(old_buf);
-		return;
+		return -1;
 	      }
 	  }
 	
+	/* Read from the pipe into the buffer. */
 	got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
 	if (got < 0)
 	  {
 	    perror(*argv);
 	    free(state_buf);
-	    return;
+	    return -1;
 	  }
 	if (got == 0)
 	  break;
-	state_buf_ptr += got;
+	state_buf_ptr += (size_t)got;
       }
   }
+  
+  
+  /* Create memory address remapping table. */
+  if (hash_table_create(&unmarshal_remap_map))
+    {
+      perror(*argv);
+      free(state_buf);
+      hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
+      return -1;
+    }
   
   
   /* Get the marshal protocal version. Not needed, there is only the one version right now. */
@@ -897,14 +931,14 @@ void unmarshal_server(int fd)
   for (i = 0; i < list_elements; i++)
     {
       size_t value_address;
-      size_t message_size;
+      size_t msg_size;
       client_t* value;
       
       /* Allocate the client's information. */
       if ((value = malloc(sizeof(client_t))) == NULL)
 	{
 	  perror(*argv);
-	  /* TODO */
+	  goto clients_fail;
 	}
       
       /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
@@ -923,11 +957,31 @@ void unmarshal_server(int fd)
 	  perror(*argv);
 	  mds_message_destroy(&(value->message));
 	  free(value);
-	  /* TODO */
+	  state_buf_ -= 2 * sizeof(int) / sizeof(char);
+	  state_buf_ -= 3 * sizeof(size_t) / sizeof(char);
+	  goto clients_fail;
 	}
       state_buf_ += msg_size / sizeof(char);
       
-      /* TODO create map for the value remapping */
+      /* Populate the remapping table. */
+      hash_table_put(&unmarshal_remap_map, value_address, (size_t)(void*)value);
+      
+      
+      /* On error, seek past all clients. */
+      continue;
+    clients_fail:
+      with_error = 1;
+      for (; i < list_elements; i++)
+	{
+	  /* There is not need to close the sockets, it is done by
+	     the caller because there are conditions where we cannot
+	     get here anyway. */
+	  msg_size = ((size_t*)state_buf_)[1];
+	  state_buf_ += 3 * sizeof(size_t) / sizeof(char);
+	  state_buf_ += 2 * sizeof(int) / sizeof(char);
+	  state_buf_ += msg_size / sizeof(char);
+	}
+      break;
     }
   
   /* Unmarshal the client list. */
@@ -935,12 +989,19 @@ void unmarshal_server(int fd)
   state_buf_ += list_size / sizeof(char);
   
   /* Unmarshal the client map. */
-  fd_table_unmarshal(&client_map, state_buf_, FIXME::remapper);
+  fd_table_unmarshal(&client_map, state_buf_, unmarshal_remapper);
+  
+  /* Release the raw data. */
+  free(state_buf);
   
   
-  /* TODO remap the linked list */
+  /* TODO Remap the linked list and remove non-found elements for both the list and the map. */
+  hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
   
   
-  /* TODO start the clients */
+  /* TODO Start the clients */
+  
+  
+  return -with_error;
 }
 
