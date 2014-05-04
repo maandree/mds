@@ -84,17 +84,17 @@ void run_initrc(char** args);
 void sigusr1_trap(int signo);
 
 /**
- * Marshal the server's state into a pipe
+ * Marshal the server's state into a file
  * 
- * @param   fd  The write end of the pipe
+ * @param   fd  The file descriptor
  * @return      Negative on error
  */
 int marshal_server(int fd);
 
 /**
- * Unmarshal the server's state from a pipe
+ * Unmarshal the server's state from a file
  * 
- * @param   fd  The read end of the pipe
+ * @param   fd  The file descriptor
  * @return      Negative on error
  */
 int unmarshal_server(int fd);

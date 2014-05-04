@@ -176,7 +176,7 @@ int main(int argc_, char** argv_)
 	    }
 	  socket_fd = (int)r;
 	}
-      else if (strstr(arg, "--re-exec=") == arg) /* Re-exec state-marshal pipe file descriptor. */
+      else if (strstr(arg, "--re-exec=") == arg) /* Re-exec state-marshal file descriptor. */
 	{
 	  long int r;
 	  char* endptr;
@@ -691,9 +691,9 @@ void sigusr1_trap(int signo __attribute__((unused)))
 
 
 /**
- * Marshal the server's state into a pipe
+ * Marshal the server's state into a file
  * 
- * @param   fd  The write end of the pipe
+ * @param   fd  The file descriptor
  * @return      Negative on error
  */
 int marshal_server(int fd)
@@ -780,7 +780,7 @@ int marshal_server(int fd)
     }
   
   
-  /* Send the marshalled data into the pipe. */
+  /* Send the marshalled data into the file. */
   while (state_n > 0)
     {
       errno = 0;
@@ -792,7 +792,7 @@ int marshal_server(int fd)
     }
   free(state_buf);
   
-  /* Marshal, and send info the pipe, the client list. */
+  /* Marshal, and send into the file, the client list. */
   state_buf = malloc(list_size);
   if (state_buf == NULL)
     goto fail;
@@ -808,7 +808,7 @@ int marshal_server(int fd)
     }
   free(state_buf);
   
-  /* Marshal, and send info the pipe, the client map. */
+  /* Marshal, and send into the file, the client map. */
   state_buf = malloc(map_size);
   if (state_buf == NULL)
     goto fail;
@@ -850,9 +850,9 @@ static size_t unmarshal_remapper(size_t old)
 }
 
 /**
- * Unmarshal the server's state from a pipe
+ * Unmarshal the server's state from a file
  * 
- * @param   fd  The read end of the pipe
+ * @param   fd  The file descriptor
  * @return      Negative on error
  */
 int unmarshal_server(int fd)
@@ -878,7 +878,7 @@ int unmarshal_server(int fd)
       return -1;
     }
   
-  /* Read the pipe. */
+  /* Read the file. */
   for (;;)
     {
       /* Grow buffer if it is too small. */
@@ -894,7 +894,7 @@ int unmarshal_server(int fd)
 	    }
 	}
       
-      /* Read from the pipe into the buffer. */
+      /* Read from the file into the buffer. */
       got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
       if (got < 0)
 	{
