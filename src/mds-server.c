@@ -22,6 +22,7 @@
 #include <libmdsserver/hash-table.h>
 #include <libmdsserver/fd-table.h>
 #include <libmdsserver/mds-message.h>
+#include <libmdsserver/macros.h>
 
 #include <alloca.h>
 #include <signal.h>
@@ -273,7 +274,7 @@ int main(int argc_, char** argv_)
       pid_t pid = getpid();
       int reexec_fd, r;
       char shm_path[NAME_MAX + 1];
-      snprintf(shm_path, sizeof(shm_path) / sizeof(char), SHM_PATH_PATTERN, (unsigned long int)pid);
+      xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
       reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
       if (reexec_fd < 0)
 	{
@@ -380,7 +381,7 @@ int main(int argc_, char** argv_)
     pthread_mutex_unlock(&slave_mutex);
     
     /* Marshal the state of the server. */
-    snprintf(shm_path, sizeof(shm_path) / sizeof(char), SHM_PATH_PATTERN, (unsigned long int)pid);
+    xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
     reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
     if (reexec_fd < 0)
       {
@@ -611,17 +612,17 @@ void run_initrc(char** args)
   /* Test $XDG_CONFIG_HOME. */
   if ((env = getenv_nonempty("XDG_CONFIG_HOME")) != NULL)
     {
-      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
+      xsnprintf(pathname, "%s/.%s", env, INITRC_FILE);
       execv(args[0], args);
     }
   
   /* Test $HOME. */
   if ((env = getenv_nonempty("HOME")) != NULL)
     {
-      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", env, INITRC_FILE);
+      xsnprintf(pathname, "%s/.config/%s", env, INITRC_FILE);
       execv(args[0], args);
       
-      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", env, INITRC_FILE);
+      xsnprintf(pathname, "%s/.%s", env, INITRC_FILE);
       execv(args[0], args);
     }
   
@@ -632,10 +633,10 @@ void run_initrc(char** args)
       home = pwd->pw_dir;
       if ((home != NULL) && (*home != '\0'))
 	{
-	  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.config/%s", home, INITRC_FILE);
+	  xsnprintf(pathname, "%s/.config/%s", home, INITRC_FILE);
 	  execv(args[0], args);
 	  
-	  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/.%s", home, INITRC_FILE);
+	  xsnprintf(pathname, "%s/.%s", home, INITRC_FILE);
 	  execv(args[0], args);
 	}
     }
@@ -652,7 +653,7 @@ void run_initrc(char** args)
 	  len = (int)(end - begin);
 	  if (len > 0)
 	    {
-	      snprintf(pathname, sizeof(pathname) / sizeof(char), "%.*s/%s", len, begin, INITRC_FILE);
+	      xsnprintf(pathname, "%.*s/%s", len, begin, INITRC_FILE);
 	      execv(args[0], args);
 	    }
 	  if (*end == '\0')
@@ -662,7 +663,7 @@ void run_initrc(char** args)
     }
   
   /* Test /etc. */
-  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%s", SYSCONFDIR, INITRC_FILE);
+  xsnprintf(pathname, "%s/%s", SYSCONFDIR, INITRC_FILE);
   execv(args[0], args);
   
   
