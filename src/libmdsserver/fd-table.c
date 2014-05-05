@@ -17,6 +17,8 @@
  */
 #include "fd-table.h"
 
+#include "macros.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -267,15 +269,15 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
 {
   size_t bitcap = (this->capacity + 63) / 64;
   
-  ((int*)data)[0] = FD_TABLE_T_VERSION;
-  data += sizeof(int) / sizeof(char);
+  buf_set(data, int, 0, FD_TABLE_T_VERSION);
+  buf_next(data, int, 1);
   
-  ((size_t*)data)[0] = this->capacity;
-  ((size_t*)data)[1] = this->size;
-  data += 2 * sizeof(size_t) / sizeof(char);
+  buf_set(data, size_t, 0, this->capacity);
+  buf_set(data, size_t, 1, this->size);
+  buf_next(data, size_t, 2);
   
   memcpy(data, this->values, this->capacity * sizeof(size_t));
-  data += this->capacity * sizeof(size_t) / sizeof(char);
+  buf_next(data, size_t, this->capacity);
   
   memcpy(data, this->used, bitcap * sizeof(uint64_t));
 }
@@ -294,15 +296,15 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
 {
   size_t bitcap;
   
-  /* ((int*)data)[0] == FD_TABLE_T_VERSION */
-  data += sizeof(int) / sizeof(char);
+  /* buf_get(data, int, 0, FD_TABLE_T_VERSION) */
+  buf_next(data, int, 1);
   
-  this->capacity = ((size_t*)data)[0];
-  this->size = ((size_t*)data)[1];
-  data += 2 * sizeof(size_t) / sizeof(char);
+  buf_get(data, size_t, 0, this->capacity);
+  buf_get(data, size_t, 1, this->size);
+  buf_next(data, size_t, 2);
   
-  this->values = NULL;
-  this->used = NULL;
+  this->values           = NULL;
+  this->used             = NULL;
   this->value_comparator = NULL;
   
   this->values = malloc(this->capacity * sizeof(size_t));
@@ -315,7 +317,7 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
     return -1;
   
   memcpy(this->values, data, this->capacity * sizeof(size_t));
-  data += this->capacity * sizeof(size_t) / sizeof(char);
+  buf_next(data, size_t, this->capacity);
   
   memcpy(this->used, data, bitcap * sizeof(uint64_t));
   

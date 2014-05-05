@@ -17,6 +17,8 @@
  */
 #include "linked-list.h"
 
+#include "macros.h"
+
 #include <string.h>
 #include <errno.h>
 
@@ -442,23 +444,23 @@ size_t linked_list_marshal_size(const linked_list_t* restrict this)
  */
 void linked_list_marshal(const linked_list_t* restrict this, char* restrict data)
 {
-  ((int*)data)[0] = LINKED_LIST_T_VERSION;
-  data += sizeof(int) / sizeof(char);
+  buf_set(data, int, 0, LINKED_LIST_T_VERSION);
+  buf_next(data, int, 1);
   
-  ((size_t*)data)[0] = this->capacity;
-  ((size_t*)data)[1] = this->end;
-  ((size_t*)data)[2] = this->reuse_head;
-  ((ssize_t*)data)[3] = this->edge;
-  data += 4 * sizeof(size_t) / sizeof(char);
+  buf_set(data, size_t, 0, this->capacity);
+  buf_set(data, size_t, 1, this->end);
+  buf_set(data, size_t, 2, this->reuse_head);
+  buf_set(data, ssize_t, 3, this->edge);
+  buf_next(data, size_t, 4);
   
   memcpy(data, this->reusable, this->reuse_head * sizeof(ssize_t));
-  data += this->reuse_head * sizeof(ssize_t) / sizeof(char);
+  buf_next(data, ssize_t, this->reuse_head);
   
   memcpy(data, this->values, this->end * sizeof(size_t));
-  data += this->end * sizeof(size_t) / sizeof(char);
+  buf_next(data, size_t, this->end);
   
   memcpy(data, this->next, this->end * sizeof(ssize_t));
-  data += this->end * sizeof(ssize_t) / sizeof(char);
+  buf_next(data, ssize_t, this->end);
   
   memcpy(data, this->previous, this->end * sizeof(ssize_t));
 }
@@ -476,19 +478,19 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
 {
   size_t n;
   
-  /* ((int*)data)[0] == LINKED_LIST_T_VERSION */
-  data += sizeof(int) / sizeof(char);
+  /* buf_get(data, int, 0, LINKED_LIST_T_VERSION); */
+  buf_next(data, int, 1);
   
   this->reusable = NULL;
-  this->values = NULL;
-  this->next = NULL;
+  this->values   = NULL;
+  this->next     = NULL;
   this->previous = NULL;
   
-  this->capacity   = ((size_t*)data)[0];
-  this->end        = ((size_t*)data)[1];
-  this->reuse_head = ((size_t*)data)[2];
-  this->edge       = ((ssize_t*)data)[3];
-  data += 4 * sizeof(size_t) / sizeof(char);
+  buf_get(data, size_t, 0, this->capacity);
+  buf_get(data, size_t, 1, this->end);
+  buf_get(data, size_t, 2, this->reuse_head);
+  buf_get(data, ssize_t, 3, this->edge);
+  buf_next(data, size_t, 4);
   
   n = this->capacity * sizeof(size_t);
   
@@ -498,13 +500,13 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
   if ((this->previous = malloc(n)) == NULL)  return -1;
   
   memcpy(this->reusable, data, this->reuse_head * sizeof(ssize_t));
-  data += this->reuse_head * sizeof(ssize_t) / sizeof(char);
+  buf_next(data, ssize_t, this->reuse_head);
   
   memcpy(this->values, data, this->end * sizeof(size_t));
-  data += this->end * sizeof(size_t) / sizeof(char);
+  buf_next(data, size_t, this->end);
   
   memcpy(this->next, data, this->end * sizeof(ssize_t));
-  data += this->end * sizeof(ssize_t) / sizeof(char);
+  buf_next(data, ssize_t, this->end);
   
   memcpy(this->previous, data, this->end * sizeof(ssize_t));
   

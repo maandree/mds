@@ -17,6 +17,8 @@
  */
 #include "mds-message.h"
 
+#include "macros.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -325,36 +327,36 @@ void mds_message_marshal(mds_message_t* this, char* data, int include_buffer)
 {
   size_t i, n;
   
-  ((int*)data)[0] = MDS_MESSAGE_T_VERSION;
-  data += sizeof(int) / sizeof(char);
+  buf_set(data, int, 0, MDS_MESSAGE_T_VERSION);
+  buf_next(data, int, 1);
   
-  ((size_t*)data)[0] = this->header_count;
-  ((size_t*)data)[1] = this->payload_size;
+  buf_set(data, size_t, 0, this->header_count);
+  buf_set(data, size_t, 1, this->payload_size);
   if (include_buffer)
     {
-      ((size_t*)data)[2] = this->payload_ptr;
-      ((size_t*)data)[3] = this->buffer_ptr;
+      buf_set(data, size_t, 2, this->payload_ptr);
+      buf_set(data, size_t, 3, this->buffer_ptr);
     }
-  data += (include_buffer ? 4 : 2) * sizeof(size_t) / sizeof(char);
+  buf_next(data, size_t, include_buffer ? 4 : 2);
   
   if (include_buffer)
     {
-      ((int*)data)[0] = this->stage;
-      data += sizeof(int) / sizeof(char);
+      buf_set(data, int, 0, this->stage);
+      buf_next(data, int, 1);
     }
   
   for (i = 0; i < this->header_count; i++)
     {
       n = strlen(this->headers[i]) + 1;
       memcpy(data, this->headers[i], n * sizeof(char));
-      data += n;
+      buf_next(data, char, n);
     }
   
   memcpy(data, this->payload, this->payload_size * sizeof(char));
   
   if (include_buffer)
     {
-      data += this->payload_size;
+      buf_next(data, char, this->payload_size);
       memcpy(data, this->buffer, this->buffer_ptr * sizeof(char));
     }
 }
@@ -372,26 +374,25 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
 {
   size_t i, n, header_count;
   
-  /* ((int*)data)[0] == MDS_MESSAGE_T_VERSION */
-  data += sizeof(int) / sizeof(char);
+  /* buf_get(data, int, 0, MDS_MESSAGE_T_VERSION); */
+  buf_next(data, int, 1);
   
-  header_count = ((size_t*)data)[0];
   this->header_count = 0;
-  this->payload_size = ((size_t*)data)[1];
-  this->payload_ptr = ((size_t*)data)[2];
-  this->buffer_ptr = ((size_t*)data)[3];
-  this->buffer_size = this->buffer_ptr;
-  data += 4 * sizeof(size_t) / sizeof(char);
+  buf_get(data, size_t, 0, header_count);
+  buf_get(data, size_t, 1, this->payload_size);
+  buf_get(data, size_t, 2, this->payload_ptr);
+  buf_get(data, size_t, 3, this->buffer_size = this->buffer_ptr);
+  buf_next(data, size_t, 4);
   
   /* Make sure that the pointers are NULL so that they are
      not freed without being allocated when the message is
      destroyed if this function fails. */
   this->headers = NULL;
   this->payload = NULL;
-  this->buffer = NULL;
+  this->buffer  = NULL;
   
-  this->stage = ((int*)data)[0];
-  data += sizeof(int) / sizeof(char);
+  buf_get(data, int, 0, this->stage);
+  buf_next(data, int, 1);
   
   /* To 2-power-multiple of 128 bytes. */
   this->buffer_size >>= 7;
@@ -441,12 +442,12 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
       if (this->headers[i] == NULL)
 	return -1;
       memcpy(this->headers[i], data, n * sizeof(char));
-      data += n;
+      buf_next(data, char, n);
       this->header_count++;
     }
   
   memcpy(this->payload, data, this->payload_size * sizeof(char));
-  data += this->payload_size;
+  buf_next(data, char, this->payload_size);
   
   memcpy(this->buffer, data, this->buffer_ptr * sizeof(char));
   

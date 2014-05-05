@@ -17,6 +17,8 @@
  */
 #include "hash-table.h"
 
+#include "macros.h"
+
 #include <stdlib.h>
 #include <errno.h>
 
@@ -402,16 +404,16 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
 {
   size_t i, n = this->capacity;
   
-  ((int*)data)[0] = HASH_TABLE_T_VERSION;
-  data += sizeof(int) / sizeof(char);
+  buf_set(data, int, 0, HASH_TABLE_T_VERSION);
+  buf_next(data, int, 1);
   
-  ((size_t*)data)[0] = this->capacity;
-  data += 1 * sizeof(size_t) / sizeof(char);
-  ((float*)data)[0] = this->load_factor;
-  data += 1 * sizeof(float) / sizeof(char);
-  ((size_t*)data)[0] = this->threshold;
-  ((size_t*)data)[1] = this->size;
-  data += 2 * sizeof(size_t) / sizeof(char);
+  buf_set(data, size_t, 0, this->capacity);
+  buf_next(data, size_t, 1);
+  buf_set(data, float, 0, this->load_factor);
+  buf_next(data, float, 1);
+  buf_set(data, size_t, 0, this->threshold);
+  buf_set(data, size_t, 1, this->size);
+  buf_next(data, size_t, 2);
   
   for (i = 0; i < n; i++)
     {
@@ -419,14 +421,14 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
       size_t m = 0;
       while (bucket != NULL)
 	{
-	  ((size_t*)data)[1 + m * 3 + 0] = bucket->key;
-	  ((size_t*)data)[1 + m * 3 + 1] = bucket->value;
-	  ((size_t*)data)[1 + m * 3 + 2] = bucket->hash;
+	  buf_set(data, size_t, 1 + m * 3 + 0, bucket->key);
+	  buf_set(data, size_t, 1 + m * 3 + 1, bucket->value);
+	  buf_set(data, size_t, 1 + m * 3 + 2, bucket->hash);
 	  bucket = bucket->next;
 	  m++;
 	}
-      ((size_t*)data)[0] = m;
-      data += (1 + m * 3) * sizeof(size_t) / sizeof(char);
+      buf_set(data, size_t, 0, m);
+      buf_next(data, size_t, 1 + m * 3);
     }
 }
 
@@ -444,20 +446,20 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
 {
   size_t i, n;
   
-  /* ((int*)data)[0] == HASH_TABLE_T_VERSION */
-  data += sizeof(int) / sizeof(char);
+  /* buf_get(data, int, 0, HASH_TABLE_T_VERSION); */
+  buf_next(data, int, 1);
   
   this->value_comparator = NULL;
-  this->key_comparator = NULL;
-  this->hasher = NULL;
+  this->key_comparator   = NULL;
+  this->hasher           = NULL;
   
-  this->capacity = n = ((size_t*)data)[0];
-  data += 1 * sizeof(size_t) / sizeof(char);
-  this->load_factor = ((float*)data)[0];
-  data += 1 * sizeof(float) / sizeof(char);
-  this->threshold = ((size_t*)data)[0];
-  this->size = ((size_t*)data)[1];
-  data += 2 * sizeof(size_t) / sizeof(char);
+  buf_get(data, size_t, 0, this->capacity = n);
+  buf_next(data, size_t, 1);
+  buf_get(data, float, 0, this->load_factor);
+  buf_next(data, float, 1);
+  buf_get(data, size_t, 0, this->threshold);
+  buf_get(data, size_t, 1, this->size);
+  buf_next(data, size_t, 2);
   
   this->buckets = calloc(this->capacity, sizeof(hash_entry_t*));
   if (this->buckets == NULL)
@@ -465,9 +467,10 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
   
   for (i = 0; i < n; i++)
     {
-      size_t m = ((size_t*)data)[0];
+      size_t m;
       hash_entry_t* restrict bucket;
-      data += 1 * sizeof(size_t) / sizeof(char);
+      buf_get(data, size_t, 0, m);
+      buf_next(data, size_t, 1);
       
       this->buckets[i] = bucket = malloc(sizeof(hash_entry_t));
       if (bucket == NULL)
@@ -483,12 +486,12 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
 	      if (bucket->next == NULL)
 		return -1;
 	    }
-	  bucket->key   = ((size_t*)data)[0];
-	  bucket->value = ((size_t*)data)[1];
+	  buf_get(data, size_t, 0, bucket->key);
+	  buf_get(data, size_t, 1, bucket->value);
 	  if (remapper != NULL)
 	    bucket->value = remapper(bucket->value);
-	  bucket->hash  = ((size_t*)data)[2];
-	  data += 3 * sizeof(size_t) / sizeof(char);
+	  buf_get(data, size_t, 2, bucket->hash);
+	  buf_next(data, size_t, 3);
 	}
     }
   

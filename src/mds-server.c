@@ -57,8 +57,7 @@ static char** argv;
 
 
 /**
- * The program run state, 1 when running,
- * 0 when shutting down
+ * The program run state, 1 when running, 0 when shutting down
  */
 static volatile sig_atomic_t running = 1;
 
@@ -321,18 +320,14 @@ int main(int argc_, char** argv_)
 	}
       
       /* Increase number of running slaves. */
-      pthread_mutex_lock(&slave_mutex);
-      running_slaves++;
-      pthread_mutex_unlock(&slave_mutex);
+      with_mutex(slave_mutex, running_slaves++;);
       
       /* Start slave thread. */
       errno = pthread_create(&_slave_thread, NULL, slave_loop, (void*)(intptr_t)client_fd);
       if (errno)
 	{
 	  perror(*argv);
-	  pthread_mutex_lock(&slave_mutex);
-	  running_slaves--;
-	  pthread_mutex_unlock(&slave_mutex);
+	  with_mutex(slave_mutex, running_slaves--;);
 	}
     }
   if (reexecing)
@@ -340,10 +335,9 @@ int main(int argc_, char** argv_)
   
   
   /* Wait for all slaves to close. */
-  pthread_mutex_lock(&slave_mutex);
-  while (running_slaves > 0)
-    pthread_cond_wait(&slave_cond, &slave_mutex);
-  pthread_mutex_unlock(&slave_mutex);
+  with_mutex(slave_mutex,
+	     while (running_slaves > 0)
+	       pthread_cond_wait(&slave_cond, &slave_mutex););
   
   
   /* Release resources. */
@@ -370,10 +364,9 @@ int main(int argc_, char** argv_)
     pthread_cond_destroy(&slave_cond);
     
     /* Join with all slaves threads. */
-    pthread_mutex_lock(&slave_mutex);
-    while (running_slaves > 0)
-      pthread_cond_wait(&slave_cond, &slave_mutex);
-    pthread_mutex_unlock(&slave_mutex);
+    with_mutex(slave_mutex,
+	       while (running_slaves > 0)
+		 pthread_cond_wait(&slave_cond, &slave_mutex););
     
     /* Marshal the state of the server. */
     xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
@@ -551,12 +544,11 @@ void* slave_loop(void* data)
   fd_table_remove(&client_map, socket_fd);
   
   /* Unlist client and decrease the slave count. */
-  pthread_mutex_lock(&slave_mutex);
-  if (entry != LINKED_LIST_UNUSED)
-    linked_list_remove(&client_list, entry);
-  running_slaves--;
-  pthread_cond_signal(&slave_cond);
-  pthread_mutex_unlock(&slave_mutex);
+  with_mutex(slave_mutex,
+	     if (entry != LINKED_LIST_UNUSED)
+	       linked_list_remove(&client_list, entry);
+	     running_slaves--;
+	     pthread_cond_signal(&slave_cond););
   
   return NULL;
   
@@ -566,10 +558,9 @@ void* slave_loop(void* data)
      this is done because re-exec causes a race-condition
      between the acception of a slave and the execution
      of the the slave thread. */
-  pthread_mutex_lock(&slave_mutex);
-  running_slaves--;
-  pthread_cond_signal(&slave_cond);
-  pthread_mutex_unlock(&slave_mutex);
+  with_mutex(slave_mutex,
+	     running_slaves--;
+	     pthread_cond_signal(&slave_cond););
   
   return NULL;
 }
@@ -722,17 +713,17 @@ int marshal_server(int fd)
   
   
   /* Tell the new version of the program what version of the program it is marshalling. */
-  ((int*)state_buf_)[0] = MDS_SERVER_VARS_VERSION;
-  state_buf_ += 1 * sizeof(int) / sizeof(char);
+  buf_set(state_buf_, int, 0, MDS_SERVER_VARS_VERSION);
+  buf_next(state_buf_, int, 1);
   
   /* Marshal the program's running–exit state. */
-  ((sig_atomic_t*)state_buf_)[0] = running;
-  state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
+  buf_set(state_buf_, sig_atomic_t, 0, running);
+  buf_next(state_buf_, sig_atomic_t, 1);
   
   /* Tell the program how large the marshalled client list is and how any clients are marshalled. */
-  ((size_t*)state_buf_)[0] = list_size;
-  ((size_t*)state_buf_)[1] = list_elements;
-  state_buf_ += 2 * sizeof(size_t) / sizeof(char);
+  buf_set(state_buf_, size_t, 0, list_size);
+  buf_set(state_buf_, size_t, 1, list_elements);
+  buf_next(state_buf_, size_t, 2);
   
   /* Marshal the clients. */
   for (node = client_list.edge;;)
@@ -753,15 +744,15 @@ int marshal_server(int fd)
       msg_size = mds_message_marshal_size(&(value->message), 1);
       
       /* Marshal the address, it is used the the client list and the client map, that will be marshalled. */
-      ((size_t*)state_buf_)[0] = value_address;
+      buf_set(state_buf_, size_t, 0, value_address);
       /* Tell the program how large the marshalled message is. */
-      ((size_t*)state_buf_)[1] = msg_size;
+      buf_set(state_buf_, size_t, 1, msg_size);
       /* Marshal the client info. */
-      ((ssize_t*)state_buf_)[2] = value->list_entry;
-      state_buf_ += 3 * sizeof(size_t) / sizeof(char);
-      ((int*)state_buf_)[0] = value->socket_fd;
-      ((int*)state_buf_)[1] = value->open;
-      state_buf_ += 2 * sizeof(int) / sizeof(char);
+      buf_set(state_buf_, ssize_t, 2, value->list_entry);
+      buf_next(state_buf_, size_t, 3);
+      buf_set(state_buf_, int, 0, value->socket_fd);
+      buf_set(state_buf_, int, 1, value->open);
+      buf_next(state_buf_, int, 2);
       /* Marshal the message. */
       mds_message_marshal(&(value->message), state_buf_, 1);
       state_buf_ += msg_size / sizeof(char);
@@ -775,8 +766,8 @@ int marshal_server(int fd)
       wrote = write(fd, state_buf, state_n);
       if (errno && (errno != EINTR))
 	goto fail;
-      state_n -= (size_t)(wrote < 0 ? 0 : wrote);
-      state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+      state_n -= (size_t)max(wrote, 0);
+      state_buf += (size_t)max(wrote, 0);
     }
   free(state_buf);
   
@@ -791,8 +782,8 @@ int marshal_server(int fd)
       wrote = write(fd, state_buf, list_size);
       if (errno && (errno != EINTR))
 	goto fail;
-      list_size -= (size_t)(wrote < 0 ? 0 : wrote);
-      state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+      list_size -= (size_t)max(wrote, 0);
+      state_buf += (size_t)max(wrote, 0);
     }
   free(state_buf);
   
@@ -807,8 +798,8 @@ int marshal_server(int fd)
       wrote = write(fd, state_buf, map_size);
       if (errno && (errno != EINTR))
 	goto fail;
-      map_size -= (size_t)(wrote < 0 ? 0 : wrote);
-      state_buf += (size_t)(wrote < 0 ? 0 : wrote);
+      map_size -= (size_t)max(wrote, 0);
+      state_buf += (size_t)max(wrote, 0);
     }
   free(state_buf);
   
@@ -907,17 +898,17 @@ int unmarshal_server(int fd)
   
   
   /* Get the marshal protocal version. Not needed, there is only the one version right now. */
-  /* MDS_SERVER_VARS_VERSION == ((int*)state_buf_)[0]; */
-  state_buf_ += 1 * sizeof(int) / sizeof(char);
+  /* buf_get(state_buf_, int, 0, MDS_SERVER_VARS_VERSION); */
+  buf_next(state_buf_, int, 1);
   
   /* Unmarshal the program's running–exit state. */
-  running = ((sig_atomic_t*)state_buf_)[0];
-  state_buf_ += 1 * sizeof(sig_atomic_t) / sizeof(char);
+  buf_get(state_buf_, sig_atomic_t, 0, running);
+  buf_next(state_buf_, sig_atomic_t, 1);
   
   /* Get the marshalled size of the client list and how any clients that are marshalled. */
-  list_size = ((size_t*)state_buf_)[0];
-  list_elements = ((size_t*)state_buf_)[1];
-  state_buf_ += 2 * sizeof(size_t) / sizeof(char);
+  buf_get(state_buf_, size_t, 0, list_size);
+  buf_get(state_buf_, size_t, 1, list_elements);
+  buf_next(state_buf_, size_t, 2);
   
   /* Unmarshal the clients. */
   for (i = 0; i < list_elements; i++)
@@ -934,23 +925,23 @@ int unmarshal_server(int fd)
 	}
       
       /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
-      value_address = ((size_t*)state_buf_)[0];
+      buf_get(state_buf_, size_t, 0, value_address);
       /* Get the marshalled size of the message. */
-      msg_size = ((size_t*)state_buf_)[1];
+      buf_get(state_buf_, size_t, 1, msg_size);
       /* Unmarshal the client info. */
-      value->list_entry = ((ssize_t*)state_buf_)[2];
-      state_buf_ += 3 * sizeof(size_t) / sizeof(char);
-      value->socket_fd = ((int*)state_buf_)[0];
-      value->open = ((int*)state_buf_)[1];
-      state_buf_ += 2 * sizeof(int) / sizeof(char);
+      buf_get(state_buf_, ssize_t, 2, value->list_entry);
+      buf_next(state_buf_, size_t, 3);
+      buf_get(state_buf_, int, 0, value->socket_fd);
+      buf_get(state_buf_, int, 1, value->open);
+      buf_next(state_buf_, int, 2);
       /* Unmarshal the message. */
       if (mds_message_unmarshal(&(value->message), state_buf_))
 	{
 	  perror(*argv);
 	  mds_message_destroy(&(value->message));
 	  free(value);
-	  state_buf_ -= 2 * sizeof(int) / sizeof(char);
-	  state_buf_ -= 3 * sizeof(size_t) / sizeof(char);
+	  buf_prev(state_buf_, int, 2);
+	  buf_prev(state_buf_, size_t, 3);
 	  goto clients_fail;
 	}
       state_buf_ += msg_size / sizeof(char);
@@ -969,8 +960,8 @@ int unmarshal_server(int fd)
 	     the caller because there are conditions where we cannot
 	     get here anyway. */
 	  msg_size = ((size_t*)state_buf_)[1];
-	  state_buf_ += 3 * sizeof(size_t) / sizeof(char);
-	  state_buf_ += 2 * sizeof(int) / sizeof(char);
+	  buf_next(state_buf_, size_t, 3);
+	  buf_next(state_buf_, int, 2);
 	  state_buf_ += msg_size / sizeof(char);
 	}
       break;
@@ -1012,18 +1003,14 @@ int unmarshal_server(int fd)
 	  int socket_fd = client->socket_fd;
 	  
 	  /* Increase number of running slaves. */
-	  pthread_mutex_lock(&slave_mutex);
-	  running_slaves++;
-	  pthread_mutex_unlock(&slave_mutex);
+	  with_mutex(slave_mutex, running_slaves++;);
 	  
 	  /* Start slave thread. */
 	  errno = pthread_create(&_slave_thread, NULL, slave_loop, (void*)(intptr_t)socket_fd);
 	  if (errno)
 	    {
 	      perror(*argv);
-	      pthread_mutex_lock(&slave_mutex);
-	      running_slaves--;
-	      pthread_mutex_unlock(&slave_mutex);
+	      with_mutex(slave_mutex, running_slaves--;);
 	    }
 	}
     }

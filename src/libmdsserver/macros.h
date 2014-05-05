@@ -19,8 +19,11 @@
 #define MDS_LIBMDSSERVER_MACROS_H
 
 
+/*
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
+*/
 
 
 /**
@@ -53,6 +56,100 @@
  */
 #define eprintf(format, ...)  \
   fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__);
+
+
+/**
+ * Wrapper for `pthread_mutex_lock` and `pthread_mutex_unlock`
+ * 
+ * @param  mutex:pthread_mutex_t  The mutex
+ * @param  instructions           The instructions to run while the mutex is locked
+ */
+#define with_mutex(mutex, instructions)  \
+  pthread_mutex_lock(&(mutex));          \
+  instructions                           \
+  pthread_mutex_unlock(&(mutex))
+
+
+/**
+ * Return the maximum value of two values
+ * 
+ * @param   a  One of the values
+ * @param   b  The other one of the values
+ * @return     The maximum value
+ */
+#define max(a, b)  \
+  (a < b ? b : a)
+
+
+/**
+ * Return the minimum value of two values
+ * 
+ * @param   a  One of the values
+ * @param   b  The other one of the values
+ * @return     The minimum value
+ */
+#define min(a, b)  \
+  (a < b ? a : b)
+
+
+/**
+ * Cast a buffer to another type and get the slot for an element
+ * 
+ * @param   buffer:char*  The buffer
+ * @param   type          The data type of the elements for the data type to cast the buffer to
+ * @param   index:size_t  The index of the element to address
+ * @return  [type]        A slot that can be set or get
+ */
+#define buf_cast(buffer, type, index)  \
+  ((type*)(buffer))[index]
+
+
+/**
+ * Set the value of an element a buffer that is being cast
+ * 
+ * @param   buffer:char*   The buffer
+ * @param   type           The data type of the elements for the data type to cast the buffer to
+ * @param   index:size_t   The index of the element to address
+ * @param   variable:type  The new value of the element
+ * @return  :variable      The new value of the element
+ */
+#define buf_set(buffer, type, index, variable)	\
+  ((type*)(buffer))[index] = (variable)
+
+
+/**
+ * Get the value of an element a buffer that is being cast
+ * 
+ * @param   buffer:char*   The buffer
+ * @param   type           The data type of the elements for the data type to cast the buffer to
+ * @param   index:size_t   The index of the element to address
+ * @param   variable:type  Slot to set with the value of the element
+ * @return  :variable      The value of the element
+ */
+#define buf_get(buffer, type, index, variable)	\
+  variable = ((type*)(buffer))[index]
+
+
+/**
+ * Increase the pointer of a buffer
+ * 
+ * @param  buffer:char*  The buffer
+ * @param  type          A data type
+ * @param  count         The number elements of the data type `type` to increase the pointer with
+ */
+#define buf_next(buffer, type, count)  \
+  buffer += (count) * sizeof(type) / sizeof(char)
+
+
+/**
+ * Decrease the pointer of a buffer
+ * 
+ * @param  buffer:char*  The buffer
+ * @param  type          A data type
+ * @param  count         The number elements of the data type `type` to decrease the pointer with
+ */
+#define buf_prev(buffer, type, count)  \
+  buffer -= (count) * sizeof(type) / sizeof(char)
 
 
 #endif
