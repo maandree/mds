@@ -22,6 +22,7 @@
 #include <libmdsserver/mds-message.h>
 
 #include <stdlib.h>
+#include <pthread.h>
 
 
 /**
@@ -48,6 +49,11 @@ typedef struct client
    * Message read buffer for the client
    */
   mds_message_t message;
+  
+  /**
+   * The read thread for the client
+   */
+  pthread_t thread;
   
 } client_t;
 

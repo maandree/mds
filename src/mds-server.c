@@ -84,6 +84,11 @@ static pthread_mutex_t slave_mutex;
 static pthread_cond_t slave_cond;
 
 /**
+ * The thread that runs the master loop
+ */
+static pthread_t master_thread;
+
+/**
  * Map from client socket file descriptor to all information (client_t)
  */
 static fd_table_t client_map;
@@ -256,6 +261,10 @@ int main(int argc_, char** argv_)
 	  return 1;
 	}
     }
+  
+  
+  /* Store the current thread so it can be killed from elsewhere. */
+  master_thread = pthread_self();
   
   
   /* Make the server update without all slaves dying on SIGUSR1. */
@@ -467,24 +476,6 @@ void* slave_loop(void* data)
   int r;
   
   
-  /* Make the server update without all slaves dying on SIGUSR1. */
-  {
-    struct sigaction action;
-    sigset_t sigset;
-    
-    sigemptyset(&sigset);
-    action.sa_handler = sigusr1_trap;
-    action.sa_mask = sigset;
-    action.sa_flags = 0;
-    
-    if (sigaction(SIGUSR1, &action, NULL) < 0)
-      {
-	perror(*argv);
-	goto fail;
-      }
-  }
-  
-  
   if (information == NULL)
     {
       /* Create information table. */
@@ -524,6 +515,28 @@ void* slave_loop(void* data)
 	  goto fail;
 	}
     }
+  
+  
+  /* Store the thread so that other threads can kill it. */
+  information->thread = pthread_self();
+  
+  
+  /* Make the server update without all slaves dying on SIGUSR1. */
+  {
+    struct sigaction action;
+    sigset_t sigset;
+    
+    sigemptyset(&sigset);
+    action.sa_handler = sigusr1_trap;
+    action.sa_mask = sigset;
+    action.sa_flags = 0;
+    
+    if (sigaction(SIGUSR1, &action, NULL) < 0)
+      {
+	perror(*argv);
+	goto fail;
+      }
+  }
   
   
   /* Fetch messages from the slave. */
@@ -695,12 +708,30 @@ void run_initrc(char** args)
  * 
  * @param  signo  The caught signal
  */
-void sigusr1_trap(int signo __attribute__((unused)))
+void sigusr1_trap(int signo)
 {
   if (reexecing == 0)
     {
+      pthread_t current_thread;
+      ssize_t node;
+      
       reexecing = 1;
-      /* TODO send the signal to all threads. */
+      current_thread = pthread_self();
+      
+      if (pthread_equal(current_thread, master_thread) == 0)
+	pthread_kill(master_thread, signo);
+      
+      with_mutex(slave_mutex,
+		 for (node = client_list.edge;;)
+		   {
+		     client_t* value;
+		     if ((node = client_list.next[node]) == client_list.edge)
+		       break;
+		     
+		     value = (client_t*)(void*)(client_list.values[node]);
+		     if (pthread_equal(current_thread, value->thread) == 0)
+		       pthread_kill(value->thread, signo);
+		   });
     }
 }
 
