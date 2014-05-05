@@ -126,6 +126,14 @@
 
 
 /**
+ * Pattern for the names of shared object to which states are marshalled
+ */
+#ifndef SHM_PATH_PATTERN
+#define SHM_PATH_PATTERN  "/.proc-pid-%lu"
+#endif
+
+
+/**
  * The maximum number of command line arguments to allow
  */
 #ifndef ARGC_LIMIT

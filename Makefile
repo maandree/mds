@@ -71,7 +71,7 @@ all: bin/mds bin/mds-server bin/libmdsserver.so
 
 bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver obj/$*.o
+	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt obj/$*.o
 
 obj/%.o: src/%.c src/*.h src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)

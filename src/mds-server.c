@@ -35,6 +35,9 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/socket.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 
 
@@ -101,8 +104,7 @@ int main(int argc_, char** argv_)
 {
   int is_respawn = -1;
   int socket_fd = -1;
-  int reexec_fd = -1;
-  int reexec_argi = 1;
+  int reexec = 0;
   int unparsed_args_ptr = 1;
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
@@ -176,33 +178,14 @@ int main(int argc_, char** argv_)
 	    }
 	  socket_fd = (int)r;
 	}
-      else if (strstr(arg, "--re-exec=") == arg) /* Re-exec state-marshal file descriptor. */
-	{
-	  long int r;
-	  char* endptr;
-	  if (reexec_fd != -1)
-	    {
-	      fprintf(stderr, "%s: duplicate declaration of %s.\n", *argv, "--re-exec");
-	      return -1;
-	    }
-	  arg += strlen("--re-exec=");
-	  r = strtol(arg, &endptr, 10);
-	  if ((*argv == '\0') || isspace(*argv) ||
-	      (endptr - arg != (ssize_t)strlen(arg))
-	      || (r < 0) || (r > INT_MAX))
-	    {
-	      fprintf(stderr, "%s: invalid value for %s: %s.\n", *argv, "--re-exec", arg);
-	      return 1;
-	    }
-	  reexec_fd = (int)r;
-	  reexec_argi = i;
-	}
+      else if (!strcmp(arg, "--re-exec")) /* Re-exec state-marshal. */
+	reexec = 1;
       else
 	/* Not recognised, it is probably for another server. */
 	unparsed_args[unparsed_args_ptr++] = arg;
     }
   unparsed_args[unparsed_args_ptr] = NULL;
-  if (reexec_fd >= 0)
+  if (reexec)
     is_respawn = 1;
   
   
@@ -241,7 +224,7 @@ int main(int argc_, char** argv_)
   
   
   /* Create list and table of clients. */
-  if (reexec_fd < 0)
+  if (reexec == 0)
     {
       if (fd_table_create(&client_map))
 	{
@@ -285,10 +268,24 @@ int main(int argc_, char** argv_)
   
   
   /* Unmarshal the state of the server. */
-  if (reexec_fd >= 0)
+  if (reexec)
     {
-      int r = unmarshal_server(reexec_fd);
-      close(reexec_fd);
+      pid_t pid = getpid();
+      int reexec_fd, r;
+      char shm_path[NAME_MAX + 1];
+      snprintf(shm_path, sizeof(shm_path) / sizeof(char), SHM_PATH_PATTERN, (unsigned long int)pid);
+      reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+      if (reexec_fd < 0)
+	{
+	  perror(*argv);
+	  r = -1;
+	}
+      else
+	{
+	  r = unmarshal_server(reexec_fd);
+	  close(reexec_fd);
+	  shm_unlink(shm_path);
+	}
       if (r < 0)
 	{
 	  /* TODO: close all sockets we do not know what they are. */
@@ -364,12 +361,13 @@ int main(int argc_, char** argv_)
   
  reexec:
   {
-    int pipe_rw[2];
+    pid_t pid = getpid();
+    int reexec_fd;
+    char shm_path[NAME_MAX + 1];
     char readlink_buf[PATH_MAX];
     ssize_t readlink_ptr;
     char** reexec_args;
     char** reexec_args_;
-    char reexec_arg[sizeof(int) * 8 / 3 + 14];
     
     /* Release resources. */
     pthread_mutex_destroy(&slave_mutex);
@@ -382,14 +380,16 @@ int main(int argc_, char** argv_)
     pthread_mutex_unlock(&slave_mutex);
     
     /* Marshal the state of the server. */
-    if (pipe(pipe_rw) < 0)
+    snprintf(shm_path, sizeof(shm_path) / sizeof(char), SHM_PATH_PATTERN, (unsigned long int)pid);
+    reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+    if (reexec_fd < 0)
       {
 	perror(*argv);
 	return 1;
       }
-    if (marshal_server(pipe_rw[1]) < 0)
+    if (marshal_server(reexec_fd) < 0)
       goto reexec_fail;
-    close(pipe_rw[1]);
+    close(reexec_fd);
     
     /* Re-exec the server. */
     readlink_ptr = readlink(SELF_EXE, readlink_buf, (sizeof(readlink_buf) / sizeof(char)) - 1);
@@ -397,31 +397,28 @@ int main(int argc_, char** argv_)
       goto reexec_fail;
     /* ‘readlink() does not append a null byte to buf.’ */
     readlink_buf[readlink_ptr] = '\0';
-    snprintf(reexec_arg, sizeof(reexec_arg) / sizeof(char),
-	     "--re-exec=%i", pipe_rw[0]);
     reexec_args = alloca(((size_t)argc + 2) * sizeof(char*));
     reexec_args_ = reexec_args;
-    if (reexec_fd < 0)
+    if (reexec == 0)
       {
 	*reexec_args_++ = *argv;
-	*reexec_args_ = reexec_arg;
+	*reexec_args_ = strdup("--re-exec");
+	if (*reexec_args_)
+	  goto reexec_fail;
 	for (i = 1; i < argc; i++)
 	  reexec_args_[i] = argv[i];
       }
     else /* Don't let the --re-exec:s accumulate. */
-      {
-	*reexec_args_ = *argv;
-	for (i = 1; i < argc; i++)
-	  reexec_args_[i] = argv[i];
-	reexec_args_[reexec_argi] = reexec_arg;
-      }
+      *reexec_args_ = *argv;
+    for (i = 1; i < argc; i++)
+      reexec_args_[i] = argv[i];
     reexec_args_[argc] = NULL;
     execv(readlink_buf, reexec_args);
     
   reexec_fail:
     perror(*argv);
-    close(pipe_rw[0]);
-    close(pipe_rw[1]);
+    close(reexec_fd);
+    shm_unlink(shm_path);
     /* Returning non-zero is important, otherwise the server cannot
        be respawn if the re-exec fails. */
     return 1;
