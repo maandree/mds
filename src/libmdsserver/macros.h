@@ -20,6 +20,7 @@
 
 
 #include <stdio.h>
+#include <unistd.h>
 
 
 /**
@@ -31,6 +32,27 @@
  */
 #define xsnprintf(buffer, format, ...)  \
   snprintf(buffer, sizeof(buffer) / sizeof(char), format, __VA_ARGS__);
+
+
+/**
+ * Wrapper for `fprintf` that prints to `stderr` with
+ * the program name prefixed and new line suffixed
+ * 
+ * @param  format:char*  The format
+ */
+#define eprint(format)  \
+  fprintf(stderr, "%s: " format "\n", *argv);
+
+
+/**
+ * Wrapper for `fprintf` that prints to `stderr` with
+ * the program name prefixed and new line suffixed
+ * 
+ * @param  format:char*   The format
+ * @param  ...            The arguments
+ */
+#define eprintf(format, ...)  \
+  fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__);
 
 
 #endif

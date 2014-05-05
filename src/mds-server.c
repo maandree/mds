@@ -128,9 +128,7 @@ int main(int argc_, char** argv_)
   /* Sanity check the number of command line arguments. */
   if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT)
     {
-      fprintf(stderr,
-	      "%s: that number of arguments is ridiculous, I will not allow it.\n",
-	      *argv);
+      eprint("that number of arguments is ridiculous, I will not allow it.");
       return 1;
     }
   
@@ -142,9 +140,8 @@ int main(int argc_, char** argv_)
       if (!strcmp(arg, "--initial-spawn")) /* Initial spawn? */
 	if (is_respawn == 1)
 	  {
-	    fprintf(stderr,
-		    "%s: conflicting arguments %s and %s cannot be combined.\n",
-		    *argv, "--initial-spawn", "--respawn");
+	    eprintf("conflicting arguments %s and %s cannot be combined.",
+		    "--initial-spawn", "--respawn");
 	    return 1;
 	  }
 	else
@@ -152,9 +149,8 @@ int main(int argc_, char** argv_)
       else if (!strcmp(arg, "--respawn")) /* Respawning after crash? */
 	if (is_respawn == 0)
 	  {
-	    fprintf(stderr,
-		    "%s: conflicting arguments %s and %s cannot be combined.\n",
-		    *argv, "--initial-spawn", "--respawn");
+	    eprintf("conflicting arguments %s and %s cannot be combined.",
+		    "--initial-spawn", "--respawn");
 	    return 1;
 	  }
 	else
@@ -165,7 +161,7 @@ int main(int argc_, char** argv_)
 	  char* endptr;
 	  if (socket_fd != -1)
 	    {
-	      fprintf(stderr, "%s: duplicate declaration of %s.\n", *argv, "--socket-fd");
+	      eprintf("duplicate declaration of %s.", "--socket-fd");
 	      return -1;
 	    }
 	  arg += strlen("--socket-fd=");
@@ -174,7 +170,7 @@ int main(int argc_, char** argv_)
 	      (endptr - arg != (ssize_t)strlen(arg))
 	      || (r < 0) || (r > INT_MAX))
 	    {
-	      fprintf(stderr, "%s: invalid value for %s: %s.\n", *argv, "--socket-fd", arg);
+	      eprintf("invalid value for %s: %s.", "--socket-fd", arg);
 	      return 1;
 	    }
 	  socket_fd = (int)r;
@@ -193,14 +189,13 @@ int main(int argc_, char** argv_)
   /* Check that manditory arguments have been specified. */
   if (is_respawn < 0)
     {
-      fprintf(stderr,
-	      "%s: missing state argument, require either %s or %s.\n",
-	      *argv, "--initial-spawn", "--respawn");
+      eprintf("missing state argument, require either %s or %s.",
+	      "--initial-spawn", "--respawn");
       return 1;
     }
   if (socket_fd < 0)
     {
-      fprintf(stderr, "%s: missing socket file descriptor argument.\n", *argv);
+      eprint("missing socket file descriptor argument.");
       return 1;
     }
   
@@ -514,7 +509,7 @@ void* slave_loop(void* data)
 	else
 	  if (r == -2)
 	    {
-	      fprintf(stderr, "%s: corrupt message received.\n", *argv);
+	      eprint("corrupt message received.");
 	      goto fail;
 	    }
 	  else if (errno == ECONNRESET)
@@ -608,22 +603,20 @@ void run_initrc(char** args)
   char* home;
   args[0] = pathname;
   
+#define __exec(FORMAT, ...)  \
+  xsnprintf(pathname, FORMAT, __VA_ARGS__);  execv(args[0], args)
   
   /* Test $XDG_CONFIG_HOME. */
   if ((env = getenv_nonempty("XDG_CONFIG_HOME")) != NULL)
     {
-      xsnprintf(pathname, "%s/.%s", env, INITRC_FILE);
-      execv(args[0], args);
+      __exec("%s/%s", env, INITRC_FILE);
     }
   
   /* Test $HOME. */
   if ((env = getenv_nonempty("HOME")) != NULL)
     {
-      xsnprintf(pathname, "%s/.config/%s", env, INITRC_FILE);
-      execv(args[0], args);
-      
-      xsnprintf(pathname, "%s/.%s", env, INITRC_FILE);
-      execv(args[0], args);
+      __exec("%s/.config/%s", env, INITRC_FILE);
+      __exec("%s/.%s", env, INITRC_FILE);
     }
   
   /* Test ~. */
@@ -633,11 +626,8 @@ void run_initrc(char** args)
       home = pwd->pw_dir;
       if ((home != NULL) && (*home != '\0'))
 	{
-	  xsnprintf(pathname, "%s/.config/%s", home, INITRC_FILE);
-	  execv(args[0], args);
-	  
-	  xsnprintf(pathname, "%s/.%s", home, INITRC_FILE);
-	  execv(args[0], args);
+	  __exec("%s/.config/%s", home, INITRC_FILE);
+	  __exec("%s/.%s", home, INITRC_FILE);
 	}
     }
   
@@ -653,8 +643,7 @@ void run_initrc(char** args)
 	  len = (int)(end - begin);
 	  if (len > 0)
 	    {
-	      xsnprintf(pathname, "%.*s/%s", len, begin, INITRC_FILE);
-	      execv(args[0], args);
+	      __exec("%.*s/%s", len, begin, INITRC_FILE);
 	    }
 	  if (*end == '\0')
 	    break;
@@ -665,10 +654,11 @@ void run_initrc(char** args)
   /* Test /etc. */
   xsnprintf(pathname, "%s/%s", SYSCONFDIR, INITRC_FILE);
   execv(args[0], args);
-  
+
+#undef __exec  
   
   /* Everything failed. */
-  fprintf(stderr, "%s: unable to run %s file, you might as well kill me.\n", *argv, INITRC_FILE);
+  eprintf("unable to run %s file, you might as well kill me.", INITRC_FILE);
 }
 
 
