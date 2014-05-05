@@ -126,6 +126,14 @@
 
 
 /**
+ * The path to the directory with symlinks to each file that is open
+ */
+#ifndef SELF_FD
+#define SELF_FD  "/proc/self/fd"
+#endif
+
+
+/**
  * Pattern for the names of shared object to which states are marshalled
  */
 #ifndef SHM_PATH_PATTERN

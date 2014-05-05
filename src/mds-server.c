@@ -39,6 +39,8 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 
 
@@ -283,11 +285,31 @@ int main(int argc_, char** argv_)
 	}
       if (r < 0)
 	{
-	  /* TODO: close all sockets we do not know what they are. */
+	  /* Close all files (hopefully sockets) we do not know what they are. */
+	  DIR* dir = opendir(SELF_FD);
+	  struct dirent* file;
+	  
+	  if (dir == NULL)
+	    {
+	      perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */
+	      closedir(dir);
+	      goto unmarshal_double_fail;
+	    }
+	  
+	  while ((file = readdir(dir)) != NULL)
+	    if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+	      {
+		int fd = atoi(file->d_name);
+		if ((fd > 2) && (fd != socket_fd) &&
+		    (fd_table_contains_key(&client_map, fd) == 0))
+		  close(fd);
+	      }
+	  
+	  closedir(dir);
 	}
     }
   
-  
+ unmarshal_double_fail:
   /* Accepting incoming connections. */
   while (running && (reexecing == 0))
     {
