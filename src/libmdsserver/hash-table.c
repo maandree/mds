@@ -404,16 +404,11 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
 {
   size_t i, n = this->capacity;
   
-  buf_set(data, int, 0, HASH_TABLE_T_VERSION);
-  buf_next(data, int, 1);
-  
-  buf_set(data, size_t, 0, this->capacity);
-  buf_next(data, size_t, 1);
-  buf_set(data, float, 0, this->load_factor);
-  buf_next(data, float, 1);
-  buf_set(data, size_t, 0, this->threshold);
-  buf_set(data, size_t, 1, this->size);
-  buf_next(data, size_t, 2);
+  buf_set_next(data, int, HASH_TABLE_T_VERSION);
+  buf_set_next(data, size_t, this->capacity);
+  buf_set_next(data, float, this->load_factor);
+  buf_set_next(data, size_t, this->threshold);
+  buf_set_next(data, size_t, this->size);
   
   for (i = 0; i < n; i++)
     {
@@ -453,13 +448,10 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
   this->key_comparator   = NULL;
   this->hasher           = NULL;
   
-  buf_get(data, size_t, 0, this->capacity = n);
-  buf_next(data, size_t, 1);
-  buf_get(data, float, 0, this->load_factor);
-  buf_next(data, float, 1);
-  buf_get(data, size_t, 0, this->threshold);
-  buf_get(data, size_t, 1, this->size);
-  buf_next(data, size_t, 2);
+  buf_get_next(data, size_t, this->capacity = n);
+  buf_get_next(data, float, this->load_factor);
+  buf_get_next(data, size_t, this->threshold);
+  buf_get_next(data, size_t, this->size);
   
   this->buckets = calloc(this->capacity, sizeof(hash_entry_t*));
   if (this->buckets == NULL)
@@ -469,8 +461,7 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
     {
       size_t m;
       hash_entry_t* restrict bucket;
-      buf_get(data, size_t, 0, m);
-      buf_next(data, size_t, 1);
+      buf_get_next(data, size_t, m);
       
       this->buckets[i] = bucket = malloc(sizeof(hash_entry_t));
       if (bucket == NULL)
@@ -486,12 +477,11 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
 	      if (bucket->next == NULL)
 		return -1;
 	    }
-	  buf_get(data, size_t, 0, bucket->key);
-	  buf_get(data, size_t, 1, bucket->value);
+	  buf_get_next(data, size_t, bucket->key);
+	  buf_get_next(data, size_t, bucket->value);
 	  if (remapper != NULL)
 	    bucket->value = remapper(bucket->value);
-	  buf_get(data, size_t, 2, bucket->hash);
-	  buf_next(data, size_t, 3);
+	  buf_get_next(data, size_t, bucket->hash);
 	}
     }
   

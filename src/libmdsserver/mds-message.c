@@ -327,22 +327,19 @@ void mds_message_marshal(mds_message_t* this, char* data, int include_buffer)
 {
   size_t i, n;
   
-  buf_set(data, int, 0, MDS_MESSAGE_T_VERSION);
-  buf_next(data, int, 1);
+  buf_set_next(data, int, MDS_MESSAGE_T_VERSION);
   
-  buf_set(data, size_t, 0, this->header_count);
-  buf_set(data, size_t, 1, this->payload_size);
+  buf_set_next(data, size_t, this->header_count);
+  buf_set_next(data, size_t, this->payload_size);
   if (include_buffer)
     {
-      buf_set(data, size_t, 2, this->payload_ptr);
-      buf_set(data, size_t, 3, this->buffer_ptr);
+      buf_set_next(data, size_t, this->payload_ptr);
+      buf_set_next(data, size_t, this->buffer_ptr);
     }
-  buf_next(data, size_t, include_buffer ? 4 : 2);
   
   if (include_buffer)
     {
-      buf_set(data, int, 0, this->stage);
-      buf_next(data, int, 1);
+      buf_set_next(data, int, this->stage);
     }
   
   for (i = 0; i < this->header_count; i++)
@@ -378,11 +375,10 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
   buf_next(data, int, 1);
   
   this->header_count = 0;
-  buf_get(data, size_t, 0, header_count);
-  buf_get(data, size_t, 1, this->payload_size);
-  buf_get(data, size_t, 2, this->payload_ptr);
-  buf_get(data, size_t, 3, this->buffer_size = this->buffer_ptr);
-  buf_next(data, size_t, 4);
+  buf_get_next(data, size_t, header_count);
+  buf_get_next(data, size_t, this->payload_size);
+  buf_get_next(data, size_t, this->payload_ptr);
+  buf_get_next(data, size_t, this->buffer_size = this->buffer_ptr);
   
   /* Make sure that the pointers are NULL so that they are
      not freed without being allocated when the message is
@@ -391,8 +387,7 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
   this->payload = NULL;
   this->buffer  = NULL;
   
-  buf_get(data, int, 0, this->stage);
-  buf_next(data, int, 1);
+  buf_get_next(data, int, this->stage);
   
   /* To 2-power-multiple of 128 bytes. */
   this->buffer_size >>= 7;

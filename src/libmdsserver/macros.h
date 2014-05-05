@@ -152,5 +152,33 @@
   buffer -= (count) * sizeof(type) / sizeof(char)
 
 
+/**
+ * This macro combines `buf_set` with `buf_next`, it sets
+ * element zero and increase the pointer by one element
+ * 
+ * @param   buffer:char*   The buffer
+ * @param   type           The data type of the elements for the data type to cast the buffer to
+ * @param   variable:type  The new value of the element
+ * @return  :variable      The new value of the element
+ */
+#define buf_set_next(buffer, type, variable)  \
+  buf_set(buffer, type, 0, variable);         \
+  buf_next(buffer, type, 1)
+
+
+/**
+ * This macro combines `buf_set` with `buf_next`, it sets
+ * element zero and increase the pointer by one element
+ * 
+ * @param   buffer:char*   The buffer
+ * @param   type           The data type of the elements for the data type to cast the buffer to
+ * @param   variable:type  Slot to set with the value of the element
+ * @return  :variable      The value of the element
+ */
+#define buf_get_next(buffer, type, variable)  \
+  buf_get(buffer, type, 0, variable);         \
+  buf_next(buffer, type, 1)
+
+
 #endif
 

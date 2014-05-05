@@ -269,12 +269,9 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
 {
   size_t bitcap = (this->capacity + 63) / 64;
   
-  buf_set(data, int, 0, FD_TABLE_T_VERSION);
-  buf_next(data, int, 1);
-  
-  buf_set(data, size_t, 0, this->capacity);
-  buf_set(data, size_t, 1, this->size);
-  buf_next(data, size_t, 2);
+  buf_set_next(data, int, FD_TABLE_T_VERSION);
+  buf_set_next(data, size_t, this->capacity);
+  buf_set_next(data, size_t, this->size);
   
   memcpy(data, this->values, this->capacity * sizeof(size_t));
   buf_next(data, size_t, this->capacity);
@@ -299,9 +296,8 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
   /* buf_get(data, int, 0, FD_TABLE_T_VERSION) */
   buf_next(data, int, 1);
   
-  buf_get(data, size_t, 0, this->capacity);
-  buf_get(data, size_t, 1, this->size);
-  buf_next(data, size_t, 2);
+  buf_get_next(data, size_t, this->capacity);
+  buf_get_next(data, size_t, this->size);
   
   this->values           = NULL;
   this->used             = NULL;

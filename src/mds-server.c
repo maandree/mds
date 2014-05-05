@@ -780,17 +780,14 @@ int marshal_server(int fd)
   
   
   /* Tell the new version of the program what version of the program it is marshalling. */
-  buf_set(state_buf_, int, 0, MDS_SERVER_VARS_VERSION);
-  buf_next(state_buf_, int, 1);
+  buf_set_next(state_buf_, int, MDS_SERVER_VARS_VERSION);
   
   /* Marshal the program's running–exit state. */
-  buf_set(state_buf_, sig_atomic_t, 0, running);
-  buf_next(state_buf_, sig_atomic_t, 1);
+  buf_set_next(state_buf_, sig_atomic_t, running);
   
   /* Tell the program how large the marshalled client list is and how any clients are marshalled. */
-  buf_set(state_buf_, size_t, 0, list_size);
-  buf_set(state_buf_, size_t, 1, list_elements);
-  buf_next(state_buf_, size_t, 2);
+  buf_set_next(state_buf_, size_t, list_size);
+  buf_set_next(state_buf_, size_t, list_elements);
   
   /* Marshal the clients. */
   for (node = client_list.edge;;)
@@ -811,15 +808,13 @@ int marshal_server(int fd)
       msg_size = mds_message_marshal_size(&(value->message), 1);
       
       /* Marshal the address, it is used the the client list and the client map, that will be marshalled. */
-      buf_set(state_buf_, size_t, 0, value_address);
+      buf_set_next(state_buf_, size_t, value_address);
       /* Tell the program how large the marshalled message is. */
-      buf_set(state_buf_, size_t, 1, msg_size);
+      buf_set_next(state_buf_, size_t, msg_size);
       /* Marshal the client info. */
-      buf_set(state_buf_, ssize_t, 2, value->list_entry);
-      buf_next(state_buf_, size_t, 3);
-      buf_set(state_buf_, int, 0, value->socket_fd);
-      buf_set(state_buf_, int, 1, value->open);
-      buf_next(state_buf_, int, 2);
+      buf_set_next(state_buf_, ssize_t, value->list_entry);
+      buf_set_next(state_buf_, int, value->socket_fd);
+      buf_set_next(state_buf_, int, value->open);
       /* Marshal the message. */
       mds_message_marshal(&(value->message), state_buf_, 1);
       state_buf_ += msg_size / sizeof(char);
@@ -969,13 +964,11 @@ int unmarshal_server(int fd)
   buf_next(state_buf_, int, 1);
   
   /* Unmarshal the program's running–exit state. */
-  buf_get(state_buf_, sig_atomic_t, 0, running);
-  buf_next(state_buf_, sig_atomic_t, 1);
+  buf_get_next(state_buf_, sig_atomic_t, running);
   
   /* Get the marshalled size of the client list and how any clients that are marshalled. */
-  buf_get(state_buf_, size_t, 0, list_size);
-  buf_get(state_buf_, size_t, 1, list_elements);
-  buf_next(state_buf_, size_t, 2);
+  buf_get_next(state_buf_, size_t, list_size);
+  buf_get_next(state_buf_, size_t, list_elements);
   
   /* Unmarshal the clients. */
   for (i = 0; i < list_elements; i++)
@@ -992,15 +985,13 @@ int unmarshal_server(int fd)
 	}
       
       /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
-      buf_get(state_buf_, size_t, 0, value_address);
+      buf_get_next(state_buf_, size_t, value_address);
       /* Get the marshalled size of the message. */
-      buf_get(state_buf_, size_t, 1, msg_size);
+      buf_get_next(state_buf_, size_t, msg_size);
       /* Unmarshal the client info. */
-      buf_get(state_buf_, ssize_t, 2, value->list_entry);
-      buf_next(state_buf_, size_t, 3);
-      buf_get(state_buf_, int, 0, value->socket_fd);
-      buf_get(state_buf_, int, 1, value->open);
-      buf_next(state_buf_, int, 2);
+      buf_get_next(state_buf_, ssize_t, value->list_entry);
+      buf_get_next(state_buf_, int, value->socket_fd);
+      buf_get_next(state_buf_, int, value->open);
       /* Unmarshal the message. */
       if (mds_message_unmarshal(&(value->message), state_buf_))
 	{
