@@ -214,6 +214,25 @@ int main(int argc_, char** argv_)
 	}
       if (pid == 0) /* Child process exec:s, the parent continues without waiting for it. */
 	{
+	  /* Close all files except stdin, stdout and stderr. */
+	  DIR* dir = opendir(SELF_FD);
+	  struct dirent* file;
+	  
+	  if (dir == NULL)
+	    perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */
+	  else
+	    while ((file = readdir(dir)) != NULL)
+	      if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+		{
+		  int fd = atoi(file->d_name);
+		  if (fd > 2)
+		    close(fd);
+		}
+	  
+	  closedir(dir);
+	  close(socket_fd); /* Perhaps it is stdin, stdout or stderr. */
+	  
+	  /* Run initrc */
 	  run_initrc(unparsed_args);
 	  return 1;
 	}
@@ -290,26 +309,21 @@ int main(int argc_, char** argv_)
 	  struct dirent* file;
 	  
 	  if (dir == NULL)
-	    {
-	      perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */
-	      closedir(dir);
-	      goto unmarshal_double_fail;
-	    }
-	  
-	  while ((file = readdir(dir)) != NULL)
-	    if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
-	      {
-		int fd = atoi(file->d_name);
-		if ((fd > 2) && (fd != socket_fd) &&
-		    (fd_table_contains_key(&client_map, fd) == 0))
-		  close(fd);
-	      }
+	    perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */
+	  else
+	    while ((file = readdir(dir)) != NULL)
+	      if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
+		{
+		  int fd = atoi(file->d_name);
+		  if ((fd > 2) && (fd != socket_fd) &&
+		      (fd_table_contains_key(&client_map, fd) == 0))
+		    close(fd);
+		}
 	  
 	  closedir(dir);
 	}
     }
   
- unmarshal_double_fail:
   /* Accepting incoming connections. */
   while (running && (reexecing == 0))
     {
