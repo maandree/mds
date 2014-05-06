@@ -30,10 +30,10 @@ only non-unique ID and client with this ID cannot
 get responses. It can however ask for interceptions,
 which it would receive. To get a real ID it must
 ask the master server (which is the only server that
-can communicate with it when it does not have an UD)
+can communicate with it when it does not have an ID)
 for an ID, this can only be done when it does not
 have an ID. To do this, it sends an message with
-two headers and no payload. One of headers is
+two headers and no payload. One of the headers is
 ‘Command’ and its value should be ‘assign-id’,
 the other header is ‘Message ID’ and its value is
 an unsigned 32-bit integer of the index of the
@@ -90,7 +90,7 @@ requested to be able to modify the message. This
 is done by sending the header ‘Modify’ and the
 header ‘Modify ID’ with the same value as for the
 message is is responding to. The value of the
-‘Modify’ header should be ‘no’ it the message
+‘Modify’ header should be ‘no’ if the message
 is not modified. If the message should be modify
 it the value of the ‘Modify’ header should be
 ‘yes’ and the payload should be the new message

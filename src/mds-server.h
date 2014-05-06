@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdint.h>
 
 
 /**
@@ -55,6 +56,11 @@ typedef struct client
    */
   pthread_t thread;
   
+  /**
+   * The client's ID
+   */
+  uint64_t id;
+  
 } client_t;
 
 
@@ -65,6 +71,14 @@ typedef struct client
  * @return        Outout data
  */
 void* slave_loop(void* data);
+
+/**
+ * Perform actions that should be taken when
+ * a message has been received from a client
+ * 
+ * @param  client  The client has sent a message
+ */
+void message_received(client_t* client);
 
 /**
  * Exec into the mdsinitrc script

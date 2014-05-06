@@ -99,6 +99,11 @@ static fd_table_t client_map;
  */
 static linked_list_t client_list;
 
+/**
+ * The next free ID for a client
+ */
+static uint64_t next_id = 1;
+
 
 
 /**
@@ -476,6 +481,7 @@ void* slave_loop(void* data)
       information->list_entry = entry;
       information->socket_fd = socket_fd;
       information->open = 1;
+      information->id = 0;
       if (mds_message_initialise(&(information->message)))
 	{
 	  perror(*argv);
@@ -489,21 +495,11 @@ void* slave_loop(void* data)
   
   
   /* Make the server update without all slaves dying on SIGUSR1. */
-  {
-    struct sigaction action;
-    sigset_t sigset;
-    
-    sigemptyset(&sigset);
-    action.sa_handler = sigusr1_trap;
-    action.sa_mask = sigset;
-    action.sa_flags = 0;
-    
-    if (sigaction(SIGUSR1, &action, NULL) < 0)
-      {
-	perror(*argv);
-	goto fail;
-      }
-  }
+  if (xsigaction(SIGUSR1, sigusr1_trap) < 0)
+    {
+      perror(*argv);
+      goto fail;
+    }
   
   
   /* Fetch messages from the slave. */
@@ -512,9 +508,7 @@ void* slave_loop(void* data)
       {
 	r = mds_message_read(&(information->message), socket_fd);
 	if (r == 0)
-	  {
-	    /* TODO */
-	  }
+	  message_received(information);
 	else
 	  if (r == -2)
 	    {
@@ -526,9 +520,7 @@ void* slave_loop(void* data)
 	      r = mds_message_read(&(information->message), socket_fd);
 	      information->open = 0;
 	      if (r == 0)
-		{
-		  /* TODO */
-		}
+		message_received(information);
 	      /* Connection closed. */
 	      break;
 	    }
@@ -579,6 +571,25 @@ void* slave_loop(void* data)
 	     pthread_cond_signal(&slave_cond););
   
   return NULL;
+}
+
+
+/**
+ * Perform actions that should be taken when
+ * a message has been received from a client
+ * 
+ * @param  client  The client has sent a message
+ */
+void message_received(client_t* client)
+{
+  mds_message_t message = client->message;
+  size_t i;
+  
+  for (i = 0; i < message.header_count; i++)
+    {
+      char* header = message.headers[i];
+      /* TODO */
+    }
 }
 
 
@@ -729,8 +740,9 @@ int marshal_server(int fd)
   /* Tell the new version of the program what version of the program it is marshalling. */
   buf_set_next(state_buf_, int, MDS_SERVER_VARS_VERSION);
   
-  /* Marshal the program's running–exit state. */
+  /* Marshal the miscellaneous state data. */
   buf_set_next(state_buf_, sig_atomic_t, running);
+  buf_set_next(state_buf_, uint64_t, next_id);
   
   /* Tell the program how large the marshalled client list is and how any clients are marshalled. */
   buf_set_next(state_buf_, size_t, list_size);
@@ -755,6 +767,7 @@ int marshal_server(int fd)
       buf_set_next(state_buf_, ssize_t, value->list_entry);
       buf_set_next(state_buf_, int, value->socket_fd);
       buf_set_next(state_buf_, int, value->open);
+      buf_set_next(state_buf_, uint64_t, value->id);
       /* Marshal the message. */
       mds_message_marshal(&(value->message), state_buf_, 1);
       state_buf_ += msg_size / sizeof(char);
@@ -903,8 +916,9 @@ int unmarshal_server(int fd)
   /* buf_get(state_buf_, int, 0, MDS_SERVER_VARS_VERSION); */
   buf_next(state_buf_, int, 1);
   
-  /* Unmarshal the program's running–exit state. */
+  /* Unmarshal the miscellaneous state data. */
   buf_get_next(state_buf_, sig_atomic_t, running);
+  buf_get_next(state_buf_, uint64_t, next_id);
   
   /* Get the marshalled size of the client list and how any clients that are marshalled. */
   buf_get_next(state_buf_, size_t, list_size);
@@ -932,12 +946,14 @@ int unmarshal_server(int fd)
       buf_get_next(state_buf_, ssize_t, value->list_entry);
       buf_get_next(state_buf_, int, value->socket_fd);
       buf_get_next(state_buf_, int, value->open);
+      buf_set_next(state_buf_, uint64_t, value->id);
       /* Unmarshal the message. */
       if (mds_message_unmarshal(&(value->message), state_buf_))
 	{
 	  perror(*argv);
 	  mds_message_destroy(&(value->message));
 	  free(value);
+	  buf_prev(state_buf_, uint64_t, 1);
 	  buf_prev(state_buf_, int, 2);
 	  buf_prev(state_buf_, size_t, 3);
 	  goto clients_fail;
@@ -960,6 +976,7 @@ int unmarshal_server(int fd)
 	  msg_size = ((size_t*)state_buf_)[1];
 	  buf_next(state_buf_, size_t, 3);
 	  buf_next(state_buf_, int, 2);
+	  buf_next(state_buf_, uint64_t, 1);
 	  state_buf_ += msg_size / sizeof(char);
 	}
       break;
