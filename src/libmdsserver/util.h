@@ -27,7 +27,6 @@
  */
 char* getenv_nonempty(const char* var);
 
-
 /**
  * Re-exec the server.
  * This function only returns on failure.
