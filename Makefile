@@ -60,7 +60,7 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 
 
 # Object files for the libary
-LIBOBJ = linked-list hash-table fd-table mds-message
+LIBOBJ = linked-list hash-table fd-table mds-message util
 
 
 # Build rules.

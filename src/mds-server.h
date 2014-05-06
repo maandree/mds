@@ -67,14 +67,6 @@ typedef struct client
 void* slave_loop(void* data);
 
 /**
- * Read an environment variable, but handle it as undefined if empty
- * 
- * @param   var  The environment variable's name
- * @return       The environment variable's value, `NULL` if empty or not defined
- */
-char* getenv_nonempty(const char* var);
-
-/**
  * Exec into the mdsinitrc script
  * 
  * @param  args  The arguments to the child process

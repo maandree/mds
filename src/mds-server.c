@@ -23,6 +23,7 @@
 #include <libmdsserver/fd-table.h>
 #include <libmdsserver/mds-message.h>
 #include <libmdsserver/macros.h>
+#include <libmdsserver/util.h>
 
 #include <alloca.h>
 #include <signal.h>
@@ -398,10 +399,6 @@ int main(int argc_, char** argv_)
     pid_t pid = getpid();
     int reexec_fd;
     char shm_path[NAME_MAX + 1];
-    char readlink_buf[PATH_MAX];
-    ssize_t readlink_ptr;
-    char** reexec_args;
-    char** reexec_args_;
     
     /* Release resources. */
     pthread_mutex_destroy(&slave_mutex);
@@ -423,34 +420,15 @@ int main(int argc_, char** argv_)
     if (marshal_server(reexec_fd) < 0)
       goto reexec_fail;
     close(reexec_fd);
+    reexec_fd = -1;
     
     /* Re-exec the server. */
-    readlink_ptr = readlink(SELF_EXE, readlink_buf, (sizeof(readlink_buf) / sizeof(char)) - 1);
-    if (readlink_ptr < 0)
-      goto reexec_fail;
-    /* ‘readlink() does not append a null byte to buf.’ */
-    readlink_buf[readlink_ptr] = '\0';
-    reexec_args = alloca(((size_t)argc + 2) * sizeof(char*));
-    reexec_args_ = reexec_args;
-    if (reexec == 0)
-      {
-	*reexec_args_++ = *argv;
-	*reexec_args_ = strdup("--re-exec");
-	if (*reexec_args_)
-	  goto reexec_fail;
-	for (i = 1; i < argc; i++)
-	  reexec_args_[i] = argv[i];
-      }
-    else /* Don't let the --re-exec:s accumulate. */
-      *reexec_args_ = *argv;
-    for (i = 1; i < argc; i++)
-      reexec_args_[i] = argv[i];
-    reexec_args_[argc] = NULL;
-    execv(readlink_buf, reexec_args);
+    reexec_server(argc, argv, reexec);
     
   reexec_fail:
     perror(*argv);
-    close(reexec_fd);
+    if (reexec_fd >= 0)
+      close(reexec_fd);
     shm_unlink(shm_path);
     /* Returning non-zero is important, otherwise the server cannot
        be respawn if the re-exec fails. */
@@ -611,21 +589,6 @@ void* slave_loop(void* data)
 	     pthread_cond_signal(&slave_cond););
   
   return NULL;
-}
-
-
-/**
- * Read an environment variable, but handle it as undefined if empty
- * 
- * @param   var  The environment variable's name
- * @return       The environment variable's value, `NULL` if empty or not defined
- */
-char* getenv_nonempty(const char* var)
-{
-  char* rc = getenv(var);
-  if ((rc == NULL) || (*rc == '\0'))
-    return NULL;
-  return rc;
 }
 
 
