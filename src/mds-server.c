@@ -610,6 +610,7 @@ void message_received(client_t* client) /* TODO */
       /* Assign ID if not already assigned. */
       if (client->id == 0)
 	{
+	  /* Do the assignment. */
 	  with_mutex(slave_mutex,
 		     client->id = next_id++;
 		     if (next_id == 0)
@@ -623,7 +624,8 @@ void message_received(client_t* client) /* TODO */
 			 abort();
 		       }
 		     );
-	  /* TODO: add interception:
+	  
+	  /* TODO: Make the client listen for messages addressed to it.
 	     To: $(assign_id)
 	     Priority: 0
 	     Modifying: no
