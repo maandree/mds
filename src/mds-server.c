@@ -541,6 +541,9 @@ void* slave_loop(void* data)
     goto reexec;
   
   
+  /* TODO multicast information about the client closing. */
+  
+  
  fail: /* The loop does break, this done on success as well. */
   /* Close socket and free resources. */
   close(socket_fd);
