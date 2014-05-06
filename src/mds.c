@@ -18,6 +18,8 @@
 #include "mds.h"
 #include "config.h"
 
+#include <libmdsserver/macros.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -78,9 +80,7 @@ int main(int argc_, char** argv_)
   /* Sanity check the number of command line arguments. */
   if (argc > ARGC_LIMIT)
     {
-      fprintf(stderr,
-	      "%s: that number of arguments is ridiculous, I will not allow it.\n",
-	      *argv);
+      eprint("that number of arguments is ridiculous, I will not allow it.");
       return 1;
     }
   
@@ -92,7 +92,7 @@ int main(int argc_, char** argv_)
 	{
 	  if (got_master_server)
 	    {
-	      fprintf(stderr, "%s: duplicate declaration of %s.\n", *argv, "--master-server");
+	      eprintf("duplicate declaration of %s.", "--master-server");
 	      return 1;
 	    }
 	  got_master_server = 1;
@@ -103,9 +103,7 @@ int main(int argc_, char** argv_)
   /* Stymied if the effective user is not root. */
   if (geteuid() != ROOT_USER_UID)
     {
-      fprintf(stderr,
-	      "%s: the effective user is not root, cannot continue.\n",
-	      *argv);
+      eprint("the effective user is not root, cannot continue.");
       return 1;
     }
   
@@ -116,8 +114,7 @@ int main(int argc_, char** argv_)
   /* Determine display index. */
   for (display = 0; display < DISPLAY_MAX; display++)
     {
-      snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.pid",
-	       MDS_RUNTIME_ROOT_DIRECTORY, display);
+      xsnprintf(pathname, "%s/%u.pid", MDS_RUNTIME_ROOT_DIRECTORY, display);
       
       fd = open(pathname, O_CREAT | O_EXCL);
       if (fd == -1)
@@ -134,9 +131,7 @@ int main(int argc_, char** argv_)
 	  if (ferror(f)) /* Failed to read. */
 	    perror(*argv);
 	  else if (feof(f) == 0) /* Did not read everything. */
-	    fprintf(stderr,
-		    "%s: the content of a PID file is longer than expected.\n",
-		    *argv);
+	    eprint("the content of a PID file is longer than expected.");
 	  else
 	    {
 	      pid_t pid = 0;
@@ -148,17 +143,13 @@ int main(int argc_, char** argv_)
 		    pid = pid * 10 + (c & 15);
 		  else
 		    {
-		      fprintf(stderr,
-			      "%s: the content of a PID file is invalid.\n",
-			      *argv);
+		      eprint("the content of a PID file is invalid.");
 		      goto bad;
 		    }
 		}
 	      if (piddata[n] != '\n')
 		{
-		  fprintf(stderr,
-			  "%s: the content of a PID file is invalid.\n",
-			  *argv);
+		  eprint("the content of a PID file is invalid.");
 		  goto bad;
 		}
 	      if (kill(pid, 0) < 0) /* Check if the PID is still allocated to any process. */
@@ -178,9 +169,7 @@ int main(int argc_, char** argv_)
     }
   if (display == DISPLAY_MAX)
     {
-      fprintf(stderr,
-	      "%s: Sorry, too many displays on the system.\n",
-	      *argv);
+      eprint("sorry, too many displays on the system.");
       return 1;
       /* Yes, the directory could have been removed, but it probably was not. */
     }
@@ -192,7 +181,7 @@ int main(int argc_, char** argv_)
       perror(*argv);
       return 1;
     }
-  snprintf(piddata, sizeof(piddata) / sizeof(char), "%u\n", getpid());
+  xsnprintf(piddata, "%u\n", getpid());
   if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
     {
       fclose(f);
@@ -206,19 +195,17 @@ int main(int argc_, char** argv_)
   /* Create data storage directory. */
   if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY))
     goto fail;
-  snprintf(pathname, sizeof(pathname) / sizeof(char),
-	   "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
+  xsnprintf(pathname,  "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
   if (unlink_recursive(pathname) || create_directory_user(pathname))
     goto fail;
   
   /* Save MDS_DISPLAY environment variable. */
-  snprintf(pathname, sizeof(pathname) / sizeof(char), /* Excuse the reuse without renaming. */
+  xsnprintf(pathname, /* Excuse the reuse without renaming. */
 	   "%s=:%u", DISPLAY_ENV, display);
   putenv(pathname);
   
   /* Create display socket. */
-  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.socket",
-	   MDS_RUNTIME_ROOT_DIRECTORY, display);
+  xsnprintf(pathname, "%s/%u.socket", MDS_RUNTIME_ROOT_DIRECTORY, display);
   address.sun_family = AF_UNIX;
   strcpy(address.sun_path, pathname);
   unlink(pathname);
@@ -251,15 +238,13 @@ int main(int argc_, char** argv_)
     }
   
   /* Remove PID file. */
-  snprintf(pathname, sizeof(pathname) / sizeof(char), "%s/%u.pid",
-	   MDS_RUNTIME_ROOT_DIRECTORY, display);
+  xsnprintf(pathname, "%s/%u.pid", MDS_RUNTIME_ROOT_DIRECTORY, display);
   unlink(pathname);
   
   /* Remove directories. */
   rmdir(MDS_RUNTIME_ROOT_DIRECTORY); /* Do not care if it fails, it is probably used by another display. */
   rmdir(MDS_STORAGE_ROOT_DIRECTORY); /* Do not care if it fails, it is probably used by another display. */
-  snprintf(pathname, sizeof(pathname) / sizeof(char),
-	   "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
+  xsnprintf(pathname, "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
   unlink_recursive(pathname); /* An error will be printed on error, do nothing more. */
   
   return rc;
@@ -292,7 +277,7 @@ int spawn_and_respawn_server(int fd)
   for (i = 1; i < argc; i++)
     child_args[i] = argv[i];
   child_args[argc + 0] = strdup("--initial-spawn");
-  snprintf(fdstr, sizeof(fdstr) / sizeof(char), "--socket-fd=%i", fd);
+  xsnprintf(fdstr, "--socket-fd=%i", fd);
   child_args[argc + 1] = fdstr;
   child_args[argc + 2] = NULL;
   
@@ -334,20 +319,16 @@ int spawn_and_respawn_server(int fd)
 	  if (time_error)
 	    {
 	      perror(*argv);
-	      fprintf(stderr,
-		      "%s: %s died abnormally, not respoawning because we could not read the time.\n",
-		      *argv, master_server);
+	      eprintf("%s died abnormally, not respoawning because we could not read the time.", master_server);
 	      return 1;
 	    }
 	  
 	  /* Respawn if the server did not die too fast. */
 	  if (time_end.tv_sec - time_start.tv_sec < RESPAWN_TIME_LIMIT_SECONDS)
-	    fprintf(stderr, "%s: %s died abnormally, respawning.\n", *argv, master_server);
+	    eprintf("%s died abnormally, respawning.", master_server);
 	  else
 	    {
-	      fprintf(stderr,
-		      "%s: %s died abnormally, died too fast, not respawning.\n",
-		      *argv, master_server);
+	      eprintf("%s died abnormally, died too fast, not respawning.", master_server);
 	      return 1;
 	    }
 	  
@@ -390,9 +371,7 @@ int create_directory_root(const char* pathname)
       if (S_ISDIR(attr.st_mode) == 0)
 	{
 	  /* But it is not a directory so we cannot continue. */
-	  fprintf(stderr,
-		  "%s: %s already exists but is not a directory.\n",
-		  pathname, *argv);
+	  eprintf("%s already exists but is not a directory.", pathname);
 	  return 1;
 	}
     }
@@ -436,9 +415,7 @@ int create_directory_user(const char* pathname)
       if (S_ISDIR(attr.st_mode) == 0)
 	{
 	  /* But it is not a directory so we cannot continue. */
-	  fprintf(stderr,
-		  "%s: %s already exists but is not a directory.\n",
-		  pathname, *argv);
+	  eprintf("%s already exists but is not a directory.", pathname);
 	  return 1;
 	}
     }

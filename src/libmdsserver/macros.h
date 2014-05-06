@@ -34,7 +34,7 @@
  * @param  ...            The arguments
  */
 #define xsnprintf(buffer, format, ...)  \
-  snprintf(buffer, sizeof(buffer) / sizeof(char), format, __VA_ARGS__);
+  snprintf(buffer, sizeof(buffer) / sizeof(char), format, __VA_ARGS__)
 
 
 /**
@@ -44,7 +44,7 @@
  * @param  format:char*  The format
  */
 #define eprint(format)  \
-  fprintf(stderr, "%s: " format "\n", *argv);
+  fprintf(stderr, "%s: " format "\n", *argv)
 
 
 /**
@@ -55,7 +55,7 @@
  * @param  ...            The arguments
  */
 #define eprintf(format, ...)  \
-  fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__);
+  fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__)
 
 
 /**
