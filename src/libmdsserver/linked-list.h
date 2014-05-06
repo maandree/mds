@@ -266,6 +266,15 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
  */
 int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
 
+/**
+ * Wrapper for `for` keyword that iterates over each element in a linked list
+ * 
+ * @param  list:linked_list_t  The linked list
+ * @param  node:ssize_t        The variable to store the node in at each iteration
+ */
+#define foreach_linked_list_node(list, node)  \
+  for (node = list.edge; (node = list.next[node]) != list.edge;)
+
 
 #endif
 

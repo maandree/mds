@@ -683,13 +683,9 @@ void sigusr1_trap(int signo)
 	pthread_kill(master_thread, signo);
       
       with_mutex(slave_mutex,
-		 for (node = client_list.edge;;)
+		 foreach_linked_list_node (client_list, node)
 		   {
-		     client_t* value;
-		     if ((node = client_list.next[node]) == client_list.edge)
-		       break;
-		     
-		     value = (client_t*)(void*)(client_list.values[node]);
+		     client_t* value = (client_t*)(void*)(client_list.values[node]);
 		     if (pthread_equal(current_thread, value->thread) == 0)
 		       pthread_kill(value->thread, signo);
 		   });
@@ -751,19 +747,12 @@ int marshal_server(int fd)
   buf_set_next(state_buf_, size_t, list_elements);
   
   /* Marshal the clients. */
-  for (node = client_list.edge;;)
+  foreach_linked_list_node (client_list, node)
     {
-      size_t value_address;
-      client_t* value;
-      
-      /* Get the next client's node in the linked list. */
-      if ((node = client_list.next[node]) == client_list.edge)
-	break;
-      
       /* Get the memory address of the client. */
-      value_address = client_list.values[node];
+      size_t value_address = client_list.values[node];
       /* Get the client's information. */
-      value = (client_t*)(void*)value_address;
+      client_t* value = (client_t*)(void*)value_address;
       
       /* Get the marshalled size of the message. */
       msg_size = mds_message_marshal_size(&(value->message), 1);
@@ -1004,14 +993,10 @@ int unmarshal_server(int fd)
 	  client_map.used[i / 64] &= ~((uint64_t)1 << (i % 64));
   
   /* Remap the linked list and remove non-found elements, and start the clients. */
-  for (node = client_list.edge;;)
+  foreach_linked_list_node (client_list, node)
     {
-      size_t new_address;
-      if ((node = client_list.next[node]) == client_list.edge)
-	break;
-      
       /* Remap the linked list and remove non-found elements. */
-      new_address = unmarshal_remapper(client_list.values[node]);
+      size_t new_address = unmarshal_remapper(client_list.values[node]);
       client_list.values[node] = new_address;
       if (new_address == 0) /* Returned if missing (or if the address is the invalid NULL.) */
 	linked_list_remove(&client_list, node);
