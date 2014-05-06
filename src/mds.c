@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mds.h"
-#include "config.h"
 
+#include <libmdsserver/config.h>
 #include <libmdsserver/macros.h>
 
 #include <sys/stat.h>
