@@ -692,8 +692,7 @@ void run_initrc(char** args)
     }
   
   /* Test /etc. */
-  xsnprintf(pathname, "%s/%s", SYSCONFDIR, INITRC_FILE);
-  execv(args[0], args);
+  __exec("%s/%s", SYSCONFDIR, INITRC_FILE);
 
 #undef __exec  
   
