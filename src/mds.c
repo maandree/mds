@@ -19,6 +19,7 @@
 
 #include <libmdsserver/config.h>
 #include <libmdsserver/macros.h>
+#include <libmdsserver/util.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -106,6 +107,10 @@ int main(int argc_, char** argv_)
       eprint("the effective user is not root, cannot continue.");
       return 1;
     }
+  
+  /* Set up to ignore SIGUSR1, used in mds for re-exec, but we cannot re-exec. */
+  if (xsigaction(SIGUSR1, SIG_IGN) < 0)
+    perror(*argv);
   
   /* Create directory for socket files, PID files and such. */
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
@@ -227,8 +232,8 @@ int main(int argc_, char** argv_)
   
   /* Start master server and respawn it if it crashes. */
   rc = spawn_and_respawn_server(fd);
-
- done:  
+  
+ done:
   /* Shutdown, close and remove the socket. */
   if (fd != -1)
     {

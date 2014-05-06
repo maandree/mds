@@ -268,23 +268,13 @@ int main(int argc_, char** argv_)
   
   
   /* Make the server update without all slaves dying on SIGUSR1. */
-  {
-    struct sigaction action;
-    sigset_t sigset;
-    
-    sigemptyset(&sigset);
-    action.sa_handler = sigusr1_trap;
-    action.sa_mask = sigset;
-    action.sa_flags = 0;
-    
-    if (sigaction(SIGUSR1, &action, NULL) < 0)
-      {
-	perror(*argv);
-	fd_table_destroy(&client_map, NULL, NULL);
-	linked_list_destroy(&client_list);
-	return 1;
-      }
-  }
+  if (xsigaction(SIGUSR1, sigusr1_trap) < 0)
+    {
+      perror(*argv);
+      fd_table_destroy(&client_map, NULL, NULL);
+      linked_list_destroy(&client_list);
+      return 1;
+    }
   
   
   /* Create mutex and condition for slave counter. */

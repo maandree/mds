@@ -37,6 +37,19 @@ char* getenv_nonempty(const char* var);
  */
 void reexec_server(int argc, char** argv, int reexeced);
 
+/**
+ * Set up a signal trap.
+ * This function should only be used for common mds
+ * signals, and this function may choose to add
+ * additional behaviour depending on the signal, such
+ * as blocking other signals.
+ * 
+ * @param   signo     The signal to trap
+ * @param   function  The function to run when the signal is caught
+ * @return            Zero on success, -1 on error
+ */
+int xsigaction(int signo, void (*function)(int signo));
+
 
 #endif
 
