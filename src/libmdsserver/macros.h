@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include <time.h>
 */
 
 
@@ -213,6 +214,17 @@
 #define drop_privileges()                              \
   ((getegid() == getgid() ? 0 : setegid(getgid())) ||  \
    (geteuid() == getuid() ? 0 : seteuid(getuid())))
+
+
+/**
+ * Wrapper for `clock_gettime` that gets some kind of
+ * monotonic time, the exact clock ID is not specified
+ * 
+ * @param   time_slot:struct timespec*  Pointer to the variable in which to store the time
+ * @return  :int                        Zero on sucess, -1 on error
+ */
+#define monotone(time_slot)  \
+  clock_gettime(CLOCK_MONOTONIC, time_slot)
 
 
 #endif

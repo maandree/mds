@@ -297,7 +297,7 @@ int spawn_and_respawn_server(int fd)
       if (pid)
 	{
 	  /* Get the current time. (Start of child process.) */
-	  time_error = (clock_gettime(CLOCK_MONOTONIC, &time_start) < 0);
+	  time_error = (monotone(&time_start) < 0);
 	  if (time_error)
 	    perror(*argv);
 	  
@@ -313,7 +313,7 @@ int spawn_and_respawn_server(int fd)
 	    break;
 	  
 	  /* Get the current time. (End of child process.) */
-	  time_error |= (clock_gettime(CLOCK_MONOTONIC, &time_end) < 0);
+	  time_error |= (monotone(&time_end) < 0);
 	  
 	  /* Do not respawn if we could not read the time. */
 	  if (time_error)
