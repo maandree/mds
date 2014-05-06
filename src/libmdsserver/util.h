@@ -19,6 +19,9 @@
 #define MDS_LIBMDSSERVER_UTIL_H
 
 
+#include <stddef.h>
+
+
 /**
  * Read an environment variable, but handle it as undefined if empty
  * 
@@ -49,6 +52,16 @@ void reexec_server(int argc, char** argv, int reexeced);
  * @return            Zero on success, -1 on error
  */
 int xsigaction(int signo, void (*function)(int signo));
+
+/**
+ * Send a message over a socket
+ * 
+ * @param   socket   The file descriptor of the socket
+ * @param   message  The message to send
+ * @param   length   The length of the message
+ * @return           The number of bytes that have been sent (even on error)
+ */
+size_t send_message(int socket, const char* message, size_t length);
 
 
 #endif

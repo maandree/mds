@@ -52,7 +52,7 @@ closed’ with the client's ID. Be aware that the ID
 may be 0:0, which is not unique.
 
 
-Multicasts are sent by to clients that have ask for
+Multicasts are sent to clients that have ask for
 the type of message this is being sent. This technique
 is also used to intercept message or receive message
 as part of a service that a server provides. Servers
@@ -66,10 +66,10 @@ that is an signed 64-bit integer, the default value is
 zero. This is done by using the header ‘Priority’. A
 higher priority means that the message is sent earlier.
 If the client wishes to be able to modify the message
-it most the header ‘Modifying’ with the value ‘yes’.
+it most have the header ‘Modifying’ with the value ‘yes’.
 If the client wishes to receive all messages it should
 not include a payload, otherwise it which send a
-LF delimited list of headers that it is interested it.
+LF delimited list of headers that it is interested in.
 In this list it is possible to limit to exact values
 byte appending a colon and blank space (‘: ’) followed
 by the value to the header name. You can also request

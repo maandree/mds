@@ -42,6 +42,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <inttypes.h>
 
 
 
@@ -492,6 +493,8 @@ void* slave_loop(void* data)
   
   /* Store the thread so that other threads can kill it. */
   information->thread = pthread_self();
+  /* Create mutex to make sure two thread to not try to send messages concurrently. */
+  pthread_mutex_init(&(information->mutex), NULL);
   
   
   /* Make the server update without all slaves dying on SIGUSR1. */
@@ -583,15 +586,74 @@ void* slave_loop(void* data)
  * 
  * @param  client  The client has sent a message
  */
-void message_received(client_t* client)
+void message_received(client_t* client) /* TODO */
 {
   mds_message_t message = client->message;
-  size_t i;
+  int assign_id = 0;
+  const char* message_id = NULL;
+  size_t i, n;
+  char* msgbuf;
   
+  /* Parser headers. */
   for (i = 0; i < message.header_count; i++)
     {
-      char* header = message.headers[i];
-      /* TODO */
+      const char* header = message.headers[i];
+      if (strequals(header, "Command: assign-id"))
+	assign_id = 1;
+      else if (startswith(header, "Message ID: "))
+	message_id = header + strlen("Message ID: ");
+    }
+  
+  /* Assign ID or reply with current ID. */
+  if (assign_id)
+    {
+      /* Assign ID if not already assigned. */
+      if (client->id == 0)
+	{
+	  with_mutex(slave_mutex,
+		     client->id = next_id++;
+		     if (next_id == 0)
+		       {
+			 eprint("this is impossible, ID counter has overflowed.");
+			 /* If the program ran for a millennium it would
+			    take c:a 585 assignments per nanosecond. This
+			    cannot possibly happen. (It would require serious
+			    dedication by generations of ponies (or just an alicorn)
+			    to maintain the process and transfer it new hardware.) */
+			 abort();
+		       }
+		     );
+	  /* TODO: add interception:
+	     To: $(assign_id)
+	     Priority: 0
+	     Modifying: no
+	  */
+	}
+      
+      /* Construct response. */
+      n = 2 * 10 + strlen(message_id) + 1;
+      n += strlen("ID assignment: :\nIn response to: \n\n");
+      msgbuf = malloc(n * sizeof(char));
+      if (msgbuf == NULL)
+	{
+	  perror(*argv);
+	  return;
+	}
+      snprintf(msgbuf, n,
+	       "ID assignment: %" PRIu32 ":%" PRIu32 "\n"
+	       "In response to: %s\n"
+	       "\n",
+	       (uint32_t)(client->id >> 32),
+	       (uint32_t)(client->id >>  0),
+	       message_id);
+      n = strlen(msgbuf);
+      
+      /* Send message. */
+      with_mutex(client->mutex,
+		 if (send_message(client->socket_fd, msgbuf, n) < n) /* TODO support EINTR*/
+		   perror(*argv);
+		 );
+      free(msgbuf);
     }
 }
 

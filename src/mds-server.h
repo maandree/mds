@@ -61,6 +61,11 @@ typedef struct client
    */
   uint64_t id;
   
+  /**
+   * Mutex for sending data
+   */
+  pthread_mutex_t mutex;
+  
 } client_t;
 
 

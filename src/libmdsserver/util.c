@@ -17,12 +17,15 @@
  */
 #include "util.h"
 #include "config.h"
+#include "macros.h"
 
 #include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/socket.h>
+#include <errno.h>
 
 
 /**
@@ -104,5 +107,41 @@ int xsigaction(int signo, void (*function)(int signo))
   action.sa_flags = 0;
   
   return sigaction(signo, &action, NULL);
+}
+
+
+/**
+ * Send a message over a socket
+ * 
+ * @param   socket   The file descriptor of the socket
+ * @param   message  The message to send
+ * @param   length   The length of the message
+ * @return           The number of bytes that have been sent (even on error)
+ */
+size_t send_message(int socket, const char* message, size_t length)
+{
+  size_t block_size = length;
+  size_t sent = 0;
+  ssize_t just_sent;
+  
+  while (length > 0)
+    if ((just_sent = send(socket, message, min(block_size, length), MSG_NOSIGNAL)) < 0)
+      {
+	if (errno == EMSGSIZE)
+	  {
+	    block_size >>= 1;
+	    if (block_size == 0)
+	      return sent;
+	  }
+	else if (errno != EINTR)
+	  return sent;
+      }
+    else
+      {
+	message += (size_t)just_sent;
+	length -= (size_t)just_sent;
+      }
+  
+  return sent;
 }
 
