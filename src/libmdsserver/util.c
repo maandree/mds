@@ -133,7 +133,7 @@ size_t send_message(int socket, const char* message, size_t length)
 	    if (block_size == 0)
 	      return sent;
 	  }
-	else if (errno != EINTR)
+	else
 	  return sent;
       }
     else

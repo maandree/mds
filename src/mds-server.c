@@ -650,7 +650,7 @@ void message_received(client_t* client) /* TODO */
       
       /* Send message. */
       with_mutex(client->mutex,
-		 if (send_message(client->socket_fd, msgbuf, n) < n) /* TODO support EINTR*/
+		 if (send_message(client->socket_fd, msgbuf, n) < n) /* TODO support EINTR */
 		   perror(*argv);
 		 );
       free(msgbuf);
