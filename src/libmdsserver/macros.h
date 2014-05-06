@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <string.h>
 */
 
 
@@ -178,6 +179,40 @@
 #define buf_get_next(buffer, type, variable)  \
   buf_get(buffer, type, 0, variable);         \
   buf_next(buffer, type, 1)
+
+
+/**
+ * Check whether two strings are equal
+ * 
+ * @param   a:char*  One of the strings
+ * @param   b:char*  The other of the strings
+ * @return  :int     Whether the strings are equal
+ */
+#define strequals(a, b)  \
+  (strcmp(a, b) == 0)
+
+
+/**
+ * Check whether a string starts with another string
+ * 
+ * @param   haystack:char*  The string to inspect
+ * @param   needle:char*    The string `haystack` should start with
+ * @return  :int            Whether `haystack` starts with `needle`
+ */
+#define startswith(haystack, needle)  \
+  (strstr(haystack, needle) == haystack)
+
+
+/**
+ * Set effective user and the effective group to the
+ * real user and the real group, respectively. If the
+ * group cannot be set, the user till not be set either.
+ * 
+ * @return  :int  Non-zero on error
+ */
+#define drop_privileges()                              \
+  ((getegid() == getgid() ? 0 : setegid(getgid())) ||  \
+   (geteuid() == getuid() ? 0 : seteuid(getuid())))
 
 
 #endif

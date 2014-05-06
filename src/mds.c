@@ -88,7 +88,7 @@ int main(int argc_, char** argv_)
   for (j = 1; j < argc; j++)
     {
       char* arg = argv[j];
-      if (strstr(arg, "--master-server=") == arg) /* Master server. */
+      if (startswith(arg, "--master-server=")) /* Master server. */
 	{
 	  if (got_master_server)
 	    {
@@ -222,7 +222,7 @@ int main(int argc_, char** argv_)
   
   /* Drop privileges. They most not be propagated non-authorised components. */
   /* setgid should not be set, but just to be safe we are restoring both user and group. */
-  if ((seteuid(getuid()) < 0) || (setegid(getgid()) < 0))
+  if (drop_privileges())
     goto fail;
   
   /* Start master server and respawn it if it crashes. */

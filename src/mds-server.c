@@ -123,8 +123,7 @@ int main(int argc_, char** argv_)
   
   
   /* Drop privileges like it's hot. */
-  if ((geteuid() == getuid() ? 0 : seteuid(getuid())) ||
-      (getegid() == getgid() ? 0 : setegid(getgid())))
+  if (drop_privileges())
     {
       perror(*argv);
       return 1;
@@ -143,7 +142,7 @@ int main(int argc_, char** argv_)
   for (i = 1; i < argc; i++)
     {
       char* arg = argv[i];
-      if (!strcmp(arg, "--initial-spawn")) /* Initial spawn? */
+      if (strequals(arg, "--initial-spawn")) /* Initial spawn? */
 	if (is_respawn == 1)
 	  {
 	    eprintf("conflicting arguments %s and %s cannot be combined.",
@@ -152,7 +151,7 @@ int main(int argc_, char** argv_)
 	  }
 	else
 	  is_respawn = 0;
-      else if (!strcmp(arg, "--respawn")) /* Respawning after crash? */
+      else if (strequals(arg, "--respawn")) /* Respawning after crash? */
 	if (is_respawn == 0)
 	  {
 	    eprintf("conflicting arguments %s and %s cannot be combined.",
@@ -161,7 +160,7 @@ int main(int argc_, char** argv_)
 	  }
 	else
 	  is_respawn = 1;
-      else if (strstr(arg, "--socket-fd=") == arg) /* Socket file descriptor. */
+      else if (startswith(arg, "--socket-fd=")) /* Socket file descriptor. */
 	{
 	  long int r;
 	  char* endptr;
@@ -173,15 +172,15 @@ int main(int argc_, char** argv_)
 	  arg += strlen("--socket-fd=");
 	  r = strtol(arg, &endptr, 10);
 	  if ((*argv == '\0') || isspace(*argv) ||
-	      (endptr - arg != (ssize_t)strlen(arg))
-	      || (r < 0) || (r > INT_MAX))
+	      (endptr - arg != (ssize_t)strlen(arg)) ||
+	      (r < 0) || (r > INT_MAX))
 	    {
 	      eprintf("invalid value for %s: %s.", "--socket-fd", arg);
 	      return 1;
 	    }
 	  socket_fd = (int)r;
 	}
-      else if (!strcmp(arg, "--re-exec")) /* Re-exec state-marshal. */
+      else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
 	reexec = 1;
       else
 	/* Not recognised, it is probably for another server. */
