@@ -24,6 +24,7 @@
 #include <libmdsserver/mds-message.h>
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
+#include <libmdsserver/hash-help.h>
 
 #include <alloca.h>
 #include <signal.h>
@@ -656,16 +657,62 @@ void message_received(client_t* client) /* TODO */
   /* Make the client listen for messages addressed to it. */
   if (intercept)
     {
+      size_t size = 64; /* Atleast 25, otherwise we get into problems at ((intercept & 2)) */
+      char* buf = malloc((size + 1) * sizeof(char));
+      if (buf == NULL)
+	{
+	  perror(*argv);
+	  return;
+	}
+      
       pthread_mutex_lock(&(client->mutex));
       if ((intercept & 1)) /* from payload */
 	{
-	  /* TODO */
+	  char* payload = client->message.payload;
+	  if (client->message.payload_size == 0) /* All messages */
+	    {
+	      *buf = '\0';
+	      add_intercept_condition(client, buf, priority, modifying, stop);
+	    }
+	  else /* Filtered messages */
+	    for (;;)
+	      {
+		char* end = strchrnul(payload, '\n');
+		size_t len = (size_t)(end - payload);
+		if (len == 0)
+		  {
+		    payload++;
+		    break;
+		  }
+		if (len > size)
+		  {
+		    char* old_buf = buf;
+		    buf = realloc(buf, ((size <<= 1) + 1) * sizeof(char));
+		    if (buf == NULL)
+		      {
+			perror(*argv);
+			free(old_buf);
+			return;
+		      }
+		  }
+		memcpy(buf, payload, len);
+		buf[len] = '\0';
+		add_intercept_condition(client, buf, priority, modifying, stop);
+		if (*end == '\0')
+		  break;
+		payload = end + 1;
+	      }
 	}
       if ((intercept & 2)) /* "To: $(client->id)" */
 	{
-	  /* TODO */
+	  snprintf(buf, size, "To: %" PRIu32 ":%" PRIu32,
+		   (uint32_t)(client->id >> 32),
+		   (uint32_t)(client->id >>  0));
+	  add_intercept_condition(client, buf, priority, modifying, stop);
 	}
       pthread_mutex_unlock(&(client->mutex));
+      
+      free(buf);
     }
   
   
@@ -696,6 +743,97 @@ void message_received(client_t* client) /* TODO */
 		   perror(*argv);
 		 );
       free(msgbuf);
+    }
+}
+
+
+/**
+ * Add an interception condition for a client
+ * 
+ * @param  client     The client
+ * @param  condition  The header, optionally with value, to look for, or empty (not `NULL`) for all messages
+ * @param  priority   Interception priority
+ * @param  modifying  Whether the client may modify the messages
+ * @param  stop       Whether the condition should be removed rather than added
+ */
+void add_intercept_condition(client_t* client, char* condition, int64_t priority, int modifying, int stop)
+{
+  size_t n = client->interception_conditions_count;
+  interception_condition_t* conds = client->interception_conditions;
+  ssize_t nonmodifying = -1;
+  char* header = condition;
+  char* value;
+  size_t hash;
+  size_t i;
+  
+  if ((condition = strdup(condition)) == NULL)
+    {
+      perror(*argv);
+      return;
+    }
+  
+  if ((value = strchr(header, ':')) != NULL)
+    {
+      *value = '\0'; /* NUL-terminate header. */
+      value += 2;    /* Skip over delimiter.  */
+    }
+  
+  hash = string_hash(header);
+  
+  for (i = 0; i < n; i++)
+    {
+      if (conds[i].header_hash == hash)
+	if (strequals(conds[i].condition, condition))
+	  {
+	    if (stop)
+	      {
+		memmove(conds + i, conds + i + 1, --n - i);
+		client->interception_conditions_count--;
+		conds = realloc(conds, n * sizeof(interception_condition_t));
+		if (conds == NULL)
+		  perror(*argv);
+		else
+		  client->interception_conditions = conds;
+	      }
+	    else
+	      {
+		conds[i].priority = priority;
+		conds[i].modifying = modifying;
+		if (modifying && (nonmodifying >= 0))
+		  {
+		    interception_condition_t temp = conds[nonmodifying];
+		    conds[nonmodifying] = conds[i];
+		    conds[i] = temp;
+		  }
+	      }
+	    return;
+	  }
+      if ((nonmodifying < 0) && conds[i].modifying)
+	nonmodifying = (ssize_t)i;
+    }
+  
+  if (stop)
+    eprint("client tried to stop intercepting messages that it does not intercept.");
+  else
+    {
+      conds = realloc(conds, (n + 1) * sizeof(interception_condition_t));
+      if (conds == NULL)
+	{
+	  perror(*argv);
+	  return;
+	}
+      client->interception_conditions = conds; 
+      client->interception_conditions_count++;
+      conds[n].condition = condition;
+      conds[n].header_hash = hash;
+      conds[n].priority = priority;
+      conds[n].modifying = modifying;
+      if (modifying && (nonmodifying >= 0))
+	{
+	  interception_condition_t temp = conds[nonmodifying];
+	  conds[nonmodifying] = conds[n];
+	  conds[n] = temp;
+	}
     }
 }
 

@@ -128,6 +128,17 @@ void* slave_loop(void* data);
 void message_received(client_t* client);
 
 /**
+ * Add an interception condition for a client
+ * 
+ * @param  client     The client
+ * @param  condition  The header, optionally with value, to look for, or empty (not `NULL`) for all messages
+ * @param  priority   Interception priority
+ * @param  modifying  Whether the client may modify the messages
+ * @param  stop       Whether the condition should be removed rather than added
+ */
+void add_intercept_condition(client_t* client, char* condition, int64_t priority, int modifying, int stop);
+
+/**
  * Exec into the mdsinitrc script
  * 
  * @param  args  The arguments to the child process
