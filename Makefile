@@ -66,7 +66,7 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 # Build rules.
 
 .PHONY: all
-all: bin/mds bin/mds-server bin/libmdsserver.so
+all: bin/mds bin/mds-server/mds-server bin/libmdsserver.so
 
 
 bin/%: obj/%.o bin/libmdsserver.so
