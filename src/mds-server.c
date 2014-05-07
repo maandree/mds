@@ -787,20 +787,37 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 	  {
 	    if (stop)
 	      {
+		/* Remove the condition from the list. */
 		memmove(conds + i, conds + i + 1, --n - i);
 		client->interception_conditions_count--;
-		conds = realloc(conds, n * sizeof(interception_condition_t));
-		if (conds == NULL)
-		  perror(*argv);
+		/* Diminish the list. */
+		if (n == 0)
+		  {
+		    free(conds);
+		    client->interception_conditions = NULL;
+		  }
 		else
-		  client->interception_conditions = conds;
+		  {
+		    conds = realloc(conds, n * sizeof(interception_condition_t));
+		    if (conds == NULL)
+		      perror(*argv);
+		    else
+		      client->interception_conditions = conds;
+		  }
 	      }
 	    else
 	      {
+		/* Update parameters. */
 		conds[i].priority = priority;
 		conds[i].modifying = modifying;
 		if (modifying && (nonmodifying >= 0))
 		  {
+		    /* Optimisation: put conditions that are modifying
+		       at the beginning. When a client is intercepting
+		       we most know if any satisfying condition is
+		       modifying. With this optimisation the first
+		       satisfying condition will tell us if there is
+		       any satisfying condition that is modifying. */
 		    interception_condition_t temp = conds[nonmodifying];
 		    conds[nonmodifying] = conds[i];
 		    conds[i] = temp;
@@ -808,6 +825,9 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 	      }
 	    return;
 	  }
+      /* Look for the first non-modifying, this is a part of the
+         optimisation where we put all modifying conditions at the
+	 beginning. */
       if ((nonmodifying < 0) && conds[i].modifying)
 	nonmodifying = (ssize_t)i;
     }
@@ -816,13 +836,18 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
     eprint("client tried to stop intercepting messages that it does not intercept.");
   else
     {
-      conds = realloc(conds, (n + 1) * sizeof(interception_condition_t));
+      /* Grow the interception condition list. */
+      if (conds == NULL)
+	conds = malloc(1 * sizeof(interception_condition_t));
+      else
+	conds = realloc(conds, (n + 1) * sizeof(interception_condition_t));
       if (conds == NULL)
 	{
 	  perror(*argv);
 	  return;
 	}
       client->interception_conditions = conds; 
+      /* Store condition. */
       client->interception_conditions_count++;
       conds[n].condition = condition;
       conds[n].header_hash = hash;
@@ -830,6 +855,12 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
       conds[n].modifying = modifying;
       if (modifying && (nonmodifying >= 0))
 	{
+	  /* Optimisation: put conditions that are modifying
+	     at the beginning. When a client is intercepting
+	     we most know if any satisfying condition is
+	     modifying. With this optimisation the first
+	     satisfying condition will tell us if there is
+	     any satisfying condition that is modifying. */
 	  interception_condition_t temp = conds[nonmodifying];
 	  conds[nonmodifying] = conds[n];
 	  conds[n] = temp;
