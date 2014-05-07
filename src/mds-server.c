@@ -785,13 +785,10 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 		    client->interception_conditions = NULL;
 		  }
 		else
-		  {
-		    conds = realloc(conds, n * sizeof(interception_condition_t));
-		    if (conds == NULL)
-		      perror(*argv);
-		    else
-		      client->interception_conditions = conds;
-		  }
+		  if ((conds = realloc(conds, n * sizeof(interception_condition_t))) == NULL)
+		    perror(*argv);
+		  else
+		    client->interception_conditions = conds;
 	      }
 	    else
 	      {
@@ -1462,8 +1459,7 @@ int unmarshal_server(int fd)
 	  if (value->interception_conditions != NULL)
 	    {
 	      for (j = 0; j < n; j++)
-		if (value->interception_conditions[j].condition != NULL)
-		  free(value->interception_conditions[j].condition);
+		free(value->interception_conditions[j].condition);
 	      free(value->interception_conditions);
 	    }
 	  free(value);
