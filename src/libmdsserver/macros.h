@@ -272,7 +272,7 @@
 
 
 /**
- * `malloc` wrapper that returns whether the allocation was successful
+ * `malloc` wrapper that returns whether the allocation was not successful
  *  
  * @param   var       The variable to which to assign the allocation
  * @param   elements  The number of elements to allocate
@@ -284,7 +284,7 @@
 
 
 /**
- * `calloc` wrapper that returns whether the allocation was successful
+ * `calloc` wrapper that returns whether the allocation was not successful
  *  
  * @param   var       The variable to which to assign the allocation
  * @param   elements  The number of elements to allocate
