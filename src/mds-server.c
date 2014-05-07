@@ -1054,6 +1054,11 @@ void multicast_message(char* message, size_t length)
       size_t sent;
       n = length;
       
+      /* Skip if the client has closed. */
+      if (client->open == 0)
+	continue;
+      
+      /* Send the message. */
       with_mutex(client->mutex,
 		 while (n > 0)
 		   {
@@ -1068,6 +1073,7 @@ void multicast_message(char* message, size_t length)
 		   }
 		 );
       
+      /* Wait for a reply. */
       if ((n > 0) && client_.modifying)
 	{
 	  /* TODO */
