@@ -110,6 +110,16 @@ typedef struct client
    */
   size_t interception_conditions_count;
   
+  /**
+   * Messages pending to be sent (concatenated)
+   */
+  char* send_pending;
+  
+  /**
+   * The character length of the messages pending to be sent
+   */
+  size_t send_pending_size;
+  
 } client_t;
 
 /**
