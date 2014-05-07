@@ -604,7 +604,7 @@ void* slave_loop(void* data)
  * 
  * @param  client  The client has sent a message
  */
-void message_received(client_t* client) /* TODO */
+void message_received(client_t* client) /* TODO interceptions */
 {
   mds_message_t message = client->message;
   int assign_id = 0;
