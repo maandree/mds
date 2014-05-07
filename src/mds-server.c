@@ -552,7 +552,12 @@ void* slave_loop(void* data)
     goto reexec;
   
   
-  /* TODO multicast information about the client closing. */
+  /* TODO multicast information about the client closing.
+     "Client closed: %" PRIu32 ":" PRIu32 "%\n"
+     "\n",
+     (uint32_t)(information->id >> 32),
+     (uint32_t)(information->id >>  0)
+   */
   
   
  fail: /* The loop does break, this done on success as well. */
@@ -604,7 +609,7 @@ void* slave_loop(void* data)
  * 
  * @param  client  The client has sent a message
  */
-void message_received(client_t* client) /* TODO interceptions */
+void message_received(client_t* client)
 {
   mds_message_t message = client->message;
   int assign_id = 0;
@@ -628,7 +633,7 @@ void message_received(client_t* client) /* TODO interceptions */
       else if (startswith(h, "Priority: "))          priority   = atoll(strstr(h, ": ") + 2);
     }
   
-  /* Ignore message if not labeled with a message ID. */
+  /* Ignore message if not labelled with a message ID. */
   if (message_id == NULL)
     {
       eprint("received message with a message ID, ignoring.");
@@ -716,9 +721,14 @@ void message_received(client_t* client) /* TODO interceptions */
     }
   
   
+  /* TODO multicast this message */
+  
+  
   /* Send asigned ID. */
   if (assign_id)
     {
+      size_t sent;
+      
       /* Construct response. */
       n = 2 * 10 + strlen(message_id) + 1;
       n += strlen("ID assignment: :\nIn response to: \n\n");
@@ -737,10 +747,23 @@ void message_received(client_t* client) /* TODO interceptions */
 	       message_id == NULL ? "" : message_id);
       n = strlen(msgbuf);
       
+      
+      /* TODO multicast msgbuf[:n] */
+      
+      
       /* Send message. */
       with_mutex(client->mutex,
-		 if (send_message(client->socket_fd, msgbuf, n) < n) /* TODO support EINTR */
-		   perror(*argv);
+		 while (n > 0)
+		   {
+		     sent = send_message(client->socket_fd, msgbuf, n);
+		     if ((sent < n) && (errno != EINTR)) /* Ignore EINTR */
+		       {
+			 perror(*argv);
+			 break;
+		       }
+		     n -= sent;
+		     msgbuf += sent;
+		   }
 		 );
       free(msgbuf);
     }
