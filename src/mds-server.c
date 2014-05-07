@@ -397,14 +397,14 @@ int main(int argc_, char** argv_)
     int reexec_fd;
     char shm_path[NAME_MAX + 1];
     
-    /* Release resources. */
-    pthread_mutex_destroy(&slave_mutex);
-    pthread_cond_destroy(&slave_cond);
-    
     /* Join with all slaves threads. */
     with_mutex(slave_mutex,
 	       while (running_slaves > 0)
 		 pthread_cond_wait(&slave_cond, &slave_mutex););
+    
+    /* Release resources. */
+    pthread_mutex_destroy(&slave_mutex);
+    pthread_cond_destroy(&slave_cond);
     
     /* Marshal the state of the server. */
     xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
