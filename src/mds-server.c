@@ -498,7 +498,7 @@ void* slave_loop(void* data)
 		       );
 	  }
 	
-	/* Fetch message.*/
+	/* Fetch message. */
 	r = mds_message_read(&(information->message), socket_fd);
 	if (r == 0)
 	  message_received(information);
