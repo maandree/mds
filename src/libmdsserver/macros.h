@@ -19,12 +19,18 @@
 #define MDS_LIBMDSSERVER_MACROS_H
 
 
+#include "config.h"
+
+
 /*
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
 #include <time.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <stdlib.h>
 */
 
 
@@ -225,6 +231,68 @@
  */
 #define monotone(time_slot)  \
   clock_gettime(CLOCK_MONOTONIC, time_slot)
+
+
+/**
+ * Close all file descriptors that satisfies a condition
+ * 
+ * @param  condition  The condition, it should evaluate the variable `fd`
+ */
+#define close_files(condition)                                                              \
+{                                                                                           \
+  DIR* dir = opendir(SELF_FD);                                                              \
+  struct dirent* file;                                                                      \
+                                                                                            \
+  if (dir == NULL)                                                                          \
+    perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */  \
+  else                                                                                      \
+    while ((file = readdir(dir)) != NULL)                                                   \
+      if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))                          \
+	{                                                                                   \
+	  int fd = atoi(file->d_name);                                                      \
+	  if (condition)                                                                    \
+	    close(fd);                                                                      \
+	}                                                                                   \
+                                                                                            \
+  closedir(dir);                                                                            \
+}
+
+
+/**
+ * Free an array and all elements in an array
+ * 
+ * @param  array:¿V?*       The array to free
+ * @param  elements:size_t  The number of elements, in the array, to free
+ * @scope  i:size_t         The variable `i` must be declared as `size_t` and avaiable for use
+ */
+#define xfree(array, elements)    \
+  for (i = 0; i < elements; i++)  \
+    free((array)[i]);		  \
+  free(array)
+
+
+/**
+ * `malloc` wrapper that returns whether the allocation was successful
+ *  
+ * @param   var       The variable to which to assign the allocation
+ * @param   elements  The number of elements to allocate
+ * @parma   type      The data type of the elements for which to create an allocation
+ * @return  :int      Evaluates to true if an only if the allocation failed
+ */
+#define xmalloc(var, elements, type)  \
+  ((var = malloc((elements) * sizeof(type))) == NULL)
+
+
+/**
+ * `calloc` wrapper that returns whether the allocation was successful
+ *  
+ * @param   var       The variable to which to assign the allocation
+ * @param   elements  The number of elements to allocate
+ * @parma   type      The data type of the elements for which to create an allocation
+ * @return  :int      Evaluates to true if an only if the allocation failed
+ */
+#define xcalloc(var, elements, type)  \
+  ((var = calloc(elements, sizeof(type))) == NULL)
 
 
 #endif

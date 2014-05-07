@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <ctype.h>
 
 
 /**
@@ -143,5 +144,31 @@ size_t send_message(int socket, const char* message, size_t length)
       }
   
   return sent;
+}
+
+
+/**
+ * A version of `atoi` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoi(const char* str, int* value, int min, int max)
+{
+  long long int r;
+  char* endptr;
+  
+  r = strtoll(str, &endptr, 10);
+  if ((*str == '\0') || isspace(*str) ||
+      (endptr - str != (ssize_t)strlen(str)) ||
+      (r < (long long int)min) ||
+      (r > (long long int)max))
+    return -1;
+  
+  *value = (int)r;
+  return 0;
 }
 

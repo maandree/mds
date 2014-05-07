@@ -67,25 +67,20 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity)
     capacity = LINKED_LIST_DEFAULT_INITIAL_CAPACITY;
   
   /* Initialise the linked list. */
-  capacity = to_power_of_two(capacity);
-  this->capacity = capacity;
-  this->edge = 0;
-  this->end = 1;
+  this->capacity   = capacity = to_power_of_two(capacity);
+  this->edge       = 0;
+  this->end        = 1;
   this->reuse_head = 0;
-  this->reusable = NULL;
-  this->values = NULL;
-  this->next = NULL;
-  this->previous = NULL;
-  if ((this->reusable = malloc(capacity * sizeof(ssize_t))) == NULL)
-    return -1;
-  if ((this->values = malloc(capacity * sizeof(size_t))) == NULL)
-    return -1;
-  if ((this->next = malloc(capacity * sizeof(ssize_t))) == NULL)
-    return -1;
-  if ((this->previous = malloc(capacity * sizeof(ssize_t))) == NULL)
-    return -1;
-  this->values[this->edge] = 0;
-  this->next[this->edge] = this->edge;
+  this->reusable   = NULL;
+  this->values     = NULL;
+  this->next       = NULL;
+  this->previous   = NULL;
+  if (xmalloc(this->reusable, capacity, ssize_t))  return -1;
+  if (xmalloc(this->values,   capacity,  size_t))  return -1;
+  if (xmalloc(this->next,     capacity, ssize_t))  return -1;
+  if (xmalloc(this->previous, capacity, ssize_t))  return -1;
+  this->values[this->edge]   = 0;
+  this->next[this->edge]     = this->edge;
   this->previous[this->edge] = this->edge;
   
   return 0;
@@ -100,15 +95,10 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity)
  */
 void linked_list_destroy(linked_list_t* restrict this)
 {
-  if (this->reusable != NULL)  free(this->reusable);
-  if (this->values   != NULL)  free(this->values);
-  if (this->next     != NULL)  free(this->next);
-  if (this->previous != NULL)  free(this->previous);
-  
-  this->reusable = NULL;
-  this->values   = NULL;
-  this->next     = NULL;
-  this->previous = NULL;
+  free(this->reusable);  this->reusable = NULL;
+  free(this->values);    this->values   = NULL;
+  free(this->next);      this->next     = NULL;
+  free(this->previous);  this->previous = NULL;
 }
 
 
@@ -122,53 +112,43 @@ void linked_list_destroy(linked_list_t* restrict this)
 int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out)
 {
   size_t n = this->capacity * sizeof(ssize_t);
-  size_t*  restrict new_values;
-  ssize_t* restrict new_next;
-  ssize_t* restrict new_previous;
+  size_t*  restrict new_values = NULL;
+  ssize_t* restrict new_next = NULL;
+  ssize_t* restrict new_previous = NULL;
   ssize_t* restrict new_reusable;
   
-  out->values = NULL;
-  out->next = NULL;
+  out->values   = NULL;
+  out->next     = NULL;
   out->previous = NULL;
   out->reusable = NULL;
   
-  if ((new_values = malloc(n)) == NULL)
-    return -1;
-  if ((new_next = malloc(n)) == NULL)
-    {
-      free(new_values);
-      return -1;
-    }
-  if ((new_previous = malloc(n)) == NULL)
-    {
-      free(new_values);
-      free(new_previous);
-      return -1;
-    }
-  if ((new_reusable = malloc(n)) == NULL)
-    {
-      free(new_values);
-      free(new_previous);
-      free(new_reusable);
-      return -1;
-    }
+  if ((new_values   = malloc(n)) == NULL)  goto fail;
+  if ((new_next     = malloc(n)) == NULL)  goto fail;
+  if ((new_previous = malloc(n)) == NULL)  goto fail;
+  if ((new_reusable = malloc(n)) == NULL)  goto fail;
   
-  out->values = new_values;
-  out->next = new_next;
+  out->values   = new_values;
+  out->next     = new_next;
   out->previous = new_previous;
   out->reusable = new_reusable;
   
-  out->capacity = this->capacity;
-  out->end = this->end;
+  out->capacity   = this->capacity;
+  out->end        = this->end;
   out->reuse_head = this->reuse_head;
-  out->edge = this->edge;
+  out->edge       = this->edge;
   
-  memcpy(out->values, this->values, n);
-  memcpy(out->next, this->next, n);
+  memcpy(out->values,   this->values,   n);
+  memcpy(out->next,     this->next,     n);
   memcpy(out->previous, this->previous, n);
   memcpy(out->reusable, this->reusable, n);
   
   return 0;
+
+ fail:
+  free(new_values);
+  free(new_next);
+  free(new_previous);
+  return -1;
 }
 
 
@@ -188,6 +168,9 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
  */
 int linked_list_pack(linked_list_t* restrict this)
 {
+  ssize_t* restrict new_next = NULL;
+  ssize_t* restrict new_previous = NULL;
+  ssize_t* restrict new_reusable = NULL;
   size_t size = this->end - this->reuse_head;
   size_t cap = to_power_of_two(size);
   ssize_t head = 0;
@@ -195,8 +178,7 @@ int linked_list_pack(linked_list_t* restrict this)
   ssize_t node;
   size_t* restrict vals;
   
-  vals = malloc(cap * sizeof(size_t));
-  if (vals == NULL)
+  if (xmalloc(vals, cap, size_t))
     return -1;
   while (((size_t)head != this->end) && (this->next[head] == LINKED_LIST_UNUSED))
     head++;
@@ -209,37 +191,15 @@ int linked_list_pack(linked_list_t* restrict this)
   
   if (cap != this->capacity)
     {
-      ssize_t* restrict new_next;
-      ssize_t* restrict new_previous;
-      ssize_t* restrict new_reusable;
-      
-      new_next = malloc(cap * sizeof(ssize_t));
-      if (new_next == NULL)
-	{
-	  free(vals);
-	  return -1;
-	}
-      new_previous = malloc(cap * sizeof(ssize_t));
-      if (new_previous == NULL)
-	{
-	  free(vals);
-	  free(new_next);
-	  return -1;
-	}
-      new_reusable = malloc(cap * sizeof(ssize_t));
-      if (new_reusable == NULL)
-	{
-	  free(vals);
-	  free(new_next);
-	  free(new_previous);
-	  return -1;
-	}
+      if (xmalloc(new_next,     cap, ssize_t))  goto fail;
+      if (xmalloc(new_previous, cap, ssize_t))  goto fail;
+      if (xmalloc(new_reusable, cap, ssize_t))  goto fail;
       
       free(this->next);
       free(this->previous);
       free(this->reusable);
       
-      this->next = new_next;
+      this->next     = new_next;
       this->previous = new_previous;
       this->reusable = new_reusable;
     }
@@ -257,6 +217,12 @@ int linked_list_pack(linked_list_t* restrict this)
   this->reuse_head = 0;
   
   return 0;
+
+ fail:
+  free(vals);
+  free(new_next);
+  free(new_previous);
+  return -1;
 }
 
 
@@ -285,30 +251,20 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
 	}
       
       this->capacity <<= 1;
-      this->values = realloc(old_values = this->values, this->capacity * sizeof(size_t));
-      if (this->values == NULL)
-	{
-	  this->values = old_values;
-	  return LINKED_LIST_UNUSED;
-	}
-      this->next = realloc(old = this->next, this->capacity * sizeof(ssize_t));
-      if (this->next == NULL)
-	{
-	  this->next = old;
-	  return LINKED_LIST_UNUSED;
-	}
-      this->previous = realloc(old = this->previous, this->capacity * sizeof(ssize_t));
-      if (this->previous == NULL)
-	{
-	  this->previous = old;
-	  return LINKED_LIST_UNUSED;
-	}
-      this->reusable = realloc(old = this->reusable, this->capacity * sizeof(ssize_t));
-      if (this->reusable == NULL)
-	{
-	  this->reusable = old;
-	  return LINKED_LIST_UNUSED;
-	}
+
+#define __realloc(new_var, old_var, type)					      \
+  if ((new_var = realloc(old_var = new_var, this->capacity * sizeof(type))) == NULL)  \
+    {										      \
+      new_var = old_var;							      \
+      return LINKED_LIST_UNUSED;						      \
+    }
+
+      __realloc(this->values,   old_values, size_t)
+      __realloc(this->next,     old,        ssize_t)
+      __realloc(this->previous, old,        ssize_t)
+      __realloc(this->reusable, old,        ssize_t)
+
+#undef __realloc
     }
   return (ssize_t)(this->end++);
 }

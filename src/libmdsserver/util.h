@@ -63,6 +63,17 @@ int xsigaction(int signo, void (*function)(int signo));
  */
 size_t send_message(int socket, const char* message, size_t length);
 
+/**
+ * A version of `atoi` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoi(const char* str, int* value, int min, int max);
+
 
 #endif
 

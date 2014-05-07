@@ -48,13 +48,8 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
      the time overhead of `fd_table_contains_value`. */
   
   bitcap = (this->capacity + 63) / 64;
-  this->used = calloc(bitcap, sizeof(size_t));
-  if (this->used == NULL)
-    return -1;
-  
-  this->values = calloc(this->capacity, sizeof(size_t));
-  if (this->values == NULL)
-    return -1;
+  if (xcalloc(this->used,   bitcap,         sizeof(size_t)))  return -1;
+  if (xcalloc(this->values, this->capacity, sizeof(size_t)))  return -1;
   
   return 0;
 }
@@ -70,31 +65,18 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
  */
 void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func* value_freer)
 {
-  if (((key_freer == NULL) && (value_freer == NULL)) || (this->used == NULL))
+  if (((key_freer != NULL) || (value_freer != NULL)) && (this->used != NULL) && (this->values != NULL))
     {
-      if (this->values != NULL)
-	free(this->values);
-      
-      if (this->used != NULL)
-	free(this->used);
+      size_t i;
+      for (i = 0; i < this->capacity; i++)
+	if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
+	  {
+	    if (key_freer   != NULL)  key_freer(i);
+	    if (value_freer != NULL)  value_freer(this->values[i]);
+	  }
     }
-  else
-    {
-      if (this->values != NULL)
-	{
-	  size_t i;
-	  for (i = 0; i < this->capacity; i++)
-	    if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
-	      {
-		if (key_freer != NULL)
-		  key_freer(i);
-		if (value_freer != NULL)
-		  value_freer(this->values[i]);
-	      }
-	  free(this->values);
-	}
-      free(this->used);
-    }
+  free(this->values);
+  free(this->used);
 }
 
 
@@ -303,13 +285,11 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
   this->used             = NULL;
   this->value_comparator = NULL;
   
-  this->values = malloc(this->capacity * sizeof(size_t));
-  if (this->values == NULL)
+  if (xmalloc(this->values, this->capacity, size_t))
     return -1;
   
   bitcap = (this->capacity + 63) / 64;
-  this->used = malloc(bitcap * sizeof(size_t));
-  if (this->used == NULL)
+  if (xmalloc(this->used, bitcap, size_t))
     return -1;
   
   memcpy(this->values, data, this->capacity * sizeof(size_t));

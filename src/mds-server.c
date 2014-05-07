@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <limits.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -150,43 +149,29 @@ int main(int argc_, char** argv_)
   for (i = 1; i < argc; i++)
     {
       char* arg = argv[i];
-      if (strequals(arg, "--initial-spawn")) /* Initial spawn? */
-	if (is_respawn == 1)
+      int v;
+      if ((v = strequals(arg, "--initial-spawn")) || /* Initial spawn? */
+	  strequals(arg, "--respawn"))               /* Respawning after crash? */
+	if (is_respawn == v)
 	  {
 	    eprintf("conflicting arguments %s and %s cannot be combined.",
 		    "--initial-spawn", "--respawn");
 	    return 1;
 	  }
 	else
-	  is_respawn = 0;
-      else if (strequals(arg, "--respawn")) /* Respawning after crash? */
-	if (is_respawn == 0)
-	  {
-	    eprintf("conflicting arguments %s and %s cannot be combined.",
-		    "--initial-spawn", "--respawn");
-	    return 1;
-	  }
-	else
-	  is_respawn = 1;
+	  is_respawn = !v;
       else if (startswith(arg, "--socket-fd=")) /* Socket file descriptor. */
 	{
-	  long int r;
-	  char* endptr;
 	  if (socket_fd != -1)
 	    {
 	      eprintf("duplicate declaration of %s.", "--socket-fd");
-	      return -1;
+	      return 1;
 	    }
-	  arg += strlen("--socket-fd=");
-	  r = strtol(arg, &endptr, 10);
-	  if ((*argv == '\0') || isspace(*argv) ||
-	      (endptr - arg != (ssize_t)strlen(arg)) ||
-	      (r < 0) || (r > INT_MAX))
+	  if (strict_atoi(arg += strlen("--socket-fd="), &socket_fd, 0, INT_MAX) < 0)
 	    {
 	      eprintf("invalid value for %s: %s.", "--socket-fd", arg);
 	      return 1;
 	    }
-	  socket_fd = (int)r;
 	}
       else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
 	reexec = 1;
@@ -216,9 +201,7 @@ int main(int argc_, char** argv_)
   /* Run mdsinitrc. */
   if (is_respawn == 0)
     {
-      pid_t pid;
-      
-      pid = fork();
+      pid_t pid = fork();
       if (pid == (pid_t)-1)
 	{
 	  perror(*argv);
@@ -227,22 +210,7 @@ int main(int argc_, char** argv_)
       if (pid == 0) /* Child process exec:s, the parent continues without waiting for it. */
 	{
 	  /* Close all files except stdin, stdout and stderr. */
-	  DIR* dir = opendir(SELF_FD);
-	  struct dirent* file;
-	  
-	  if (dir == NULL)
-	    perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */
-	  else
-	    while ((file = readdir(dir)) != NULL)
-	      if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
-		{
-		  int fd = atoi(file->d_name);
-		  if (fd > 2)
-		    close(fd);
-		}
-	  
-	  closedir(dir);
-	  close(socket_fd); /* Perhaps it is stdin, stdout or stderr. */
+	  close_files((fd > 2) || (fd == socket_fd));
 	  
 	  /* Run initrc */
 	  run_initrc(unparsed_args);
@@ -311,22 +279,7 @@ int main(int argc_, char** argv_)
       if (r < 0)
 	{
 	  /* Close all files (hopefully sockets) we do not know what they are. */
-	  DIR* dir = opendir(SELF_FD);
-	  struct dirent* file;
-	  
-	  if (dir == NULL)
-	    perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */
-	  else
-	    while ((file = readdir(dir)) != NULL)
-	      if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
-		{
-		  int fd = atoi(file->d_name);
-		  if ((fd > 2) && (fd != socket_fd) &&
-		      (fd_table_contains_key(&client_map, fd) == 0))
-		    close(fd);
-		}
-	  
-	  closedir(dir);
+	  close_files((fd > 2) && (fd != socket_fd) && (fd_table_contains_key(&client_map, fd) == 0));
 	}
     }
   
@@ -456,8 +409,7 @@ void* slave_loop(void* data)
   if (information == NULL)
     {
       /* Create information table. */
-      information = malloc(sizeof(client_t));
-      if (information == NULL)
+      if (xmalloc(information, 1, client_t))
 	{
 	  perror(*argv);
 	  goto fail;
@@ -568,16 +520,14 @@ void* slave_loop(void* data)
  fail: /* The loop does break, this done on success as well. */
   /* Close socket and free resources. */
   close(socket_fd);
-  if (msgbuf != NULL)
-    free(msgbuf);
+  free(msgbuf);
   if (information != NULL)
     {
       if (information->interception_conditions != NULL)
 	{
 	  size_t i;
 	  for (i = 0; i < information->interception_conditions_count; i++)
-	    if (information->interception_conditions[i].condition != NULL)
-	      free(information->interception_conditions[i].condition);
+	    free(information->interception_conditions[i].condition);
 	  free(information->interception_conditions);
 	}
       if (mutex_created)
@@ -671,8 +621,8 @@ void message_received(client_t* client)
   if (intercept)
     {
       size_t size = 64; /* Atleast 25, otherwise we get into problems at ((intercept & 2)) */
-      char* buf = malloc((size + 1) * sizeof(char));
-      if (buf == NULL)
+      char* buf;
+      if (xmalloc(buf, size + 1, char))
 	{
 	  perror(*argv);
 	  return;
@@ -749,8 +699,7 @@ void message_received(client_t* client)
       /* Construct response. */
       n = 2 * 10 + strlen(message_id) + 1;
       n += strlen("ID assignment: :\nIn response to: \n\n");
-      msgbuf = malloc(n * sizeof(char));
-      if (msgbuf == NULL)
+      if (xmalloc(msgbuf, n, char))
 	{
 	  perror(*argv);
 	  return;
@@ -955,9 +904,9 @@ void multicast_message(char* message, size_t length)
     return; /* Invalid message. */
   
   /* Allocate header lists. */
-  if ((hashes        = malloc(header_count * sizeof(size_t))) == NULL)  goto fail;
-  if ((headers       = malloc(header_count * sizeof(char*)))  == NULL)  goto fail;
-  if ((header_values = malloc(header_count * sizeof(char*)))  == NULL)  goto fail;
+  if (xmalloc(hashes,        header_count, size_t))  goto fail;
+  if (xmalloc(headers,       header_count, char*))   goto fail;
+  if (xmalloc(header_values, header_count, char*))   goto fail;
   
   /* Populate header lists. */
   for (i = 0; i < header_count; i++)
@@ -1063,7 +1012,7 @@ void multicast_message(char* message, size_t length)
 		 while (n > 0)
 		   {
 		     sent = send_message(client->socket_fd, msg, n);
-		     if ((sent < n) && (errno != EINTR)) /* Ignore EINTR */
+		     if ((sent < n) && (errno != EINTR)) /* TODO Support reexec */
 		       {
 			 perror(*argv);
 			 break;
@@ -1086,15 +1035,10 @@ void multicast_message(char* message, size_t length)
   if (errno != 0)
     perror(*argv);
   /* Release resources. */
-  for (i = 0; i < header_count; i++)
-    {
-      if (headers[i]       != NULL)  free(headers[i]);
-      if (header_values[i] != NULL)  free(header_values[i]);
-    }
-  if (interceptions != NULL)  free(interceptions);
-  if (headers       != NULL)  free(headers);
-  if (header_values != NULL)  free(header_values);
-  if (hashes        != NULL)  free(hashes);
+  xfree(headers, header_count);
+  xfree(header_values, header_count);
+  free(interceptions);
+  free(hashes);
 }
 
 
@@ -1346,8 +1290,7 @@ int marshal_server(int fd)
   return 0;
   
  fail:
-  if (state_buf != NULL)
-    free(state_buf);
+  free(state_buf);
   return -1;
 }
 
@@ -1390,8 +1333,7 @@ int unmarshal_server(int fd)
   
   
   /* Allocate buffer for data. */
-  state_buf = state_buf_ = malloc(state_buf_size * sizeof(char));
-  if (state_buf == NULL)
+  if (xmalloc(state_buf = state_buf_, state_buf_size, char))
     {
       perror(*argv);
       return -1;
@@ -1459,7 +1401,7 @@ int unmarshal_server(int fd)
       client_t* value;
       
       /* Allocate the client's information. */
-      if ((value = malloc(sizeof(client_t))) == NULL)
+      if (xmalloc(value, 1, client_t))
 	{
 	  perror(*argv);
 	  goto clients_fail;
@@ -1477,8 +1419,7 @@ int unmarshal_server(int fd)
       /* Unmarshal interception conditions. */
       buf_get_next(state_buf_, size_t, value->interception_conditions_count = n);
       seek = 5 * sizeof(size_t) + 2 * sizeof(int) + 1 * sizeof(uint64_t);
-      value->interception_conditions = malloc(n * sizeof(interception_condition_t));
-      if (value->interception_conditions == NULL)
+      if (xmalloc(value->interception_conditions, n, interception_condition_t))
 	{
 	  perror(*argv);
 	  goto clients_fail;
@@ -1487,7 +1428,7 @@ int unmarshal_server(int fd)
 	{
 	  interception_condition_t* cond = value->interception_conditions + j;
 	  size_t m = strlen(state_buf_) + 1;
-	  if ((cond->condition = malloc(m * sizeof(char))) == NULL)
+	  if (xmalloc(cond->condition, m, char))
 	    {
 	      perror(*argv);
 	      goto clients_fail;

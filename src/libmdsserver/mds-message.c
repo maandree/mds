@@ -43,9 +43,8 @@ int mds_message_initialise(mds_message_t* this)
   this->payload_ptr = 0;
   this->buffer_size = 128;
   this->buffer_ptr = 0;
-  this->buffer = malloc(this->buffer_size * sizeof(char));
   this->stage = 0;
-  if (this->buffer == NULL)
+  if (xmalloc(this->buffer, this->buffer_size, char))
     return -1;
   return 0;
 }
@@ -62,17 +61,11 @@ void mds_message_destroy(mds_message_t* this)
   if (this->headers != NULL)
     {
       size_t i;
-      for (i = 0; i < this->header_count; i++)
-	if (this->headers[i] != NULL)
-	  free(this->headers[i]);
-      free(this->headers);
+      xfree(this->headers, this->header_count);
     }
   
-  if (this->payload != NULL)
-    free(this->payload);
-  
-  if (this->buffer != NULL)
-    free(this->buffer);
+  free(this->payload);
+  free(this->buffer);
 }
 
 
@@ -100,15 +93,11 @@ int mds_message_read(mds_message_t* this, int fd)
       if (this->headers != NULL)
 	{
 	  size_t i;
-	  for (i = 0; i < this->header_count; i++)
-	    if (this->headers[i] != NULL)
-	      free(this->headers[i]);
-	  free(this->headers);
+	  xfree(this->headers, this->header_count);
 	}
       this->header_count = 0;
       
-      if (this->payload != NULL)
-	free(this->payload);
+      free(this->payload);
       this->payload_size = 0;
       this->payload_ptr = 0;
       
@@ -155,11 +144,8 @@ int mds_message_read(mds_message_t* this, int fd)
 		
 		/* Allocate the payload buffer. */
 		if (this->payload_size > 0)
-		  {
-		    this->payload = malloc(this->payload_size * sizeof(char));
-		    if (this->payload == NULL)
-		      return -1;
-		  }
+		  if (xmalloc(this->payload, this->payload_size, char))
+		    return -1;
 		
 		/* Mark end of stage, next stage is getting the payload. */
 		this->stage = 1;
@@ -178,8 +164,7 @@ int mds_message_read(mds_message_t* this, int fd)
 		header_commit_buffer = 8;
 		if (this->headers == NULL)
 		  {
-		    this->headers = malloc(header_commit_buffer * sizeof(char*));
-		    if (this->headers == NULL)
+		    if (xmalloc(this->headers, header_commit_buffer, char*))
 		      return -1;
 		  }
 		else
@@ -196,8 +181,7 @@ int mds_message_read(mds_message_t* this, int fd)
 	      }
 	    
 	    /* Allocat the header.*/
-	    header = malloc(len * sizeof(char));
-	    if (header == NULL)
+	    if (xmalloc(header, len, char))
 	      return -1;
 	    /* Copy the header data into the allocated header, */
 	    memcpy(header, this->buffer, len);
@@ -411,21 +395,14 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
   /* Allocate header list, payload and read buffer. */
   
   if (header_count > 0)
-    {
-      this->headers = malloc(header_count * sizeof(char*));
-      if (this->headers == NULL)
-	return -1;
-    }
+    if (xmalloc(this->headers, header_count, char*))
+      return -1;
   
   if (this->payload_size > 0)
-    {
-      this->payload = malloc(this->payload_size * sizeof(char));
-      if (this->payload == NULL)
-	return -1;
-    }
+    if (xmalloc(this->payload, this->payload_size, char))
+      return -1;
   
-  this->buffer = malloc(this->buffer_size * sizeof(char));
-  if (this->buffer == NULL)
+  if (xmalloc(this->buffer, this->buffer_size, char))
     return -1;
   
   /* Fill the header list, payload and read buffer. */
@@ -433,8 +410,7 @@ int mds_message_unmarshal(mds_message_t* this, char* data)
   for (i = 0; i < this->header_count; i++)
     {
       n = strlen(data) + 1;
-      this->headers[i] = malloc(n * sizeof(char));
-      if (this->headers[i] == NULL)
+      if (xmalloc(this->headers[i], n, char))
 	return -1;
       memcpy(this->headers[i], data, n * sizeof(char));
       buf_next(data, char, n);

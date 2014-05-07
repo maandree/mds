@@ -76,8 +76,7 @@ static int rehash(hash_table_t* restrict this)
   hash_entry_t* destination;
   hash_entry_t* next;
   
-  this->buckets = calloc((old_capacity * 2 + 1), sizeof(hash_entry_t*));
-  if (this->buckets == NULL)
+  if (xcalloc(this->buckets, old_capacity * 2 + 1, sizeof(hash_entry_t*)))
     return -1;
   this->capacity = old_capacity * 2 + 1;
   this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
@@ -125,8 +124,7 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
   this->buckets = NULL;
   
   this->capacity = initial_capacity ? initial_capacity : 1;
-  this->buckets = calloc(this->capacity, sizeof(hash_entry_t*));
-  if (this->buckets == NULL)
+  if (xcalloc(this->buckets, this->capacity, sizeof(hash_entry_t*)))
     return -1;
   this->load_factor = load_factor;
   this->threshold = (size_t)((float)(this->capacity) * load_factor);
@@ -160,10 +158,8 @@ void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_
 	  bucket = this->buckets[--i];
 	  while (bucket)
 	    {
-	      if (key_freer != NULL)
-		key_freer(bucket->key);
-	      if (value_freer != NULL)
-		value_freer(bucket->value);
+	      if (key_freer   != NULL)  key_freer(bucket->key);
+	      if (value_freer != NULL)  value_freer(bucket->value);
 	      bucket = (last = bucket)->next;
 	      free(last);
 	    }
@@ -285,8 +281,7 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
     }
   
   errno = 0;
-  bucket = malloc(sizeof(hash_entry_t));
-  if (bucket == NULL)
+  if (xmalloc(bucket, 1, hash_entry_t))
     return 0;
   bucket->value = value;
   bucket->key = key;
@@ -453,8 +448,7 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
   buf_get_next(data, size_t, this->threshold);
   buf_get_next(data, size_t, this->size);
   
-  this->buckets = calloc(this->capacity, sizeof(hash_entry_t*));
-  if (this->buckets == NULL)
+  if (xcalloc(this->buckets, this->capacity, sizeof(hash_entry_t*)))
     return -1;
   
   for (i = 0; i < n; i++)
@@ -463,8 +457,7 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
       hash_entry_t* restrict bucket;
       buf_get_next(data, size_t, m);
       
-      this->buckets[i] = bucket = malloc(sizeof(hash_entry_t));
-      if (bucket == NULL)
+      if (xmalloc(this->buckets[i] = bucket, 1, hash_entry_t))
 	return -1;
       
       while (m--)
@@ -472,11 +465,8 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
 	  if (m == 0)
 	    bucket->next = NULL;
 	  else
-	    {
-	      bucket->next = malloc(sizeof(hash_entry_t));
-	      if (bucket->next == NULL)
-		return -1;
-	    }
+	    if (xmalloc(bucket->next, 1, hash_entry_t))
+	      return -1;
 	  buf_get_next(data, size_t, bucket->key);
 	  buf_get_next(data, size_t, bucket->value);
 	  if (remapper != NULL)
