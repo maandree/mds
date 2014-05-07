@@ -447,6 +447,8 @@ void* slave_loop(void* data)
   size_t information_address = fd_table_get(&client_map, (size_t)socket_fd);
   client_t* information = (client_t*)(void*)information_address;
   int mutex_created = 0;
+  char* msgbuf = NULL;
+  size_t n;
   size_t tmp;
   int r;
   
@@ -552,17 +554,22 @@ void* slave_loop(void* data)
     goto reexec;
   
   
-  /* TODO multicast information about the client closing.
-     "Client closed: %" PRIu32 ":" PRIu32 "%\n"
-     "\n",
-     (uint32_t)(information->id >> 32),
-     (uint32_t)(information->id >>  0)
-   */
+  /* Multicast information about the client closing. */
+  n = 2 * 10 + 1 + strlen("Client closed: :\n\n");
+  snprintf(msgbuf, n,
+	   "Client closed: %" PRIu32 ":%" PRIu32 "\n"
+	   "\n",
+	   (uint32_t)(information->id >> 32),
+	   (uint32_t)(information->id >>  0));
+  n = strlen(msgbuf) + 1;
+  multicast_message(msgbuf, n);
   
   
  fail: /* The loop does break, this done on success as well. */
   /* Close socket and free resources. */
   close(socket_fd);
+  if (msgbuf != NULL)
+    free(msgbuf);
   if (information != NULL)
     {
       if (information->interception_conditions != NULL)
@@ -620,6 +627,7 @@ void message_received(client_t* client)
   const char* message_id = NULL;
   size_t i, n;
   char* msgbuf;
+  
   
   /* Parser headers. */
   for (i = 0; i < message.header_count; i++)
@@ -721,7 +729,16 @@ void message_received(client_t* client)
     }
   
   
-  /* TODO multicast this message */
+  /* Multicast the message. */
+  n = mds_message_marshal_size(&message, 0);
+  if ((msgbuf = malloc(n)) == NULL)
+    {
+      perror(*argv);
+      return;
+    }
+  mds_message_marshal(&message, msgbuf, 0);
+  multicast_message(msgbuf, n / sizeof(char));
+  free(msgbuf);
   
   
   /* Send asigned ID. */
@@ -747,9 +764,8 @@ void message_received(client_t* client)
 	       message_id == NULL ? "" : message_id);
       n = strlen(msgbuf);
       
-      
-      /* TODO multicast msgbuf[:n] */
-      
+      /* Multicast the reply. */
+      multicast_message(msgbuf, n);
       
       /* Send message. */
       with_mutex(client->mutex,
@@ -889,6 +905,81 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 	  conds[n] = temp;
 	}
     }
+}
+
+
+/**
+ * Multicast a message
+ * 
+ * @param  message  The message
+ * @param  length   The length of the message
+ */
+void multicast_message(char* message, size_t length)
+{
+  size_t header_count = 0;
+  size_t n = length - 1;
+  size_t* hashes = NULL;
+  char** headers = NULL;
+  char** header_values = NULL;
+  size_t i;
+  
+  /* Count the number of headers. */
+  for (i = 0; i < n; i++)
+    if (message[i] == '\n')
+      {
+	header_count++;
+	if (message[i + 1] == '\n')
+	  break;
+      }
+  
+  if (header_count == 0)
+    return; /* Invalid message. */
+  
+  /* Allocate header lists. */
+  if ((hashes        = malloc(header_count * sizeof(size_t))) == NULL)  goto fail;
+  if ((headers       = malloc(header_count * sizeof(char*)))  == NULL)  goto fail;
+  if ((header_values = malloc(header_count * sizeof(char*)))  == NULL)  goto fail;
+  
+  /* Populate header lists. */
+  for (i = 0; i < header_count; i++)
+    {
+      char* end = strchr(message, '\n');
+      char* colon = strchr(message, ':');
+      
+      *end = '\0';
+      if ((header_values[i] = strdup(message)) == NULL)
+	{
+	  perror(*argv);
+	  header_count = i;
+	  goto fail;
+	}
+      *colon = '\0';
+      if ((headers[i] = strdup(message)) == NULL)
+	{
+	  perror(*argv);
+	  free(headers[i]);
+	  header_count = i;
+	  goto fail;
+	}
+      *colon = ':';
+      *end = '\n';
+      hashes[i] = string_hash(headers[i]);
+      
+      message = end + 1;
+    }
+  
+  /* TODO */
+  
+ fail: /* This is done before this function returns even if there was no error */
+  /* Release resources. */
+  for (i = 0; i < header_count; i++)
+    {
+      if (headers[i]       != NULL)  free(headers[i]);
+      if (header_values[i] != NULL)  free(header_values[i]);
+    }
+  if (headers       != NULL)  free(headers);
+  if (header_values != NULL)  free(header_values);
+  if (hashes        != NULL)  free(hashes);
 }
 
 

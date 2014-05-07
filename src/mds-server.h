@@ -139,6 +139,14 @@ void message_received(client_t* client);
 void add_intercept_condition(client_t* client, char* condition, int64_t priority, int modifying, int stop);
 
 /**
+ * Multicast a message
+ * 
+ * @param  message  The message
+ * @param  length   The length of the message
+ */
+void multicast_message(char* message, size_t length);
+
+/**
  * Exec into the mdsinitrc script
  * 
  * @param  args  The arguments to the child process
