@@ -1045,7 +1045,35 @@ void multicast_message(char* message, size_t length)
   /* Sort interceptors. */
   qsort(interceptions, interceptions_count, sizeof(queued_interception_t), cmp_queued_interception);
   
-  /* TODO */
+  /* Send message to interceptors. */
+  for (i = 0; i < interceptions_count; i++)
+    {
+      queued_interception_t client_ = interceptions[i];
+      client_t* client = client_.client;
+      char* msg = message;
+      size_t sent;
+      n = length;
+      
+      with_mutex(client->mutex,
+		 while (n > 0)
+		   {
+		     sent = send_message(client->socket_fd, msg, n);
+		     if ((sent < n) && (errno != EINTR)) /* Ignore EINTR */
+		       {
+			 perror(*argv);
+			 break;
+		       }
+		     n -= sent;
+		     msg += sent;
+		   }
+		 );
+      
+      if ((n > 0) && client_.modifying)
+	{
+	  /* TODO */
+	}
+    }
+  
   
   errno = 0;
  fail: /* This is done before this function returns even if there was no error. */
