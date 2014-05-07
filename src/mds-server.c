@@ -960,9 +960,10 @@ void multicast_message(char* message, size_t length)
 				  interception_condition_t* cond = conds + i;
 				  for (j = 0; j < header_count; j++)
 				    {
+				      if (*(cond->condition) == '\0')
+					break;
 				      if (cond->header_hash == hashes[j])
-					if ((*(cond->condition) == '\0') ||
-					    strequals(cond->condition, headers[j]) ||
+					if (strequals(cond->condition, headers[j]) ||
 					    strequals(cond->condition, header_values[j]))
 					  break;
 				    }
