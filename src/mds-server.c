@@ -909,6 +909,22 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 
 
 /**
+ * Compare two queued interceptors by priority
+ * 
+ * @param   a:const queued_interception_t*  One of the interceptors
+ * @param   b:const queued_interception_t*  The other of the two interceptors
+ * @return                                  Negative if a before b, positive if a after b, otherwise zero
+ */
+static int cmp_queued_interception(const void* a, const void* b)
+{
+  const queued_interception_t* p = b; /* Highest first, so swap them. */
+  const queued_interception_t* q = a;
+  int64_t diff = p->priority - q->priority;
+  return diff < 0 ? -1 : diff > 0 ? 1 : 0;
+}
+
+
+/**
  * Multicast a message
  * 
  * @param  message  The message
@@ -1027,6 +1043,8 @@ void multicast_message(char* message, size_t length)
     goto fail;
   
   /* Sort interceptors. */
+  qsort(interceptions, interceptions_count, sizeof(queued_interception_t), cmp_queued_interception);
+  
   /* TODO */
   
   errno = 0;
