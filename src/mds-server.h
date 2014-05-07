@@ -26,6 +26,36 @@
 #include <stdint.h>
 
 
+
+/**
+ * A condition for a message being intercepted by a client
+ */
+typedef struct interception_condition
+{
+  /**
+   * The header of messages to intercept, optionally with a value,
+   * empty (most not be NULL) for all messages.
+   */
+  char* condition;
+  
+  /**
+   * The hash of the header of messages to intercept
+   */
+  size_t header_hash;
+  
+  /**
+   * The interception priority
+   */
+  int64_t priority;
+  
+  /**
+   * Whether the messages may get modified by the client
+   */
+  int modifying;
+  
+} interception_condition_t;
+
+
 /**
  * Client information structure
  */
@@ -62,9 +92,21 @@ typedef struct client
   uint64_t id;
   
   /**
-   * Mutex for sending data
+   * Mutex for sending data and other
+   * actions that only affacts this client
    */
   pthread_mutex_t mutex;
+  
+  /**
+   * The messages interception conditions conditions
+   * for the client
+   */
+  interception_condition_t* interception_conditions;
+  
+  /**
+   * The number of interception conditions
+   */
+  size_t interception_conditions_count;
   
 } client_t;
 
