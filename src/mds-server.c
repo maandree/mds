@@ -921,7 +921,10 @@ void multicast_message(char* message, size_t length)
   size_t* hashes = NULL;
   char** headers = NULL;
   char** header_values = NULL;
+  queued_interception_t* interceptions = NULL;
+  size_t interceptions_count = 0;
   size_t i;
+  ssize_t node;
   
   /* Count the number of headers. */
   for (i = 0; i < n; i++)
@@ -949,14 +952,12 @@ void multicast_message(char* message, size_t length)
       *end = '\0';
       if ((header_values[i] = strdup(message)) == NULL)
 	{
-	  perror(*argv);
 	  header_count = i;
 	  goto fail;
 	}
       *colon = '\0';
       if ((headers[i] = strdup(message)) == NULL)
 	{
-	  perror(*argv);
 	  free(headers[i]);
 	  header_count = i;
 	  goto fail;
@@ -968,15 +969,77 @@ void multicast_message(char* message, size_t length)
       message = end + 1;
     }
   
+  /* Get intercepting clients. */
+  with_mutex(slave_mutex,
+	     /* Count clients. */
+	     n = 0;
+	     foreach_linked_list_node (client_list, node)
+	       n++;
+	     
+	     /* Allocate interceptor list. */
+	     interceptions = malloc(n * sizeof(queued_interception_t*));
+	     
+	     /* Search clients. */
+	     if (interceptions != NULL)
+	       foreach_linked_list_node (client_list, node)
+		 {
+		   client_t* client = (client_t*)(void*)(client_list.values[node]);
+		   pthread_mutex_t mutex = client->mutex;
+		   interception_condition_t* conds = client->interception_conditions;
+		   int64_t priority = 0; /* Initialise to stop incorrect warning. */
+		   int modifying = 0; /* Initialise to stop incorrect warning. */
+		   size_t j;
+		   
+		   /* Look for a matching condition. */
+		   n = client->interception_conditions_count;
+		   with_mutex(mutex,
+			      for (i = 0; i < n; i++)
+				{
+				  interception_condition_t* cond = conds + i;
+				  for (j = 0; j < header_count; j++)
+				    {
+				      if (cond->header_hash == hashes[j])
+					if ((*(cond->condition) == '\0') ||
+					    strequals(cond->condition, headers[j]) ||
+					    strequals(cond->condition, header_values[j]))
+					  break;
+				    }
+				  if (j < header_count)
+				    {
+				      priority = cond->priority;
+				      modifying = cond->modifying;
+				      break;
+				    }
+				}
+			      );
+		   
+		   /* List client of there was a matching condition. */
+		   if (i < n)
+		     {
+		       interceptions[interceptions_count].client    = client;
+		       interceptions[interceptions_count].priority  = priority;
+		       interceptions[interceptions_count].modifying = modifying;
+		       interceptions_count++;
+		     }
+		 }
+	     );
+  if (interceptions == NULL)
+    goto fail;
+  
+  /* Sort interceptors. */
   /* TODO */
   
- fail: /* This is done before this function returns even if there was no error */
+  errno = 0;
+ fail: /* This is done before this function returns even if there was no error. */
+  if (errno != 0)
+    perror(*argv);
   /* Release resources. */
   for (i = 0; i < header_count; i++)
     {
       if (headers[i]       != NULL)  free(headers[i]);
       if (header_values[i] != NULL)  free(header_values[i]);
     }
+  if (interceptions != NULL)  free(interceptions);
   if (headers       != NULL)  free(headers);
   if (header_values != NULL)  free(header_values);
   if (hashes        != NULL)  free(hashes);

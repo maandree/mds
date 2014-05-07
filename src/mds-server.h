@@ -44,7 +44,9 @@ typedef struct interception_condition
   size_t header_hash;
   
   /**
-   * The interception priority
+   * The interception priority. The client should be
+   * consistent with the priority for conditions that
+   * are not mutually exclusive.
    */
   int64_t priority;
   
@@ -109,6 +111,29 @@ typedef struct client
   size_t interception_conditions_count;
   
 } client_t;
+
+/**
+ * A queued interception
+ */
+typedef struct queued_interception
+{
+  /**
+   * The intercepting client
+   */
+  client_t* client;
+  
+  /**
+   * The interception priority
+   */
+  int64_t priority;
+  
+  /**
+   * Whether the messages may get modified by the client
+   */
+  int modifying;
+  
+} queued_interception_t;
+
 
 
 /**
