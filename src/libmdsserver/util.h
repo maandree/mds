@@ -74,6 +74,24 @@ size_t send_message(int socket, const char* message, size_t length);
  */
 int strict_atoi(const char* str, int* value, int min, int max);
 
+/**
+ * Send a buffer into a file and ignore interruptions
+ * 
+ * @param   fd      The file descriptor
+ * @param   buffer  The buffer
+ * @param   length  The length of the buffer
+ * @return          Zero on success, -1 on error
+ */
+int full_write(int fd, const char* buffer, size_t length);
+
+/**
+ * Read a file completly and ignore interruptions
+ * 
+ * @param   fd  The file descriptor
+ * @return      The content of the file, you will need to free it. `NULL` on error.
+ */
+char* full_read(int fd);
+
 
 #endif
 

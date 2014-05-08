@@ -172,3 +172,75 @@ int strict_atoi(const char* str, int* value, int min, int max)
   return 0;
 }
 
+
+/**
+ * Send a buffer into a file and ignore interruptions
+ * 
+ * @param   fd      The file descriptor
+ * @param   buffer  The buffer
+ * @param   length  The length of the buffer
+ * @return          Zero on success, -1 on error
+ */
+int full_write(int fd, const char* buffer, size_t length)
+{
+  ssize_t wrote;
+  while (length > 0)
+    {
+      errno = 0;
+      wrote = write(fd, buffer, length);
+      if (errno && (errno != EINTR))
+	return -1;
+      length -= (size_t)max(wrote, 0);
+      buffer += (size_t)max(wrote, 0);
+    }
+  return 0;
+}
+
+
+/**
+ * Read a file completly and ignore interruptions
+ * 
+ * @param   fd  The file descriptor
+ * @return      The content of the file, you will need to free it. `NULL` on error.
+ */
+char* full_read(int fd)
+{
+  size_t state_buf_size = 8 << 10;
+  size_t state_buf_ptr = 0;
+  char* state_buf;
+  ssize_t got;
+  
+  /* Allocate buffer for data. */
+  if (xmalloc(state_buf, state_buf_size, char))
+    return NULL;
+  
+  /* Read the file. */
+  for (;;)
+    {
+      /* Grow buffer if it is too small. */
+      if (state_buf_size == state_buf_ptr)
+	{
+	  char* old_buf = state_buf;
+	  state_buf = realloc(state_buf, (state_buf_size <<= 1) * sizeof(char));
+	  if (state_buf == NULL)
+	    {
+	      free(old_buf);
+	      return NULL;
+	    }
+	}
+      
+      /* Read from the file into the buffer. */
+      got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
+      if ((got < 0) && (errno != EINTR))
+	{
+	  free(state_buf);
+	  return NULL;
+	}
+      if (got == 0)
+	break;
+      state_buf_ptr += (size_t)got;
+    }
+  
+  return state_buf;
+}
+

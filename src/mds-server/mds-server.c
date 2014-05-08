@@ -1192,7 +1192,6 @@ int marshal_server(int fd)
   size_t state_n = 0;
   char* state_buf = NULL;
   char* state_buf_;
-  ssize_t wrote;
   ssize_t node;
   
   
@@ -1246,20 +1245,14 @@ int marshal_server(int fd)
   fd_table_marshal(&client_map, state_buf_);
   
   /* Send the marshalled data into the file. */
-  while (state_n > 0)
-    {
-      errno = 0;
-      wrote = write(fd, state_buf, state_n);
-      if (errno && (errno != EINTR))
-	goto fail;
-      state_n -= (size_t)max(wrote, 0);
-      state_buf += (size_t)max(wrote, 0);
-    }
+  if (full_write(fd, state_buf, state_n) < 0)
+    goto fail;
   free(state_buf);
   
   return 0;
   
  fail:
+  perror(*argv);
   free(state_buf);
   return -1;
 }
@@ -1290,9 +1283,6 @@ static size_t unmarshal_remapper(size_t old)
 int unmarshal_server(int fd)
 {
   int with_error = 0;
-  size_t state_buf_size = 8 << 10;
-  size_t state_buf_ptr = 0;
-  ssize_t got;
   char* state_buf;
   char* state_buf_;
   size_t list_size;
@@ -1302,42 +1292,12 @@ int unmarshal_server(int fd)
   pthread_t _slave_thread;
   
   
-  /* Allocate buffer for data. */
-  if (xmalloc(state_buf = state_buf_, state_buf_size, char))
+  /* Read the file. */
+  if ((state_buf = state_buf_ = full_read(fd)) == NULL)
     {
       perror(*argv);
       return -1;
     }
-  
-  /* Read the file. */
-  for (;;)
-    {
-      /* Grow buffer if it is too small. */
-      if (state_buf_size == state_buf_ptr)
-	{
-	  char* old_buf = state_buf;
-	  state_buf = realloc(state_buf, (state_buf_size <<= 1) * sizeof(char));
-	  if (state_buf == NULL)
-	    {
-	      perror(*argv);
-	      free(old_buf);
-	      return -1;
-	    }
-	}
-      
-      /* Read from the file into the buffer. */
-      got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
-      if (got < 0)
-	{
-	  perror(*argv);
-	  free(state_buf);
-	  return -1;
-	}
-      if (got == 0)
-	break;
-      state_buf_ptr += (size_t)got;
-    }
-  
   
   /* Create memory address remapping table. */
   if (hash_table_create(&unmarshal_remap_map))
@@ -1409,7 +1369,7 @@ int unmarshal_server(int fd)
   if (linked_list_unmarshal(&client_list, state_buf_))
     {
       perror(*argv);
-      /* TODO */
+      abort(); /* Critical. */
     }
   state_buf_ += list_size / sizeof(char);
   
@@ -1417,7 +1377,7 @@ int unmarshal_server(int fd)
   if (fd_table_unmarshal(&client_map, state_buf_, unmarshal_remapper))
     {
       perror(*argv);
-      /* TODO */
+      abort(); /* Critical. */
     }
   
   /* Release the raw data. */
@@ -1427,7 +1387,8 @@ int unmarshal_server(int fd)
   if (with_error)
     for (i = 0; i < client_map.capacity; i++)
       if (client_map.used[i / 64] & ((uint64_t)1 << (i % 64)))
-	if (client_map.values[i] == 0) /* Lets not presume that fd-table actually initialise its allocations. */
+	/* Lets not presume that fd-table actually initialise its allocations. */
+	if (client_map.values[i] == 0)
 	  client_map.used[i / 64] &= ~((uint64_t)1 << (i % 64));
   
   /* Remap the linked list and remove non-found elements, and start the clients. */
