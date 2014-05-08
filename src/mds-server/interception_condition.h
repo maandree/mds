@@ -81,6 +81,14 @@ size_t interception_condition_marshal(const interception_condition_t* restrict t
  */
 size_t interception_condition_unmarshal(interception_condition_t* restrict this, char* restrict data);
 
+/**
+ * Pretend to an interception condition
+ * 
+ * @param   data  In buffer with the marshalled data
+ * @return        The number of read bytes
+ */
+size_t interception_condition_unmarshal_skip(char* restrict data) __attribute__((pure));
+
 
 #endif
 

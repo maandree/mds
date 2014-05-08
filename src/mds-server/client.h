@@ -103,7 +103,7 @@ typedef struct client
 size_t client_marshal_size(const client_t* restrict this) __attribute__((pure));
 
 /**
- * Marshals an client information
+ * Marshals client information
  * 
  * @param   this  The client information
  * @param   data  Output buffer for the marshalled data
@@ -112,7 +112,7 @@ size_t client_marshal_size(const client_t* restrict this) __attribute__((pure));
 size_t client_marshal(const client_t* restrict this, char* restrict data);
 
 /**
- * Unmarshals an client information
+ * Unmarshals client information
  * 
  * @param   this  Memory slot in which to store the new client information
  * @param   data  In buffer with the marshalled data
@@ -120,6 +120,14 @@ size_t client_marshal(const client_t* restrict this, char* restrict data);
  *                Destroy the client information on error.
  */
 size_t client_unmarshal(client_t* restrict this, char* restrict data);
+
+/**
+ * Pretend to unmarshal client information
+ * 
+ * @param   data  In buffer with the marshalled data
+ * @return        The number of read bytes
+ */
+size_t client_unmarshal_skip(char* restrict data) __attribute__((pure));
 
 
 #endif

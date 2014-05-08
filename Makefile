@@ -69,11 +69,10 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 all: bin/mds bin/mds-server/mds-server bin/libmdsserver.so
 
 
-bin/mds-server/mds-server: obj/mds-server/mds-server.o bin/libmdsserver.so  \
-                           obj/mds-server/interception_condition.o          \
-                           obj/mds-server/client.o
+MDS_SERVER_OBJ = mds-server/mds-server mds-server/interception_condition mds-server/client
+bin/mds-server/mds-server: $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o) bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt obj/mds-server/mds-server.o
+	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)
 
 bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)

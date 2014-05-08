@@ -45,7 +45,7 @@ size_t client_marshal_size(const client_t* restrict this)
 
 
 /**
- * Marshals an client information
+ * Marshals client information
  * 
  * @param   this  The client information
  * @param   data  Output buffer for the marshalled data
@@ -73,7 +73,7 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
 
 
 /**
- * Unmarshals an client information
+ * Unmarshals client information
  * 
  * @param   this  Memory slot in which to store the new client information
  * @param   data  In buffer with the marshalled data
@@ -94,6 +94,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   data += n / sizeof(char);
   rc += n;
   buf_get_next(data, size_t, this->interception_conditions_count);
+  if (xmalloc(this->interception_conditions, this->interception_conditions_count, interception_condition_t))
+    goto fail;
   for (i = 0; i < this->interception_conditions_count; i++)
     {
       n = interception_condition_unmarshal(this->interception_conditions + i, data);
@@ -115,10 +117,38 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   return rc;
   
  fail:
+  mds_message_destroy(&(this->message));
   for (i = 0; i < this->interception_conditions_count; i++)
     free(this->interception_conditions[i].condition);
   free(this->interception_conditions);
   free(this->send_pending);
   return 0;
+}
+
+/**
+ * Pretend to unmarshal client information
+ * 
+ * @param   data  In buffer with the marshalled data
+ * @return        The number of read bytes
+ */
+size_t client_unmarshal_skip(char* restrict data)
+{
+  size_t n, c, rc = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 3 * sizeof(size_t);
+  buf_next(data, ssize_t, 1);
+  buf_next(data, int, 2);
+  buf_next(data, uint64_t, 1);
+  buf_get_next(data, size_t, n);
+  data += n / sizeof(char);
+  rc += n;
+  buf_get_next(data, size_t, c);
+  while (c--)
+    {
+      n = interception_condition_unmarshal_skip(data);
+      data += n / sizeof(char);
+      rc += n;
+    }
+  buf_get_next(data, size_t, n);
+  rc += n * sizeof(char);
+  return rc;
 }
 

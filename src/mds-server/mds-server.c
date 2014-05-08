@@ -1189,41 +1189,24 @@ int marshal_server(int fd)
   size_t list_size = linked_list_marshal_size(&client_list);
   size_t map_size = fd_table_marshal_size(&client_map);
   size_t list_elements = 0;
-  size_t msg_size = 0;
+  size_t state_n = 0;
   char* state_buf = NULL;
   char* state_buf_;
-  size_t state_n;
   ssize_t wrote;
   ssize_t node;
-  size_t j, n;
   
-  
-  /* Calculate the grand size of all messages and their buffers. */
-  for (node = client_list.edge;; list_elements++)
-    {
-      mds_message_t message;
-      client_t* value;
-      if ((node = client_list.next[node]) == client_list.edge)
-	break;
-      
-      value = (client_t*)(void*)(client_list.values[node]);
-      n = value->interception_conditions_count;
-      message = value->message;
-      msg_size += mds_message_marshal_size(&message, 1);
-      msg_size += n * (sizeof(size_t) + sizeof(int64_t) + sizeof(int));
-      msg_size += value->send_pending_size * sizeof(char);
-      
-      for (j = 0; j < n; j++)
-	msg_size += (strlen(value->interception_conditions[j].condition) + 1) * sizeof(char);
-    }
   
   /* Calculate the grand size of all client information. */
-  state_n = 6 + sizeof(size_t) + 2 * sizeof(int) + 1 * sizeof(uint64_t);
-  state_n *= list_elements;
-  state_n += msg_size;
+  for (node = client_list.edge;; list_elements++)
+    {
+      if ((node = client_list.next[node]) == client_list.edge)
+	break;
+      state_n += client_marshal_size((client_t*)(void*)(client_list.values[node]));
+    }
   
   /* Add the size of the rest of the program's state. */
-  state_n += 2 * sizeof(int) + 1 * sizeof(sig_atomic_t) + 2 * sizeof(size_t);
+  state_n += sizeof(int) + sizeof(sig_atomic_t) + sizeof(uint64_t) + 2 * sizeof(size_t);
+  state_n += list_elements * sizeof(size_t) + list_size + map_size;
   
   /* Allocate a buffer for all data except the client list and the client map. */
   state_buf = state_buf_ = malloc(state_n);
@@ -1250,41 +1233,17 @@ int marshal_server(int fd)
       /* Get the client's information. */
       client_t* value = (client_t*)(void*)value_address;
       
-      /* Get the marshalled size of the message. */
-      msg_size = mds_message_marshal_size(&(value->message), 1);
-      
       /* Marshal the address, it is used the the client list and the client map, that will be marshalled. */
       buf_set_next(state_buf_, size_t, value_address);
-      /* Tell the program how large the marshalled message is. */
-      buf_set_next(state_buf_, size_t, msg_size);
-      /* Marshal the client info. */
-      buf_set_next(state_buf_, ssize_t, value->list_entry);
-      buf_set_next(state_buf_, int, value->socket_fd);
-      buf_set_next(state_buf_, int, value->open);
-      buf_set_next(state_buf_, uint64_t, value->id);
-      /* Marshal the pending messages. */
-      buf_set_next(state_buf_, size_t, value->send_pending_size);
-      if (value->send_pending_size > 0)
-	{
-	  memcpy(state_buf_, value->send_pending, value->send_pending_size * sizeof(char));
-	  state_buf_ += value->send_pending_size;
-	}
-      /* Marshal interception conditions. */
-      buf_set_next(state_buf_, size_t, n = value->interception_conditions_count);
-      for (j = 0; j < n; j++)
-	{
-	  interception_condition_t cond = value->interception_conditions[j];
-	  memcpy(state_buf_, cond.condition, strlen(cond.condition) + 1);
-	  buf_next(state_buf_, char, strlen(cond.condition) + 1);
-	  buf_set_next(state_buf_, size_t, cond.header_hash);
-	  buf_set_next(state_buf_, int64_t, cond.priority);
-	  buf_set_next(state_buf_, int, cond.modifying);
-	}
-      /* Marshal the message. */
-      mds_message_marshal(&(value->message), state_buf_, 1);
-      state_buf_ += msg_size / sizeof(char);
+      /* Marshal the client informationation. */
+      state_buf_ += client_marshal(value, state_buf_) / sizeof(char);
     }
   
+  /* Marshal the client list. */
+  linked_list_marshal(&client_list, state_buf_);
+  state_buf_ += list_size / sizeof(char);
+  /* Marshal the client map. */
+  fd_table_marshal(&client_map, state_buf_);
   
   /* Send the marshalled data into the file. */
   while (state_n > 0)
@@ -1294,38 +1253,6 @@ int marshal_server(int fd)
       if (errno && (errno != EINTR))
 	goto fail;
       state_n -= (size_t)max(wrote, 0);
-      state_buf += (size_t)max(wrote, 0);
-    }
-  free(state_buf);
-  
-  /* Marshal, and send into the file, the client list. */
-  state_buf = malloc(list_size);
-  if (state_buf == NULL)
-    goto fail;
-  linked_list_marshal(&client_list, state_buf);
-  while (list_size > 0)
-    {
-      errno = 0;
-      wrote = write(fd, state_buf, list_size);
-      if (errno && (errno != EINTR))
-	goto fail;
-      list_size -= (size_t)max(wrote, 0);
-      state_buf += (size_t)max(wrote, 0);
-    }
-  free(state_buf);
-  
-  /* Marshal, and send into the file, the client map. */
-  state_buf = malloc(map_size);
-  if (state_buf == NULL)
-    goto fail;
-  fd_table_marshal(&client_map, state_buf);
-  while (map_size > 0)
-    {
-      errno = 0;
-      wrote = write(fd, state_buf, map_size);
-      if (errno && (errno != EINTR))
-	goto fail;
-      map_size -= (size_t)max(wrote, 0);
       state_buf += (size_t)max(wrote, 0);
     }
   free(state_buf);
@@ -1437,123 +1364,61 @@ int unmarshal_server(int fd)
   /* Unmarshal the clients. */
   for (i = 0; i < list_elements; i++)
     {
-      size_t seek = 0;
-      size_t j = 0, n = 0;
+      size_t n;
       size_t value_address;
-      size_t msg_size;
       client_t* value;
       
       /* Allocate the client's information. */
       if (xmalloc(value, 1, client_t))
-	{
-	  perror(*argv);
-	  goto clients_fail;
-	}
+	goto clients_fail;
       
       /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
       buf_get_next(state_buf_, size_t, value_address);
-      /* Get the marshalled size of the message. */
-      buf_get_next(state_buf_, size_t, msg_size);
-      /* Unmarshal the client info. */
-      buf_get_next(state_buf_, ssize_t, value->list_entry);
-      buf_get_next(state_buf_, int, value->socket_fd);
-      buf_get_next(state_buf_, int, value->open);
-      buf_get_next(state_buf_, uint64_t, value->id);
-      /* Unmarshal the pending messages. */
-      buf_get_next(state_buf_, size_t, value->send_pending_size);
-      if (value->send_pending_size > 0)
-	{
-	  if (xmalloc(value->send_pending, value->send_pending_size, char))
-	    {
-	      perror(*argv);
-	      goto clients_fail;
-	    }
-	  memcpy(value->send_pending, state_buf_, value->send_pending_size * sizeof(char));
-	  state_buf_ += value->send_pending_size;
-	}
-      else
-	value->send_pending = NULL;
-      /* Unmarshal interception conditions. */
-      buf_get_next(state_buf_, size_t, value->interception_conditions_count = n);
-      seek = 6 * sizeof(size_t) + 2 * sizeof(int) + 1 * sizeof(uint64_t);
-      if (xmalloc(value->interception_conditions, n, interception_condition_t))
-	{
-	  perror(*argv);
-	  goto clients_fail;
-	}
-      for (j = 0; j < n; j++)
-	{
-	  interception_condition_t* cond = value->interception_conditions + j;
-	  size_t m = strlen(state_buf_) + 1;
-	  if (xmalloc(cond->condition, m, char))
-	    {
-	      perror(*argv);
-	      goto clients_fail;
-	    }
-	  memcpy(cond->condition, state_buf_, m);
-	  buf_next(state_buf_, char, m);
-	  buf_get_next(state_buf_, size_t, cond->header_hash);
-	  buf_get_next(state_buf_, int64_t, cond->priority);
-	  buf_get_next(state_buf_, int, cond->modifying);
-	  seek += m * sizeof(char) + sizeof(size_t) + sizeof(int64_t) + sizeof(int);
-	}
-      /* Unmarshal the message. */
-      if (mds_message_unmarshal(&(value->message), state_buf_))
-	{
-	  perror(*argv);
-	  mds_message_destroy(&(value->message));
-	  goto clients_fail;
-	}
-      state_buf_ += msg_size / sizeof(char);
+      /* Unmarshal the client information. */
+      n = client_unmarshal(value, state_buf_);
+      if (n == 0)
+	goto clients_fail;
       
       /* Populate the remapping table. */
-      hash_table_put(&unmarshal_remap_map, value_address, (size_t)(void*)value);
+      if (hash_table_put(&unmarshal_remap_map, value_address, (size_t)(void*)value) == 0)
+	if (errno)
+	  goto clients_fail;
+      
+      state_buf_ += n / sizeof(char);
       
       
       /* On error, seek past all clients. */
       continue;
     clients_fail:
+      perror(*argv);
       with_error = 1;
       if (value != NULL)
 	{
-	  if (value->interception_conditions != NULL)
-	    {
-	      for (j = 0; j < n; j++)
-		free(value->interception_conditions[j].condition);
-	      free(value->interception_conditions);
-	    }
-	  free(value->send_pending);
+	  buf_prev(state_buf_, size_t, 1);
 	  free(value);
 	}
-      state_buf_ -= seek / sizeof(char);
       for (; i < list_elements; i++)
-	{
-	  /* There is not need to close the sockets, it is done by
-	     the caller because there are conditions where we cannot
-	     get here anyway. */
-	  msg_size = ((size_t*)state_buf_)[1];
-	  buf_next(state_buf_, size_t, 4);
-	  buf_next(state_buf_, int, 2);
-	  buf_next(state_buf_, uint64_t, 1);
-	  buf_get_next(state_buf_, size_t, n);
-	  for (j = 0; j < n; j++)
-	    {
-	      buf_next(state_buf_, char, strlen(state_buf_) + 1);
-	      buf_next(state_buf_, size_t, 1);
-	      buf_next(state_buf_, int64_t, 1);
-	      buf_next(state_buf_, int, 1);
-	    }
-	  state_buf_ += msg_size / sizeof(char);
-	}
+	/* There is not need to close the sockets, it is done by
+	   the caller because there are conditions where we cannot
+	   get here anyway. */
+	state_buf_ += client_unmarshal_skip(state_buf_) / sizeof(char);
       break;
     }
   
   /* Unmarshal the client list. */
-  linked_list_unmarshal(&client_list, state_buf_);
+  if (linked_list_unmarshal(&client_list, state_buf_))
+    {
+      perror(*argv);
+      /* TODO */
+    }
   state_buf_ += list_size / sizeof(char);
   
   /* Unmarshal the client map. */
-  fd_table_unmarshal(&client_map, state_buf_, unmarshal_remapper);
+  if (fd_table_unmarshal(&client_map, state_buf_, unmarshal_remapper))
+    {
+      perror(*argv);
+      /* TODO */
+    }
   
   /* Release the raw data. */
   free(state_buf);
