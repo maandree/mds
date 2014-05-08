@@ -34,7 +34,7 @@
  * @return        Non-zero on error, errno will be set accordingly.
  *                Destroy the message on error.
  */
-int mds_message_initialise(mds_message_t* this)
+int mds_message_initialise(mds_message_t* restrict this)
 {
   this->headers = NULL;
   this->header_count = 0;
@@ -56,7 +56,7 @@ int mds_message_initialise(mds_message_t* this)
  * 
  * @param  this  The message
  */
-void mds_message_destroy(mds_message_t* this)
+void mds_message_destroy(mds_message_t* restrict this)
 {
   if (this->headers != NULL)
     {
@@ -82,7 +82,7 @@ void mds_message_destroy(mds_message_t* this)
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
  */
-int mds_message_read(mds_message_t* this, int fd)
+int mds_message_read(mds_message_t* restrict this, int fd)
 {
   size_t header_commit_buffer = 0;
   
@@ -285,7 +285,7 @@ int mds_message_read(mds_message_t* this, int fd)
  * @param   include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
  * @return                  The size of the message when marshalled
  */
-size_t mds_message_marshal_size(mds_message_t* this, int include_buffer)
+size_t mds_message_marshal_size(const mds_message_t* restrict this, int include_buffer)
 {
   size_t rc = this->header_count + this->payload_size;
   size_t i;
@@ -307,7 +307,7 @@ size_t mds_message_marshal_size(mds_message_t* this, int include_buffer)
  * @param  data            Output buffer for the marshalled data
  * @param  include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
  */
-void mds_message_marshal(mds_message_t* this, char* data, int include_buffer)
+void mds_message_marshal(const mds_message_t* restrict this, char* restrict data, int include_buffer)
 {
   size_t i, n;
   
@@ -351,7 +351,7 @@ void mds_message_marshal(mds_message_t* this, char* data, int include_buffer)
  * @return       Non-zero on error, errno will be set accordingly.
  *               Destroy the message on error.
  */
-int mds_message_unmarshal(mds_message_t* this, char* data)
+int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
 {
   size_t i, n, header_count;
   

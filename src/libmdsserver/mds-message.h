@@ -90,7 +90,7 @@ typedef struct mds_message
  * @return        Non-zero on error, errno will be set accordingly.
  *                Destroy the message on error.
  */
-int mds_message_initialise(mds_message_t* this);
+int mds_message_initialise(mds_message_t* restrict this);
 
 /**
  * Release all resources in a message, should
@@ -98,7 +98,7 @@ int mds_message_initialise(mds_message_t* this);
  * 
  * @param  this  The message
  */
-void mds_message_destroy(mds_message_t* this);
+void mds_message_destroy(mds_message_t* restrict this);
 
 /**
  * Read the next message from a file descriptor
@@ -113,7 +113,7 @@ void mds_message_destroy(mds_message_t* this);
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
  */
-int mds_message_read(mds_message_t* this, int fd);
+int mds_message_read(mds_message_t* restrict this, int fd);
 
 /**
  * Get the required allocation size for `data` of the
@@ -123,7 +123,7 @@ int mds_message_read(mds_message_t* this, int fd);
  * @param   include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
  * @return                  The size of the message when marshalled
  */
-size_t mds_message_marshal_size(mds_message_t* this, int include_buffer) __attribute__((pure));
+size_t mds_message_marshal_size(const mds_message_t* restrict this, int include_buffer) __attribute__((pure));
 
 /**
  * Marshal a message, this can be used both when serialising
@@ -134,7 +134,7 @@ size_t mds_message_marshal_size(mds_message_t* this, int include_buffer) __attri
  * @param  data            Output buffer for the marshalled data
  * @param  include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
  */
-void mds_message_marshal(mds_message_t* this, char* data, int include_buffer);
+void mds_message_marshal(const mds_message_t* restrict this, char* restrict data, int include_buffer);
 
 /**
  * Unmarshal a message, it is assumed that the buffer is marshalled
@@ -144,7 +144,7 @@ void mds_message_marshal(mds_message_t* this, char* data, int include_buffer);
  * @return        Non-zero on error, errno will be set accordingly.
  *                Destroy the message on error.
  */
-int mds_message_unmarshal(mds_message_t* this, char* data);
+int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
 
 
 #endif

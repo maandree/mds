@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mds-server.h"
+#include "interception_condition.h"
+#include "client.h"
+#include "queued_interception.h"
 
 #include <libmdsserver/config.h>
 #include <libmdsserver/linked-list.h>
