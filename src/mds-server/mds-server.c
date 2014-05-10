@@ -905,8 +905,8 @@ static int cmp_queued_interception(const void* a, const void* b)
 {
   const queued_interception_t* p = b; /* Highest first, so swap them. */
   const queued_interception_t* q = a;
-  int64_t diff = p->priority - q->priority;
-  return diff < 0 ? -1 : diff > 0 ? 1 : 0;
+  return p->priority < q->priority ? -1 :
+         p->priority > q->priority ? 1 : 0;
 }
 
 
