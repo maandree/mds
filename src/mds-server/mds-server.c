@@ -994,27 +994,33 @@ void multicast_message(char* message, size_t length)
 		   
 		   /* Look for a matching condition. */
 		   n = client->interception_conditions_count;
-		   with_mutex(mutex,
-			      for (i = 0; i < n; i++)
-				{
-				  interception_condition_t* cond = conds + i;
-				  for (j = 0; j < header_count; j++)
-				    {
-				      if (*(cond->condition) == '\0')
-					break;
-				      if (cond->header_hash == hashes[j])
-					if (strequals(cond->condition, headers[j]) ||
-					    strequals(cond->condition, header_values[j]))
+		   errno = 0;
+		   if (client->open)
+		     with_mutex(mutex,
+				if (errno || (client->open == 0))
+				  n == 0;
+				for (i = 0; i < n; i++)
+				  {
+				    interception_condition_t* cond = conds + i;
+				    for (j = 0; j < header_count; j++)
+				      {
+					if (*(cond->condition) == '\0')
 					  break;
-				    }
-				  if (j < header_count)
-				    {
-				      priority = cond->priority;
-				      modifying = cond->modifying;
-				      break;
-				    }
-				}
-			      );
+					if (cond->header_hash == hashes[j])
+					  if (strequals(cond->condition, headers[j]) ||
+					      strequals(cond->condition, header_values[j]))
+					    break;
+				      }
+				    if (j < header_count)
+				      {
+					priority = cond->priority;
+					modifying = cond->modifying;
+					break;
+				      }
+				  }
+				);
+		   else
+		     n = 0;
 		   
 		   /* List client of there was a matching condition. */
 		   if (i < n)
