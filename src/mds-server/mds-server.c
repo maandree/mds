@@ -256,8 +256,21 @@ int main(int argc_, char** argv_)
   
   
   /* Create mutex and condition for slave counter. */
-  pthread_mutex_init(&slave_mutex, NULL);
-  pthread_cond_init(&slave_cond, NULL);
+  if ((errno = pthread_mutex_init(&slave_mutex, NULL)) != 0)
+    {
+      perror(*argv);
+      fd_table_destroy(&client_map, NULL, NULL);
+      linked_list_destroy(&client_list);
+      return 1;
+    }
+  if ((errno = pthread_cond_init(&slave_cond, NULL)) != 0)
+    {
+      perror(*argv);
+      fd_table_destroy(&client_map, NULL, NULL);
+      linked_list_destroy(&client_list);
+      pthread_mutex_destroy(&slave_mutex);
+      return 1;
+    }
   
   
   /* Unmarshal the state of the server. */
@@ -402,7 +415,6 @@ void* slave_loop(void* data)
   ssize_t entry = LINKED_LIST_UNUSED;
   size_t information_address = fd_table_get(&client_map, (size_t)socket_fd);
   client_t* information = (client_t*)(void*)information_address;
-  int mutex_created = 0;
   char* msgbuf = NULL;
   size_t n;
   size_t tmp;
@@ -418,9 +430,10 @@ void* slave_loop(void* data)
 	  goto fail;
 	}
       
-      /* NULL-out pointers. */
+      /* NULL-out pointers and initialisation markers. */
       information->interception_conditions = NULL;
       information->send_pending = NULL;
+      information->mutex_created = 0;
       
       /* Add to list of clients. */
       pthread_mutex_lock(&slave_mutex);
@@ -460,8 +473,12 @@ void* slave_loop(void* data)
   information->thread = pthread_self();
   /* Create mutex to make sure two thread to not try to send
      messages concurrently, and other slave local actions. */
-  pthread_mutex_init(&(information->mutex), NULL);
-  mutex_created = 1;
+  if ((errno = pthread_mutex_init(&(information->mutex), NULL)) != 0)
+    {
+      perror(*argv);
+      goto fail;
+    }
+  information->mutex_created = 1;
   
   
   /* Make the server update without all slaves dying on SIGUSR1. */
@@ -561,7 +578,7 @@ void* slave_loop(void* data)
 	    free(information->interception_conditions[i].condition);
 	  free(information->interception_conditions);
 	}
-      if (mutex_created)
+      if (information->mutex_created)
 	pthread_mutex_destroy(&(information->mutex));
       mds_message_destroy(&(information->message));
       free(information->send_pending);

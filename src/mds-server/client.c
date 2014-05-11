@@ -84,6 +84,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   size_t i, n, rc = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 3 * sizeof(size_t);
   this->interception_conditions = NULL;
   this->send_pending = NULL;
+  this->mutex_created = 0;
   buf_get_next(data, ssize_t, this->list_entry);
   buf_get_next(data, int, this->socket_fd);
   buf_get_next(data, int, this->open);

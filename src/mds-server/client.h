@@ -71,6 +71,11 @@ typedef struct client
   pthread_mutex_t mutex;
   
   /**
+   * Whether `mutex` has been initialised
+   */
+  int mutex_created;
+  
+  /**
    * The messages interception conditions conditions
    * for the client
    */
