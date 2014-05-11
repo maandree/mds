@@ -20,6 +20,7 @@
 
 
 #include "interception_condition.h"
+#include "multicast.h"
 
 #include <libmdsserver/mds-message.h>
 
@@ -52,7 +53,7 @@ typedef struct client
   /**
    * Message read buffer for the client
    */
-  mds_message_t message;
+  struct mds_message message;
   
   /**
    * The read thread for the client
@@ -79,12 +80,22 @@ typedef struct client
    * The messages interception conditions conditions
    * for the client
    */
-  interception_condition_t* interception_conditions;
+  struct interception_condition* interception_conditions;
   
   /**
    * The number of interception conditions
    */
   size_t interception_conditions_count;
+  
+  /**
+   * Pending multicast messages
+   */
+  struct multicast* multicasts;
+  
+  /**
+   * The number of pending multicast messages
+   */
+  size_t multicasts_count;
   
   /**
    * Messages pending to be sent (concatenated)

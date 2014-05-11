@@ -69,31 +69,32 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 all: bin/mds bin/mds-server/mds-server bin/libmdsserver.so
 
 
-MDS_SERVER_OBJ = mds-server/mds-server mds-server/interception_condition mds-server/client
+MDS_SERVER_OBJ = mds-server/mds-server mds-server/interception_condition mds-server/client \
+                 mds-server/multicast mds-server/queued_interception
 bin/mds-server/mds-server: $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o) bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)
+	$(CC) $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)
 
 bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt obj/$*.o
+	$(CC) $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt obj/$*.o
 
 obj/mds-server/%.o: src/mds-server/%.c src/mds-server/*.h src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -Isrc -c -o $@ $<
+	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
 
 obj/%.o: src/%.c src/*.h src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -Isrc -c -o $@ $<
+	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
 
 
 bin/libmdsserver.so: $(foreach O,$(LIBOBJ),obj/libmdsserver/$(O).o)
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -shared -o $@ $^
+	$(CC) $(C_FLAGS) -shared -o $@ $^
 
 obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)
-	gcc $(C_FLAGS) -fPIC -c -o $@ $<
+	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
 
 
 

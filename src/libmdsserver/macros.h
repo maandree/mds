@@ -73,9 +73,9 @@
  * @param  instructions           The instructions to run while the mutex is locked
  */
 #define with_mutex(mutex, instructions)  \
-  pthread_mutex_lock(&(mutex));          \
+  errno = pthread_mutex_lock(&(mutex));  \
   instructions                           \
-  pthread_mutex_unlock(&(mutex))
+  errno = pthread_mutex_unlock(&(mutex))
 
 
 /**

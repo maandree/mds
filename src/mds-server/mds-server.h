@@ -20,6 +20,7 @@
 
 
 #include "client.h"
+#include "multicast.h"
 
 #include <stddef.h>
 
@@ -53,12 +54,20 @@ void message_received(client_t* client);
 void add_intercept_condition(client_t* client, char* condition, int64_t priority, int modifying, int stop);
 
 /**
- * Multicast a message
+ * Queue a message for multicasting
  * 
  * @param  message  The message
  * @param  length   The length of the message
+ * @param  sender   The original sender of the message
  */
-void multicast_message(char* message, size_t length);
+void queue_message_multicast(char* message, size_t length, client_t* sender);
+
+/**
+ * Multicast a message
+ * 
+ * @param  multicast  The multicast message
+ */
+void multicast_message(multicast_t* multicast);
 
 /**
  * Exec into the mdsinitrc script
