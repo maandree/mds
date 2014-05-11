@@ -1200,7 +1200,8 @@ void multicast_message(multicast_t* multicast)
 			 {
 			   if (errno != EINTR)
 			     perror(*argv);
-			   break;
+			   else if (reexecing)
+			     break;
 			 }
 		       n -= sent;
 		       multicast->message_ptr += sent;
@@ -1208,7 +1209,7 @@ void multicast_message(multicast_t* multicast)
 		 );
       
       /* Stop if we are re-exec:ing. */
-      if ((n > 0) && (errno == EINTR))
+      if ((n > 0) && reexecing)
 	return;
       
       /* Wait for a reply. */
