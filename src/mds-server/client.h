@@ -107,6 +107,11 @@ typedef struct client
    */
   size_t send_pending_size;
   
+  /**
+   * Pending reply to the multicast interception
+   */
+  struct mds_message* modify_message;
+  
 } client_t;
 
 
