@@ -1259,7 +1259,7 @@ void multicast_message(multicast_t* multicast)
 		     }
 		 );
       
-      /* Stop if we are re-exec:ing. */
+      /* Stop if we are re-exec:ing, or continue to next recipient on error. */
       if (n > 0)
 	{
 	  if (reexecing)
