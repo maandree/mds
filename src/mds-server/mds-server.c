@@ -1252,7 +1252,7 @@ void multicast_message(multicast_t* multicast)
 			 {
 			   if (errno != EINTR)
 			     perror(*argv);
-			   break; /* TODO handle errors */
+			   break;
 			 }
 		       n -= sent;
 		       multicast->message_ptr += sent;
@@ -1260,8 +1260,13 @@ void multicast_message(multicast_t* multicast)
 		 );
       
       /* Stop if we are re-exec:ing. */
-      if ((n > 0) && reexecing)
-	return;
+      if (n > 0)
+	{
+	  if (reexecing)
+	    return;
+	  else
+	    continue;
+	}
       
       /* Wait for a reply and act upon it. */
       if ((n == 0) && client_.modifying)
