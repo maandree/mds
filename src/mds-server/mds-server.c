@@ -1252,8 +1252,7 @@ void multicast_message(multicast_t* multicast)
 			 {
 			   if (errno != EINTR)
 			     perror(*argv);
-			   else if (reexecing)
-			     break;
+			   break; /* TODO handle errors */
 			 }
 		       n -= sent;
 		       multicast->message_ptr += sent;
