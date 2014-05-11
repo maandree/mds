@@ -365,6 +365,7 @@ int main(int argc_, char** argv_)
     pid_t pid = getpid();
     int reexec_fd;
     char shm_path[NAME_MAX + 1];
+    ssize_t node;
     
     /* Join with all slaves threads. */
     with_mutex(slave_mutex,
@@ -388,8 +389,17 @@ int main(int argc_, char** argv_)
     close(reexec_fd);
     reexec_fd = -1;
     
+    /* Release resources. */
+    foreach_linked_list_node (client_list, node)
+      {
+	client_t* client = (client_t*)(void*)(client_list.values[node]);
+	client_destroy(client);
+      }
+    
     /* Re-exec the server. */
     reexec_server(argc, argv, reexec);
+    fd_table_destroy(&client_map, NULL, NULL);
+    linked_list_destroy(&client_list);
     
   reexec_fail:
     perror(*argv);
@@ -570,20 +580,7 @@ void* slave_loop(void* data)
   close(socket_fd);
   free(msgbuf);
   if (information != NULL)
-    {
-      if (information->interception_conditions != NULL)
-	{
-	  size_t i;
-	  for (i = 0; i < information->interception_conditions_count; i++)
-	    free(information->interception_conditions[i].condition);
-	  free(information->interception_conditions);
-	}
-      if (information->mutex_created)
-	pthread_mutex_destroy(&(information->mutex));
-      mds_message_destroy(&(information->message));
-      free(information->send_pending);
-      free(information);
-    }
+    client_destroy(information);
   
   /* Unlist client and decrease the slave count. */
   with_mutex(slave_mutex,
@@ -1013,29 +1010,31 @@ void multicast_message(char* message, size_t length)
 		   n = client->interception_conditions_count;
 		   errno = 0;
 		   if (client->open)
-		     with_mutex(mutex,
-				if (errno || (client->open == 0))
-				  n == 0;
-				for (i = 0; i < n; i++)
-				  {
-				    interception_condition_t* cond = conds + i;
-				    for (j = 0; j < header_count; j++)
-				      {
-					if (*(cond->condition) == '\0')
-					  break;
-					if (cond->header_hash == hashes[j])
-					  if (strequals(cond->condition, headers[j]) ||
-					      strequals(cond->condition, header_values[j]))
+		     {
+		       with_mutex(mutex,
+				  if (errno || (client->open == 0))
+				    n = 0;
+				  for (i = 0; i < n; i++)
+				    {
+				      interception_condition_t* cond = conds + i;
+				      for (j = 0; j < header_count; j++)
+					{
+					  if (*(cond->condition) == '\0')
 					    break;
-				      }
-				    if (j < header_count)
-				      {
-					priority = cond->priority;
-					modifying = cond->modifying;
-					break;
-				      }
-				  }
-				);
+					  if (cond->header_hash == hashes[j])
+					    if (strequals(cond->condition, headers[j]) ||
+						strequals(cond->condition, header_values[j]))
+					      break;
+					}
+				      if (j < header_count)
+					{
+					  priority = cond->priority;
+					  modifying = cond->modifying;
+					  break;
+					}
+				    }
+				  );
+		     }
 		   else
 		     n = 0;
 		   

@@ -21,7 +21,30 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
+
+
+/**
+ * Release all resources assoicated with a client
+ * 
+ * @param  this  The client information
+ */
+void client_destroy(client_t* restrict this)
+{
+  if (this->interception_conditions != NULL)
+    {
+      size_t i;
+      for (i = 0; i < this->interception_conditions_count; i++)
+	free(this->interception_conditions[i].condition);
+      free(this->interception_conditions);
+    }
+  if (this->mutex_created)
+    pthread_mutex_destroy(&(this->mutex));
+  mds_message_destroy(&(this->message));
+  free(this->send_pending);
+  free(this);
+}
 
 
 /**

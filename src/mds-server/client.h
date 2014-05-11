@@ -99,6 +99,14 @@ typedef struct client
 } client_t;
 
 
+
+/**
+ * Release all resources assoicated with a client
+ * 
+ * @param  this  The client information
+ */
+void client_destroy(client_t* restrict this);
+
 /**
  * Calculate the buffer size need to marshal client information
  * 
