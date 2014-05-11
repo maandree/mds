@@ -112,6 +112,26 @@ typedef struct client
    */
   struct mds_message* modify_message;
   
+  /**
+   * Mutex for `modify_message` 
+   */
+  pthread_mutex_t modify_mutex;
+  
+  /**
+   * Condidition for `modify_message` 
+   */
+  pthread_cond_t modify_cond;
+  
+  /**
+   * Whether `modify_mutex` has been initialised
+   */
+  int modify_mutex_created;
+  
+  /**
+   * Whether `modify_cond` has been initialised
+   */
+  int modify_cond_created;
+  
 } client_t;
 
 

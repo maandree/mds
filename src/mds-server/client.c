@@ -57,6 +57,10 @@ void client_destroy(client_t* restrict this)
       mds_message_destroy(this->modify_message);
       free(this->modify_message);
     }
+  if (this->modify_mutex_created)
+    pthread_mutex_destroy(&(this->modify_mutex));
+  if (this->modify_cond_created)
+    pthread_cond_destroy(&(this->modify_cond));
   free(this);
 }
 
@@ -132,6 +136,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   this->multicasts = NULL;
   this->send_pending = NULL;
   this->mutex_created = 0;
+  this->modify_mutex_created = 0;
+  this->modify_cond_created = 0;
   this->multicasts_count = 0;
   buf_get_next(data, ssize_t, this->list_entry);
   buf_get_next(data, int, this->socket_fd);
