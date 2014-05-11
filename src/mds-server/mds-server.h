@@ -38,9 +38,10 @@ void* slave_loop(void* data);
  * Perform actions that should be taken when
  * a message has been received from a client
  * 
- * @param  client  The client has sent a message
+ * @param   client  The client has sent a message
+ * @return          Normally zero, but 1 if exited because of re-exec
  */
-void message_received(client_t* client);
+int message_received(client_t* client);
 
 /**
  * Add an interception condition for a client

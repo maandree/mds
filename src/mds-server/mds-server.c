@@ -618,7 +618,10 @@ void* slave_loop(void* data)
 	/* Fetch message. */
 	r = mds_message_read(&(information->message), socket_fd);
 	if (r == 0)
-	  message_received(information);
+	  {
+	    if (message_received(information) == 1)
+	      goto reexec;
+	  }
 	else
 	  if (r == -2)
 	    {
@@ -628,9 +631,10 @@ void* slave_loop(void* data)
 	  else if (errno == ECONNRESET)
 	    {
 	      r = mds_message_read(&(information->message), socket_fd);
-	      information->open = 0;
 	      if (r == 0)
-		message_received(information);
+		if (message_received(information))
+		  goto reexec;
+	      information->open = 0;
 	      /* Connection closed. */
 	      break;
 	    }
@@ -697,9 +701,10 @@ void* slave_loop(void* data)
  * Perform actions that should be taken when
  * a message has been received from a client
  * 
- * @param  client  The client has sent a message
+ * @param   client  The client has sent a message
+ * @return          Normally zero, but 1 if exited because of re-exec
  */
-void message_received(client_t* client)
+int message_received(client_t* client)
 {
   mds_message_t message = client->message;
   int assign_id = 0;
@@ -744,7 +749,11 @@ void message_received(client_t* client)
       with_mutex(modify_mutex,
 		 while (hash_table_contains_key(&modify_map, (size_t)modify_id) == 0)
 		   {
-		     /* TODO support re-exec */
+		     if (reexecing)
+		       {
+			 pthread_mutex_unlock(&(modify_mutex));
+			 return 1;
+		       }
 		     pthread_cond_timedwait(&slave_cond, &slave_mutex, &timeout);
 		   }
 		 address = hash_table_get(&modify_map, (size_t)modify_id);
@@ -784,14 +793,14 @@ void message_received(client_t* client)
       with_mutex(client->modify_mutex, pthread_cond_signal(&(client->modify_cond)););
       
       /* Do nothing more, not not even multicast this message. */
-      return;
+      return 0;
     }
   
   
   if (message_id == NULL)
     {
       eprint("received message with a message ID, ignoring.");
-      return;
+      return 0;
     }
   
   /* Assign ID if not already assigned. */
@@ -821,7 +830,7 @@ void message_received(client_t* client)
       if (xmalloc(buf, size + 1, char))
 	{
 	  perror(*argv);
-	  return;
+	  return 0;
 	}
       
       pthread_mutex_lock(&(client->mutex));
@@ -851,7 +860,7 @@ void message_received(client_t* client)
 		      {
 			perror(*argv);
 			free(old_buf);
-			return;
+			return 0;
 		      }
 		  }
 		memcpy(buf, payload, len);
@@ -880,7 +889,7 @@ void message_received(client_t* client)
   if ((msgbuf = malloc(n)) == NULL)
     {
       perror(*argv);
-      return;
+      return 0;
     }
   mds_message_marshal(&message, msgbuf, 0);
   queue_message_multicast(msgbuf, n / sizeof(char), client);
@@ -897,7 +906,7 @@ void message_received(client_t* client)
       if (xmalloc(msgbuf, n, char))
 	{
 	  perror(*argv);
-	  return;
+	  return 0;
 	}
       snprintf(msgbuf, n,
 	       "ID assignment: %" PRIu32 ":%" PRIu32 "\n"
@@ -914,7 +923,7 @@ void message_received(client_t* client)
 	{
 	  perror(*argv);
 	  free(msgbuf);
-	  return;
+	  return 0;
 	}
       queue_message_multicast(msgbuf, n, client);
       
