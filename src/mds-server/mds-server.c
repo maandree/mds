@@ -953,6 +953,8 @@ int message_received(client_t* client)
 		   }
 		 );
     }
+  
+  return 0;
 }
 
 
