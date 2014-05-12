@@ -350,7 +350,7 @@ int spawn_and_respawn_server(int fd)
 	    }
 	  
 	  /* Respawn if the server did not die too fast. */
-	  if (time_end.tv_sec - time_start.tv_sec < RESPAWN_TIME_LIMIT_SECONDS)
+	  if (time_end.tv_sec - time_start.tv_sec >= RESPAWN_TIME_LIMIT_SECONDS)
 	    eprintf("%s died abnormally, respawning.", master_server);
 	  else
 	    {

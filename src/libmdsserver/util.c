@@ -72,7 +72,7 @@ void reexec_server(int argc, char** argv, int reexeced)
     {
       *reexec_args_++ = *argv;
       *reexec_args_ = strdup("--re-exec");
-      if (*reexec_args_)
+      if (*reexec_args_ == NULL)
 	return;
       for (i = 1; i < argc; i++)
 	reexec_args_[i] = argv[i];

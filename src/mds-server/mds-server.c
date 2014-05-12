@@ -211,7 +211,10 @@ int main(int argc_, char** argv_)
     }
   unparsed_args[unparsed_args_ptr] = NULL;
   if (reexec)
-    is_respawn = 1;
+    {
+      is_respawn = 1;
+      eprint("re-exec:ing done.");
+    }
   
   
   /* Check that manditory arguments have been specified. */
@@ -247,7 +250,6 @@ int main(int argc_, char** argv_)
 	  return 1;
 	}
     }
-  
   
 #define __free(I) \
   if (I <= 0)  fd_table_destroy(&client_map, NULL, NULL);  \
@@ -329,19 +331,19 @@ int main(int argc_, char** argv_)
       pid_t pid = getpid();
       int reexec_fd, r;
       char shm_path[NAME_MAX + 1];
+      
+      /* Acquire access to marshalled data. */
       xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
-      reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+      reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
       if (reexec_fd < 0)
 	{
 	  perror(*argv);
-	  r = -1;
+	  abort(); /* Critical. */
 	}
-      else
-	{
-	  r = unmarshal_server(reexec_fd);
-	  close(reexec_fd);
-	  shm_unlink(shm_path);
-	}
+      /* Unmarshal state. */
+      r = unmarshal_server(reexec_fd);
+      close(reexec_fd);
+      shm_unlink(shm_path);
       if (r < 0)
 	{
 	  /* Close all files (hopefully sockets) we do not know what they are. */
@@ -447,11 +449,11 @@ int main(int argc_, char** argv_)
 	client_t* client = (client_t*)(void*)(client_list.values[node]);
 	client_destroy(client);
       }
+    fd_table_destroy(&client_map, NULL, NULL);
+    linked_list_destroy(&client_list);
     
     /* Re-exec the server. */
     reexec_server(argc, argv, reexec);
-    fd_table_destroy(&client_map, NULL, NULL);
-    linked_list_destroy(&client_list);
     
   reexec_fail:
     perror(*argv);
@@ -1525,6 +1527,8 @@ void sigusr1_trap(int signo)
       
       reexecing = 1;
       current_thread = pthread_self();
+      
+      eprint("re-exec:ing queue.");
       
       if (pthread_equal(current_thread, master_thread) == 0)
 	pthread_kill(master_thread, signo);

@@ -59,7 +59,7 @@ LDS = -pthread -Lbin -lmdsserver -lrt
 DEBUG_FLAGS =
 ifeq ($(DEBUG),y)
 DEBUG_FLAGS += -D'DEBUG'
-DEBUG_FLAGS += -D'LIBEXECDIR="$(shell pwd)/bin/"'
+DEBUG_FLAGS += -D'LIBEXECDIR="$(shell pwd)/bin"'
 endif
 
 # Options for the C compiler.
