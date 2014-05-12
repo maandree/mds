@@ -51,7 +51,7 @@ static char** argv;
 /**
  * The master server
  */
-static const char* master_server = LIBEXECDIR "/mds-master";
+static const char* master_server = LIBEXECDIR "/mds-server";
 
 
 /**

@@ -30,7 +30,7 @@ INFODIR ?= $(DATADIR)/info
 LICENSEDIR ?= $(DATADIR)/licenses
 
 # The name of the package as it should be installed.
-PKGNAME ?= blueshift
+PKGNAME ?= mds
 
 
 # Optimisation level (and debug flags.)
@@ -52,11 +52,21 @@ WARN = -Wall -Wextra -pedantic -Wdouble-promotion -Wformat=2 -Winit-self       \
 # The C standard used in the code.
 STD = gnu99
 
+# Libraries linking flags.
+LDS = -pthread -Lbin -lmdsserver -lrt
+
+# C compiler debug flags.
+DEBUG_FLAGS =
+ifeq ($(DEBUG),y)
+DEBUG_FLAGS += -D'DEBUG'
+DEBUG_FLAGS += -D'LIBEXECDIR="$(shell pwd)/bin/"'
+endif
+
 # Options for the C compiler.
 C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
           -ftree-vrp -fstrict-aliasing -fipa-pure-const -fstack-usage       \
           -fstrict-overflow -funsafe-loop-optimizations -fno-builtin        \
-	  -D_GNU_SOURCE -pthread
+	  -D'_GNU_SOURCE' -D'PKGNAME="$(PKGNAME)"' $(DEBUG_FLAGS)
 
 
 # Object files for the libary
@@ -66,18 +76,18 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 # Build rules.
 
 .PHONY: all
-all: bin/mds bin/mds-server/mds-server bin/libmdsserver.so
+all: bin/mds bin/mds-server bin/libmdsserver.so
 
 
 MDS_SERVER_OBJ = mds-server/mds-server mds-server/interception_condition mds-server/client \
                  mds-server/multicast mds-server/queued_interception
-bin/mds-server/mds-server: $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o) bin/libmdsserver.so
+bin/mds-server: $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o) bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)
 
 bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ -Lbin -lmdsserver -lrt obj/$*.o
+	$(CC) $(C_FLAGS) -o $@ $(LDS) obj/$*.o
 
 obj/mds-server/%.o: src/mds-server/%.c src/mds-server/*.h src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)
