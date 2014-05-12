@@ -150,6 +150,10 @@ int main(int argc_, char** argv_)
   int i;
   pthread_t _slave_thread;
   
+#if (LIBEXEC_ARGC_EXTRA_LIMIT < 3)
+# error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 3.
+#endif
+  
   
   argc = argc_;
   argv = argv_;

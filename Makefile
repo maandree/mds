@@ -97,10 +97,18 @@ obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h
 	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
 
 
+# Set permissions on built files.
+
+.PHONY: perms
+perms: all
+	sudo chown 'root:root' bin/mds
+	sudo chmod 4755 bin/mds
+
+
 
 # Clean rules.
 
 .PHONY: clean
 clean:
-	-rm -r obj bin
+	-rm -rf obj bin
 

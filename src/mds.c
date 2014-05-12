@@ -110,7 +110,10 @@ int main(int argc_, char** argv_)
   
   /* Set up to ignore SIGUSR1, used in mds for re-exec, but we cannot re-exec. */
   if (xsigaction(SIGUSR1, SIG_IGN) < 0)
-    perror(*argv);
+    {
+      perror(*argv);
+      eprint("while ignoring the SIGUSR1 signal.");
+    }
   
   /* Create directory for socket files, PID files and such. */
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
@@ -130,11 +133,15 @@ int main(int argc_, char** argv_)
 	  if (f == NULL) /* Race, or error? */
 	    {
 	      perror(*argv);
+	      eprintf("while opening the file: %s", pathname);
 	      continue;
 	    }
 	  read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
 	  if (ferror(f)) /* Failed to read. */
-	    perror(*argv);
+	    {
+	      perror(*argv);
+	      eprintf("while reading the file: %s", pathname);
+	    }
 	  else if (feof(f) == 0) /* Did not read everything. */
 	    eprint("the content of a PID file is longer than expected.");
 	  else
@@ -184,6 +191,7 @@ int main(int argc_, char** argv_)
   if (f == NULL)
     {
       perror(*argv);
+      eprintf("while opening the file: %s", pathname);
       return 1;
     }
   xsnprintf(piddata, "%u\n", getpid());
@@ -217,18 +225,25 @@ int main(int argc_, char** argv_)
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if ((fchmod(fd, S_IRWXU) < 0) ||
       (fchown(fd, getuid(), NOBODY_GROUP_GID) < 0))
-    goto fail;
+    {
+      perror(*argv);
+      eprint("while making anonymous socket private to the real user.");
+      goto fail;
+    }
   if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)
-    goto fail;
+    {
+      perror(*argv);
+      eprintf("while binding socket to file: %s", pathname);
+      goto fail;
+    }
   
   /* Start listening on socket. */
   if (listen(fd, SOMAXCONN) < 0)
-    goto fail;
-  
-  /* Drop privileges. They most not be propagated non-authorised components. */
-  /* setgid should not be set, but just to be safe we are restoring both user and group. */
-  if (drop_privileges())
-    goto fail;
+    {
+      perror(*argv);
+      eprintf("while setting up listening on socket: %s", pathname);
+      goto fail;
+    }
   
   /* Start master server and respawn it if it crashes. */
   rc = spawn_and_respawn_server(fd);
@@ -268,6 +283,9 @@ int main(int argc_, char** argv_)
  */
 int spawn_and_respawn_server(int fd)
 {
+  int time_error = 0;
+  int first_spawn = 1;
+  int rc = 0;
   struct timespec time_start;
   struct timespec time_end;
   char* child_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
@@ -275,8 +293,6 @@ int spawn_and_respawn_server(int fd)
   int i;
   pid_t pid;
   int status;
-  int time_error = 0;
-  int first_spawn = 1;
   
   child_args[0] = strdup(master_server);
   for (i = 1; i < argc; i++)
@@ -296,7 +312,8 @@ int spawn_and_respawn_server(int fd)
       if (pid == (pid_t)-1)
 	{
 	  perror(*argv);
-	  return 1;
+	  eprint("while forking.");
+	  goto fail;
 	}
       
       if (pid)
@@ -304,13 +321,17 @@ int spawn_and_respawn_server(int fd)
 	  /* Get the current time. (Start of child process.) */
 	  time_error = (monotone(&time_start) < 0);
 	  if (time_error)
-	    perror(*argv);
+	    {
+	      perror(*argv);
+	      eprint("while reading a monotonic clock.");
+	    }
 	  
 	  /* Wait for master server to die. */
 	  if (waitpid(pid, &status, 0) == (pid_t)-1)
 	    {
 	      perror(*argv);
-	      return 1;
+	      eprint("while waiting for child process to exit.");
+	      goto fail;
 	    }
 	  
 	  /* If the server exited normally or SIGTERM, do not respawn. */
@@ -324,8 +345,8 @@ int spawn_and_respawn_server(int fd)
 	  if (time_error)
 	    {
 	      perror(*argv);
-	      eprintf("%s died abnormally, not respoawning because we could not read the time.", master_server);
-	      return 1;
+	      eprintf("%s died abnormally, not respawning because we could not read the time.", master_server);
+	      goto fail;
 	    }
 	  
 	  /* Respawn if the server did not die too fast. */
@@ -334,7 +355,7 @@ int spawn_and_respawn_server(int fd)
 	  else
 	    {
 	      eprintf("%s died abnormally, died too fast, not respawning.", master_server);
-	      return 1;
+	      goto fail;
 	    }
 	  
 	  if (first_spawn)
@@ -342,21 +363,42 @@ int spawn_and_respawn_server(int fd)
 	      first_spawn = 0;
 	      free(child_args[argc + 0]);
 	      child_args[argc + 0] = strdup("--respawn");
+	      if (child_args[argc + 0] == NULL)
+		{
+		  perror(*argv);
+		  eprint("while duplicating string.");
+		  goto fail;
+		}
 	    }
 	}
       else
 	{
+	  rc++;
+	  /* Drop privileges. They most not be propagated non-authorised components. */
+	  /* setgid should not be set, but just to be safe we are restoring both user and group. */
+	  if (drop_privileges())
+	    {
+	      perror(*argv);
+	      eprint("while dropping privileges.");
+	      goto fail;
+	    }
+	  
 	  /* Start master server. */
 	  execv(master_server, child_args);
 	  perror(*argv);
-	  return 1;
+	  eprint("while changing execution image.");
+	  goto fail;
 	}
     }
   
+  rc--;
+ fail:
+  rc++;
   free(child_args[0]);
   free(child_args[argc + 0]);
-  free(child_args[argc + 1]);
-  return 0;
+  if (rc == 2)
+    _exit(1);
+  return rc;
 }
 
 
@@ -388,6 +430,7 @@ int create_directory_root(const char* pathname)
 	  if (errno != EEXIST) /* Unlikely race condition. */
 	    {
 	      perror(*argv);
+	      eprintf("while creating directory: %s", pathname);
 	      return 1;
 	    }
 	}
@@ -396,6 +439,7 @@ int create_directory_root(const char* pathname)
 	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
 	  {
 	    perror(*argv);
+	    eprintf("while changing owner of directory: %s", pathname);
 	    return 1;
 	  }
     }
@@ -432,6 +476,7 @@ int create_directory_user(const char* pathname)
 	  if (errno != EEXIST) /* Unlikely race condition. */
 	    {
 	      perror(*argv);
+	      eprintf("while creating directory: %s", pathname);
 	      return 1;
 	    }
 	}
@@ -440,6 +485,7 @@ int create_directory_user(const char* pathname)
 	if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
 	  {
 	    perror(*argv);
+	    eprintf("while changing owner of directory: %s", pathname);
 	    return 1;
 	  }
     }
@@ -452,7 +498,7 @@ int create_directory_user(const char* pathname)
  * Recursively remove a directory
  * 
  * @param   pathname  The pathname of the directory to remove
- * @return            Non-zero on error
+ * @return            Non-zero on error, but zero if the directory does not exist
  */
 int unlink_recursive(const char* pathname)
 {
@@ -462,7 +508,13 @@ int unlink_recursive(const char* pathname)
   
   if (dir == NULL)
     {
+      int errno_ = errno;
+      struct stat _attr;
+      if (stat(pathname, &_attr) < 0)
+	return 0;
+      errno = errno_;
       perror(*argv);
+      eprintf("while examining the content of directory: %s", pathname);
       return 1;
     }
   
@@ -475,17 +527,20 @@ int unlink_recursive(const char* pathname)
 	  else
 	    {
 	      perror(*argv);
+	      eprintf("while unlinking file: %s", file->d_name);
 	      rc = 1;
 	      goto done;
 	    }
+	  eprint("pop");
 	}
   
   if (rmdir(pathname) < 0)
     {
       perror(*argv);
+      eprintf("while removing directory: %s", pathname);
       rc = 1;
     }
-
+  
  done:  
   closedir(dir);
   return rc;
