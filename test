@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+cd "$(dirname "$0")"
+
+# Because bin/mds has setuid on all used libraries need to be in a path
+# that is trusted by the dynamic linker. If it still says that the file
+# is not found, add /usr/local/lib to /etc/ld.so.conf.
+if [ ! -e bin/libmdsserver.so ]; then
+    make DEBUG=y
+fi
+if [ ! -e /usr/local/lib/libmdsserver.so ]; then
+    sudo cp bin/libmdsserver.so /usr/local/lib/libmdsserver.so
+elif [ ! "$(cat /usr/local/lib/libmdsserver.so | sha256sum)" = "$(cat bin/libmdsserver.so | sha256sum)" ]; then
+    sudo cp bin/libmdsserver.so /usr/local/lib/libmdsserver.so
+fi
+
+export PATH="$(pwd)/test.d:${PATH}"
+export XDG_CONFIG_HOME="$(pwd)/test.d"
+
+bin/mds
+
