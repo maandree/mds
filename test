@@ -15,6 +15,7 @@ elif [ ! "$(cat /usr/local/lib/libmdsserver.so | sha256sum)" = "$(cat bin/libmds
     sudo cp bin/libmdsserver.so /usr/local/lib/libmdsserver.so
 fi
 
+export OLD_XDG_CONFIG_HOME="${XDG_CONFIG_HOME}"
 export PATH="$(pwd)/test.d:${PATH}"
 export XDG_CONFIG_HOME="$(pwd)/test.d"
 

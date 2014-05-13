@@ -2,3 +2,15 @@
 
 echo "Successfully spawned mdsinitrc. "
 
+
+export XDG_CONFIG_HOME="${OLD_XDG_CONFIG_HOME}"
+unset OLD_XDG_CONFIG_HOME
+if [ -z "${XDG_CONFIG_HOME}" ]; then
+    unset XDG_CONFIG_HOME
+fi
+if which terminator 2>/dev/null >&2; then
+    exec terminator
+else
+    exec xterm
+fi
+
