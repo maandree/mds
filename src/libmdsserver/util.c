@@ -126,7 +126,7 @@ size_t send_message(int socket, const char* message, size_t length)
   ssize_t just_sent;
   
   while (length > 0)
-    if ((just_sent = send(socket, message, min(block_size, length), MSG_NOSIGNAL)) < 0)
+    if ((just_sent = send(socket, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0)
       {
 	if (errno == EMSGSIZE)
 	  {
@@ -139,7 +139,7 @@ size_t send_message(int socket, const char* message, size_t length)
       }
     else
       {
-	message += (size_t)just_sent;
+	sent += (size_t)just_sent;
 	length -= (size_t)just_sent;
       }
   

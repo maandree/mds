@@ -94,6 +94,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	{
 	  size_t i;
 	  xfree(this->headers, this->header_count);
+	  this->headers = NULL;
 	}
       this->header_count = 0;
       

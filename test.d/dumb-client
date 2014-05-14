@@ -36,13 +36,14 @@ socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 socket.connect(socket_path)
 
 def read_loop():
-    data = socket.recv(1);
-    if not data:
-        return
-    sys.stdout.buffer.write(b'\033[34m');
-    sys.stdout.buffer.write(data);
-    sys.stdout.buffer.write(b'\033[00m');
-    sys.stdout.buffer.flush();
+    while True:
+        data = socket.recv(2048);
+        if not data:
+            break
+        sys.stdout.buffer.write(b'\033[34m');
+        sys.stdout.buffer.write(data);
+        sys.stdout.buffer.write(b'\033[00m');
+        sys.stdout.buffer.flush();
 
 thread = threading.Thread(target = read_loop)
 thread.setDaemon(True)

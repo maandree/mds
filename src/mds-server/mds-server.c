@@ -617,7 +617,7 @@ void* slave_loop(void* data)
 			       break;
 			     }
 			   n -= sent;
-			   sendbuf_ += sent;
+			   sendbuf_ += sent / sizeof(char);
 			 }
 		       free(sendbuf);
 		       );
@@ -936,7 +936,7 @@ int message_received(client_t* client)
 	  free(msgbuf);
 	  return 0;
 	}
-      queue_message_multicast(msgbuf, n, client);
+      queue_message_multicast(msgbuf_, n, client);
       
       /* Queue message to be sent when this function returns.
          This done to simplify `multicast_message` for re-exec. */
@@ -1346,6 +1346,7 @@ void multicast_message(multicast_t* multicast)
       /* Send the message. */
       with_mutex(client->mutex,
 		 errno = 0;
+		 n *= sizeof(char);
 		 if (client->open)
 		   while (n > 0)
 		     {
@@ -1357,7 +1358,7 @@ void multicast_message(multicast_t* multicast)
 			   break;
 			 }
 		       n -= sent;
-		       multicast->message_ptr += sent;
+		       multicast->message_ptr += sent / sizeof(char);
 		     }
 		 );
       
