@@ -48,8 +48,8 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
      the time overhead of `fd_table_contains_value`. */
   
   bitcap = (this->capacity + 63) / 64;
-  if (xcalloc(this->used,   bitcap,         sizeof(size_t)))  return -1;
-  if (xcalloc(this->values, this->capacity, sizeof(size_t)))  return -1;
+  if (xcalloc(this->used,   bitcap,         size_t))  return -1;
+  if (xcalloc(this->values, this->capacity, size_t))  return -1;
   
   return 0;
 }

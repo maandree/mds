@@ -76,7 +76,7 @@ static int rehash(hash_table_t* restrict this)
   hash_entry_t* destination;
   hash_entry_t* next;
   
-  if (xcalloc(this->buckets, old_capacity * 2 + 1, sizeof(hash_entry_t*)))
+  if (xcalloc(this->buckets, old_capacity * 2 + 1, hash_entry_t*))
     return -1;
   this->capacity = old_capacity * 2 + 1;
   this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
@@ -124,7 +124,7 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
   this->buckets = NULL;
   
   this->capacity = initial_capacity ? initial_capacity : 1;
-  if (xcalloc(this->buckets, this->capacity, sizeof(hash_entry_t*)))
+  if (xcalloc(this->buckets, this->capacity, hash_entry_t*))
     return -1;
   this->load_factor = load_factor;
   this->threshold = (size_t)((float)(this->capacity) * load_factor);
@@ -448,7 +448,7 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
   buf_get_next(data, size_t, this->threshold);
   buf_get_next(data, size_t, this->size);
   
-  if (xcalloc(this->buckets, this->capacity, sizeof(hash_entry_t*)))
+  if (xcalloc(this->buckets, this->capacity, hash_entry_t*))
     return -1;
   
   for (i = 0; i < n; i++)

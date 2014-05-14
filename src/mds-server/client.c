@@ -163,7 +163,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
       rc += n;
     }
   buf_get_next(data, size_t, n);
-  if (xmalloc(this->multicasts, n, sizeof(multicast_t)))
+  if (xmalloc(this->multicasts, n, multicast_t))
     goto fail;
   for (i = 0; i < n; i++, this->multicasts_count++)
     {
