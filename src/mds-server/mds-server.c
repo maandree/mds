@@ -498,6 +498,7 @@ void* slave_loop(void* data)
       information->interception_conditions = NULL;
       information->send_pending = NULL;
       information->modify_message = NULL;
+      information->multicasts = NULL;
       information->mutex_created = 0;
       information->modify_mutex_created = 0;
       information->modify_cond_created = 0;
@@ -529,6 +530,7 @@ void* slave_loop(void* data)
       information->id = 0;
       information->interception_conditions_count = 0;
       information->send_pending_size = 0;
+      information->multicasts_count = 0;
       if (mds_message_initialise(&(information->message)))
 	{
 	  perror(*argv);
@@ -663,13 +665,16 @@ void* slave_loop(void* data)
   
   /* Multicast information about the client closing. */
   n = 2 * 10 + 1 + strlen("Client closed: :\n\n");
+  if (xmalloc(msgbuf, n, char))
+    goto fail;
   snprintf(msgbuf, n,
 	   "Client closed: %" PRIu32 ":%" PRIu32 "\n"
 	   "\n",
 	   (uint32_t)(information->id >> 32),
 	   (uint32_t)(information->id >>  0));
-  n = strlen(msgbuf) + 1;
+  n = strlen(msgbuf);
   queue_message_multicast(msgbuf, n, information);
+  msgbuf = NULL;
   
   
  fail: /* The loop does break, this done on success as well. */
@@ -1108,6 +1113,7 @@ static int cmp_queued_interception(const void* a, const void* b)
  */
 void queue_message_multicast(char* message, size_t length, client_t* sender)
 {
+  char* msg = message;
   size_t header_count = 0;
   size_t n = length - 1;
   size_t* hashes = NULL;
@@ -1135,7 +1141,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
     return; /* Invalid message. */
   
   /* Allocate multicast message. */
-  if (xmalloc(multicast, 1, sizeof(multicast_t)))  goto fail;
+  if (xmalloc(multicast, 1, multicast_t))  goto fail;
   multicast_initialise(multicast);
   
   /* Allocate header lists. */
@@ -1146,17 +1152,17 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   /* Populate header lists. */
   for (i = 0; i < header_count; i++)
     {
-      char* end = strchr(message, '\n');
-      char* colon = strchr(message, ':');
+      char* end = strchr(msg, '\n');
+      char* colon = strchr(msg, ':');
       
       *end = '\0';
-      if ((header_values[i] = strdup(message)) == NULL)
+      if ((header_values[i] = strdup(msg)) == NULL)
 	{
 	  header_count = i;
 	  goto fail;
 	}
       *colon = '\0';
-      if ((headers[i] = strdup(message)) == NULL)
+      if ((headers[i] = strdup(msg)) == NULL)
 	{
 	  free(headers[i]);
 	  header_count = i;
@@ -1166,7 +1172,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
       *end = '\n';
       hashes[i] = string_hash(headers[i]);
       
-      message = end + 1;
+      msg = end + 1;
     }
   
   /* Get intercepting clients. */
@@ -1251,7 +1257,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
       message = old_buf;
       goto fail;
     }
-  memmove(message + n, message, (n + length) * sizeof(char));
+  memmove(message + n, message, length * sizeof(char));
   memcpy(message, modify_id_header, n * sizeof(char));
   
   /* Store information. */
@@ -1264,7 +1270,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   
   /* Queue message multicasting. */
   with_mutex(sender->mutex,
-	     if (sender->multicasts_count == 1)
+	     if (sender->multicasts == NULL)
 	       {
 		 if (xmalloc(sender->multicasts, 1, multicast_t))
 		   goto fail_queue;

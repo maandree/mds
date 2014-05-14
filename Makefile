@@ -84,6 +84,10 @@ MDS_SERVER_OBJ = mds-server/mds-server mds-server/interception_condition mds-ser
 bin/mds-server: $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o) bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)
+ifeq ($(DEBUG),y)
+	mv $@ $@.real
+	cp test.d/mds-server $@
+endif
 
 bin/%: obj/%.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)

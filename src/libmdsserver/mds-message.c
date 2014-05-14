@@ -273,6 +273,11 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
       if (errno)
 	return -1;
+      if (got == 0)
+	{
+	  errno = ECONNRESET;
+	  return -1;
+	}
     }
 }
 
