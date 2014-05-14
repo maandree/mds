@@ -50,7 +50,7 @@ thread.start()
 
 while True:
     try:
-        data = input().encode('utf-8')
+        data = (input() + '\n').encode('utf-8')
     except:
         break
     socket.send(data);

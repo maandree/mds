@@ -120,7 +120,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    char* header;
 	    
 	    /* We have found an empty line, i.e. the end of the headers.*/
-	    if (len == 0)
+	    if (len == 1)
 	      {
 		/* Remove the \n (end of empty line) we found from the buffer. */
 		memmove(this->buffer, this->buffer + 1, this->buffer_ptr -= 1);
@@ -162,7 +162,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    if (header_commit_buffer == 0)
 	      {
 		header_commit_buffer = 8;
-		if (this->headers == NULL)
+		if (this->header_count == 0)
 		  {
 		    if (xmalloc(this->headers, header_commit_buffer, char*))
 		      return -1;
@@ -211,6 +211,11 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  }
       
       /* Stage 1: payload. */
+      if ((this->stage == 1) && (this->payload_ptr == 0))
+	{
+	  this->stage = 2;
+	  return 0;
+	}
       if ((this->stage == 1) && (this->payload_ptr > 0))
 	{
 	  /* How much of the payload that has not yet been filled. */
