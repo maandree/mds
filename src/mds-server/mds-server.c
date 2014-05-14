@@ -1198,7 +1198,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
 		   
 		   /* Look for a matching condition. */
 		   n = client->interception_conditions_count;
-		   if (client->open)
+		   if (client->open && (client != sender))
 		     {
 		       with_mutex(mutex,
 				  if (errno || (client->open == 0))
