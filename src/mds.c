@@ -204,6 +204,11 @@ int main(int argc_, char** argv_)
     }
   fflush(f);
   fclose(f);
+  if (chmod(pathname, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) < 0)
+    {
+      perror(*argv);
+      eprintf("while setting permissions for PID file: %s", pathname);
+    }
   
   /* Create data storage directory. */
   if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY))
@@ -223,17 +228,22 @@ int main(int argc_, char** argv_)
   strcpy(address.sun_path, pathname);
   unlink(pathname);
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if ((fchmod(fd, S_IRWXU) < 0) ||
-      (fchown(fd, getuid(), NOBODY_GROUP_GID) < 0))
+  if (fchmod(fd, S_IRWXU) < 0)
     {
       perror(*argv);
-      eprint("while making anonymous socket private to the real user.");
+      eprint("while making anonymous socket private to its owner.");
       goto fail;
     }
   if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)
     {
       perror(*argv);
       eprintf("while binding socket to file: %s", pathname);
+      goto fail;
+    }
+  if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
+    {
+      perror(*argv);
+      eprint("while making socket private to the real user.");
       goto fail;
     }
   

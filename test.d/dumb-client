@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+# -*- python -*-
+
+# mds — A micro-display server
+# Copyright © 2014  Mattias Andrée (maandree@member.fsf.org)
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import sys
+import socket
+import threading
+
+
+display = os.environ['MDS_DISPLAY'] if 'MDS_DISPLAY' in os.environ else None
+if (display is None) or (':' not in display):
+    print('MDS_DISPLAY has not set.')
+    sys.exit(1)
+if not display.startswith(':'):
+    print('Remote mds sessions are not supported.')
+    sys.exit(1)
+
+socket_path = '/run/mds/%s.socket' % display.split(':')[-1]
+socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+socket.connect(socket_path)
+
+def read_loop():
+    data = socket.recv(1);
+    if not data:
+        return
+    sys.stdout.buffer.write(b'\033[34m');
+    sys.stdout.buffer.write(data);
+    sys.stdout.buffer.write(b'\033[00m');
+    sys.stdout.buffer.flush();
+
+thread = threading.Thread(target = read_loop)
+thread.setDaemon(True)
+thread.start()
+
+while True:
+    try:
+        data = input().encode('utf-8')
+    except:
+        break
+    socket.send(data);
+
+socket.close()
+
