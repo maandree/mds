@@ -28,7 +28,7 @@
 
 /**
  * Initialsie a message slot so that it can
- * be used by `mds_message_read`.
+ * be used by `mds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
  * @return        Non-zero on error, errno will be set accordingly.
