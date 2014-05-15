@@ -76,13 +76,13 @@ size_t client_marshal_size(const client_t* restrict this)
   size_t n = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
   size_t i;
   
-  n += mds_message_marshal_size(&(this->message), 1);
+  n += mds_message_marshal_size(&(this->message));
   for (i = 0; i < this->interception_conditions_count; i++)
     n += interception_condition_marshal_size(this->interception_conditions + i);
   for (i = 0; i < this->multicasts_count; i++)
     n += multicast_marshal_size(this->multicasts + i);
   n += this->send_pending_size * sizeof(char);
-  n += this->modify_message == NULL ? 0 : mds_message_marshal_size(this->modify_message, 1);
+  n += this->modify_message == NULL ? 0 : mds_message_marshal_size(this->modify_message);
   
   return n;
 }
@@ -102,9 +102,9 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
   buf_set_next(data, int, this->socket_fd);
   buf_set_next(data, int, this->open);
   buf_set_next(data, uint64_t, this->id);
-  n = mds_message_marshal_size(&(this->message), 1);;
+  n = mds_message_marshal_size(&(this->message));
   buf_set_next(data, size_t, n);
-  mds_message_marshal(&(this->message), data, 1);
+  mds_message_marshal(&(this->message), data);
   data += n / sizeof(char);
   buf_set_next(data, size_t, this->interception_conditions_count);
   for (i = 0; i < this->interception_conditions_count; i++)
@@ -117,7 +117,7 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
     memcpy(data, this->send_pending, this->send_pending_size * sizeof(char));
   data += this->send_pending_size;
   if (this->modify_message != NULL)
-    mds_message_marshal(this->modify_message, data, 1);
+    mds_message_marshal(this->modify_message, data);
   return client_marshal_size(this);
 }
 

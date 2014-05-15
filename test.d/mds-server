@@ -1,2 +1,8 @@
 #!/bin/sh
-valgrind --leak-check=full --show-leak-kinds=all "$0".real "$@"
+
+if [ -z "${NO_VALGRING}" ]; then
+    exec valgrind --leak-check=full --show-leak-kinds=all "$0".real "$@"
+else
+    exec "$0".real "$@"
+fi
+

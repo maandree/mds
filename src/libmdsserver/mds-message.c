@@ -27,7 +27,7 @@
 
 
 /**
- * Initialsie a message slot so that it can
+ * Initialise a message slot so that it can
  * be used by `mds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
@@ -292,33 +292,28 @@ int mds_message_read(mds_message_t* restrict this, int fd)
  * Get the required allocation size for `data` of the
  * function `mds_message_marshal`
  * 
- * @param   this            The message
- * @param   include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
- * @return                  The size of the message when marshalled
+ * @param   this  The message
+ * @return        The size of the message when marshalled
  */
-size_t mds_message_marshal_size(const mds_message_t* restrict this, int include_buffer)
+size_t mds_message_marshal_size(const mds_message_t* restrict this)
 {
   size_t rc = this->header_count + this->payload_size;
   size_t i;
   for (i = 0; i < this->header_count; i++)
     rc += strlen(this->headers[i]);
   rc *= sizeof(char);
-  rc += (include_buffer ? 4 : 2) * sizeof(size_t);
-  rc += (include_buffer ? 2 : 1) * sizeof(int);
+  rc += 4 * sizeof(size_t) + 1 * sizeof(int);
   return rc;
 }
 
 
 /**
- * Marshal a message, this can be used both when serialising
- * the servers state or to get the byte stream to send to
- * the recipient of the message
+ * Marshal a message for state serialisation
  * 
- * @param  this            The message
- * @param  data            Output buffer for the marshalled data
- * @param  include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
+ * @param  this  The message
+ * @param  data  Output buffer for the marshalled data
  */
-void mds_message_marshal(const mds_message_t* restrict this, char* restrict data, int include_buffer)
+void mds_message_marshal(const mds_message_t* restrict this, char* restrict data)
 {
   size_t i, n;
   
@@ -326,16 +321,9 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
   
   buf_set_next(data, size_t, this->header_count);
   buf_set_next(data, size_t, this->payload_size);
-  if (include_buffer)
-    {
-      buf_set_next(data, size_t, this->payload_ptr);
-      buf_set_next(data, size_t, this->buffer_ptr);
-    }
-  
-  if (include_buffer)
-    {
-      buf_set_next(data, int, this->stage);
-    }
+  buf_set_next(data, size_t, this->payload_ptr);
+  buf_set_next(data, size_t, this->buffer_ptr);
+  buf_set_next(data, int, this->stage);
   
   for (i = 0; i < this->header_count; i++)
     {
@@ -346,16 +334,13 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
   
   memcpy(data, this->payload, this->payload_size * sizeof(char));
   
-  if (include_buffer)
-    {
-      buf_next(data, char, this->payload_size);
-      memcpy(data, this->buffer, this->buffer_ptr * sizeof(char));
-    }
+  buf_next(data, char, this->payload_size);
+  memcpy(data, this->buffer, this->buffer_ptr * sizeof(char));
 }
 
 
 /**
- * Unmarshal a message, it is assumed that the buffer is marshalled
+ * Unmarshal a message for state deserialisation
  * 
  * @param  this  Memory slot in which to store the new message
  * @param  data  In buffer with the marshalled data
@@ -434,5 +419,46 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   memcpy(this->buffer, data, this->buffer_ptr * sizeof(char));
   
   return 0;
+}
+
+
+/**
+ * Get the required allocation size for `data` of the
+ * function `mds_message_compose`
+ * 
+ * @param   this  The message
+ * @return        The size of the message when marshalled
+ */
+size_t mds_message_compose_size(const mds_message_t* restrict this)
+{
+  size_t rc = 1 + this->payload_size;
+  size_t i;
+  for (i = 0; i < this->header_count; i++)
+    rc += strlen(this->headers[i]) + 1;
+  return rc * sizeof(char);
+}
+
+
+/**
+ * Marshal a message for communication
+ * 
+ * @param  this  The message
+ * @param  data  Output buffer for the marshalled data
+ */
+void mds_message_compose(const mds_message_t* restrict this, char* restrict data)
+{
+  size_t i, n;
+  
+  for (i = 0; i < this->header_count; i++)
+    {
+      n = strlen(this->headers[i]);
+      memcpy(data, this->headers[i], n * sizeof(char));
+      data += n;
+      buf_set_next(data, char, '\n');
+    }
+  buf_set_next(data, char, '\n');
+  
+  if (this->payload_size > 0)
+    memcpy(data, this->payload, this->payload_size * sizeof(char));
 }
 

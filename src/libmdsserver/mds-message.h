@@ -83,7 +83,7 @@ typedef struct mds_message
 
 
 /**
- * Initialsie a message slot so that it can
+ * Initialise a message slot so that it can
  * be used by `mds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
@@ -119,25 +119,21 @@ int mds_message_read(mds_message_t* restrict this, int fd);
  * Get the required allocation size for `data` of the
  * function `mds_message_marshal`
  * 
- * @param   this            The message
- * @param   include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
- * @return                  The size of the message when marshalled
+ * @param   this  The message
+ * @return        The size of the message when marshalled
  */
-size_t mds_message_marshal_size(const mds_message_t* restrict this, int include_buffer) __attribute__((pure));
+size_t mds_message_marshal_size(const mds_message_t* restrict this) __attribute__((pure));
 
 /**
- * Marshal a message, this can be used both when serialising
- * the servers state or to get the byte stream to send to
- * the recipient of the message
+ * Marshal a message for state serialisation
  * 
- * @param  this            The message
- * @param  data            Output buffer for the marshalled data
- * @param  include_buffer  Whether buffer should be marshalled (state serialisation, not communication)
+ * @param  this  The message
+ * @param  data  Output buffer for the marshalled data
  */
-void mds_message_marshal(const mds_message_t* restrict this, char* restrict data, int include_buffer);
+void mds_message_marshal(const mds_message_t* restrict this, char* restrict data);
 
 /**
- * Unmarshal a message, it is assumed that the buffer is marshalled
+ * Unmarshal a message for state deserialisation
  * 
  * @param   this  Memory slot in which to store the new message
  * @param   data  In buffer with the marshalled data
@@ -145,6 +141,23 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
  *                Destroy the message on error.
  */
 int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
+
+/**
+ * Get the required allocation size for `data` of the
+ * function `mds_message_compose`
+ * 
+ * @param   this  The message
+ * @return        The size of the message when marshalled
+ */
+size_t mds_message_compose_size(const mds_message_t* restrict this) __attribute__((pure));
+
+/**
+ * Marshal a message for communication
+ * 
+ * @param  this  The message
+ * @param  data  Output buffer for the marshalled data
+ */
+void mds_message_compose(const mds_message_t* restrict this, char* restrict data);
 
 
 #endif

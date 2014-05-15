@@ -871,6 +871,7 @@ int message_received(client_t* client)
 		      {
 			perror(*argv);
 			free(old_buf);
+			pthread_mutex_unlock(&(client->mutex));
 			return 0;
 		      }
 		  }
@@ -896,13 +897,13 @@ int message_received(client_t* client)
   
   
   /* Multicast the message. */
-  n = mds_message_marshal_size(&message, 0);
+  n = mds_message_compose_size(&message);
   if ((msgbuf = malloc(n)) == NULL)
     {
       perror(*argv);
       return 0;
     }
-  mds_message_marshal(&message, msgbuf, 0);
+  mds_message_compose(&message, msgbuf);
   queue_message_multicast(msgbuf, n / sizeof(char), client);
   
   
