@@ -31,7 +31,6 @@
 #include <libmdsserver/util.h>
 #include <libmdsserver/hash-help.h>
 
-#include <alloca.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
