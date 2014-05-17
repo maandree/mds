@@ -99,6 +99,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       this->header_count = 0;
       
       free(this->payload);
+      this->payload = NULL;
       this->payload_size = 0;
       this->payload_ptr = 0;
       
@@ -212,12 +213,12 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  }
       
       /* Stage 1: payload. */
-      if ((this->stage == 1) && (this->payload_ptr == 0))
+      if ((this->stage == 1) && (this->payload_size == 0))
 	{
 	  this->stage = 2;
 	  return 0;
 	}
-      if ((this->stage == 1) && (this->payload_ptr > 0))
+      if ((this->stage == 1) && (this->payload_size > 0))
 	{
 	  /* How much of the payload that has not yet been filled. */
 	  size_t need = this->payload_size - this->payload_ptr;
