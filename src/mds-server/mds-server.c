@@ -878,6 +878,7 @@ int message_received(client_t* client)
       if ((intercept & 1)) /* from payload */
 	{
 	  char* payload = client->message.payload;
+	  size_t payload_size = client->message.payload_size;
 	  if (client->message.payload_size == 0) /* All messages */
 	    {
 	      *buf = '\0';
@@ -886,11 +887,12 @@ int message_received(client_t* client)
 	  else /* Filtered messages */
 	    for (;;)
 	      {
-		char* end = strchrnul(payload, '\n');
-		size_t len = (size_t)(end - payload);
+		char* end = memchr(payload, '\n', payload_size);
+		size_t len = end == NULL ? payload_size : (size_t)(end - payload);
 		if (len == 0)
 		  {
 		    payload++;
+		    payload_size--;
 		    break;
 		  }
 		if (len > size)
@@ -908,9 +910,10 @@ int message_received(client_t* client)
 		memcpy(buf, payload, len);
 		buf[len] = '\0';
 		add_intercept_condition(client, buf, priority, modifying, stop);
-		if (*end == '\0')
+		if (end == NULL)
 		  break;
 		payload = end + 1;
+		payload_size -= len + 1;
 	      }
 	}
       if ((intercept & 2)) /* "To: $(client->id)" */
