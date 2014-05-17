@@ -71,9 +71,15 @@ static char** argv;
 static volatile sig_atomic_t running = 1;
 
 /**
- * Non-zero when the program is about to re-exec
+ * Non-zero when the program is about to re-exec.
+ * Most at all times be at least as true as `terminating`.
  */
 static volatile sig_atomic_t reexecing = 0;
+
+/**
+ * Non-zero when the program is about to terminate
+ */
+static volatile sig_atomic_t terminating = 0;
 
 /**
  * The number of running slaves
@@ -212,7 +218,7 @@ int main(int argc_, char** argv_)
   if (reexec)
     {
       is_respawn = 1;
-      eprint("re-exec:ing done.");
+      eprint("re-exec performed.");
     }
   
   
@@ -251,12 +257,13 @@ int main(int argc_, char** argv_)
     }
   
 #define __free(I) \
-  if (I <= 0)  fd_table_destroy(&client_map, NULL, NULL);  \
-  if (I <= 1)  linked_list_destroy(&client_list);          \
-  if (I <= 2)  pthread_mutex_destroy(&slave_mutex);        \
-  if (I <= 3)  pthread_cond_destroy(&slave_cond);          \
-  if (I <= 4)  pthread_mutex_destroy(&modify_mutex);       \
-  if (I <= 5)  pthread_cond_destroy(&modify_cond)
+  if (I >= 0)  fd_table_destroy(&client_map, NULL, NULL);  \
+  if (I >= 1)  linked_list_destroy(&client_list);          \
+  if (I >= 2)  pthread_mutex_destroy(&slave_mutex);        \
+  if (I >= 3)  pthread_cond_destroy(&slave_cond);          \
+  if (I >= 4)  pthread_mutex_destroy(&modify_mutex);       \
+  if (I >= 5)  pthread_cond_destroy(&modify_cond);         \
+  if (I >= 6)  hash_table_destroy(&modify_map, NULL, NULL)
   
   
   /* Create list and table of clients. */
@@ -283,6 +290,14 @@ int main(int argc_, char** argv_)
   
   /* Make the server update without all slaves dying on SIGUSR1. */
   if (xsigaction(SIGUSR1, sigusr1_trap) < 0)
+    {
+      perror(*argv);
+      __free(1);
+      return 1;
+    }
+  
+  /* Implement clean exit on SIGTERM. */
+  if (xsigaction(SIGTERM, sigterm_trap) < 0)
     {
       perror(*argv);
       __free(1);
@@ -351,7 +366,7 @@ int main(int argc_, char** argv_)
     }
   
   /* Accepting incoming connections. */
-  while (running && (reexecing == 0))
+  while (running && (terminating == 0))
     {
       /* Accept connection. */
       int client_fd = accept(socket_fd, NULL, NULL);
@@ -363,8 +378,8 @@ int main(int argc_, char** argv_)
 	    {
 	    case EINTR:
 	      /* Interrupted. */
-	      if (reexecing)
-		goto reexec;
+	      if (terminating)
+		goto terminate;
 	      break;
 	      
 	    case ECONNABORTED:
@@ -392,19 +407,20 @@ int main(int argc_, char** argv_)
 	  with_mutex(slave_mutex, running_slaves--;);
 	}
     }
+  
+ terminate:
+  
   if (reexecing)
     goto reexec;
   
-  
-  /* Wait for all slaves to close. */
+  /* Join with all slaves threads. */
   with_mutex(slave_mutex,
 	     while (running_slaves > 0)
 	       pthread_cond_wait(&slave_cond, &slave_mutex););
   
-  
   /* Release resources. */
   __free(9999);
-
+  
 #undef __free
   
   return 0;
@@ -571,10 +587,17 @@ void* slave_loop(void* data)
       goto fail;
     }
   
+  /* Implement clean exit on SIGTERM. */
+  if (xsigaction(SIGTERM, sigterm_trap) < 0)
+    {
+      perror(*argv);
+      goto fail;
+    }
+  
   
   /* Fetch messages from the slave. */
   if (information->open)
-    while (reexecing == 0)
+    while (terminating == 0)
       {
 	/* Send queued multicast messages. */
 	if (information->multicasts_count > 0)
@@ -628,7 +651,7 @@ void* slave_loop(void* data)
 	if (r == 0)
 	  {
 	    if (message_received(information) == 1)
-	      goto reexec;
+	      goto terminate;
 	  }
 	else
 	  if (r == -2)
@@ -641,7 +664,7 @@ void* slave_loop(void* data)
 	      r = mds_message_read(&(information->message), socket_fd);
 	      if (r == 0)
 		if (message_received(information))
-		  goto reexec;
+		  goto terminate;
 	      information->open = 0;
 	      /* Connection closed. */
 	      break;
@@ -649,8 +672,8 @@ void* slave_loop(void* data)
 	  else if (errno == EINTR)
 	    {
 	      /* Stop the thread if we are re-exec:ing the server. */
-	      if (reexecing)
-		goto reexec;
+	      if (terminating)
+		goto terminate;
 	    }
 	  else
 	    {
@@ -659,8 +682,8 @@ void* slave_loop(void* data)
 	    }
       }
   /* Stop the thread if we are re-exec:ing the server. */
-  if (reexecing)
-    goto reexec;
+  if (terminating)
+    goto terminate;
   
   
   /* Multicast information about the client closing. */
@@ -695,7 +718,7 @@ void* slave_loop(void* data)
   return NULL;
   
   
- reexec:
+ terminate:
   /* Tell the master thread that the slave has closed,
      this is done because re-exec causes a race-condition
      between the acception of a slave and the execution
@@ -760,7 +783,7 @@ int message_received(client_t* client)
       pthread_mutex_lock(&(modify_mutex));
       while (hash_table_contains_key(&modify_map, (size_t)modify_id) == 0)
 	{
-	  if (reexecing)
+	  if (terminating)
 	    {
 	      pthread_mutex_unlock(&(modify_mutex));
 	      return 1;
@@ -1364,7 +1387,7 @@ void multicast_message(multicast_t* multicast)
       /* Stop if we are re-exec:ing, or continue to next recipient on error. */
       if (n > 0)
 	{
-	  if (reexecing)
+	  if (terminating)
 	    return;
 	  else
 	    continue;
@@ -1402,14 +1425,14 @@ void multicast_message(multicast_t* multicast)
 			 for (;;)
 			   {
 			     pthread_cond_timedwait(&slave_cond, &slave_mutex, &timeout);
-			     if ((client->modify_message != NULL) && reexecing)
+			     if ((client->modify_message != NULL) && terminating)
 			       break;
 			   }
-			 if (reexecing == 0)
+			 if (terminating == 0)
 			   hash_table_remove(&modify_map, (size_t)modify_id);
 		       }
 		     );
-	  if (reexecing)
+	  if (terminating)
 	    return;
 	  
 	  /* Act upon the reply. */
@@ -1528,25 +1551,52 @@ void sigusr1_trap(int signo)
 {
   if (reexecing == 0)
     {
-      pthread_t current_thread;
-      ssize_t node;
-      
-      reexecing = 1;
-      current_thread = pthread_self();
-      
-      eprint("re-exec:ing queue.");
-      
-      if (pthread_equal(current_thread, master_thread) == 0)
-	pthread_kill(master_thread, signo);
-      
-      with_mutex(slave_mutex,
-		 foreach_linked_list_node (client_list, node)
-		   {
-		     client_t* value = (client_t*)(void*)(client_list.values[node]);
-		     if (pthread_equal(current_thread, value->thread) == 0)
-		       pthread_kill(value->thread, signo);
-		   });
+      terminating = reexecing = 1;
+      eprint("re-exec signal received.");
+      signal_all(signo);
     }
+}
+
+
+/**
+ * Called with the signal SIGTERM is caught.
+ * This function should cue a termination of the program.
+ * 
+ * @param  signo  The caught signal
+ */
+void sigterm_trap(int signo)
+{
+  if (terminating == 0)
+    {
+      terminating = 1;
+      eprint("terminate signal received.");
+      signal_all(signo);
+    }
+}
+
+
+/**
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo)
+{      
+  pthread_t current_thread;
+  ssize_t node;
+  
+  current_thread = pthread_self();
+  
+  if (pthread_equal(current_thread, master_thread) == 0)
+    pthread_kill(master_thread, signo);
+  
+  with_mutex(slave_mutex,
+	     foreach_linked_list_node (client_list, node)
+	     {
+	       client_t* value = (client_t*)(void*)(client_list.values[node]);
+	       if (pthread_equal(current_thread, value->thread) == 0)
+		 pthread_kill(value->thread, signo);
+	     });
 }
 
 

@@ -86,6 +86,21 @@ void run_initrc(char** args);
 void sigusr1_trap(int signo);
 
 /**
+ * Called with the signal SIGTERM is caught.
+ * This function should cue a termination of the program.
+ * 
+ * @param  signo  The caught signal
+ */
+void sigterm_trap(int signo);
+
+/**
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo);
+
+/**
  * Marshal the server's state into a file
  * 
  * @param   fd  The file descriptor
