@@ -1292,7 +1292,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   multicast->interceptions = interceptions;
   multicast->interceptions_count = interceptions_count;
   multicast->message = message;
-  multicast->message_length = length;
+  multicast->message_length = length + n;
   multicast->message_prefix = n;
   message = NULL;
   
