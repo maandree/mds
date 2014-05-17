@@ -153,7 +153,7 @@ int main(int argc_, char** argv_)
   int unparsed_args_ptr = 1;
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
-  pthread_t _slave_thread;
+  pthread_t slave_thread;
   
 #if (LIBEXEC_ARGC_EXTRA_LIMIT < 3)
 # error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 3.
@@ -400,12 +400,15 @@ int main(int argc_, char** argv_)
       with_mutex(slave_mutex, running_slaves++;);
       
       /* Start slave thread. */
-      errno = pthread_create(&_slave_thread, NULL, slave_loop, (void*)(intptr_t)client_fd);
+      errno = pthread_create(&slave_thread, NULL, slave_loop, (void*)(intptr_t)client_fd);
       if (errno)
 	{
 	  perror(*argv);
 	  with_mutex(slave_mutex, running_slaves--;);
 	}
+      errno = pthread_detach(slave_thread);
+	if (errno)
+	  perror(*argv);
     }
   
  terminate:
@@ -700,6 +703,10 @@ void* slave_loop(void* data)
   msgbuf = NULL;
   
   
+ terminate:
+  if (reexecing)
+    goto reexec;
+  
  fail: /* The loop does break, this done on success as well. */
   /* Close socket and free resources. */
   close(socket_fd);
@@ -718,7 +725,7 @@ void* slave_loop(void* data)
   return NULL;
   
   
- terminate:
+ reexec:
   /* Tell the master thread that the slave has closed,
      this is done because re-exec causes a race-condition
      between the acception of a slave and the execution
@@ -1712,7 +1719,7 @@ int unmarshal_server(int fd)
   size_t list_elements;
   size_t i;
   ssize_t node;
-  pthread_t _slave_thread;
+  pthread_t slave_thread;
   
   
   /* Read the file. */
@@ -1833,12 +1840,15 @@ int unmarshal_server(int fd)
 	  with_mutex(slave_mutex, running_slaves++;);
 	  
 	  /* Start slave thread. */
-	  errno = pthread_create(&_slave_thread, NULL, slave_loop, (void*)(intptr_t)socket_fd);
+	  errno = pthread_create(&slave_thread, NULL, slave_loop, (void*)(intptr_t)socket_fd);
 	  if (errno)
 	    {
 	      perror(*argv);
 	      with_mutex(slave_mutex, running_slaves--;);
 	    }
+	  errno = pthread_detach(slave_thread);
+	  if (errno)
+	    perror(*argv);
 	}
     }
   
