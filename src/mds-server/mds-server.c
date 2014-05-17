@@ -888,7 +888,7 @@ int message_received(client_t* client)
 	  snprintf(buf, size, "To: %" PRIu32 ":%" PRIu32,
 		   (uint32_t)(client->id >> 32),
 		   (uint32_t)(client->id >>  0));
-	  add_intercept_condition(client, buf, priority, modifying, stop);
+	  add_intercept_condition(client, buf, priority, modifying, 0);
 	}
       pthread_mutex_unlock(&(client->mutex));
       
