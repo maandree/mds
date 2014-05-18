@@ -20,6 +20,7 @@
 
 
 #include "multicast.h"
+#include "client.h"
 
 
 /**
@@ -28,6 +29,20 @@
  * @param  multicast  The multicast message
  */
 void multicast_message(multicast_t* multicast);
+
+/**
+ * Send the next message in a clients multicast queue
+ * 
+ * @param  client  The client
+ */
+void send_multicast_queue(client_t* client);
+
+/**
+ * Send the messages that are in a clients reply queue
+ * 
+ * @param  client  The client
+ */
+void send_reply_queue(client_t* client);
 
 
 #endif

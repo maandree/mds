@@ -210,37 +210,22 @@ int main(int argc_, char** argv_)
     {
       /* Accept connection. */
       int client_fd = accept(socket_fd, NULL, NULL);
-      
-      /* Handle errors and shutdown. */
-      if (client_fd == -1)
+      if (client_fd >= 0)
 	{
-	  switch (errno)
-	    {
-	    case EINTR:
-	      /* Interrupted. */
-	      if (terminating)
-		goto terminate;
-	      break;
-	      
-	    case ECONNABORTED:
-	    case EINVAL:
-	      /* Closing. */
-	      running = 0;
-	      break;
-	      
-	    default:
-	      /* Error. */
-	      perror(*argv);
-	      break;
-	    }
-	  continue;
+	  /* Increase number of running slaves. */
+	  with_mutex (slave_mutex, running_slaves++;);
+      
+	  /* Start slave thread. */
+	  create_slave(&slave_thread, client_fd);
 	}
-      
-      /* Increase number of running slaves. */
-      with_mutex (slave_mutex, running_slaves++;);
-      
-      /* Start slave thread. */
-      create_slave(&slave_thread, client_fd);
+      else
+	/* Handle errors and shutdown. */
+	if ((errno == EINTR) && terminating) /* Interrupted for termination. */
+	  goto terminate;
+	else if ((errno == ECONNABORTED) || (errno == EINVAL)) /* Closing. */
+	  running = 0;
+	else if (errno != EINTR) /* Error. */
+	  perror(*argv);
     }
   
  terminate:
@@ -447,67 +432,6 @@ void* slave_loop(void* data)
 	      running_slaves--;
 	      pthread_cond_signal(&slave_cond););
   return NULL;
-}
-
-
-/**
- * Send the next message in a clients multicast queue
- * 
- * @param  client  The client
- */
-void send_multicast_queue(client_t* client)
-{
-  while (client->multicasts_count > 0)
-    {
-      multicast_t multicast;
-      with_mutex_if (client->mutex, client->multicasts_count > 0,
-		     size_t c = (client->multicasts_count -= 1) * sizeof(multicast_t);
-		     multicast = client->multicasts[0];
-		     memmove(client->multicasts, client->multicasts + 1, c);
-		     if (c == 0)
-		       {
-			 free(client->multicasts);
-			 client->multicasts = NULL;
-		       }
-		     );
-      multicast_message(&multicast);
-      multicast_destroy(&multicast);
-    }
-}
-
-
-/**
- * Send the messages that are in a clients reply queue
- * 
- * @param  client  The client
- */
-void send_reply_queue(client_t* client)
-{
-  char* sendbuf = client->send_pending;
-  char* sendbuf_ = sendbuf;
-  size_t sent;
-  size_t n;
-  
-  if (client->send_pending_size == 0)
-    return;
-  
-  n = client->send_pending_size;
-  client->send_pending_size = 0;
-  client->send_pending = NULL;
-  with_mutex (client->mutex,
-	      while (n > 0)
-		{
-		  sent = send_message(client->socket_fd, sendbuf_, n);
-		  n -= sent;
-		  sendbuf_ += sent / sizeof(char);
-		  if ((n > 0) && (errno != EINTR)) /* Ignore EINTR */
-		    {
-		      perror(*argv);
-		      break;
-		    }
-		}
-	      free(sendbuf);
-	      );
 }
 
 

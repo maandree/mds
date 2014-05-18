@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 
@@ -200,5 +201,66 @@ void multicast_message(multicast_t* multicast)
       /* Reset how much of the message has been sent before we continue with next recipient. */
       multicast->message_ptr = 0;
     }
+}
+
+
+/**
+ * Send the next message in a clients multicast queue
+ * 
+ * @param  client  The client
+ */
+void send_multicast_queue(client_t* client)
+{
+  while (client->multicasts_count > 0)
+    {
+      multicast_t multicast;
+      with_mutex_if (client->mutex, client->multicasts_count > 0,
+		     size_t c = (client->multicasts_count -= 1) * sizeof(multicast_t);
+		     multicast = client->multicasts[0];
+		     memmove(client->multicasts, client->multicasts + 1, c);
+		     if (c == 0)
+		       {
+			 free(client->multicasts);
+			 client->multicasts = NULL;
+		       }
+		     );
+      multicast_message(&multicast);
+      multicast_destroy(&multicast);
+    }
+}
+
+
+/**
+ * Send the messages that are in a clients reply queue
+ * 
+ * @param  client  The client
+ */
+void send_reply_queue(client_t* client)
+{
+  char* sendbuf = client->send_pending;
+  char* sendbuf_ = sendbuf;
+  size_t sent;
+  size_t n;
+  
+  if (client->send_pending_size == 0)
+    return;
+  
+  n = client->send_pending_size;
+  client->send_pending_size = 0;
+  client->send_pending = NULL;
+  with_mutex (client->mutex,
+	      while (n > 0)
+		{
+		  sent = send_message(client->socket_fd, sendbuf_, n);
+		  n -= sent;
+		  sendbuf_ += sent / sizeof(char);
+		  if ((n > 0) && (errno != EINTR)) /* Ignore EINTR */
+		    {
+		      perror(*argv);
+		      break;
+		    }
+		}
+	      free(sendbuf);
+	      );
 }
 
