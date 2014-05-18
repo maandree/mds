@@ -29,6 +29,12 @@
 #include <stdio.h>
 
 
+/**
+ * Master function for slave threads
+ * 
+ * @param   data  Input data
+ * @return        Outout data
+ */
 void* slave_loop(void*);
 
 
