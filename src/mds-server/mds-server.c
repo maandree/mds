@@ -1022,12 +1022,6 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
   size_t hash;
   size_t i;
   
-  if ((condition = strdup(condition)) == NULL)
-    {
-      perror(*argv);
-      return;
-    }
-  
   /* Split header and value apart. */
   if ((value = strchr(header, ':')) != NULL)
     {
@@ -1094,6 +1088,13 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
     eprint("client tried to stop intercepting messages that it does not intercept.");
   else
     {
+      /* Duplicate condition string. */
+      if ((condition = strdup(condition)) == NULL)
+	{
+	  perror(*argv);
+	  return;
+	}
+      
       /* Grow the interception condition list. */
       if (conds == NULL)
 	conds = malloc(1 * sizeof(interception_condition_t));
