@@ -1028,14 +1028,19 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
       return;
     }
   
+  /* Split header and value apart. */
   if ((value = strchr(header, ':')) != NULL)
     {
       *value = '\0'; /* NUL-terminate header. */
       value += 2;    /* Skip over delimiter.  */
     }
   
+  /* Calcuate header hash (comparison optimisation) */
   hash = string_hash(header);
   
+  /* Remove of update condition of already registered,
+     also look for non-modifying condition to swap position
+     with for optimisation. */
   for (i = 0; i < n; i++)
     {
       if (conds[i].header_hash == hash)
@@ -1046,7 +1051,7 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 		/* Remove the condition from the list. */
 		memmove(conds + i, conds + i + 1, --n - i);
 		client->interception_conditions_count--;
-		/* Diminish the list. */
+		/* Shrink the list. */
 		if (n == 0)
 		  {
 		    free(conds);
