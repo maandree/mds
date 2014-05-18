@@ -69,9 +69,12 @@ int main(int argc_, char** argv_)
   char pathname[PATH_MAX];
   char piddata[64];
   unsigned int display;
-  FILE *f;
+  FILE* f;
   int rc;
-  int j;
+  int j, r;
+  
+  
+#define exit_if(CONDITION, INSTRUCTION)  if (CONDITION) { INSTRUCTION return 1; }
   
   
   argc = argc_;
@@ -79,11 +82,8 @@ int main(int argc_, char** argv_)
   
   
   /* Sanity check the number of command line arguments. */
-  if (argc > ARGC_LIMIT)
-    {
-      eprint("that number of arguments is ridiculous, I will not allow it.");
-      return 1;
-    }
+  exit_if (argc > ARGC_LIMIT,
+	   eprint("that number of arguments is ridiculous, I will not allow it."););
   
   /* Parse command line arguments. */
   for (j = 1; j < argc; j++)
@@ -91,29 +91,20 @@ int main(int argc_, char** argv_)
       char* arg = argv[j];
       if (startswith(arg, "--master-server=")) /* Master server. */
 	{
-	  if (got_master_server)
-	    {
-	      eprintf("duplicate declaration of %s.", "--master-server");
-	      return 1;
-	    }
+	  exit_if (got_master_server,
+		   eprintf("duplicate declaration of %s.", "--master-server"););
 	  got_master_server = 1;
 	  master_server = arg + strlen("--master-server=");
 	}
     }
   
   /* Stymied if the effective user is not root. */
-  if (geteuid() != ROOT_USER_UID)
-    {
-      eprint("the effective user is not root, cannot continue.");
-      return 1;
-    }
+  exit_if (geteuid() != ROOT_USER_UID,
+	   eprint("the effective user is not root, cannot continue."););
   
   /* Set up to ignore SIGUSR1, used in mds for re-exec, but we cannot re-exec. */
   if (xsigaction(SIGUSR1, SIG_IGN) < 0)
-    {
-      perror(*argv);
-      eprint("while ignoring the SIGUSR1 signal.");
-    }
+    perror(*argv);
   
   /* Create directory for socket files, PID files and such. */
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
@@ -127,88 +118,42 @@ int main(int argc_, char** argv_)
       fd = open(pathname, O_CREAT | O_EXCL);
       if (fd == -1)
 	{
-	  /* Reuse display index not no longer used. */
-	  size_t read_len;
+	  /* Reuse display index if no longer used. */
 	  f = fopen(pathname, "r");
 	  if (f == NULL) /* Race, or error? */
 	    {
 	      perror(*argv);
-	      eprintf("while opening the file: %s", pathname);
 	      continue;
 	    }
-	  read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
-	  if (ferror(f)) /* Failed to read. */
-	    {
-	      perror(*argv);
-	      eprintf("while reading the file: %s", pathname);
-	    }
-	  else if (feof(f) == 0) /* Did not read everything. */
-	    eprint("the content of a PID file is longer than expected.");
-	  else
-	    {
-	      pid_t pid = 0;
-	      size_t i, n = read_len - 1;
-	      for (i = 0; i < n; i++)
-		{
-		  char c = piddata[i];
-		  if (('0' <= c) && (c <= '9'))
-		    pid = pid * 10 + (c & 15);
-		  else
-		    {
-		      eprint("the content of a PID file is invalid.");
-		      goto bad;
-		    }
-		}
-	      if (piddata[n] != '\n')
-		{
-		  eprint("the content of a PID file is invalid.");
-		  goto bad;
-		}
-	      if (kill(pid, 0) < 0) /* Check if the PID is still allocated to any process. */
-		if (errno == ESRCH) /* PID is not used. */
-		  {
-		    fclose(f);
-		    close(fd);
-		    break;
-		  }
-	    }
-	bad:
+	  r = is_pid_file_reusable(f);
 	  fclose(f);
-	  continue;
+	  if (r == 0)
+	    continue;
 	}
       close(fd);
       break;
     }
-  if (display == DISPLAY_MAX)
-    {
-      eprint("sorry, too many displays on the system.");
-      return 1;
-      /* Yes, the directory could have been removed, but it probably was not. */
-    }
+  exit_if (display == DISPLAY_MAX,
+	   eprint("sorry, too many displays on the system."););
+           /* Yes, the directory could have been removed, but it probably was not. */
+  
+#undef exit_if
   
   /* Create PID file. */
-  f = fopen(pathname, "w");
-  if (f == NULL)
-    {
-      perror(*argv);
-      eprintf("while opening the file: %s", pathname);
-      return 1;
-    }
+  if ((f = fopen(pathname, "w")) == NULL)
+    goto pfail;
   xsnprintf(piddata, "%u\n", getpid());
   if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
     {
       fclose(f);
       if (unlink(pathname) < 0)
 	perror(*argv);
-      return -1;
+      return 1;
     }
   fflush(f);
   fclose(f);
   if (chmod(pathname, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) < 0)
-    {
-      perror(*argv);
-      eprintf("while setting permissions for PID file: %s", pathname);
-    }
+    perror(*argv);
   
   /* Create data storage directory. */
   if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY))
@@ -228,32 +173,13 @@ int main(int argc_, char** argv_)
   strcpy(address.sun_path, pathname);
   unlink(pathname);
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (fchmod(fd, S_IRWXU) < 0)
-    {
-      perror(*argv);
-      eprint("while making anonymous socket private to its owner.");
-      goto fail;
-    }
-  if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)
-    {
-      perror(*argv);
-      eprintf("while binding socket to file: %s", pathname);
-      goto fail;
-    }
-  if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
-    {
-      perror(*argv);
-      eprint("while making socket private to the real user.");
-      goto fail;
-    }
+  if (fchmod(fd, S_IRWXU) < 0)                                      goto pfail;
+  if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)  goto pfail;
+  if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)              goto pfail;
   
   /* Start listening on socket. */
   if (listen(fd, SOMAXCONN) < 0)
-    {
-      perror(*argv);
-      eprintf("while setting up listening on socket: %s", pathname);
-      goto fail;
-    }
+    goto pfail;
   
   /* Start master server and respawn it if it crashes. */
   rc = spawn_and_respawn_server(fd);
@@ -279,9 +205,69 @@ int main(int argc_, char** argv_)
   
   return rc;
   
+ pfail:
+  perror(*argv);
  fail:
   rc = 1;
   goto done;
+}
+
+
+/**
+ * Read a PID-file and determine whether it refers to an non-existing process
+ * 
+ * @param   f  The PID-file
+ * @return     Whether the PID-file is not longer used
+ */
+int is_pid_file_reusable(FILE* f)
+{
+  char piddata[64];
+  size_t read_len;
+  
+  read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
+  if (ferror(f)) /* Failed to read. */
+    perror(*argv);
+  else if (feof(f) == 0) /* Did not read everything. */
+    eprint("the content of a PID file is larger than expected.");
+  else
+    {
+      pid_t pid = parse_pid_t(piddata, read_len - 1);
+      if (pid == (pid_t)-1)
+	eprint("the content of a PID file is invalid.");
+      else
+	if (kill(pid, 0) < 0) /* Check if the PID is still allocated to any process. */
+	  return errno == ESRCH; /* PID is not used. */
+    }
+  
+  return 0;
+}
+
+
+/**
+ * Parse an LF-terminated string as a non-negative `pid_t`
+ * 
+ * @param   str  The string
+ * @param   n    The length of the string, excluding LF-termination
+ * @return       The pid, `(pid_t)-1` if malformated
+ */
+pid_t parse_pid_t(const char* str, size_t n)
+{
+  pid_t pid = 0;
+  size_t i;
+  
+  for (i = 0; i < n; i++)
+    {
+      char c = str[i];
+      if (('0' <= c) && (c <= '9'))
+	pid = pid * 10 + (c & 15);
+      else
+	return (pid_t)-1;
+    }
+  
+  if (str[n] != '\n')
+    return (pid_t)-1;
+  
+  return pid;
 }
 
 
@@ -322,7 +308,6 @@ int spawn_and_respawn_server(int fd)
       if (pid == (pid_t)-1)
 	{
 	  perror(*argv);
-	  eprint("while forking.");
 	  goto fail;
 	}
       
@@ -331,16 +316,12 @@ int spawn_and_respawn_server(int fd)
 	  /* Get the current time. (Start of child process.) */
 	  time_error = (monotone(&time_start) < 0);
 	  if (time_error)
-	    {
-	      perror(*argv);
-	      eprint("while reading a monotonic clock.");
-	    }
+	    perror(*argv);
 	  
 	  /* Wait for master server to die. */
 	  if (waitpid(pid, &status, 0) == (pid_t)-1)
 	    {
 	      perror(*argv);
-	      eprint("while waiting for child process to exit.");
 	      goto fail;
 	    }
 	  
@@ -376,7 +357,6 @@ int spawn_and_respawn_server(int fd)
 	      if (child_args[argc + 0] == NULL)
 		{
 		  perror(*argv);
-		  eprint("while duplicating string.");
 		  goto fail;
 		}
 	    }
@@ -389,14 +369,12 @@ int spawn_and_respawn_server(int fd)
 	  if (drop_privileges())
 	    {
 	      perror(*argv);
-	      eprint("while dropping privileges.");
 	      goto fail;
 	    }
 	  
 	  /* Start master server. */
 	  execv(master_server, child_args);
 	  perror(*argv);
-	  eprint("while changing execution image.");
 	  goto fail;
 	}
     }
@@ -440,7 +418,6 @@ int create_directory_root(const char* pathname)
 	  if (errno != EEXIST) /* Unlikely race condition. */
 	    {
 	      perror(*argv);
-	      eprintf("while creating directory: %s", pathname);
 	      return 1;
 	    }
 	}
@@ -449,7 +426,6 @@ int create_directory_root(const char* pathname)
 	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
 	  {
 	    perror(*argv);
-	    eprintf("while changing owner of directory: %s", pathname);
 	    return 1;
 	  }
     }
@@ -486,7 +462,6 @@ int create_directory_user(const char* pathname)
 	  if (errno != EEXIST) /* Unlikely race condition. */
 	    {
 	      perror(*argv);
-	      eprintf("while creating directory: %s", pathname);
 	      return 1;
 	    }
 	}
@@ -495,7 +470,6 @@ int create_directory_user(const char* pathname)
 	if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
 	  {
 	    perror(*argv);
-	    eprintf("while changing owner of directory: %s", pathname);
 	    return 1;
 	  }
     }
@@ -516,6 +490,7 @@ int unlink_recursive(const char* pathname)
   int rc = 0;
   struct dirent* file;
   
+  /* Check that we could examine the directory. */
   if (dir == NULL)
     {
       int errno_ = errno;
@@ -524,10 +499,10 @@ int unlink_recursive(const char* pathname)
 	return 0;
       errno = errno_;
       perror(*argv);
-      eprintf("while examining the content of directory: %s", pathname);
       return 1;
     }
   
+  /* Remove the content of the directory. */
   while ((file = readdir(dir)) != NULL)
     if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
       if (unlink(file->d_name) < 0)
@@ -537,17 +512,16 @@ int unlink_recursive(const char* pathname)
 	  else
 	    {
 	      perror(*argv);
-	      eprintf("while unlinking file: %s", file->d_name);
 	      rc = 1;
 	      goto done;
 	    }
 	  eprint("pop");
 	}
   
+  /* Remvoe the drectory. */
   if (rmdir(pathname) < 0)
     {
       perror(*argv);
-      eprintf("while removing directory: %s", pathname);
       rc = 1;
     }
   

@@ -19,6 +19,27 @@
 #define MDS_MDS_H
 
 
+#include <sys/types.h>
+#include <stdio.h>
+
+
+/**
+ * Read a PID-file and determine whether it refers to an non-existing process
+ * 
+ * @param   f  The PID-file
+ * @return     Whether the PID-file is not longer used
+ */
+int is_pid_file_reusable(FILE* f);
+
+/**
+ * Parse an LF-terminated string as a non-negative `pid_t`
+ * 
+ * @param   str  The string
+ * @param   n    The length of the string, excluding LF-termination
+ * @return       The pid, `(pid_t)-1` if malformated
+ */
+pid_t parse_pid_t(const char* str, size_t n) __attribute__((pure));
+
 /**
  * Start master server and respawn it if it crashes
  * 

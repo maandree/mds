@@ -116,6 +116,15 @@ int marshal_server(int fd);
  */
 int unmarshal_server(int fd);
 
+/**
+ * Create, start and detache a slave thread
+ * 
+ * @param   thread     The address at where to store the thread
+ * @param   socket_fd  The file descriptor of the slave's socket
+ * @return             Zero on success, -1 on error, error message will have been printed
+ */
+int create_slave(pthread_t* thread_slot, int socket_fd);
+
 
 #endif
 
