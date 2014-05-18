@@ -211,7 +211,7 @@
  * @return  :int     Whether the strings are equal
  */
 #define strequals(a, b)  \
-  (strcmp(a, b) == 0)
+  ((a == b) || (strcmp(a, b) == 0))
 
 
 /**
