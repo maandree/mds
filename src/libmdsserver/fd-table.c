@@ -147,51 +147,53 @@ size_t fd_table_get(const fd_table_t* restrict this, int key)
  */
 size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
 {
+  /* Override current value if the key is already used. */
   if (fd_table_contains_key(this, key))
     {
       size_t rc = fd_table_get(this, key);
       this->values[key] = value;
       return rc;
     }
-  else
+  
+  /* Grow the table if it is too small. */
+  errno = 0;
+  if ((size_t)key >= this->capacity)
     {
-      errno = 0;
-      if ((size_t)key >= this->capacity)
+      size_t* old_values = this->values;
+      size_t old_bitcap, new_bitcap;
+      this->values = realloc(this->values, (this->capacity << 1) * sizeof(size_t));
+      if (this->values == NULL)
 	{
-	  size_t* old_values = this->values;
-	  size_t old_bitcap, new_bitcap;
-	  this->values = realloc(this->values, (this->capacity << 1) * sizeof(size_t));
-	  if (this->values == NULL)
+	  this->values = old_values;
+	  return 0;
+	}
+      
+      memset(this->values + this->capacity, 0, this->capacity * sizeof(size_t));
+      
+      old_bitcap = (this->capacity + 63) / 64;
+      this->capacity <<= 1;
+      new_bitcap = (this->capacity + 63) / 64;
+      
+      if (new_bitcap > old_bitcap)
+	{
+	  uint64_t* old_used = this->used;
+	  this->used = realloc(this->used, new_bitcap * sizeof(size_t));
+	  if (this->used == NULL)
 	    {
-	      this->values = old_values;
+	      this->used = old_used;
+	      this->capacity >>= 1;
 	      return 0;
 	    }
 	  
-	  memset(this->values + this->capacity, 0, this->capacity * sizeof(size_t));
-	  
-	  old_bitcap = (this->capacity + 63) / 64;
-	  this->capacity <<= 1;
-	  new_bitcap = (this->capacity + 63) / 64;
-	  
-	  if (new_bitcap > old_bitcap)
-	    {
-	      uint64_t* old_used = this->used;
-	      this->used = realloc(this->used, new_bitcap * sizeof(size_t));
-	      if (this->used == NULL)
-		{
-		  this->used = old_used;
-		  this->capacity >>= 1;
-		  return 0;
-		}
-	      
-	      memset(this->used + old_bitcap, 0, (new_bitcap - old_bitcap) * sizeof(uint64_t));
-	    }
+	  memset(this->used + old_bitcap, 0, (new_bitcap - old_bitcap) * sizeof(uint64_t));
 	}
-      this->used[key / 64] |= (uint64_t)1 << (key % 64);
-      this->values[key] = value;
-      this->size++;
-      return 0;
     }
+  
+  /* Store the entry. */
+  this->used[key / 64] |= (uint64_t)1 << (key % 64);
+  this->values[key] = value;
+  this->size++;
+  return 0;
 }
 
 

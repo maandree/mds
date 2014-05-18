@@ -159,17 +159,12 @@ int main(int argc_, char** argv_)
 #endif
   
   
-#define exit_if(CONDITION, INSTRUCTION)  if (CONDITION) { INSTRUCTION return 1; }
-  
-  
   argc = argc_;
   argv = argv_;
   
   
   /* Drop privileges like it's hot. */
-  if (drop_privileges())
-    goto pfail;
-  
+  fail_if (drop_privileges());
   
   /* Sanity check the number of command line arguments. */
   exit_if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT,
@@ -218,15 +213,12 @@ int main(int argc_, char** argv_)
 	   eprint("missing socket file descriptor argument."););
   
   
-#undef exit_if
-  
-  
   /* Run mdsinitrc. */
   if (is_respawn == 0)
     {
       pid_t pid = fork();
-      if (pid == (pid_t)-1)
-	goto pfail;
+      fail_if (pid == (pid_t)-1);
+      
       if (pid == 0) /* Child process exec:s, the parent continues without waiting for it. */
 	{
 	  /* Close all files except stdin, stdout and stderr. */
@@ -247,36 +239,34 @@ int main(int argc_, char** argv_)
   if (I >= 5)  pthread_cond_destroy(&modify_cond);         \
   if (I >= 6)  hash_table_destroy(&modify_map, NULL, NULL)
   
-#define __error(I)  perror(*argv); __free(I); return 1
-  
+#define error_if(I, CONDITION)  if (CONDITION)  { perror(*argv); __free(I); return 1; }
   
   /* Create list and table of clients. */
   if (reexec == 0)
     {
-      if (fd_table_create(&client_map))          { __error(0); }
-      if (linked_list_create(&client_list, 32))  { __error(1); }
+      error_if (0, fd_table_create(&client_map));
+      error_if (1, linked_list_create(&client_list, 32));
     }
-  
   
   /* Store the current thread so it can be killed from elsewhere. */
   master_thread = pthread_self();
   
   /* Make the server update without all slaves dying on SIGUSR1. */
-  if (xsigaction(SIGUSR1, sigusr1_trap) < 0)              { __error(1); }
+  error_if (1, xsigaction(SIGUSR1, sigusr1_trap) < 0);
   
   /* Implement clean exit on SIGTERM. */
-  if (xsigaction(SIGTERM, sigterm_trap) < 0)              { __error(1); }
+  error_if (1, xsigaction(SIGTERM, sigterm_trap) < 0);
   
   /* Create mutex and condition for slave counter. */
-  if ((errno = pthread_mutex_init(&slave_mutex, NULL)))   { __error(1); }
-  if ((errno = pthread_cond_init(&slave_cond, NULL)))     { __error(2); }
+  error_if (1, (errno = pthread_mutex_init(&slave_mutex, NULL)));
+  error_if (2, (errno = pthread_cond_init(&slave_cond, NULL)));
   
   /* Create mutex, condition and map for message modification. */
-  if ((errno = pthread_mutex_init(&modify_mutex, NULL)))  { __error(3); }
-  if ((errno = pthread_cond_init(&modify_cond, NULL)))    { __error(4); }
-  if (hash_table_create(&modify_map))                     { __error(5); }
-
-#undef __error
+  error_if (3, (errno = pthread_mutex_init(&modify_mutex, NULL)));
+  error_if (4, (errno = pthread_cond_init(&modify_cond, NULL)));
+  error_if (5, hash_table_create(&modify_map));
+  
+#undef error_if
   
   
   /* Unmarshal the state of the server. */
@@ -289,11 +279,7 @@ int main(int argc_, char** argv_)
       /* Acquire access to marshalled data. */
       xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
       reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
-      if (reexec_fd < 0)
-	{
-	  perror(*argv);
-	  abort(); /* Critical. */
-	}
+      fail_if (reexec_fd < 0); /* Critical. */
       /* Unmarshal state. */
       r = unmarshal_server(reexec_fd);
       close(reexec_fd);
@@ -337,7 +323,7 @@ int main(int argc_, char** argv_)
 	}
       
       /* Increase number of running slaves. */
-      with_mutex(slave_mutex, running_slaves++;);
+      with_mutex (slave_mutex, running_slaves++;);
       
       /* Start slave thread. */
       create_slave(&slave_thread, client_fd);
@@ -349,9 +335,9 @@ int main(int argc_, char** argv_)
     goto reexec;
   
   /* Join with all slaves threads. */
-  with_mutex(slave_mutex,
-	     while (running_slaves > 0)
-	       pthread_cond_wait(&slave_cond, &slave_mutex););
+  with_mutex (slave_mutex,
+	      while (running_slaves > 0)
+		pthread_cond_wait(&slave_cond, &slave_mutex););
   
   /* Release resources. */
   __free(9999);
@@ -369,9 +355,9 @@ int main(int argc_, char** argv_)
     ssize_t node;
     
     /* Join with all slaves threads. */
-    with_mutex(slave_mutex,
-	       while (running_slaves > 0)
-		 pthread_cond_wait(&slave_cond, &slave_mutex););
+    with_mutex (slave_mutex,
+		while (running_slaves > 0)
+		  pthread_cond_wait(&slave_cond, &slave_mutex););
     
     /* Release resources. */
     pthread_mutex_destroy(&slave_mutex);
@@ -383,8 +369,7 @@ int main(int argc_, char** argv_)
     /* Marshal the state of the server. */
     xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
     reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-    if (reexec_fd < 0)
-      goto pfail;
+    fail_if (reexec_fd < 0);
     if (marshal_server(reexec_fd) < 0)
       goto reexec_fail;
     close(reexec_fd);
@@ -439,8 +424,7 @@ void* slave_loop(void* data)
   if (information == NULL)
     {
       /* Create information table. */
-      if (xmalloc(information, 1, client_t))
-	goto pfail;
+      fail_if (xmalloc(information, 1, client_t));
       
       /* NULL-out pointers and initialisation markers. */
       information->interception_conditions = NULL;
@@ -479,8 +463,7 @@ void* slave_loop(void* data)
       information->interception_conditions_count = 0;
       information->send_pending_size = 0;
       information->multicasts_count = 0;
-      if (mds_message_initialise(&(information->message)))
-        goto pfail;
+      fail_if (mds_message_initialise(&(information->message)));
     }
   
   
@@ -488,21 +471,21 @@ void* slave_loop(void* data)
   information->thread = pthread_self();
   /* Create mutex to make sure two thread to not try to send
      messages concurrently, and other slave local actions. */
-  if ((errno = pthread_mutex_init(&(information->mutex), NULL)))         goto pfail;
+  fail_if ((errno = pthread_mutex_init(&(information->mutex), NULL)));
   information->mutex_created = 1;
   
   /* Create mutex and codition for multicast interception replies. */
-  if ((errno = pthread_mutex_init(&(information->modify_mutex), NULL)))  goto pfail;
+  fail_if ((errno = pthread_mutex_init(&(information->modify_mutex), NULL)));
   information->modify_mutex_created = 1;
-  if ((errno = pthread_cond_init(&(information->modify_cond), NULL)))    goto pfail;
+  fail_if ((errno = pthread_cond_init(&(information->modify_cond), NULL)));
   information->modify_cond_created = 1;
   
   
   /* Make the server update without all slaves dying on SIGUSR1. */
-  if (xsigaction(SIGUSR1, sigusr1_trap) < 0)  goto pfail;
+  fail_if (xsigaction(SIGUSR1, sigusr1_trap) < 0);
   
   /* Implement clean exit on SIGTERM. */
-  if (xsigaction(SIGTERM, sigterm_trap) < 0)  goto pfail;
+  fail_if (xsigaction(SIGTERM, sigterm_trap) < 0);
   
   
   /* Fetch messages from the slave. */
@@ -512,19 +495,19 @@ void* slave_loop(void* data)
       if (information->multicasts_count > 0)
 	{
 	  multicast_t multicast;
-	  with_mutex(information->mutex,
-		     if (information->multicasts_count > 0)
-		       {
-			 size_t c = (information->multicasts_count -= 1) * sizeof(multicast_t);
-			 multicast = information->multicasts[0];
-			 memmove(information->multicasts, information->multicasts + 1, c);
-			 if (c == 0)
-			   {
-			     free(information->multicasts);
-			     information->multicasts = NULL;
-			   }
-		       }
-		     );
+	  with_mutex (information->mutex,
+		      if (information->multicasts_count > 0)
+			{
+			  size_t c = (information->multicasts_count -= 1) * sizeof(multicast_t);
+			  multicast = information->multicasts[0];
+			  memmove(information->multicasts, information->multicasts + 1, c);
+			  if (c == 0)
+			    {
+			      free(information->multicasts);
+			      information->multicasts = NULL;
+			    }
+			}
+		      );
 	  multicast_message(&multicast);
 	  multicast_destroy(&multicast);
 	}
@@ -538,20 +521,20 @@ void* slave_loop(void* data)
 	  n = information->send_pending_size;
 	  information->send_pending_size = 0;
 	  information->send_pending = NULL;
-	  with_mutex(information->mutex,
-		     while (n > 0)
-		       {
-			 sent = send_message(information->socket_fd, sendbuf_, n);
-			 if ((sent < n) && (errno != EINTR)) /* Ignore EINTR */
-			   {
-			     perror(*argv);
-			     break;
-			   }
-			 n -= sent;
-			 sendbuf_ += sent / sizeof(char);
-		       }
-		     free(sendbuf);
-		     );
+	  with_mutex (information->mutex,
+		      while (n > 0)
+			{
+			  sent = send_message(information->socket_fd, sendbuf_, n);
+			  if ((sent < n) && (errno != EINTR)) /* Ignore EINTR */
+			    {
+			      perror(*argv);
+			      break;
+			    }
+			  n -= sent;
+			  sendbuf_ += sent / sizeof(char);
+			}
+		      free(sendbuf);
+		      );
 	}
       
       /* Fetch message. */
@@ -615,12 +598,12 @@ void* slave_loop(void* data)
     client_destroy(information);
   
   /* Unlist client and decrease the slave count. */
-  with_mutex(slave_mutex,
-	     fd_table_remove(&client_map, socket_fd);
-	     if (entry != LINKED_LIST_UNUSED)
-	       linked_list_remove(&client_list, entry);
-	     running_slaves--;
-	     pthread_cond_signal(&slave_cond););
+  with_mutex (slave_mutex,
+	      fd_table_remove(&client_map, socket_fd);
+	      if (entry != LINKED_LIST_UNUSED)
+		linked_list_remove(&client_list, entry);
+	      running_slaves--;
+	      pthread_cond_signal(&slave_cond););
   
   return NULL;
   
@@ -635,9 +618,9 @@ void* slave_loop(void* data)
      this is done because re-exec causes a race-condition
      between the acception of a slave and the execution
      of the the slave thread. */
-  with_mutex(slave_mutex,
-	     running_slaves--;
-	     pthread_cond_signal(&slave_cond););
+  with_mutex (slave_mutex,
+	      running_slaves--;
+	      pthread_cond_signal(&slave_cond););
   
   return NULL;
 }
@@ -736,7 +719,7 @@ int message_received(client_t* client)
 	}
     done:
       pthread_mutex_unlock(&(modify_mutex));
-      with_mutex(client->modify_mutex, pthread_cond_signal(&(client->modify_cond)););
+      with_mutex (client->modify_mutex, pthread_cond_signal(&(client->modify_cond)););
       
       /* Do nothing more, not not even multicast this message. */
       return 0;
@@ -753,10 +736,10 @@ int message_received(client_t* client)
   if (assign_id && (client->id == 0))
     {
       intercept |= 2;
-      with_mutex(slave_mutex,
-		 client->id = next_id++;
-		 if (next_id == 0)
-		   {
+      with_mutex (slave_mutex,
+		  client->id = next_id++;
+		  if (next_id == 0)
+		    {
 		     eprint("this is impossible, ID counter has overflowed.");
 		     /* If the program ran for a millennium it would
 			take c:a 585 assignments per nanosecond. This
@@ -764,8 +747,8 @@ int message_received(client_t* client)
 			dedication by generations of ponies (or just an alicorn)
 			to maintain the process and transfer it new hardware.) */
 		     abort();
-		   }
-		 );
+		    }
+		  );
     }
   
   /* Make the client listen for messages addressed to it. */
@@ -879,29 +862,29 @@ int message_received(client_t* client)
       
       /* Queue message to be sent when this function returns.
          This done to simplify `multicast_message` for re-exec. */
-      with_mutex(client->mutex,
-		 if (client->send_pending_size == 0)
-		   {
-		     /* Set the pending message. */
-		     client->send_pending = msgbuf;
-		     client->send_pending_size = n;
-		   }
-		 else
-		   {
-		     /* Concatenate message to already pending messages. */
-		     size_t new_len = client->send_pending_size + n;
-		     char* msg_new = realloc(client->send_pending, new_len * sizeof(char));
-		     if (msg_new != NULL)
-		       {
-			 memcpy(msg_new + client->send_pending_size, msgbuf, n * sizeof(char));
-			 client->send_pending = msg_new;
-			 client->send_pending_size = new_len;
-		       }
-		     else
-		       perror(*argv);
-		     free(msgbuf);
-		   }
-		 );
+      with_mutex (client->mutex,
+		  if (client->send_pending_size == 0)
+		    {
+		      /* Set the pending message. */
+		      client->send_pending = msgbuf;
+		      client->send_pending_size = n;
+		    }
+		  else
+		    {
+		      /* Concatenate message to already pending messages. */
+		      size_t new_len = client->send_pending_size + n;
+		      char* msg_new = realloc(client->send_pending, new_len * sizeof(char));
+		      if (msg_new != NULL)
+			{
+			  memcpy(msg_new + client->send_pending_size, msgbuf, n * sizeof(char));
+			  client->send_pending = msg_new;
+			  client->send_pending_size = new_len;
+			}
+		      else
+			perror(*argv);
+		      free(msgbuf);
+		    }
+		  );
     }
   
   return 0;
@@ -1188,11 +1171,11 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   qsort(interceptions, interceptions_count, sizeof(queued_interception_t), cmp_queued_interception);
   
   /* Add prefix to message with ‘Modify ID’ header. */
-  with_mutex(slave_mutex,
-	     modify_id = next_modify_id++;
-	     if (next_modify_id == 0)
-	       next_modify_id = 1;
-	     );
+  with_mutex (slave_mutex,
+	      modify_id = next_modify_id++;
+	      if (next_modify_id == 0)
+		next_modify_id = 1;
+	      );
   xsnprintf(modify_id_header, "Modify ID: %" PRIu64 "\n", modify_id);
   n = strlen(modify_id_header);
   old_buf = message;
@@ -1213,24 +1196,24 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   message = NULL;
   
   /* Queue message multicasting. */
-  with_mutex(sender->mutex,
-	     if (sender->multicasts == NULL)
-	       {
-		 if (xmalloc(sender->multicasts, 1, multicast_t))
-		   goto fail_queue;
-	       }
-	     else
-	       {
-		 multicast_t* new_buf;
-		 new_buf = realloc(sender->multicasts, (sender->multicasts_count + 1) * sizeof(multicast_t));
-		 if (new_buf == NULL)
-		   goto fail_queue;
-		 sender->multicasts = new_buf;
-	       }
-	     sender->multicasts[sender->multicasts_count++] = *multicast;
-	     multicast = NULL;
-  	   fail_queue:
-	     );
+  with_mutex (sender->mutex,
+	      if (sender->multicasts == NULL)
+		{
+		  if (xmalloc(sender->multicasts, 1, multicast_t))
+		    goto fail_queue;
+		}
+	      else
+		{
+		  multicast_t* new_buf;
+		  new_buf = realloc(sender->multicasts, (sender->multicasts_count + 1) * sizeof(multicast_t));
+		  if (new_buf == NULL)
+		    goto fail_queue;
+		  sender->multicasts = new_buf;
+		}
+	      sender->multicasts[sender->multicasts_count++] = *multicast;
+	      multicast = NULL;
+	     fail_queue:
+	      );
   
   errno = 0;
  fail: /* This is done before this function returns even if there was no error. */
@@ -1277,7 +1260,7 @@ void multicast_message(multicast_t* multicast)
       if (client == NULL)
 	{
 	  size_t address;
-	  with_mutex(slave_mutex, address = fd_table_get(&client_map, client_.socket_fd););
+	  with_mutex (slave_mutex, address = fd_table_get(&client_map, client_.socket_fd););
 	  client_.client = client = (client_t*)(void*)address;
 	}
       
@@ -1289,23 +1272,23 @@ void multicast_message(multicast_t* multicast)
 	}
       
       /* Send the message. */
-      with_mutex(client->mutex,
-		 errno = 0;
-		 n *= sizeof(char);
-		 if (client->open)
-		   while (n > 0)
-		     {
-		       sent = send_message(client->socket_fd, msg + multicast->message_ptr, n);
-		       if (sent < n)
-			 {
-			   if (errno != EINTR)
-			     perror(*argv);
-			   break;
-			 }
-		       n -= sent;
-		       multicast->message_ptr += sent / sizeof(char);
-		     }
-		 );
+      with_mutex (client->mutex,
+		  errno = 0;
+		  n *= sizeof(char);
+		  if (client->open)
+		    while (n > 0)
+		      {
+			sent = send_message(client->socket_fd, msg + multicast->message_ptr, n);
+			if (sent < n)
+			  {
+			    if (errno != EINTR)
+			      perror(*argv);
+			    break;
+			  }
+			n -= sent;
+			multicast->message_ptr += sent / sizeof(char);
+		      }
+		  );
       
       /* Stop if we are re-exec:ing, or continue to next recipient on error. */
       if (n > 0)
@@ -1339,25 +1322,25 @@ void multicast_message(multicast_t* multicast)
 	mds_message_t* mod;
 	
 	/* Wait for a reply. */
-	with_mutex(modify_mutex,
-		   if (client->modify_message == NULL)
-		     {
-		       if (hash_table_contains_key(&modify_map, (size_t)modify_id) == 0)
-			 {
-			   hash_table_put(&modify_map, (size_t)modify_id, (size_t)(void*)client);
-			   pthread_cond_signal(&slave_cond);
-			 }
-		     }
-		   );
-	with_mutex(client->modify_mutex,
-		   if (client->modify_message == NULL)
-		     {
-		       while ((client->modify_message == NULL) && (terminating == 0))
-			 pthread_cond_timedwait(&slave_cond, &slave_mutex, &timeout);
-		       if (terminating == 0)
-			 hash_table_remove(&modify_map, (size_t)modify_id);
-		     }
-		   );
+	with_mutex (modify_mutex,
+		    if (client->modify_message == NULL)
+		      {
+			if (hash_table_contains_key(&modify_map, (size_t)modify_id) == 0)
+			  {
+			    hash_table_put(&modify_map, (size_t)modify_id, (size_t)(void*)client);
+			    pthread_cond_signal(&slave_cond);
+			  }
+		      }
+		    );
+	with_mutex (client->modify_mutex,
+		    if (client->modify_message == NULL)
+		      {
+			while ((client->modify_message == NULL) && (terminating == 0))
+			  pthread_cond_timedwait(&slave_cond, &slave_mutex, &timeout);
+			if (terminating == 0)
+			  hash_table_remove(&modify_map, (size_t)modify_id);
+		      }
+		    );
 	if (terminating)
 	  return;
 	
@@ -1457,7 +1440,7 @@ void run_initrc(char** args)
   /* Test /etc. */
   __exec("%s/%s", SYSCONFDIR, INITRC_FILE);
 
-#undef __exec  
+#undef __exec
   
   /* Everything failed. */
   eprintf("unable to run %s file, you might as well kill me.", INITRC_FILE);
@@ -1513,13 +1496,13 @@ void signal_all(int signo)
   if (pthread_equal(current_thread, master_thread) == 0)
     pthread_kill(master_thread, signo);
   
-  with_mutex(slave_mutex,
-	     foreach_linked_list_node (client_list, node)
-	     {
-	       client_t* value = (client_t*)(void*)(client_list.values[node]);
-	       if (pthread_equal(current_thread, value->thread) == 0)
-		 pthread_kill(value->thread, signo);
-	     });
+  with_mutex (slave_mutex,
+	      foreach_linked_list_node (client_list, node)
+	      {
+		client_t* value = (client_t*)(void*)(client_list.values[node]);
+		if (pthread_equal(current_thread, value->thread) == 0)
+		  pthread_kill(value->thread, signo);
+	      });
 }
 
 
@@ -1691,6 +1674,7 @@ int unmarshal_server(int fd)
 	if (errno)
 	  goto clients_fail;
       
+      /* Delayed seeking. */
       state_buf_ += n / sizeof(char);
       
       
@@ -1725,12 +1709,13 @@ int unmarshal_server(int fd)
   free(state_buf);
   
   /* Remove non-found elements from the fd table. */
+#define __bit(I, _OP_)  client_map.used[I / 64] _OP_ ((uint64_t)1 << (I % 64))
   if (with_error)
     for (i = 0; i < client_map.capacity; i++)
-      if (client_map.used[i / 64] & ((uint64_t)1 << (i % 64)))
+      if ((__bit(i, &)) && (client_map.values[i] == 0))
 	/* Lets not presume that fd-table actually initialise its allocations. */
-	if (client_map.values[i] == 0)
-	  client_map.used[i / 64] &= ~((uint64_t)1 << (i % 64));
+	__bit(i, &= ~);
+#undef __bit
   
   /* Remap the linked list and remove non-found elements, and start the clients. */
   foreach_linked_list_node (client_list, node)
@@ -1747,7 +1732,7 @@ int unmarshal_server(int fd)
 	  int socket_fd = client->socket_fd;
 	  
 	  /* Increase number of running slaves. */
-	  with_mutex(slave_mutex, running_slaves++;);
+	  with_mutex (slave_mutex, running_slaves++;);
 	  
 	  /* Start slave thread. */
 	  create_slave(&slave_thread, socket_fd);
@@ -1777,7 +1762,7 @@ int create_slave(pthread_t* thread_slot, int socket_fd)
   if ((errno = pthread_create(thread_slot, NULL, slave_loop, (void*)(intptr_t)socket_fd)))
     {
       perror(*argv);
-      with_mutex(slave_mutex, running_slaves--;);
+      with_mutex (slave_mutex, running_slaves--;);
       return -1;
     }
   if ((errno = pthread_detach(*thread_slot)))

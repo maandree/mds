@@ -74,9 +74,6 @@ int main(int argc_, char** argv_)
   int j, r;
   
   
-#define exit_if(CONDITION, INSTRUCTION)  if (CONDITION) { INSTRUCTION return 1; }
-  
-  
   argc = argc_;
   argv = argv_;
   
@@ -110,6 +107,7 @@ int main(int argc_, char** argv_)
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
     return 1;
   
+  
   /* Determine display index. */
   for (display = 0; display < DISPLAY_MAX; display++)
     {
@@ -137,11 +135,8 @@ int main(int argc_, char** argv_)
 	   eprint("sorry, too many displays on the system."););
            /* Yes, the directory could have been removed, but it probably was not. */
   
-#undef exit_if
-  
   /* Create PID file. */
-  if ((f = fopen(pathname, "w")) == NULL)
-    goto pfail;
+  fail_if ((f = fopen(pathname, "w")) == NULL);
   xsnprintf(piddata, "%u\n", getpid());
   if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
     {
@@ -156,15 +151,15 @@ int main(int argc_, char** argv_)
     perror(*argv);
   
   /* Create data storage directory. */
-  if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY))
-    goto fail;
   xsnprintf(pathname,  "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
-  if (unlink_recursive(pathname) || create_directory_user(pathname))
-    goto fail;
+  fail_if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY));
+  fail_if (unlink_recursive(pathname));
+  fail_if (create_directory_user(pathname));
+    
   
   /* Save MDS_DISPLAY environment variable. */
   xsnprintf(pathname, /* Excuse the reuse without renaming. */
-	   ":%u", display);
+	    ":%u", display);
   setenv(DISPLAY_ENV, pathname, 1);
   
   /* Create display socket. */
@@ -173,13 +168,12 @@ int main(int argc_, char** argv_)
   strcpy(address.sun_path, pathname);
   unlink(pathname);
   fd = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (fchmod(fd, S_IRWXU) < 0)                                      goto pfail;
-  if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0)  goto pfail;
-  if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)              goto pfail;
+  fail_if (fchmod(fd, S_IRWXU) < 0);
+  fail_if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0);
+  fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
   
   /* Start listening on socket. */
-  if (listen(fd, SOMAXCONN) < 0)
-    goto pfail;
+  fail_if (listen(fd, SOMAXCONN) < 0);
   
   /* Start master server and respawn it if it crashes. */
   rc = spawn_and_respawn_server(fd);
@@ -207,7 +201,6 @@ int main(int argc_, char** argv_)
   
  pfail:
   perror(*argv);
- fail:
   rc = 1;
   goto done;
 }
@@ -271,6 +264,25 @@ pid_t parse_pid_t(const char* str, size_t n)
 }
 
 
+
+/**
+ * Drop privileges and change execution image into the master server's image.
+ * This function will only return on error.
+ * 
+ * @param  child_args  Command line arguments for the new image
+ */
+static void exec_master_server(char** child_args)
+{
+  /* Drop privileges. They most not be propagated non-authorised components. */
+  /* setgid should not be set, but just to be safe we are restoring both user and group. */
+  if (drop_privileges())
+    return;
+  
+  /* Start master server. */
+  execv(master_server, child_args);
+}
+
+
 /**
  * Start master server and respawn it if it crashes
  * 
@@ -302,83 +314,68 @@ int spawn_and_respawn_server(int fd)
 # error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 2.
 #endif
   
-  for (;;)
+  
+ respawn:
+  
+  pid = fork();
+  if (pid == (pid_t)-1)
+    goto pfail;
+  
+  if (pid == 0) /* Child. */
     {
-      pid = fork();
-      if (pid == (pid_t)-1)
-	{
-	  perror(*argv);
-	  goto fail;
-	}
-      
-      if (pid)
-	{
-	  /* Get the current time. (Start of child process.) */
-	  time_error = (monotone(&time_start) < 0);
-	  if (time_error)
-	    perror(*argv);
-	  
-	  /* Wait for master server to die. */
-	  if (waitpid(pid, &status, 0) == (pid_t)-1)
-	    {
-	      perror(*argv);
-	      goto fail;
-	    }
-	  
-	  /* If the server exited normally or SIGTERM, do not respawn. */
-	  if (WIFEXITED(status) || (WEXITSTATUS(status) && WTERMSIG(status)))
-	    break;
-	  
-	  /* Get the current time. (End of child process.) */
-	  time_error |= (monotone(&time_end) < 0);
-	  
-	  /* Do not respawn if we could not read the time. */
-	  if (time_error)
-	    {
-	      perror(*argv);
-	      eprintf("%s died abnormally, not respawning because we could not read the time.", master_server);
-	      goto fail;
-	    }
-	  
-	  /* Respawn if the server did not die too fast. */
-	  if (time_end.tv_sec - time_start.tv_sec >= RESPAWN_TIME_LIMIT_SECONDS)
-	    eprintf("%s died abnormally, respawning.", master_server);
-	  else
-	    {
-	      eprintf("%s died abnormally, died too fast, not respawning.", master_server);
-	      goto fail;
-	    }
-	  
-	  if (first_spawn)
-	    {
-	      first_spawn = 0;
-	      free(child_args[argc + 0]);
-	      child_args[argc + 0] = strdup("--respawn");
-	      if (child_args[argc + 0] == NULL)
-		{
-		  perror(*argv);
-		  goto fail;
-		}
-	    }
-	}
-      else
-	{
-	  rc++;
-	  /* Drop privileges. They most not be propagated non-authorised components. */
-	  /* setgid should not be set, but just to be safe we are restoring both user and group. */
-	  if (drop_privileges())
-	    {
-	      perror(*argv);
-	      goto fail;
-	    }
-	  
-	  /* Start master server. */
-	  execv(master_server, child_args);
-	  perror(*argv);
-	  goto fail;
-	}
+      rc++;
+      exec_master_server(child_args);
+      goto pfail;
     }
   
+  
+  /* Parent. */
+  
+  /* Get the current time. (Start of child process.) */
+  if ((time_error = (monotone(&time_start) < 0)))
+    perror(*argv);
+  
+  /* Wait for master server to die. */
+  if (waitpid(pid, &status, 0) == (pid_t)-1)
+    goto pfail;
+  
+  /* If the server exited normally or SIGTERM, do not respawn. */
+  if (WIFEXITED(status) || (WEXITSTATUS(status) && WTERMSIG(status)))
+    goto done; /* Child exited normally, stop. */
+  
+  /* Get the current time. (End of child process.) */
+  time_error |= (monotone(&time_end) < 0);
+  
+  /* Do not respawn if we could not read the time. */
+  if (time_error)
+    {
+      perror(*argv);
+      eprintf("%s died abnormally, not respawning because we could not read the time.", master_server);
+      goto fail;
+    }
+  
+      /* Respawn if the server did not die too fast. */
+  if (time_end.tv_sec - time_start.tv_sec >= RESPAWN_TIME_LIMIT_SECONDS)
+    eprintf("%s died abnormally, respawning.", master_server);
+  else
+    {
+      eprintf("%s died abnormally, died too fast, not respawning.", master_server);
+      goto fail;
+    }
+  
+  if (first_spawn)
+    {
+      first_spawn = 0;
+      free(child_args[argc + 0]);
+      child_args[argc + 0] = strdup("--respawn");
+      if (child_args[argc + 0] == NULL)
+	goto pfail;
+    }
+  
+  goto respawn;
+  
+  
+ done:
   rc--;
  fail:
   rc++;
@@ -387,6 +384,10 @@ int spawn_and_respawn_server(int fd)
   if (rc == 2)
     _exit(1);
   return rc;
+  
+ pfail:
+  perror(*argv);
+  goto fail;
 }
 
 
@@ -411,26 +412,22 @@ int create_directory_root(const char* pathname)
 	}
     }
   else
-    {
-      /* Directory is missing, create it. */
-      if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
-	{
-	  if (errno != EEXIST) /* Unlikely race condition. */
-	    {
-	      perror(*argv);
-	      return 1;
-	    }
-	}
-      else
-	/* Set ownership. */
-	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
-	  {
-	    perror(*argv);
-	    return 1;
-	  }
-    }
+    /* Directory is missing, create it. */
+    if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
+      {
+	if (errno != EEXIST) /* Unlikely race condition. */
+	  goto pfail;
+      }
+    else
+      /* Set ownership. */
+      if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
+	goto pfail;
   
   return 0;
+
+ pfail:
+  perror(*argv);
+  return 1;
 }
 
 
@@ -496,37 +493,36 @@ int unlink_recursive(const char* pathname)
       int errno_ = errno;
       struct stat _attr;
       if (stat(pathname, &_attr) < 0)
-	return 0;
+	return 0; /* Directory does not exist. */
       errno = errno_;
-      perror(*argv);
-      return 1;
+      goto pfail;
     }
   
   /* Remove the content of the directory. */
   while ((file = readdir(dir)) != NULL)
-    if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))
-      if (unlink(file->d_name) < 0)
-	{
-	  if (errno == EISDIR)
-	    unlink_recursive(file->d_name);
-	  else
-	    {
-	      perror(*argv);
-	      rc = 1;
-	      goto done;
-	    }
-	  eprint("pop");
-	}
+    if (strcmp(file->d_name, ".") &&
+	strcmp(file->d_name, "..") &&
+	(unlink(file->d_name) < 0))
+      {
+	if (errno != EISDIR)
+	  goto pfail;
+	unlink_recursive(file->d_name);
+	eprint("pop");
+      }
   
   /* Remvoe the drectory. */
   if (rmdir(pathname) < 0)
-    {
-      perror(*argv);
-      rc = 1;
-    }
+    goto pfail;
   
- done:  
-  closedir(dir);
+ done:
+  if (dir != NULL)
+    closedir(dir);
   return rc;
+  
+  
+ pfail:
+  perror(*argv);
+  rc = -1;
+  goto done;
 }
 

@@ -276,7 +276,7 @@
  *  
  * @param   var       The variable to which to assign the allocation
  * @param   elements  The number of elements to allocate
- * @parma   type      The data type of the elements for which to create an allocation
+ * @param   type      The data type of the elements for which to create an allocation
  * @return  :int      Evaluates to true if an only if the allocation failed
  */
 #define xmalloc(var, elements, type)  \
@@ -288,11 +288,28 @@
  *  
  * @param   var       The variable to which to assign the allocation
  * @param   elements  The number of elements to allocate
- * @parma   type      The data type of the elements for which to create an allocation
+ * @param   type      The data type of the elements for which to create an allocation
  * @return  :int      Evaluates to true if an only if the allocation failed
  */
 #define xcalloc(var, elements, type)  \
   ((var = calloc(elements, sizeof(type))) == NULL)
+
+
+/**
+ * Go to the label `pfail` if a condition is met
+ * 
+ * @param  CONDITION  The condition
+ */
+#define fail_if(CONDITION)  if (CONDITION)  goto pfail
+
+
+/**
+ * Run a set of instructions and return 1 if a condition is met
+ * 
+ * @param  CONDITION    The condition
+ * @param  INSTRUCTIONS  The instruction (semicolon-terminated)
+ */
+#define exit_if(CONDITION, INSTRUCTIONS)  if (CONDITION)  { INSTRUCTIONS return 1; }
 
 
 #endif
