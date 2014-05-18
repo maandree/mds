@@ -79,8 +79,11 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 all: bin/mds bin/mds-server bin/libmdsserver.so
 
 
-MDS_SERVER_OBJ = mds-server/mds-server mds-server/interception_condition mds-server/client \
-                 mds-server/multicast mds-server/queued_interception
+MDS_SERVER_OBJ_ = mds-server interception_condition client multicast  \
+                  queued_interception globals signals interceptors    \
+                  sending
+MDS_SERVER_OBJ = $(foreach O,$(MDS_SERVER_OBJ_),mds-server/$(O))
+
 bin/mds-server: $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o) bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(foreach O,$(MDS_SERVER_OBJ),obj/$(O).o)

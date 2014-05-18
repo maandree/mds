@@ -18,12 +18,10 @@
 #ifndef MDS_MDS_SERVER_H
 #define MDS_MDS_SERVER_H
 
-
 #include "client.h"
 #include "multicast.h"
 
 #include <stddef.h>
-
 
 
 /**
@@ -58,17 +56,6 @@ void send_reply_queue(client_t* client);
 int message_received(client_t* client);
 
 /**
- * Add an interception condition for a client
- * 
- * @param  client     The client
- * @param  condition  The header, optionally with value, to look for, or empty (not `NULL`) for all messages
- * @param  priority   Interception priority
- * @param  modifying  Whether the client may modify the messages
- * @param  stop       Whether the condition should be removed rather than added
- */
-void add_intercept_condition(client_t* client, char* condition, int64_t priority, int modifying, int stop);
-
-/**
  * Queue a message for multicasting
  * 
  * @param  message  The message
@@ -86,41 +73,11 @@ void queue_message_multicast(char* message, size_t length, client_t* sender);
 int fetch_message(client_t* client);
 
 /**
- * Multicast a message
- * 
- * @param  multicast  The multicast message
- */
-void multicast_message(multicast_t* multicast);
-
-/**
  * Exec into the mdsinitrc script
  * 
  * @param  args  The arguments to the child process
  */
 void run_initrc(char** args);
-
-/**
- * Called with the signal SIGUSR1 is caught.
- * This function should cue a re-exec of the program.
- * 
- * @param  signo  The caught signal
- */
-void sigusr1_trap(int signo);
-
-/**
- * Called with the signal SIGTERM is caught.
- * This function should cue a termination of the program.
- * 
- * @param  signo  The caught signal
- */
-void sigterm_trap(int signo);
-
-/**
- * Send a singal to all threads except the current thread
- * 
- * @param  signo  The signal
- */
-void signal_all(int signo);
 
 /**
  * Marshal the server's state into a file
