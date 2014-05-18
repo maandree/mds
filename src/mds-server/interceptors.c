@@ -44,6 +44,7 @@ static void remove_intercept_condition(client_t* client, size_t index)
   size_t n = client->interception_conditions_count;
   
   /* Remove the condition from the list. */
+  free(conds[index].condition);
   memmove(conds + index, conds + index + 1, --n - index);
   client->interception_conditions_count--;
   
