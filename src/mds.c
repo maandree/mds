@@ -510,7 +510,7 @@ int unlink_recursive(const char* pathname)
 	eprint("pop");
       }
   
-  /* Remvoe the drectory. */
+  /* Remove the drectory. */
   if (rmdir(pathname) < 0)
     goto pfail;
   

@@ -137,6 +137,7 @@ static pthread_cond_t modify_cond;
 static hash_table_t modify_map;
 
 
+
 /**
  * Entry point of the server
  * 
@@ -1308,7 +1309,7 @@ void multicast_message(multicast_t* multicast)
 	}
       
       /* Do not wait for a reply if it is non-modifying. */
-      if (client_.modifying)
+      if (client_.modifying == 0)
 	{
 	  /* Reset how much of the message has been sent before we continue with next recipient. */
 	  multicast->message_ptr = 0;
