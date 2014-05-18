@@ -228,7 +228,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  this->stage = 2;
 	  return 0;
 	}
-      if ((this->stage == 1) && (this->payload_size > 0))
+      if ((this->stage == 1) && (this->payload_size > 0)) /* FIXME: next message fails if not LF-terminated. */
 	{
 	  /* How much of the payload that has not yet been filled. */
 	  size_t need = this->payload_size - this->payload_ptr;
