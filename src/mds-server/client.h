@@ -137,6 +137,38 @@ typedef struct client
 
 
 /**
+ * Initialise a client
+ * 
+ * The following fields will not be initialised:
+ * - message
+ * - thread
+ * - mutex
+ * - modify_mutex
+ * - modify_cond
+ * 
+ * The follow fields will be initialised to `-1`:
+ * - list_entry
+ * - socket_fd
+ * 
+ * @param  this  Memory slot in which to store the new client information
+ */
+void client_initialise(client_t* restrict this);
+
+/**
+ * Initialise fields that have to do with threading
+ * 
+ * This method initialises the following fields:
+ * - thread
+ * - mutex
+ * - modify_mutex
+ * - modify_cond
+ * 
+ * @param   this  The client information
+ * @return        Zero on success, -1 on error
+ */
+int client_initialise_threading(client_t* restrict this);
+
+/**
  * Release all resources assoicated with a client
  * 
  * @param  this  The client information

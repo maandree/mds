@@ -24,7 +24,75 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <errno.h>
 
+
+
+/**
+ * Initialise a client
+ * 
+ * The following fields will not be initialised:
+ * - message
+ * - thread
+ * - mutex
+ * - modify_mutex
+ * - modify_cond
+ * 
+ * The follow fields will be initialised to `-1`:
+ * - list_entry
+ * - socket_fd
+ * 
+ * @param  this  Memory slot in which to store the new client information
+ */
+void client_initialise(client_t* restrict this)
+{
+  this->list_entry = -1;
+  this->socket_fd = -1;
+  this->open = 0;
+  this->id = 0;
+  this->mutex_created = 0;
+  this->interception_conditions = NULL;
+  this->interception_conditions_count = 0;
+  this->multicasts = NULL;
+  this->multicasts_count = 0;
+  this->send_pending = NULL;
+  this->send_pending_size = 0;
+  this->modify_message = NULL;
+  this->modify_mutex_created = 0;
+  this->modify_cond_created = 0;
+}
+
+
+/**
+ * Initialise fields that have to do with threading
+ * 
+ * This method initialises the following fields:
+ * - thread
+ * - mutex
+ * - modify_mutex
+ * - modify_cond
+ * 
+ * @param   this  The client information
+ * @return        Zero on success, -1 on error
+ */
+int client_initialise_threading(client_t* restrict this)
+{
+  /* Store the thread so that other threads can kill it. */
+  this->thread = pthread_self();
+  
+  /* Create mutex to make sure two thread to not try to send
+     messages concurrently, and other client local actions. */
+  if ((errno = pthread_mutex_init(&(this->mutex), NULL)))         return -1;
+  this->mutex_created = 1;
+  
+  /* Create mutex and codition for multicast interception replies. */
+  if ((errno = pthread_mutex_init(&(this->modify_mutex), NULL)))  return -1;
+  this->modify_mutex_created = 1;
+  if ((errno = pthread_cond_init(&(this->modify_cond), NULL)))    return -1;
+  this->modify_cond_created = 1;
+  
+  return 0;
+}
 
 
 /**

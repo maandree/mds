@@ -35,11 +35,25 @@
 void* slave_loop(void* data);
 
 /**
+ * Send the next message in a clients multicast queue
+ * 
+ * @param  client  The client
+ */
+void send_multicast_queue(client_t* client);
+
+/**
+ * Send the messages that are in a clients reply queue
+ * 
+ * @param  client  The client
+ */
+void send_reply_queue(client_t* client);
+
+/**
  * Perform actions that should be taken when
  * a message has been received from a client
  * 
  * @param   client  The client has sent a message
- * @return          Normally zero, but 1 if exited because of re-exec
+ * @return          Normally zero, but 1 if exited because of re-exec or termination
  */
 int message_received(client_t* client);
 
@@ -62,6 +76,14 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
  * @param  sender   The original sender of the message
  */
 void queue_message_multicast(char* message, size_t length, client_t* sender);
+
+/**
+ * Receive a full message and update open status if the client closes
+ * 
+ * @param   client  The client
+ * @return          Zero on success, -2 on failure, otherwise -1
+ */
+int fetch_message(client_t* client);
 
 /**
  * Multicast a message
