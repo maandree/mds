@@ -443,7 +443,7 @@ int message_received(client_t* client)
   if (assign_id && (client->id == 0))
     {
       intercept |= 2;
-      with_mutex_if (slave_mutex, (client->id = ++next_client_id) == 0,
+      with_mutex_if (slave_mutex, (client->id = next_client_id++) == 0,
 		     eprint("this is impossible, ID counter has overflowed.");
 		     /* If the program ran for a millennium it would
 			take c:a 585 assignments per nanosecond. This
@@ -717,6 +717,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
 		goto fail_queue;
 	      sender->multicasts = new_buf;
 	      sender->multicasts[sender->multicasts_count++] = *multicast;
+	      free(multicast);
 	      multicast = NULL;
 	     fail_queue:
 	      );
