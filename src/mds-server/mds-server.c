@@ -284,7 +284,7 @@ void* slave_loop(void* data)
   
   
   /* Multicast information about the client closing. */
-  n = 2 * 10 + 1 + strlen("Client closed: :\n\n"); /* FIXME: why is this not received? */
+  n = 2 * 10 + 1 + strlen("Client closed: :\n\n");
   fail_if (xmalloc(msgbuf, n, char));
   snprintf(msgbuf, n,
 	   "Client closed: %" PRIu32 ":%" PRIu32 "\n"
@@ -294,6 +294,7 @@ void* slave_loop(void* data)
   n = strlen(msgbuf);
   queue_message_multicast(msgbuf, n, information);
   msgbuf = NULL;
+  send_multicast_queue(information);
   
   
  terminate: /* This done on success as well. */
