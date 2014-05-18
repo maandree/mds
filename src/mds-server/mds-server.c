@@ -714,7 +714,10 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   with_mutex (sender->mutex,
 	      new_buf = sender->multicasts;
 	      if (xrealloc(new_buf, sender->multicasts_count + 1, multicast_t))
-		goto fail_queue;
+		{
+		  perror(*argv);
+		  goto fail_queue;
+		}
 	      sender->multicasts = new_buf;
 	      sender->multicasts[sender->multicasts_count++] = *multicast;
 	      free(multicast);
