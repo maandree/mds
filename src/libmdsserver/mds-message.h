@@ -93,6 +93,13 @@ typedef struct mds_message
 int mds_message_initialise(mds_message_t* restrict this);
 
 /**
+ * Zero initialise a message slot
+ * 
+ * @param  this  Memory slot in which to store the new message
+ */
+void mds_message_zero_initialise(mds_message_t* restrict this);
+
+/**
  * Release all resources in a message, should
  * be done even if initialisation fails
  * 

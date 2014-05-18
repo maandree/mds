@@ -18,6 +18,7 @@
 #ifndef MDS_MDS_SERVER_H
 #define MDS_MDS_SERVER_H
 
+
 #include "client.h"
 #include "multicast.h"
 
@@ -51,44 +52,11 @@ int message_received(client_t* client);
 void queue_message_multicast(char* message, size_t length, client_t* sender);
 
 /**
- * Receive a full message and update open status if the client closes
- * 
- * @param   client  The client
- * @return          Zero on success, -2 on failure, otherwise -1
- */
-int fetch_message(client_t* client);
-
-/**
  * Exec into the mdsinitrc script
  * 
  * @param  args  The arguments to the child process
  */
 void run_initrc(char** args);
-
-/**
- * Marshal the server's state into a file
- * 
- * @param   fd  The file descriptor
- * @return      Negative on error
- */
-int marshal_server(int fd);
-
-/**
- * Unmarshal the server's state from a file
- * 
- * @param   fd  The file descriptor
- * @return      Negative on error
- */
-int unmarshal_server(int fd);
-
-/**
- * Create, start and detache a slave thread
- * 
- * @param   thread     The address at where to store the thread
- * @param   socket_fd  The file descriptor of the slave's socket
- * @return             Zero on success, -1 on error, error message will have been printed
- */
-int create_slave(pthread_t* thread_slot, int socket_fd);
 
 
 #endif

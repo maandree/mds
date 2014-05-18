@@ -51,6 +51,25 @@ int mds_message_initialise(mds_message_t* restrict this)
 
 
 /**
+ * Zero initialise a message slot
+ * 
+ * @param  this  Memory slot in which to store the new message
+ */
+void mds_message_zero_initialise(mds_message_t* restrict this)
+{
+  this->headers = NULL;
+  this->header_count = 0;
+  this->payload = NULL;
+  this->payload_size = 0;
+  this->payload_ptr = 0;
+  this->buffer = NULL;
+  this->buffer_size = 0;
+  this->buffer_ptr = 0;
+  this->stage = 0;
+}
+
+
+/**
  * Release all resources in a message, should
  * be done even if initialisation fails
  * 
