@@ -163,22 +163,13 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	       that it does not need to be reallocated again and again. */
 	    if (header_commit_buffer == 0)
 	      {
+		char** old_headers = this->headers;
 		header_commit_buffer = 8;
-		if (this->header_count == 0)
+		n = this->header_count + header_commit_buffer;
+		if (xrealloc(this->headers, n, char*))
 		  {
-		    if (xmalloc(this->headers, header_commit_buffer, char*))
-		      return -1;
-		  }
-		else
-		  {
-		    char** old_headers = this->headers;
-		    n = this->header_count + header_commit_buffer;
-		    this->headers = realloc(this->headers, n * sizeof(char*));
-		    if (this->headers == NULL)
-		      {
-			this->headers = old_headers;
+		    this->headers = old_headers;
 			return -1;
-		      }
 		  }
 	      }
 	    
@@ -261,9 +252,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       if (n < 128)
 	{
 	  char* old_buffer = this->buffer;
-	  this->buffer_size <<= 1;
-	  this->buffer = realloc(this->buffer, this->buffer_size * sizeof(char));
-	  if (this->buffer == NULL)
+	  if (xrealloc(this->buffer, this->buffer_size <<= 1, char))
 	    {
 	      this->buffer = old_buffer;
 	      this->buffer_size >>= 1;

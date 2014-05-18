@@ -161,8 +161,7 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
     {
       size_t* old_values = this->values;
       size_t old_bitcap, new_bitcap;
-      this->values = realloc(this->values, (this->capacity << 1) * sizeof(size_t));
-      if (this->values == NULL)
+      if (xrealloc(this->values, this->capacity << 1, size_t))
 	{
 	  this->values = old_values;
 	  return 0;
@@ -177,8 +176,7 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
       if (new_bitcap > old_bitcap)
 	{
 	  uint64_t* old_used = this->used;
-	  this->used = realloc(this->used, new_bitcap * sizeof(size_t));
-	  if (this->used == NULL)
+	  if (xrealloc(this->used, new_bitcap, size_t))
 	    {
 	      this->used = old_used;
 	      this->capacity >>= 1;

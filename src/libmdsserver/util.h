@@ -92,6 +92,18 @@ int full_write(int fd, const char* buffer, size_t length);
  */
 char* full_read(int fd);
 
+/**
+ * Check whether a string begins with a specific string,
+ * where neither of the strings are necessarily NUL-terminated
+ * 
+ * @param   haystack    The string that should start with the other string
+ * @param   needle      The string the first string should start with
+ * @param   haystack_n  The length of `haystack`
+ * @param   needle_n    The length of `needle`
+ * @return              Whether the `haystack` begins with `needle`
+ */
+int startswith_n(const char* haystack, const char* needle, size_t haystack_n, size_t needle_n) __attribute__((pure));
+
 
 #endif
 

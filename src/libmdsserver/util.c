@@ -126,6 +126,7 @@ size_t send_message(int socket, const char* message, size_t length)
   size_t sent = 0;
   ssize_t just_sent;
   
+  errno = 0;
   while (length > 0)
     if ((just_sent = send(socket, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0)
       {
@@ -222,8 +223,7 @@ char* full_read(int fd)
       if (state_buf_size == state_buf_ptr)
 	{
 	  char* old_buf = state_buf;
-	  state_buf = realloc(state_buf, (state_buf_size <<= 1) * sizeof(char));
-	  if (state_buf == NULL)
+	  if (xrealloc(state_buf, state_buf_size <<= 1, char))
 	    {
 	      free(old_buf);
 	      return NULL;
@@ -243,5 +243,29 @@ char* full_read(int fd)
     }
   
   return state_buf;
+}
+
+
+/**
+ * Check whether a string begins with a specific string,
+ * where neither of the strings are necessarily NUL-terminated
+ * 
+ * @param   haystack    The string that should start with the other string
+ * @param   needle      The string the first string should start with
+ * @param   haystack_n  The length of `haystack`
+ * @param   needle_n    The length of `needle`
+ * @return              Whether the `haystack` begins with `needle`
+ */
+int startswith_n(const char* haystack, const char* needle, size_t haystack_n, size_t needle_n)
+{
+  size_t i;
+  if (haystack_n < needle_n)
+    return 0;
+  
+  for (i = 0; i < needle_n; i++)
+    if (haystack[i] != needle[i])
+      return 0;
+  
+  return 1;
 }
 

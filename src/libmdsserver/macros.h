@@ -77,6 +77,21 @@
   instructions                           \
   errno = pthread_mutex_unlock(&(mutex))
 
+/**
+ * Wrapper for `pthread_mutex_lock` and `pthread_mutex_unlock` with an embedded if-statement
+ * 
+ * @param  mutex:pthread_mutex_t  The mutex
+ * @parma  condition              The condition to test
+ * @param  instructions           The instructions to run while the mutex is locked
+ */
+#define with_mutex_if(mutex, condition, instructions)	\
+  errno = pthread_mutex_lock(&(mutex));			\
+  if (condition)					\
+    {							\
+      instructions					\
+    }							\
+  errno = pthread_mutex_unlock(&(mutex))
+
 
 /**
  * Return the maximum value of two values
@@ -293,6 +308,18 @@
  */
 #define xcalloc(var, elements, type)  \
   ((var = calloc(elements, sizeof(type))) == NULL)
+
+
+/**
+ * `remalloc` wrapper that returns whether the allocation was not successful
+ *  
+ * @param   var       The variable to which to assign the reallocation
+ * @param   elements  The number of elements to allocate
+ * @param   type      The data type of the elements for which to create an allocation
+ * @return  :int      Evaluates to true if an only if the allocation failed
+ */
+#define xrealloc(var, elements, type)  \
+  ((var = realloc(var, (elements) * sizeof(type))) == NULL)
 
 
 /**
