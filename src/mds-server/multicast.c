@@ -62,7 +62,7 @@ void multicast_destroy(multicast_t* restrict this)
  */
 size_t multicast_marshal_size(const multicast_t* restrict this)
 {
-  size_t rc = 5 * sizeof(size_t) + this->message_length * sizeof(char);
+  size_t rc = sizeof(int) + 5 * sizeof(size_t) + this->message_length * sizeof(char);
   size_t i;
   for (i = 0; i < this->interceptions_count; i++)
     rc += queued_interception_marshal_size();
@@ -79,8 +79,9 @@ size_t multicast_marshal_size(const multicast_t* restrict this)
  */
 size_t multicast_marshal(const multicast_t* restrict this, char* restrict data)
 {
-  size_t rc = 5 * sizeof(size_t);
+  size_t rc = sizeof(int) + 5 * sizeof(size_t);
   size_t i, n;
+  buf_set_next(data, int, MULTICAST_T_VERSION);
   buf_set_next(data, size_t, this->interceptions_count);
   buf_set_next(data, size_t, this->interceptions_ptr);
   buf_set_next(data, size_t, this->message_length);
@@ -112,6 +113,8 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data)
   size_t i, n;
   this->interceptions = NULL;
   this->message = NULL;
+  /* buf_get_next(data, int, MULTICAST_T_VERSION); */
+  buf_next(data, int, 1);
   buf_get_next(data, size_t, this->interceptions_count);
   buf_get_next(data, size_t, this->interceptions_ptr);
   buf_get_next(data, size_t, this->message_length);
@@ -143,7 +146,7 @@ size_t multicast_unmarshal_skip(char* restrict data)
 {
   size_t interceptions_count = buf_cast(data, size_t, 0);
   size_t message_length = buf_cast(data, size_t, 2);
-  size_t rc = 5 * sizeof(size_t) + message_length * sizeof(char);
+  size_t rc = sizeof(int) + 5 * sizeof(size_t) + message_length * sizeof(char);
   size_t n;
   while (interceptions_count--)
     {

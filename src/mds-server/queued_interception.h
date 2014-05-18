@@ -24,6 +24,8 @@
 #include <stdint.h>
 
 
+#define QUEUED_INTERCEPTION_T_VERSION  0
+
 /**
  * A queued interception
  */

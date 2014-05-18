@@ -22,6 +22,8 @@
 #include "queued_interception.h"
 
 
+#define MULTICAST_T_VERSION  0
+
 /**
  * Message multicast state
  */

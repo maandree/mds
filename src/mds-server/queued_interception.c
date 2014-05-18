@@ -28,7 +28,7 @@
  */
 size_t queued_interception_marshal_size(void)
 {
-  return sizeof(int64_t) + 2 * sizeof(int);
+  return sizeof(int64_t) + 3 * sizeof(int);
 }
 
 
@@ -41,6 +41,7 @@ size_t queued_interception_marshal_size(void)
  */
 size_t queued_interception_marshal(const queued_interception_t* restrict this, char* restrict data)
 {
+  buf_set_next(data, int, QUEUED_INTERCEPTION_T_VERSION);
   buf_set_next(data, int64_t, this->priority);
   buf_set_next(data, int, this->modifying);
   buf_set_next(data, int, this->client->socket_fd);
@@ -58,6 +59,8 @@ size_t queued_interception_marshal(const queued_interception_t* restrict this, c
 size_t queued_interception_unmarshal(queued_interception_t* restrict this, char* restrict data)
 {
   this->client = NULL;
+  /* buf_get_next(data, int, QUEUED_INTERCEPTION_T_VERSION); */
+  buf_next(data, int, 1);
   buf_get_next(data, int64_t, this->priority);
   buf_get_next(data, int, this->modifying);
   buf_get_next(data, int, this->socket_fd);

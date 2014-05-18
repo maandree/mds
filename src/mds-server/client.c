@@ -141,7 +141,7 @@ void client_destroy(client_t* restrict this)
  */
 size_t client_marshal_size(const client_t* restrict this)
 {
-  size_t n = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
+  size_t n = sizeof(ssize_t) + 3 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
   size_t i;
   
   n += mds_message_marshal_size(&(this->message));
@@ -166,6 +166,7 @@ size_t client_marshal_size(const client_t* restrict this)
 size_t client_marshal(const client_t* restrict this, char* restrict data)
 {
   size_t i, n;
+  buf_set_next(data, int, CLIENT_T_VERSION);
   buf_set_next(data, ssize_t, this->list_entry);
   buf_set_next(data, int, this->socket_fd);
   buf_set_next(data, int, this->open);
@@ -207,6 +208,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   this->modify_mutex_created = 0;
   this->modify_cond_created = 0;
   this->multicasts_count = 0;
+  /* buf_get_next(data, int, CLIENT_T_VERSION); */
+  buf_next(data, int, 1);
   buf_get_next(data, ssize_t, this->list_entry);
   buf_get_next(data, int, this->socket_fd);
   buf_get_next(data, int, this->open);
@@ -281,6 +284,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
 size_t client_unmarshal_skip(char* restrict data)
 {
   size_t n, c, rc = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
+  buf_next(data, int, 1);
   buf_next(data, ssize_t, 1);
   buf_next(data, int, 2);
   buf_next(data, uint64_t, 1);

@@ -30,6 +30,8 @@
 
 
 
+#define CLIENT_T_VERSION  0
+
 /**
  * Client information structure
  */

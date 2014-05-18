@@ -23,6 +23,8 @@
 #include <stdint.h>
 
 
+#define INTERCEPTION_CONDITION_T_VERSION  0
+
 /**
  * A condition for a message being intercepted by a client
  */
