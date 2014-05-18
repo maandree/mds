@@ -116,7 +116,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       /* Stage 0: headers. */
       if (this->stage == 0)
 	/* Read all headers that we have stored into the read buffer. */
-	while ((p = memchr(this->buffer, '\n', this->buffer_ptr)) != NULL)
+	while ((p = memchr(this->buffer, '\n', this->buffer_ptr * sizeof(char))) != NULL)
 	  {
 	    size_t len = (size_t)(p - this->buffer) + 1;
 	    char* header;
@@ -125,7 +125,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    if (len == 1)
 	      {
 		/* Remove the \n (end of empty line) we found from the buffer. */
-		memmove(this->buffer, this->buffer + 1, this->buffer_ptr -= 1);
+		memmove(this->buffer, this->buffer + 1, (this->buffer_ptr -= 1) * sizeof(char));
 		
 		/* Get the length of the payload. */
 		for (i = 0; i < this->header_count; i++)
@@ -186,16 +186,16 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    if (xmalloc(header, len, char))
 	      return -1;
 	    /* Copy the header data into the allocated header, */
-	    memcpy(header, this->buffer, len);
+	    memcpy(header, this->buffer, len * sizeof(char));
 	    /* and NUL-terminate it. */
 	    header[len - 1] = '\0';
 	    
 	    /* Remove the header data from the read buffer. */
-	    memmove(this->buffer, this->buffer + len, this->buffer_ptr -= len);
+	    memmove(this->buffer, this->buffer + len, (this->buffer_ptr -= len) * sizeof(char));
 	    
 	    /* Make sure the the header syntex is correct so the the
 	       program does not need to care about it. */
-	    if ((p = memchr(header, ':', len)) == NULL)
+	    if ((p = memchr(header, ':', len * sizeof(char))) == NULL)
 	      {
 		/* Buck you, rawmemchr should not segfault the program. */
 		free(header);
@@ -224,12 +224,12 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  size_t need = this->payload_size - this->payload_ptr;
 	  if (this->buffer_ptr <= need)
 	    /* If we have everything that we need, just copy it into the payload buffer. */
-	    memcpy(this->payload + this->payload_ptr, this->buffer, this->buffer_ptr);
+	    memcpy(this->payload + this->payload_ptr, this->buffer, this->buffer_ptr * sizeof(char));
 	  else
 	    {
 	      /* Otherwise, copy what we have, and remove it from the the read buffer. */
-	      memcpy(this->payload + this->payload_ptr, this->buffer, need);
-	      memmove(this->buffer, this->buffer + need, this->buffer_ptr - need);
+	      memcpy(this->payload + this->payload_ptr, this->buffer, need * sizeof(char));
+	      memmove(this->buffer, this->buffer + need, (this->buffer_ptr - need) * sizeof(char));
 	    }
 	  
 	  /* Keep track of how much we have read. */
