@@ -175,7 +175,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 		break;
 	      }
 	    
-	    /* Head have found a header. */
+	    /* We have found a header. */
 	    
 	    /* One every eighth heaer found with this function call,
 	       we prepare the header list for eight more headers so
