@@ -1112,6 +1112,7 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
       conds[n].header_hash = hash;
       conds[n].priority = priority;
       conds[n].modifying = modifying;
+      
       if (modifying && (nonmodifying >= 0))
 	{
 	  /* Optimisation: put conditions that are modifying
