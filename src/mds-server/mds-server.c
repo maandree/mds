@@ -1103,6 +1103,7 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
       if (conds == NULL)
 	{
 	  perror(*argv);
+	  free(condition);
 	  return;
 	}
       client->interception_conditions = conds; 
