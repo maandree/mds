@@ -108,6 +108,15 @@ void mds_message_zero_initialise(mds_message_t* restrict this);
 void mds_message_destroy(mds_message_t* restrict this);
 
 /**
+ * Extend the header list's allocation
+ * 
+ * @param   this    The message
+ * @param   extent  The number of additional entries
+ * @return          Zero on success, -1 on error
+ */
+int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
+
+/**
  * Read the next message from a file descriptor
  * 
  * @param   this  Memory slot in which to store the new message

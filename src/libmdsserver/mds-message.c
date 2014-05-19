@@ -89,6 +89,62 @@ void mds_message_destroy(mds_message_t* restrict this)
 
 
 /**
+ * Extend the header list's allocation
+ * 
+ * @param   this    The message
+ * @param   extent  The number of additional entries
+ * @return          Zero on success, -1 on error
+ */
+int mds_message_extend_headers(mds_message_t* restrict this, size_t extent)
+{
+  char** new_headers = this->headers;
+  if (xrealloc(new_headers, this->header_count + extent, char*))
+    return -1;
+  this->headers = new_headers;
+  return 0;
+}
+
+
+/**
+ * Extend the read buffer by way of doubling
+ * 
+ * @param   this  The message
+ * @return        Zero on success, -1 on error
+ */
+static int mds_message_extend_buffer(mds_message_t* restrict this)
+{
+  char* new_buf = this->buffer;
+  if (xrealloc(new_buf, this->buffer_size << 1, char))
+      return -1;
+  this->buffer = new_buf;
+  this->buffer_size <<= 1;
+  return 0;
+}
+
+
+/**
+ * Reset the header list and the payload
+ * 
+ * @param  this  The message
+ */
+static void reset_message(mds_message_t* restrict this)
+{
+  if (this->headers != NULL)
+    {
+      size_t i;
+      xfree(this->headers, this->header_count);
+      this->headers = NULL;
+    }
+  this->header_count = 0;
+  
+  free(this->payload);
+  this->payload = NULL;
+  this->payload_size = 0;
+  this->payload_ptr = 0;
+}
+
+
+/**
  * Read the headers the message and determine, and store, its payload's length
  * 
  * @param   this  The message
@@ -154,6 +210,68 @@ static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int 
 
 
 /**
+ * Remove the header–payload delimiter from the buffer,
+ * get the payload's size and allocate the payload
+ * 
+ * @param   this  The message
+ * @return        The return value follows the rules of `mds_message_read`
+ */
+static int initialise_payload(mds_message_t* restrict this)
+{
+  /* Remove the \n (end of empty line) we found from the buffer. */
+  unbuffer_beginning(this, 1, 1);
+  
+  /* Get the length of the payload. */
+  if (get_payload_length(this) < 0)
+    return -2; /* Malformated value, enters unrecoverable state. */
+  
+  /* Allocate the payload buffer. */
+  if (this->payload_size > 0)
+    if (xmalloc(this->payload, this->payload_size, char))
+      return -1;
+  
+  return 0;
+}
+
+
+/**
+ * Create a header from the buffer and store it
+ * 
+ * @param   this    The message
+ * @param   length  The length of the header, including LF-termination
+ * @return          The return value follows the rules of `mds_message_read`
+ */
+static int store_header(mds_message_t* restrict this, size_t length)
+{
+  char* header;
+  
+  /* Allocate the header. */
+  if (xmalloc(header, length, char))
+    return -1;
+  /* Copy the header data into the allocated header, */
+  memcpy(header, this->buffer, length * sizeof(char));
+  /* and NUL-terminate it. */
+  header[length - 1] = '\0';
+  
+  /* Remove the header data from the read buffer. */
+  unbuffer_beginning(this, length, 1);
+  
+  /* Make sure the the header syntax is correct so that
+     the program does not need to care about it. */
+  if (validate_header(header, length))
+    {
+      free(header);
+      return -2;
+    }
+  
+  /* Store the header in the header list. */
+  this->headers[this->header_count++] = header;
+  
+  return 0;
+}
+
+
+/**
  * Read the next message from a file descriptor
  * 
  * @param   this  Memory slot in which to store the new message
@@ -169,24 +287,15 @@ static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int 
 int mds_message_read(mds_message_t* restrict this, int fd)
 {
   size_t header_commit_buffer = 0;
+  int r;
+  
+#define try(INSTRUCTION)   if ((r = INSTRUCTION) < 0)  return r
   
   /* If we are at stage 2, we are done and it is time to start over.
-     This is important because the function coul have been interrupted. */
+     This is important because the function could have been interrupted. */
   if (this->stage == 2)
     {
-      if (this->headers != NULL)
-	{
-	  size_t i;
-	  xfree(this->headers, this->header_count);
-	  this->headers = NULL;
-	}
-      this->header_count = 0;
-      
-      free(this->payload);
-      this->payload = NULL;
-      this->payload_size = 0;
-      this->payload_ptr = 0;
-      
+      reset_message(this);
       this->stage = 0;
     }
   
@@ -196,76 +305,36 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       size_t n;
       ssize_t got;
       char* p;
+      size_t length;
       
       /* Stage 0: headers. */
-      if (this->stage == 0)
-	/* Read all headers that we have stored into the read buffer. */
-	while ((p = memchr(this->buffer, '\n', this->buffer_ptr * sizeof(char))) != NULL)
+      /* Read all headers that we have stored into the read buffer. */
+      while ((this->stage == 0) &&
+	     ((p = memchr(this->buffer, '\n', this->buffer_ptr * sizeof(char))) != NULL))
+	if ((length = (size_t)(p - this->buffer)))
 	  {
-	    size_t len = (size_t)(p - this->buffer) + 1;
-	    char* header;
-	    
-	    /* We have found an empty line, i.e. the end of the headers. */
-	    if (len == 1)
-	      {
-		/* Remove the \n (end of empty line) we found from the buffer. */
-		unbuffer_beginning(this, 1, 1);
-		
-		/* Get the length of the payload. */
-		if (get_payload_length(this) < 0)
-		  return -2; /* Malformated value, enters unrecoverable state. */
-		
-		/* Allocate the payload buffer. */
-		if (this->payload_size > 0)
-		  if (xmalloc(this->payload, this->payload_size, char))
-		    return -1;
-		
-		/* Mark end of stage, next stage is getting the payload. */
-		this->stage = 1;
-		
-		/* Stop searching for headers. */
-		break;
-	      }
-	    
 	    /* We have found a header. */
 	    
-	    /* One every eighth header found with this function call,
+	    /* On every eighth header found with this function call,
 	       we prepare the header list for eight more headers so
 	       that it does not need to be reallocated again and again. */
 	    if (header_commit_buffer == 0)
-	      {
-		char** old_headers = this->headers;
-		header_commit_buffer = 8;
-		n = this->header_count + header_commit_buffer;
-		if (xrealloc(this->headers, n, char*))
-		  {
-		    this->headers = old_headers;
-		    return -1;
-		  }
-	      }
+	      try (mds_message_extend_headers(this, header_commit_buffer = 8));
 	    
-	    /* Allocate the header. */
-	    if (xmalloc(header, len, char))
-	      return -1;
-	    /* Copy the header data into the allocated header, */
-	    memcpy(header, this->buffer, len * sizeof(char));
-	    /* and NUL-terminate it. */
-	    header[len - 1] = '\0';
-	    
-	    /* Remove the header data from the read buffer. */
-	    unbuffer_beginning(this, len, 1);
-	    
-	    /* Make sure the the header syntax is correct so that
-	       the program does not need to care about it. */
-	    if (validate_header(header, len))
-	      {
-		free(header);
-		return -2;
-	      }
-	    
-	    /* Store the header in the heaer list. */
-	    this->headers[this->header_count++] = header;
+	    /* Create and store header. */
+	    try (store_header(this, length + 1));
 	    header_commit_buffer -= 1;
+	  }
+	else
+	  {
+	    /* We have found an empty line, i.e. the end of the headers. */
+	    
+	    /* Remove the header–payload delimiter from the buffer,
+	       get the payload's size and allocate the payload. */
+	    try (initialise_payload(this));
+	    
+	    /* Mark end of stage, next stage is getting the payload. */
+	    this->stage = 1;
 	  }
       
       /* Stage 1: payload. */
@@ -274,30 +343,19 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  this->stage = 2;
 	  return 0;
 	}
-      if ((this->stage == 1) && (this->payload_size > 0)) /* FIXME: next message fails if not LF-terminated. */
+      if ((this->stage == 1) && (this->payload_size > 0))
 	{
 	  /* How much of the payload that has not yet been filled. */
 	  size_t need = this->payload_size - this->payload_ptr;
-	  if (this->buffer_ptr <= need)
-	    /* If we have everything that we need, just copy it into the payload buffer. */
-	    memcpy(this->payload + this->payload_ptr, this->buffer, this->buffer_ptr * sizeof(char));
-	  else
-	    {
-	      /* Otherwise, copy what we have, and remove it from the the read buffer. */
-	      memcpy(this->payload + this->payload_ptr, this->buffer, need * sizeof(char));
-	      unbuffer_beginning(this, need, 0);
-	    }
+	  /* How much we have of that what is needed. */
+	  size_t move = min(this->payload_ptr, need);
+	  
+	  /* Copy what we have, and remove it from the the read buffer. */
+	  memcpy(this->payload + this->payload_ptr, this->buffer, move * sizeof(char));
+	  unbuffer_beginning(this, move, 1);
 	  
 	  /* Keep track of how much we have read. */
-	  this->payload_ptr += this->buffer_ptr;
-	  if (this->buffer_ptr <= need)
-	    /* Reset the read pointer as the read buffer is empty now. */
-	    this->buffer_ptr = 0;
-	  else
-	    /* But if we head left over data that is for the next message,
-	       just move the pointer back as much as we read. (Which is
-	       actually what we do even we did not have excess data.) */
-	    this->buffer_ptr -= need;
+	  this->payload_ptr += move;
 	  
 	  /* If we have filled the payload, make the end of this stage,
 	     i.e. that the message is complete, and return with success. */
@@ -313,16 +371,11 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       /* Figure out how much space we have left in the read buffer. */
       n = this->buffer_size - this->buffer_ptr;
       
-      /* If we do not have too much left, grow the buffer, */
+      /* If we do not have too much left, */
       if (n < 128)
 	{
-	  char* old_buffer = this->buffer;
-	  if (xrealloc(this->buffer, this->buffer_size <<= 1, char))
-	    {
-	      this->buffer = old_buffer;
-	      this->buffer_size >>= 1;
-	      return -1;
-	    }
+	  /* grow the buffer, */
+	  try (mds_message_extend_buffer(this));
 	  
 	  /* and recalculate how much space we have left. */
 	  n = this->buffer_size - this->buffer_ptr;
@@ -340,6 +393,8 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  return -1;
 	}
     }
+  
+#undef try
 }
 
 
