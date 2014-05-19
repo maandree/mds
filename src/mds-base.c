@@ -19,6 +19,7 @@
 
 #include <libmdsserver/config.h>
 #include <libmdsserver/macros.h>
+#include <libmdsserver/util.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <signal.h>
 
 
 #define  try(INSTRUCTION)  if ((r = INSTRUCTION))  return r
@@ -137,9 +139,12 @@ int main(int argc_, char** argv_)
   exit_if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT,
 	   eprint("that number of arguments is ridiculous, I will not allow it."););
   
-  
   /* Parse command line arguments. */
   try (parse_cmdline());
+  
+  
+  /* Set up signal traps for all especially handled signals.  */
+  trap_signals();
   
   /* Connect to the display. */
   if (is_reexec == 0)
@@ -153,6 +158,28 @@ int main(int argc_, char** argv_)
   perror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
+  return 1;
+}
+
+
+/**
+ * Set up signal traps for all especially handled signals
+ * 
+ * @return  Non-zero on error
+ */
+int trap_signals(void)
+{
+  /* Make the server update without all slaves dying on SIGUSR1. */
+  fail_if (xsigaction(SIGUSR1, received_reexec) < 0);
+  
+  /* Implement clean exit on SIGTERM. */
+  fail_if (xsigaction(SIGTERM, received_terminate) < 0);
+  
+  /* Implement clean exit on SIGINT. */
+  fail_if (xsigaction(SIGINT, received_terminate) < 0);
+  
+  return 0;
+ pfail:
   return 1;
 }
 

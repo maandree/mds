@@ -36,7 +36,7 @@ typedef struct server_characteristics
  * This variable should declared by the actual server implementation.
  * It must be configured before `main` is invoked.
  * 
- * This tells the server-base how to behave.
+ * This tells the server-base how to behave
  */
 extern server_characteristics_t server_characteristics;
 
@@ -71,6 +71,35 @@ extern int is_reexec;
  */
 extern int socket_fd;
 
+
+
+/**
+ * Set up signal traps for all especially handled signals
+ * 
+ * @return  Non-zero on error
+ */
+int trap_signals(void);
+
+
+/**
+ * This function should be implemented by the actual server implementation
+ * 
+ * This function is called when a signal that
+ * signals the server to re-exec has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+extern void received_reexec(int signo);
+
+/**
+ * This function should be implemented by the actual server implementation
+ * 
+ * This function is called when a signal that
+ * signals the server to re-exec has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+extern void received_terminate(int signo);
 
 
 #endif
