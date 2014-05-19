@@ -89,6 +89,71 @@ void mds_message_destroy(mds_message_t* restrict this)
 
 
 /**
+ * Read the headers the message and determine, and store, its payload's length
+ * 
+ * @param   this  The message
+ * @return        Zero on success, negative on error (malformated message: unrecoverable state)
+ */
+static int get_payload_length(mds_message_t* restrict this)
+{
+  char* header;
+  size_t i;
+  
+  for (i = 0; i < this->header_count; i++)
+    if (strstr(this->headers[i], "Length: ") == this->headers[i])
+      {
+	/* Store the message length. */
+	header = this->headers[i] + strlen("Length: ");
+	this->payload_size = (size_t)atoll(header);
+	
+	/* Do not except a length that is not correctly formated. */
+	for (; *header; header++)
+	  if ((*header < '0') || ('9' < *header))
+	    return -2; /* Malformated value, enters unrecoverable state. */
+	
+	/* Stop searching for the ‘Length’ header, we have found and parsed it. */
+	break;
+      }
+  
+  return 0;
+}
+
+
+/**
+ * Verify that a header is correctly formated
+ * 
+ * @param   header  The header, must be NUL-terminated
+ * @param   length  The length of the header
+ * @return          Zero if valid, negative if invalid (malformated message: unrecoverable state)
+ */
+static int __attribute__((pure)) validate_header(const char* header, size_t length)
+{
+  char* p = memchr(header, ':', length * sizeof(char));
+  
+  if ((p == NULL) || /* Buck you, rawmemchr should not segfault the program. */
+      (p[1] != ' ')) /* Also an invalid format. ' ' is mandated after the ':'. */
+    return -2;
+  
+  return 0;
+}
+
+
+/**
+ * Remove the beginning of the read buffer
+ * 
+ * @param  this        The message
+ * @param  length      The number of characters to remove  
+ * @param  update_ptr  Whether to update the buffer pointer
+ */
+static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int update_ptr)
+{
+  memmove(this->buffer, this->buffer + length, (this->buffer_ptr - length) * sizeof(char));
+  if (update_ptr)
+    this->buffer_ptr -= length;
+}
+
+
+/**
  * Read the next message from a file descriptor
  * 
  * @param   this  Memory slot in which to store the new message
@@ -128,7 +193,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
   /* Read from file descriptor until we have a full message. */
   for (;;)
     {
-      size_t n, i;
+      size_t n;
       ssize_t got;
       char* p;
       
@@ -140,28 +205,15 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    size_t len = (size_t)(p - this->buffer) + 1;
 	    char* header;
 	    
-	    /* We have found an empty line, i.e. the end of the headers.*/
+	    /* We have found an empty line, i.e. the end of the headers. */
 	    if (len == 1)
 	      {
 		/* Remove the \n (end of empty line) we found from the buffer. */
-		memmove(this->buffer, this->buffer + 1, (this->buffer_ptr -= 1) * sizeof(char));
+		unbuffer_beginning(this, 1, 1);
 		
 		/* Get the length of the payload. */
-		for (i = 0; i < this->header_count; i++)
-		  if (strstr(this->headers[i], "Length: ") == this->headers[i])
-		    {
-		      /* Store the message length. */
-		      header = this->headers[i] + strlen("Length: ");
-		      this->payload_size = (size_t)atoll(header);
-		      
-		      /* Do not except a length that is not correctly formated. */
-		      for (; *header; header++)
-			if ((*header < '0') || ('9' < *header))
-			  return -2; /* Malformated value, enters unrecoverable state. */
-		      
-		      /* Stop searching for the ‘Length’ header, we have found and parsed it. */
-		      break;
-		    }
+		if (get_payload_length(this) < 0)
+		  return -2; /* Malformated value, enters unrecoverable state. */
 		
 		/* Allocate the payload buffer. */
 		if (this->payload_size > 0)
@@ -177,7 +229,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    
 	    /* We have found a header. */
 	    
-	    /* One every eighth heaer found with this function call,
+	    /* One every eighth header found with this function call,
 	       we prepare the header list for eight more headers so
 	       that it does not need to be reallocated again and again. */
 	    if (header_commit_buffer == 0)
@@ -188,11 +240,11 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 		if (xrealloc(this->headers, n, char*))
 		  {
 		    this->headers = old_headers;
-			return -1;
+		    return -1;
 		  }
 	      }
 	    
-	    /* Allocat the header.*/
+	    /* Allocate the header. */
 	    if (xmalloc(header, len, char))
 	      return -1;
 	    /* Copy the header data into the allocated header, */
@@ -201,17 +253,11 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    header[len - 1] = '\0';
 	    
 	    /* Remove the header data from the read buffer. */
-	    memmove(this->buffer, this->buffer + len, (this->buffer_ptr -= len) * sizeof(char));
+	    unbuffer_beginning(this, len, 1);
 	    
-	    /* Make sure the the header syntex is correct so the the
-	       program does not need to care about it. */
-	    if ((p = memchr(header, ':', len * sizeof(char))) == NULL)
-	      {
-		/* Buck you, rawmemchr should not segfault the program. */
-		free(header);
-		return -2;
-	      }
-	    if (p[1] != ' ') /* Also an invalid format. */
+	    /* Make sure the the header syntax is correct so that
+	       the program does not need to care about it. */
+	    if (validate_header(header, len))
 	      {
 		free(header);
 		return -2;
@@ -239,7 +285,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    {
 	      /* Otherwise, copy what we have, and remove it from the the read buffer. */
 	      memcpy(this->payload + this->payload_ptr, this->buffer, need * sizeof(char));
-	      memmove(this->buffer, this->buffer + need, (this->buffer_ptr - need) * sizeof(char));
+	      unbuffer_beginning(this, need, 0);
 	    }
 	  
 	  /* Keep track of how much we have read. */
