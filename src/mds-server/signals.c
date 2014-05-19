@@ -92,6 +92,23 @@ static void sigterm_trap(int signo)
 
 
 /**
+ * Called with the signal SIGINT is caught.
+ * This function should cue a termination of the program.
+ * 
+ * @param  signo  The caught signal
+ */
+static void sigint_trap(int signo)
+{
+  if (terminating == 0)
+    {
+      terminating = 1;
+      eprint("terminal interrupt signal received.");
+      signal_all(signo);
+    }
+}
+
+
+/**
  * Set up signal traps for all especially handled signals
  * 
  * @return  Zero on success, -1 on error
@@ -99,11 +116,16 @@ static void sigterm_trap(int signo)
 int trap_signals(void)
 {
   /* Make the server update without all slaves dying on SIGUSR1. */
-  if (xsigaction(SIGUSR1, sigusr1_trap) < 0)  return -1;
+  fail_if (xsigaction(SIGUSR1, sigusr1_trap) < 0);
   
   /* Implement clean exit on SIGTERM. */
-  if (xsigaction(SIGTERM, sigterm_trap) < 0)  return -1;
+  fail_if (xsigaction(SIGTERM, sigterm_trap) < 0);
+  
+  /* Implement clean exit on SIGINT. */
+  fail_if (xsigaction(SIGINT, sigint_trap) < 0);
   
   return 0;
+ pfail:
+  return -1;
 }
 
