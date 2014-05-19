@@ -105,8 +105,14 @@ assumed that the client's ID is 0:0.
 
 
 Clients automatically receives messages that is
-addressed to them with priority zero and mark that
+addressed to them with priority zero with a mark that
 it will not modify the message. To address a message
 to client include the header ‘To’ with the client's
 ID [that the message is addressed to] as the value.
+Furthermore, client's automatically receives messages
+that include the header ‘To: all’ — a broadcast. Since
+servers are clients too they will also receive these
+messages; there are two exceptions, the kernel and
+the master server, neither of which are servers proper,
+but rather a dual-layer kernel.
 

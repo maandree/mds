@@ -259,13 +259,19 @@ void* slave_loop(void* data)
   size_t information_address = fd_table_get(&client_map, (size_t)socket_fd);
   client_t* information = (client_t*)(void*)information_address;
   char* msgbuf = NULL;
+  char buf[] = "To: all";
   size_t n;
   int r;
   
   
-  /* Intiailsie the client. */
-  if (information == NULL)
-    fail_if ((information = initialise_client(socket_fd)) == NULL);
+  if (information == NULL) /* Did not re-exec. */
+    {
+      /* Initialise the client. */
+      fail_if ((information = initialise_client(socket_fd)) == NULL);
+      
+      /* Register client to receive broadcasts. */
+      add_intercept_condition(information, buf, 0, 0, 0);
+    }
   
   /* Store slave thread and create mutexes and conditions. */
   fail_if (client_initialise_threading(information));
