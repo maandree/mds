@@ -19,6 +19,9 @@
 #define MDS_MDS_BASE_H
 
 
+#include <pthread.h>
+
+
 /**
  * Characteristics of the server
  */
@@ -70,6 +73,11 @@ extern int is_reexec;
  * that is connected to the server
  */
 extern int socket_fd;
+
+/**
+ * The thread that runs the master loop
+ */
+extern pthread_t master_thread;
 
 
 

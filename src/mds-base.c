@@ -30,17 +30,19 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <signal.h>
+#include <pthread.h>
 
 
 #define  try(INSTRUCTION)  if ((r = INSTRUCTION))  return r
 
 
-int argc;
-char** argv;
+int argc = 0;
+char** argv = NULL;
 int is_respawn = 0;
 int is_reexec = 0;
 
 int socket_fd = -1;
+pthread_t master_thread;
 
 
 
@@ -143,8 +145,12 @@ int main(int argc_, char** argv_)
   try (parse_cmdline());
   
   
-  /* Set up signal traps for all especially handled signals.  */
+  /* Store the current thread so it can be killed from elsewhere. */
+  master_thread = pthread_self();
+  
+  /* Set up signal traps for all especially handled signals. */
   trap_signals();
+  
   
   /* Connect to the display. */
   if (is_reexec == 0)
