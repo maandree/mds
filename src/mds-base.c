@@ -49,6 +49,10 @@ int socket_fd = -1;
  */
 static int parse_cmdline(void)
 {
+#if (LIBEXEC_ARGC_EXTRA_LIMIT < 2)
+# error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 2.
+#endif
+  
   int i;
   for (i = 1; i < argc; i++)
     {
@@ -64,6 +68,8 @@ static int parse_cmdline(void)
 	}
       else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
 	is_reexec = 1;
+      else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
+	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
     }
   if (is_reexec)
     {
@@ -116,10 +122,6 @@ static int connect_to_display(void)
 int main(int argc_, char** argv_)
 {
   int r;
-  
-#if (LIBEXEC_ARGC_EXTRA_LIMIT < 2)
-# error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 2.
-#endif
   
   
   argc = argc_;

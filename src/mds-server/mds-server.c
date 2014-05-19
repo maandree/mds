@@ -63,7 +63,6 @@ int main(int argc_, char** argv_)
   int unparsed_args_ptr = 1;
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
-  pthread_t slave_thread;
   
 #if (LIBEXEC_ARGC_EXTRA_LIMIT < 3)
 # error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 3.
@@ -104,6 +103,8 @@ int main(int argc_, char** argv_)
 	}
       else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
 	reexec = 1;
+      else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
+	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
       else
 	/* Not recognised, it is probably for another server. */
 	unparsed_args[unparsed_args_ptr++] = arg;
@@ -183,28 +184,9 @@ int main(int argc_, char** argv_)
   
   /* Accepting incoming connections. */
   while (running && (terminating == 0))
-    {
-      /* Accept connection. */
-      int client_fd = accept(socket_fd, NULL, NULL);
-      if (client_fd >= 0)
-	{
-	  /* Increase number of running slaves. */
-	  with_mutex (slave_mutex, running_slaves++;);
-      
-	  /* Start slave thread. */
-	  create_slave(&slave_thread, client_fd);
-	}
-      else
-	/* Handle errors and shutdown. */
-	if ((errno == EINTR) && terminating) /* Interrupted for termination. */
-	  goto terminate;
-	else if ((errno == ECONNABORTED) || (errno == EINVAL)) /* Closing. */
-	  running = 0;
-	else if (errno != EINTR) /* Error. */
-	  perror(*argv);
-    }
+    if (accept_connection(socket_fd) == 1)
+      break;
   
- terminate:
   if (reexecing)
     goto reexec;
   
@@ -229,6 +211,39 @@ int main(int argc_, char** argv_)
  pfail:
   perror(*argv);
   return 1;
+}
+
+
+/**
+ * Accept an incoming and start a slave thread for it
+ * 
+ * @param   socket_fd  The file descriptor of the server socket
+ * @return             Zero normally, 1 if terminating
+ */
+int accept_connection(int socket_fd)
+{
+  pthread_t slave_thread;
+  int client_fd;
+  
+  /* Accept connection. */
+  client_fd = accept(socket_fd, NULL, NULL);
+  if (client_fd >= 0)
+    {
+      /* Increase number of running slaves. */
+      with_mutex (slave_mutex, running_slaves++;);
+      
+      /* Start slave thread. */
+      create_slave(&slave_thread, client_fd);
+    }
+  else
+    /* Handle errors and shutdown. */
+    if ((errno == EINTR) && terminating) /* Interrupted for termination. */
+      return 1;
+    else if ((errno == ECONNABORTED) || (errno == EINVAL)) /* Closing. */
+      running = 0;
+    else if (errno != EINTR) /* Error. */
+      perror(*argv);
+  return 0;
 }
 
 

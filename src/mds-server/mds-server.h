@@ -25,6 +25,14 @@
 
 
 /**
+ * Accept an incoming and start a slave thread for it
+ * 
+ * @param   socket_fd  The file descriptor of the server socket
+ * @return             Zero normally, 1 if terminating
+ */
+int accept_connection(int socket_fd);
+
+/**
  * Master function for slave threads
  * 
  * @param   data  Input data
