@@ -26,6 +26,9 @@
 #include <sys/socket.h>
 
 
+#define try(INSTRUCTION)   if ((r = INSTRUCTION) < 0)  return r
+
+
 /**
  * Initialise a message slot so that it can
  * be used by `mds_message_read`
@@ -272,10 +275,52 @@ static int store_header(mds_message_t* restrict this, size_t length)
 
 
 /**
- * Read the next message from a file descriptor
+ * Continue reading from the socket into the buffer
+ * 
+ * @param   this  The message
+ * @param   fd    The file descriptor of the socekt
+ * @return        The return value follows the rules of `mds_message_read`
+ */
+static int continue_read(mds_message_t* restrict this, int fd)
+{
+  size_t n;
+  ssize_t got;
+  int r;
+  
+  /* Figure out how much space we have left in the read buffer. */
+  n = this->buffer_size - this->buffer_ptr;
+  
+  /* If we do not have too much left, */
+  if (n < 128)
+    {
+      /* grow the buffer, */
+      try (mds_message_extend_buffer(this));
+	  
+      /* and recalculate how much space we have left. */
+      n = this->buffer_size - this->buffer_ptr;
+    }
+  
+  /* Then read from the socket. */
+  errno = 0;
+  got = recv(fd, this->buffer + this->buffer_ptr, n, 0);
+  this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
+  if (errno)
+    return -1;
+  if (got == 0)
+    {
+      errno = ECONNRESET;
+      return -1;
+    }
+  
+  return 0;
+}
+
+
+/**
+ * Read the next message from a file descriptor of the socekt
  * 
  * @param   this  Memory slot in which to store the new message
- * @param   fd    The file descriptor
+ * @param   fd    The file descriptor of the socekt
  * @return        Non-zero on error or interruption, errno will be
  *                set accordingly. Destroy the message on error,
  *                be aware that the reading could have been
@@ -289,8 +334,6 @@ int mds_message_read(mds_message_t* restrict this, int fd)
   size_t header_commit_buffer = 0;
   int r;
   
-#define try(INSTRUCTION)   if ((r = INSTRUCTION) < 0)  return r
-  
   /* If we are at stage 2, we are done and it is time to start over.
      This is important because the function could have been interrupted. */
   if (this->stage == 2)
@@ -302,8 +345,6 @@ int mds_message_read(mds_message_t* restrict this, int fd)
   /* Read from file descriptor until we have a full message. */
   for (;;)
     {
-      size_t n;
-      ssize_t got;
       char* p;
       size_t length;
       
@@ -337,12 +378,8 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	    this->stage = 1;
 	  }
       
+      
       /* Stage 1: payload. */
-      if ((this->stage == 1) && (this->payload_size == 0))
-	{
-	  this->stage = 2;
-	  return 0;
-	}
       if ((this->stage == 1) && (this->payload_size > 0))
 	{
 	  /* How much of the payload that has not yet been filled. */
@@ -356,45 +393,22 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  
 	  /* Keep track of how much we have read. */
 	  this->payload_ptr += move;
-	  
-	  /* If we have filled the payload, make the end of this stage,
-	     i.e. that the message is complete, and return with success. */
-	  if (this->payload_ptr == this->payload_size)
-	    {
-	      this->stage = 2;
-	      return 0;
-	    }
 	}
+      if ((this->stage == 1) && (this->payload_ptr == this->payload_size))
+	{
+	  /* If we have filled the payload (or there was no payload),
+	     mark the end of this stage, i.e. that the message is
+	     complete, and return with success. */
+	  this->stage = 2;
+	  return 0;
+	}
+      
       
       /* If stage 1 was not completed. */
       
-      /* Figure out how much space we have left in the read buffer. */
-      n = this->buffer_size - this->buffer_ptr;
-      
-      /* If we do not have too much left, */
-      if (n < 128)
-	{
-	  /* grow the buffer, */
-	  try (mds_message_extend_buffer(this));
-	  
-	  /* and recalculate how much space we have left. */
-	  n = this->buffer_size - this->buffer_ptr;
-	}
-      
-      /* Then read from the socket. */
-      errno = 0;
-      got = recv(fd, this->buffer + this->buffer_ptr, n, 0);
-      this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
-      if (errno)
-	return -1;
-      if (got == 0)
-	{
-	  errno = ECONNRESET;
-	  return -1;
-	}
+      /* Continue reading from the socket into the buffer. */
+      try (continue_read(this, fd));
     }
-  
-#undef try
 }
 
 
@@ -501,23 +515,19 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   /* Allocate header list, payload and read buffer. */
   
   if (header_count > 0)
-    if (xmalloc(this->headers, header_count, char*))
-      return -1;
+    fail_if (xmalloc(this->headers, header_count, char*));
   
   if (this->payload_size > 0)
-    if (xmalloc(this->payload, this->payload_size, char))
-      return -1;
+    fail_if (xmalloc(this->payload, this->payload_size, char));
   
-  if (xmalloc(this->buffer, this->buffer_size, char))
-    return -1;
+  fail_if (xmalloc(this->buffer, this->buffer_size, char));
   
   /* Fill the header list, payload and read buffer. */
   
   for (i = 0; i < this->header_count; i++)
     {
       n = strlen(data) + 1;
-      if (xmalloc(this->headers[i], n, char))
-	return -1;
+      fail_if (xmalloc(this->headers[i], n, char));
       memcpy(this->headers[i], data, n * sizeof(char));
       buf_next(data, char, n);
       this->header_count++;
@@ -529,6 +539,9 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   memcpy(this->buffer, data, this->buffer_ptr * sizeof(char));
   
   return 0;
+  
+ pfail:
+  return -1;
 }
 
 
@@ -571,4 +584,7 @@ void mds_message_compose(const mds_message_t* restrict this, char* restrict data
   if (this->payload_size > 0)
     memcpy(data, this->payload, this->payload_size * sizeof(char));
 }
+
+  
+#undef try
 
