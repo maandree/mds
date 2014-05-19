@@ -72,7 +72,7 @@ typedef struct mds_message
   /**
    * The number of bytes used in `buffer` (internal data)
    */
-  size_t buffer_ptr; /* TODO: would it be better to use a circular buffer? */
+  size_t buffer_ptr;
   
   /**
    * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
