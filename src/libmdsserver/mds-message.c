@@ -381,7 +381,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  n = this->buffer_size - this->buffer_ptr;
 	}
       
-      /* Then read from the file descriptor. */
+      /* Then read from the socket. */
       errno = 0;
       got = recv(fd, this->buffer + this->buffer_ptr, n, 0);
       this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
