@@ -76,7 +76,7 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 # Build rules.
 
 .PHONY: all
-all: bin/mds bin/mds-server bin/libmdsserver.so
+all: bin/mds bin/mds-server bin/libmdsserver.so obj/mds-base.o
 
 
 MDS_SERVER_OBJ_ = mds-server interception_condition client multicast  \
