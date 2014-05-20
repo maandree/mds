@@ -18,6 +18,8 @@
 #ifndef MDS_MDS_SERVER_GLOBALS_H
 #define MDS_MDS_SERVER_GLOBALS_H
 
+#include "../mds-base.h" /* Include here so other do not need to. */
+
 
 #include <libmdsserver/linked-list.h>
 #include <libmdsserver/hash-table.h>
@@ -34,31 +36,9 @@
 
 
 /**
- * Number of elements in `argv`
- */
-extern int argc;
-
-/**
- * Command line arguments
- */
-extern char** argv;
-
-
-/**
  * The program run state, 1 when running, 0 when shutting down
  */
 extern volatile sig_atomic_t running;
-
-/**
- * Non-zero when the program is about to re-exec.
- * Most at all times be at least as true as `terminating`.
- */
-extern volatile sig_atomic_t reexecing;
-
-/**
- * Non-zero when the program is about to terminate
- */
-extern volatile sig_atomic_t terminating;
 
 
 /**
@@ -75,11 +55,6 @@ extern pthread_mutex_t slave_mutex;
  * Condition for slave data
  */
 extern pthread_cond_t slave_cond;
-
-/**
- * The thread that runs the master loop
- */
-extern pthread_t master_thread;
 
 /**
  * Map from client socket file descriptor to all information (client_t)

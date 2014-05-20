@@ -35,19 +35,19 @@ int fetch_message(client_t* client);
 /**
  * Create, start and detache a slave thread
  * 
- * @param   thread     The address at where to store the thread
- * @param   socket_fd  The file descriptor of the slave's socket
- * @return             Zero on success, -1 on error, error message will have been printed
+ * @param   thread    The address at where to store the thread
+ * @param   slave_fd  The file descriptor of the slave's socket
+ * @return            Zero on success, -1 on error, error message will have been printed
  */
-int create_slave(pthread_t* thread_slot, int socket_fd);
+int create_slave(pthread_t* thread_slot, int slave_fd);
 
 /**
  * Initialise a client, except for threading
  * 
- * @param   socket_fd  The file descriptor of the client's socket
+ * @param   client_fd  The file descriptor of the client's socket
  * @return             The client information, NULL on error
  */
-client_t* initialise_client(int socket_fd);
+client_t* initialise_client(int client_fd);
 
 
 #endif

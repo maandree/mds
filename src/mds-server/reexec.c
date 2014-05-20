@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "reexec.h"
 
 #include "globals.h"
 #include "client.h"
@@ -41,51 +40,74 @@
 #include <string.h>
 
 
+
 /**
- * Marshal the server's state into a file
+ * Calculate the number of bytes that will be stored by `marshal_server`
  * 
- * @param   fd  The file descriptor
- * @return      Negative on error
+ * On failure the program should `abort()` or exit by other means.
+ * However it should not be possible for this function to fail.
+ * 
+ * @return  The number of bytes that will be stored by `marshal_server`
  */
-int marshal_server(int fd)
+size_t marshal_server_size(void)
 {
   size_t list_size = linked_list_marshal_size(&client_list);
   size_t map_size = fd_table_marshal_size(&client_map);
   size_t list_elements = 0;
   size_t state_n = 0;
-  char* state_buf = NULL;
-  char* state_buf_;
   ssize_t node;
   
-  
   /* Calculate the grand size of all client information. */
-  for (node = client_list.edge;; list_elements++)
+  foreach_linked_list_node (client_list, node)
     {
-      if ((node = client_list.next[node]) == client_list.edge)
-	break;
       state_n += client_marshal_size((client_t*)(void*)(client_list.values[node]));
+      list_elements++;
     }
   
   /* Add the size of the rest of the program's state. */
   state_n += sizeof(int) + sizeof(sig_atomic_t) + 2 * sizeof(uint64_t) + 2 * sizeof(size_t);
   state_n += list_elements * sizeof(size_t) + list_size + map_size;
   
-  /* Allocate a buffer for all data. */
-  state_buf = state_buf_ = malloc(state_n);
-  fail_if (state_buf == NULL);
+  return state_n;
+}
+
+
+/**
+ * Marshal server implementation specific data into a buffer
+ * 
+ * @param   state_buf  The buffer for the marshalled data
+ * @return             Non-zero on error
+ */
+int marshal_server(char* state_buf)
+{
+  size_t list_size = linked_list_marshal_size(&client_list);
+  size_t list_elements = 0;
+  ssize_t node;
   
+  
+  /* Release resources. */
+  pthread_mutex_destroy(&slave_mutex);
+  pthread_cond_destroy(&slave_cond);
+  pthread_mutex_destroy(&modify_mutex);
+  pthread_cond_destroy(&modify_cond);
+  hash_table_destroy(&modify_map, NULL, NULL);
+  
+  
+  /* Count the number of clients that online. */
+  foreach_linked_list_node (client_list, node)
+    list_elements++;
   
   /* Tell the new version of the program what version of the program it is marshalling. */
-  buf_set_next(state_buf_, int, MDS_SERVER_VARS_VERSION);
+  buf_set_next(state_buf, int, MDS_SERVER_VARS_VERSION);
   
   /* Marshal the miscellaneous state data. */
-  buf_set_next(state_buf_, sig_atomic_t, running);
-  buf_set_next(state_buf_, uint64_t, next_client_id);
-  buf_set_next(state_buf_, uint64_t, next_modify_id);
+  buf_set_next(state_buf, sig_atomic_t, running);
+  buf_set_next(state_buf, uint64_t, next_client_id);
+  buf_set_next(state_buf, uint64_t, next_modify_id);
   
   /* Tell the program how large the marshalled client list is and how any clients are marshalled. */
-  buf_set_next(state_buf_, size_t, list_size);
-  buf_set_next(state_buf_, size_t, list_elements);
+  buf_set_next(state_buf, size_t, list_size);
+  buf_set_next(state_buf, size_t, list_elements);
   
   /* Marshal the clients. */
   foreach_linked_list_node (client_list, node)
@@ -96,27 +118,28 @@ int marshal_server(int fd)
       client_t* value = (client_t*)(void*)value_address;
       
       /* Marshal the address, it is used the the client list and the client map, that will be marshalled. */
-      buf_set_next(state_buf_, size_t, value_address);
+      buf_set_next(state_buf, size_t, value_address);
       /* Marshal the client informationation. */
-      state_buf_ += client_marshal(value, state_buf_) / sizeof(char);
+      state_buf += client_marshal(value, state_buf) / sizeof(char);
     }
   
   /* Marshal the client list. */
-  linked_list_marshal(&client_list, state_buf_);
-  state_buf_ += list_size / sizeof(char);
+  linked_list_marshal(&client_list, state_buf);
+  state_buf += list_size / sizeof(char);
   /* Marshal the client map. */
-  fd_table_marshal(&client_map, state_buf_);
+  fd_table_marshal(&client_map, state_buf);
   
-  /* Send the marshalled data into the file. */
-  fail_if (full_write(fd, state_buf, state_n) < 0);
-  free(state_buf);
+  
+  /* Release resources. */
+  foreach_linked_list_node (client_list, node)
+    {
+      client_t* client = (client_t*)(void*)(client_list.values[node]);
+      client_destroy(client);
+    }
+  fd_table_destroy(&client_map, NULL, NULL);
+  linked_list_destroy(&client_list);
   
   return 0;
-  
- pfail:
-  perror(*argv);
-  free(state_buf);
-  return -1;
 }
 
 
@@ -136,17 +159,16 @@ static size_t unmarshal_remapper(size_t old)
   return hash_table_get(&unmarshal_remap_map, old);
 }
 
+
 /**
- * Unmarshal the server's state from a file
+ * Unmarshal server implementation specific data and update the servers state accordingly
  * 
- * @param   fd  The file descriptor
- * @return      Negative on error
+ * @param   state_buf  The marshalled data that as not been read already
+ * @return             Non-zero on error
  */
-int unmarshal_server(int fd)
+int unmarshal_server(char* state_buf)
 {
   int with_error = 0;
-  char* state_buf;
-  char* state_buf_;
   size_t list_size;
   size_t list_elements;
   size_t i;
@@ -154,35 +176,27 @@ int unmarshal_server(int fd)
   pthread_t slave_thread;
   
   
-  /* Read the file. */
-  if ((state_buf = state_buf_ = full_read(fd)) == NULL)
-    {
-      perror(*argv);
-      return -1;
-    }
-  
   /* Create memory address remapping table. */
   if (hash_table_create(&unmarshal_remap_map))
     {
       perror(*argv);
-      free(state_buf);
       hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
       return -1;
     }
   
   
   /* Get the marshal protocal version. Not needed, there is only the one version right now. */
-  /* buf_get(state_buf_, int, 0, MDS_SERVER_VARS_VERSION); */
-  buf_next(state_buf_, int, 1);
+  /* buf_get(state_buf, int, 0, MDS_SERVER_VARS_VERSION); */
+  buf_next(state_buf, int, 1);
   
   /* Unmarshal the miscellaneous state data. */
-  buf_get_next(state_buf_, sig_atomic_t, running);
-  buf_get_next(state_buf_, uint64_t, next_client_id);
-  buf_get_next(state_buf_, uint64_t, next_modify_id);
+  buf_get_next(state_buf, sig_atomic_t, running);
+  buf_get_next(state_buf, uint64_t, next_client_id);
+  buf_get_next(state_buf, uint64_t, next_modify_id);
   
   /* Get the marshalled size of the client list and how any clients that are marshalled. */
-  buf_get_next(state_buf_, size_t, list_size);
-  buf_get_next(state_buf_, size_t, list_elements);
+  buf_get_next(state_buf, size_t, list_size);
+  buf_get_next(state_buf, size_t, list_elements);
   
   /* Unmarshal the clients. */
   for (i = 0; i < list_elements; i++)
@@ -196,9 +210,9 @@ int unmarshal_server(int fd)
 	goto clients_fail;
       
       /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
-      buf_get_next(state_buf_, size_t, value_address);
+      buf_get_next(state_buf, size_t, value_address);
       /* Unmarshal the client information. */
-      n = client_unmarshal(value, state_buf_);
+      n = client_unmarshal(value, state_buf);
       if (n == 0)
 	goto clients_fail;
       
@@ -208,7 +222,7 @@ int unmarshal_server(int fd)
 	  goto clients_fail;
       
       /* Delayed seeking. */
-      state_buf_ += n / sizeof(char);
+      state_buf += n / sizeof(char);
       
       
       /* On error, seek past all clients. */
@@ -218,28 +232,25 @@ int unmarshal_server(int fd)
       with_error = 1;
       if (value != NULL)
 	{
-	  buf_prev(state_buf_, size_t, 1);
+	  buf_prev(state_buf, size_t, 1);
 	  free(value);
 	}
       for (; i < list_elements; i++)
 	/* There is not need to close the sockets, it is done by
 	   the caller because there are conditions where we cannot
 	   get here anyway. */
-	state_buf_ += client_unmarshal_skip(state_buf_) / sizeof(char);
+	state_buf += client_unmarshal_skip(state_buf) / sizeof(char);
       break;
     }
   
   /* Unmarshal the client list. */
-  if (linked_list_unmarshal(&client_list, state_buf_))
+  if (linked_list_unmarshal(&client_list, state_buf))
     goto critical_fail;
-  state_buf_ += list_size / sizeof(char);
+  state_buf += list_size / sizeof(char);
   
   /* Unmarshal the client map. */
-  if (fd_table_unmarshal(&client_map, state_buf_, unmarshal_remapper))
+  if (fd_table_unmarshal(&client_map, state_buf, unmarshal_remapper))
     goto critical_fail;
-  
-  /* Release the raw data. */
-  free(state_buf);
   
   /* Remove non-found elements from the fd table. */
 #define __bit(I, _OP_)  client_map.used[I / 64] _OP_ ((uint64_t)1 << (I % 64))
@@ -262,21 +273,22 @@ int unmarshal_server(int fd)
 	{
 	  /* Start the clients. (Errors do not need to be reported.) */
 	  client_t* client = (client_t*)(void*)new_address;
-	  int socket_fd = client->socket_fd;
+	  int slave_fd = client->socket_fd;
 	  
 	  /* Increase number of running slaves. */
 	  with_mutex (slave_mutex, running_slaves++;);
 	  
 	  /* Start slave thread. */
-	  create_slave(&slave_thread, socket_fd);
+	  create_slave(&slave_thread, slave_fd);
 	}
     }
   
   /* Release the remapping table's resources. */
   hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
   
-  return -with_error;
-
+  return with_error;
+  
+  
  critical_fail:
   perror(*argv);
   abort();
@@ -284,94 +296,15 @@ int unmarshal_server(int fd)
 
 
 /**
- * Marshal and re-execute the server
+ * Attempt to recover from an re-exec failure that has been
+ * detected after the server successfully updated it execution image
  * 
- * @param  reexec  Whether the server was previously re-executed
+ * @return  Non-zero on error
  */
-void perform_reexec(int reexec)
+int reexec_failure_recover(void)
 {
-  pid_t pid = getpid();
-  int reexec_fd;
-  char shm_path[NAME_MAX + 1];
-  ssize_t node;
-  
-  /* Join with all slaves threads. */
-  with_mutex (slave_mutex,
-	      while (running_slaves > 0)
-		pthread_cond_wait(&slave_cond, &slave_mutex););
-  
-  /* Release resources. */
-  pthread_mutex_destroy(&slave_mutex);
-  pthread_cond_destroy(&slave_cond);
-  pthread_mutex_destroy(&modify_mutex);
-  pthread_cond_destroy(&modify_cond);
-  hash_table_destroy(&modify_map, NULL, NULL);
-  
-  /* Marshal the state of the server. */
-  xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
-  reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-  if (reexec_fd < 0)
-    {
-      perror(*argv);
-      return;
-    }
-  fail_if (marshal_server(reexec_fd) < 0);
-  close(reexec_fd);
-  reexec_fd = -1;
-  
-  /* Release resources. */
-  foreach_linked_list_node (client_list, node)
-    {
-      client_t* client = (client_t*)(void*)(client_list.values[node]);
-      client_destroy(client);
-    }
-  fd_table_destroy(&client_map, NULL, NULL);
-  linked_list_destroy(&client_list);
-  
-  /* Re-exec the server. */
-  reexec_server(argc, argv, reexec);
-  
- pfail:
-  perror(*argv);
-  if (reexec_fd >= 0)
-    close(reexec_fd);
-  shm_unlink(shm_path);
-}
-
-
-/**
- * Attempt to reload the server after a re-execution
- * 
- * @param  socket_fd  The file descriptor of the server socket
- */
-void complete_reexec(int socket_fd)
-{
-  pid_t pid = getpid();
-  int reexec_fd, r;
-  char shm_path[NAME_MAX + 1];
-  
-  /* Acquire access to marshalled data. */
-  xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
-  reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
-  fail_if (reexec_fd < 0); /* Critical. */
-  
-  /* Unmarshal state. */
-  r = unmarshal_server(reexec_fd);
-  
-  /* Close and unlink marshalled data. */
-  close(reexec_fd);
-  shm_unlink(shm_path);
-  
-  /* Recover after failure. */
-  if (r < 0)
-    {
-      /* Close all files (hopefully sockets) we do not know what they are. */
-      close_files((fd > 2) && (fd != socket_fd) && (fd_table_contains_key(&client_map, fd) == 0));
-    }
-  
-  return;
- pfail:
-  perror(*argv);
-  abort();
+  /* Close all files (hopefully sockets) we do not know what they are. */
+  close_files((fd > 2) && (fd != socket_fd) && (fd_table_contains_key(&client_map, fd) == 0));
+  return 0;
 }
 

@@ -138,6 +138,16 @@ extern void received_terminate(int signo);
 /**
  * This function should be implemented by the actual server implementation
  * 
+ * This function will be invoked before `initialise_server` (if not re-exec:ing)
+ * or before `unmarshal_server` (if re-exec:ing)
+ * 
+ * @return  Non-zero on error
+ */
+extern int preinitialise_server(void);
+
+/**
+ * This function should be implemented by the actual server implementation
+ * 
  * This function should initialise the server,
  * and it not invoked after a re-exec.
  * 
@@ -148,12 +158,24 @@ extern int initialise_server(void);
 /**
  * This function should be implemented by the actual server implementation
  * 
- * Unmarshal server implementation specific data and update the servers state accordingly
+ * This function will be invoked asgter `initialise_server` (if not re-exec:ing)
+ * or after `unmarshal_server` (if re-exec:ing)
  * 
- * @param   state_buf  The marshalled data that as not been read already
- * @return             Non-zero on error
+ * @return  Non-zero on error
  */
-extern int unmarshal_server(char* state_buf);
+extern int postinitialise_server(void);
+
+/**
+ * This function should be implemented by the actual server implementation
+ * 
+ * Calculate the number of bytes that will be stored by `marshal_server`
+ * 
+ * On failure the program should `abort()` or exit by other means.
+ * However it should not be possible for this function to fail.
+ * 
+ * @return  The number of bytes that will be stored by `marshal_server`
+ */
+extern size_t marshal_server_size(void) __attribute__((pure));
 
 /**
  * This function should be implemented by the actual server implementation
@@ -168,14 +190,12 @@ extern int marshal_server(char* state_buf);
 /**
  * This function should be implemented by the actual server implementation
  * 
- * Calculate the number of bytes that will be stored by `marshal_server`
+ * Unmarshal server implementation specific data and update the servers state accordingly
  * 
- * On failure the program should `abort()` or exit by other means.
- * However it should not be possible for this function to fail.
- * 
- * @return  The number of bytes that will be stored by `marshal_server`
+ * @param   state_buf  The marshalled data that as not been read already
+ * @return             Non-zero on error
  */
-extern size_t marshal_server_size(void);
+extern int unmarshal_server(char* state_buf);
 
 /**
  * This function should be implemented by the actual server implementation
@@ -186,7 +206,6 @@ extern size_t marshal_server_size(void);
  * @return  Non-zero on error
  */
 extern int reexec_failure_recover(void);
-
 
 /**
  * This function should be implemented by the actual server implementation

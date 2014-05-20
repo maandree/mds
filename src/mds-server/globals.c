@@ -18,17 +18,11 @@
 #include "globals.h"
 
 
-int argc;
-char** argv;
-
 volatile sig_atomic_t running = 1;
-volatile sig_atomic_t reexecing = 0;
-volatile sig_atomic_t terminating = 0;
 
 size_t running_slaves = 0;
 pthread_mutex_t slave_mutex;
 pthread_cond_t slave_cond;
-pthread_t master_thread;
 fd_table_t client_map;
 linked_list_t client_list;
 uint64_t next_client_id = 1;

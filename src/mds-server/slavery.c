@@ -71,13 +71,13 @@ int fetch_message(client_t* client)
 /**
  * Create, start and detache a slave thread
  * 
- * @param   thread     The address at where to store the thread
- * @param   socket_fd  The file descriptor of the slave's socket
- * @return             Zero on success, -1 on error, error message will have been printed
+ * @param   thread    The address at where to store the thread
+ * @param   slave_fd  The file descriptor of the slave's socket
+ * @return            Zero on success, -1 on error, error message will have been printed
  */
-int create_slave(pthread_t* thread_slot, int socket_fd)
+int create_slave(pthread_t* thread_slot, int slave_fd)
 {
-  if ((errno = pthread_create(thread_slot, NULL, slave_loop, (void*)(intptr_t)socket_fd)))
+  if ((errno = pthread_create(thread_slot, NULL, slave_loop, (void*)(intptr_t)slave_fd)))
     {
       perror(*argv);
       with_mutex (slave_mutex, running_slaves--;);
@@ -95,10 +95,10 @@ int create_slave(pthread_t* thread_slot, int socket_fd)
 /**
  * Initialise a client, except for threading
  * 
- * @param   socket_fd  The file descriptor of the client's socket
+ * @param   client_fd  The file descriptor of the client's socket
  * @return             The client information, NULL on error
  */
-client_t* initialise_client(int socket_fd)
+client_t* initialise_client(int client_fd)
 {
   ssize_t entry = LINKED_LIST_UNUSED;
   int locked = 0;
@@ -117,14 +117,14 @@ client_t* initialise_client(int socket_fd)
   fail_if (entry == LINKED_LIST_UNUSED);
   
   /* Add client to table. */
-  tmp = fd_table_put(&client_map, socket_fd, (size_t)(void*)information);
+  tmp = fd_table_put(&client_map, client_fd, (size_t)(void*)information);
   fail_if ((tmp == 0) && errno);
   pthread_mutex_unlock(&slave_mutex);
   locked = 0;
   
   /* Fill information table. */
   information->list_entry = entry;
-  information->socket_fd = socket_fd;
+  information->socket_fd = client_fd;
   information->open = 1;
   fail_if (mds_message_initialise(&(information->message)));
   

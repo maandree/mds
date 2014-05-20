@@ -58,11 +58,14 @@ int socket_fd = -1;
  */
 static int parse_cmdline(void)
 {
+  int i;
+  
 #if (LIBEXEC_ARGC_EXTRA_LIMIT < 2)
 # error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 2.
 #endif
   
-  int i;
+  
+  /* Parse command line arguments. */
   for (i = 1; i < argc; i++)
     {
       char* arg = argv[i];
@@ -85,6 +88,12 @@ static int parse_cmdline(void)
       is_respawn = 1;
       eprint("re-exec performed.");
     }
+  
+  /* Check that manditory arguments have been specified. */
+  exit_if (is_respawn < 0,
+	   eprintf("missing state argument, require either %s or %s.",
+		   "--initial-spawn", "--respawn"););
+  
   return 0;
 }
 
@@ -199,17 +208,18 @@ static int base_marshal(int reexec_fd)
   
   /* Store the state. */
   buf_set_next(state_buf_, int, socket_fd);
-  marshal_server(state_buf_);
+  fail_if (marshal_server(state_buf_));
   
   
   /* Send the marshalled data into the file. */
   fail_if (full_write(reexec_fd, state_buf, state_n) < 0);
-  free(state_buf);
   
+  free(state_buf);
   return 0;
   
  pfail:
   perror(*argv);
+  free(state_buf);
   return 1;
 }
 
@@ -285,6 +295,9 @@ int main(int argc_, char** argv_)
   trap_signals();
   
   
+  /* Initialise the server. */
+  try (preinitialise_server());
+  
   if (is_reexec == 0)
     {
       if (server_characteristics.require_display)
@@ -299,6 +312,9 @@ int main(int argc_, char** argv_)
       /* Unmarshal the server's saved state. */
       try (base_unmarshal());
     }
+  
+  /* Initialise the server. */
+  try (postinitialise_server());
   
   
   /* Run the server. */

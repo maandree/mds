@@ -15,20 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "signals.h"
 
 #include "globals.h"
 #include "client.h"
 
 #include <libmdsserver/linked-list.h>
 #include <libmdsserver/macros.h>
-#include <libmdsserver/util.h>
 
 #include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
 #include <pthread.h>
-#include <signal.h>
+#include <errno.h>
 
 
 /**
@@ -58,12 +54,14 @@ static void signal_all(int signo)
 
 
 /**
- * Called with the signal SIGUSR1 is caught.
- * This function should cue a re-exec of the program.
+ * This function is called when a signal that
+ * signals the server to re-exec has been received
  * 
- * @param  signo  The caught signal
+ * When this function is invoked, it should set `reexecing` to a non-zero value
+ * 
+ * @param  signo  The signal that has been received
  */
-static void sigusr1_trap(int signo)
+void received_reexec(int signo)
 {
   if (reexecing == 0)
     {
@@ -75,12 +73,14 @@ static void sigusr1_trap(int signo)
 
 
 /**
- * Called with the signal SIGTERM is caught.
- * This function should cue a termination of the program.
+ * This function is called when a signal that
+ * signals the server to re-exec has been received
  * 
- * @param  signo  The caught signal
+ * When this function is invoked, it should set `terminating` to a non-zero value
+ * 
+ * @param  signo  The signal that has been received
  */
-static void sigterm_trap(int signo)
+void received_terminate(int signo)
 {
   if (terminating == 0)
     {
@@ -88,44 +88,5 @@ static void sigterm_trap(int signo)
       eprint("terminate signal received.");
       signal_all(signo);
     }
-}
-
-
-/**
- * Called with the signal SIGINT is caught.
- * This function should cue a termination of the program.
- * 
- * @param  signo  The caught signal
- */
-static void sigint_trap(int signo)
-{
-  if (terminating == 0)
-    {
-      terminating = 1;
-      eprint("terminal interrupt signal received.");
-      signal_all(signo);
-    }
-}
-
-
-/**
- * Set up signal traps for all especially handled signals
- * 
- * @return  Zero on success, -1 on error
- */
-int trap_signals(void)
-{
-  /* Make the server update without all slaves dying on SIGUSR1. */
-  fail_if (xsigaction(SIGUSR1, sigusr1_trap) < 0);
-  
-  /* Implement clean exit on SIGTERM. */
-  fail_if (xsigaction(SIGTERM, sigterm_trap) < 0);
-  
-  /* Implement clean exit on SIGINT. */
-  fail_if (xsigaction(SIGINT, sigint_trap) < 0);
-  
-  return 0;
- pfail:
-  return -1;
 }
 

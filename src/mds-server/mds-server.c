@@ -22,11 +22,9 @@
 #include "client.h"
 #include "queued_interception.h"
 #include "multicast.h"
-#include "signals.h"
 #include "interceptors.h"
 #include "sending.h"
 #include "slavery.h"
-#include "reexec.h"
 #include "receiving.h"
 
 #include <libmdsserver/config.h>
@@ -47,19 +45,41 @@
 #include <inttypes.h>
 
 
+/**
+ * This variable should declared by the actual server implementation.
+ * It must be configured before `main` is invoked.
+ * 
+ * This tells the server-base how to behave
+ */
+server_characteristics_t server_characteristics =
+  {
+    .require_privileges = 0,
+    .require_display = 0 /* We will service one ourself. */
+  };
+
+
+
+#define __free(I)                                           \
+  if (I >  0)  pthread_mutex_destroy(&slave_mutex);         \
+  if (I >  1)  pthread_cond_destroy(&slave_cond);           \
+  if (I >  2)  pthread_mutex_destroy(&modify_mutex);        \
+  if (I >  3)  pthread_cond_destroy(&modify_cond);          \
+  if (I >= 4)  hash_table_destroy(&modify_map, NULL, NULL); \
+  if (I >= 5)  fd_table_destroy(&client_map, NULL, NULL);   \
+  if (I >= 6)  linked_list_destroy(&client_list)
+  
+#define error_if(I, CONDITION)  \
+  if (CONDITION)  { perror(*argv); __free(I); return 1; }
+
 
 /**
- * Entry point of the server
+ * This function will be invoked before `initialise_server` (if not re-exec:ing)
+ * or before `unmarshal_server` (if re-exec:ing)
  * 
- * @param   argc_  Number of elements in `argv_`
- * @param   argv_  Command line arguments
- * @return         Non-zero on error
+ * @return  Non-zero on error
  */
-int main(int argc_, char** argv_)
+int preinitialise_server(void)
 {
-  int is_respawn = -1;
-  int socket_fd = -1;
-  int reexec = 0;
   int unparsed_args_ptr = 1;
   char* unparsed_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
   int i;
@@ -69,58 +89,27 @@ int main(int argc_, char** argv_)
 #endif
   
   
-  argc = argc_;
-  argv = argv_;
-  
-  
-  /* Drop privileges like it's hot. */
-  fail_if (drop_privileges());
-  
-  /* Sanity check the number of command line arguments. */
-  exit_if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT,
-	   eprint("that number of arguments is ridiculous, I will not allow it."););
-  
-  
   /* Parse command line arguments. */
   for (i = 1; i < argc; i++)
     {
       char* arg = argv[i];
-      int v;
-      if ((v = strequals(arg, "--initial-spawn")) || /* Initial spawn? */
-	  strequals(arg, "--respawn"))               /* Respawning after crash? */
-	{
-	  exit_if (is_respawn == v,
-		   eprintf("conflicting arguments %s and %s cannot be combined.",
-			   "--initial-spawn", "--respawn"););
-	  is_respawn = !v;
-	}
-      else if (startswith(arg, "--socket-fd=")) /* Socket file descriptor. */
+      if (startswith(arg, "--socket-fd=")) /* Socket file descriptor. */
 	{
 	  exit_if (socket_fd != -1,
 		   eprintf("duplicate declaration of %s.", "--socket-fd"););
 	  exit_if (strict_atoi(arg += strlen("--socket-fd="), &socket_fd, 0, INT_MAX) < 0,
 		   eprintf("invalid value for %s: %s.", "--socket-fd", arg););
 	}
-      else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
-	reexec = 1;
       else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
 	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
       else
-	/* Not recognised, it is probably for another server. */
-	unparsed_args[unparsed_args_ptr++] = arg;
+	if (!strequals(arg, "--initial-spawn") && !strequals(arg, "--respawn"))
+	  /* Not recognised, it is probably for another server. */
+	  unparsed_args[unparsed_args_ptr++] = arg;
     }
   unparsed_args[unparsed_args_ptr] = NULL;
-  if (reexec)
-    {
-      is_respawn = 1;
-      eprint("re-exec performed.");
-    }
-  
   
   /* Check that manditory arguments have been specified. */
-  exit_if (is_respawn < 0,
-	   eprintf("missing state argument, require either %s or %s.",
-		   "--initial-spawn", "--respawn"););
   exit_if (socket_fd < 0,
 	   eprint("missing socket file descriptor argument."););
   
@@ -142,71 +131,18 @@ int main(int argc_, char** argv_)
 	}
     }
   
-#define __free(I) \
-  if (I >= 0)  fd_table_destroy(&client_map, NULL, NULL);  \
-  if (I >= 1)  linked_list_destroy(&client_list);          \
-  if (I >= 2)  pthread_mutex_destroy(&slave_mutex);        \
-  if (I >= 3)  pthread_cond_destroy(&slave_cond);          \
-  if (I >= 4)  pthread_mutex_destroy(&modify_mutex);       \
-  if (I >= 5)  pthread_cond_destroy(&modify_cond);         \
-  if (I >= 6)  hash_table_destroy(&modify_map, NULL, NULL)
-  
-#define error_if(I, CONDITION)  if (CONDITION)  { perror(*argv); __free(I); return 1; }
-  
-  /* Create list and table of clients. */
-  if (reexec == 0)
-    {
-      error_if (0, fd_table_create(&client_map));
-      error_if (1, linked_list_create(&client_list, 32));
-    }
-  
-  /* Store the current thread so it can be killed from elsewhere. */
-  master_thread = pthread_self();
-  
-  /* Set up traps for especially handled signals. */
-  error_if (1, trap_signals() < 0);
   
   /* Create mutex and condition for slave counter. */
-  error_if (1, (errno = pthread_mutex_init(&slave_mutex, NULL)));
-  error_if (2, (errno = pthread_cond_init(&slave_cond, NULL)));
+  error_if (0, (errno = pthread_mutex_init(&slave_mutex, NULL)));
+  error_if (1, (errno = pthread_cond_init(&slave_cond, NULL)));
   
   /* Create mutex, condition and map for message modification. */
-  error_if (3, (errno = pthread_mutex_init(&modify_mutex, NULL)));
-  error_if (4, (errno = pthread_cond_init(&modify_cond, NULL)));
-  error_if (5, hash_table_create(&modify_map));
+  error_if (2, (errno = pthread_mutex_init(&modify_mutex, NULL)));
+  error_if (3, (errno = pthread_cond_init(&modify_cond, NULL)));
+  error_if (4, hash_table_create(&modify_map));
   
-#undef error_if
-  
-  
-  /* Unmarshal the state of the server. */
-  if (reexec)
-    complete_reexec(socket_fd);
-  
-  /* Accepting incoming connections. */
-  while (running && (terminating == 0))
-    if (accept_connection(socket_fd) == 1)
-      break;
-  
-  if (reexecing)
-    goto reexec;
-  
-  /* Join with all slaves threads. */
-  with_mutex (slave_mutex,
-	      while (running_slaves > 0)
-		pthread_cond_wait(&slave_cond, &slave_mutex););
-  
-  /* Release resources. */
-  __free(9999);
   
   return 0;
-  
-#undef __free
-  
-  
- reexec:
-  perform_reexec(reexec);
-  /* Returning non-zero is important, otherwise the server cannot
-     be respawn if the re-exec fails. */
   
  pfail:
   perror(*argv);
@@ -215,12 +151,71 @@ int main(int argc_, char** argv_)
 
 
 /**
+ * This function should initialise the server,
+ * and it not invoked after a re-exec.
+ * 
+ * @return  Non-zero on error
+ */
+int initialise_server(void)
+{
+  /* Create list and table of clients. */
+  error_if (5, fd_table_create(&client_map));
+  error_if (6, linked_list_create(&client_list, 32));
+  
+  return 0;
+}
+
+
+/**
+ * This function will be invoked asgter `initialise_server` (if not re-exec:ing)
+ * or after `unmarshal_server` (if re-exec:ing)
+ * 
+ * @return  Non-zero on error
+ */
+int __attribute__((const)) postinitialise_server(void)
+{
+  /* We do not need to initialise anything else. */
+  return 0;
+}
+
+
+/**
+ * Perform the server's mission
+ * 
+ * @return  Non-zero on error
+ */
+int master_loop(void)
+{
+  /* Accepting incoming connections. */
+  while (running && (terminating == 0))
+    if (accept_connection() == 1)
+      break;
+  
+  /* Join with all slaves threads. */
+  with_mutex (slave_mutex,
+	      while (running_slaves > 0)
+		pthread_cond_wait(&slave_cond, &slave_mutex););
+  
+  if (reexecing == 0)
+    {
+      /* Release resources. */
+      __free(9999);
+    }
+  
+  return 0;
+}
+
+
+#undef error_if
+#undef __free
+
+
+/**
  * Accept an incoming and start a slave thread for it
  * 
- * @param   socket_fd  The file descriptor of the server socket
- * @return             Zero normally, 1 if terminating
+ * @return  Zero normally, 1 if terminating
  */
-int accept_connection(int socket_fd)
+int accept_connection(void)
 {
   pthread_t slave_thread;
   int client_fd;
@@ -255,8 +250,8 @@ int accept_connection(int socket_fd)
  */
 void* slave_loop(void* data)
 {
-  int socket_fd = (int)(intptr_t)data;
-  size_t information_address = fd_table_get(&client_map, (size_t)socket_fd);
+  int slave_fd = (int)(intptr_t)data;
+  size_t information_address = fd_table_get(&client_map, (size_t)slave_fd);
   client_t* information = (client_t*)(void*)information_address;
   char* msgbuf = NULL;
   char buf[] = "To: all";
@@ -267,7 +262,7 @@ void* slave_loop(void* data)
   if (information == NULL) /* Did not re-exec. */
     {
       /* Initialise the client. */
-      fail_if ((information = initialise_client(socket_fd)) == NULL);
+      fail_if ((information = initialise_client(slave_fd)) == NULL);
       
       /* Register client to receive broadcasts. */
       add_intercept_condition(information, buf, 0, 0, 0);
@@ -324,7 +319,7 @@ void* slave_loop(void* data)
   
  fail: /* This done on success as well. */
   /* Close socket and free resources. */
-  close(socket_fd);
+  close(slave_fd);
   free(msgbuf);
   if (information != NULL)
     {
@@ -335,7 +330,7 @@ void* slave_loop(void* data)
   
   /* Unmap client and decrease the slave count. */
   with_mutex (slave_mutex,
-	      fd_table_remove(&client_map, socket_fd);
+	      fd_table_remove(&client_map, slave_fd);
 	      running_slaves--;
 	      pthread_cond_signal(&slave_cond););
   return NULL;

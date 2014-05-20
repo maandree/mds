@@ -38,13 +38,13 @@
 /**
  * Get the client by its socket's file descriptor in a synchronised manner
  * 
- * @param   socket_fd  The file descriptor of the client's socket
+ * @param   client_fd  The file descriptor of the client's socket
  * @return             The client
  */
-static client_t* client_by_socket(int socket_fd)
+static client_t* client_by_socket(int client_fd)
 {
   size_t address;
-  with_mutex (slave_mutex, address = fd_table_get(&client_map, socket_fd););
+  with_mutex (slave_mutex, address = fd_table_get(&client_map, client_fd););
   return (client_t*)(void*)address;
 }
 
