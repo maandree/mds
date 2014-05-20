@@ -70,10 +70,9 @@ int marshal_server(int fd)
   state_n += sizeof(int) + sizeof(sig_atomic_t) + 2 * sizeof(uint64_t) + 2 * sizeof(size_t);
   state_n += list_elements * sizeof(size_t) + list_size + map_size;
   
-  /* Allocate a buffer for all data except the client list and the client map. */
+  /* Allocate a buffer for all data. */
   state_buf = state_buf_ = malloc(state_n);
-  if (state_buf == NULL)
-    goto fail;
+  fail_if (state_buf == NULL);
   
   
   /* Tell the new version of the program what version of the program it is marshalling. */
@@ -109,13 +108,12 @@ int marshal_server(int fd)
   fd_table_marshal(&client_map, state_buf_);
   
   /* Send the marshalled data into the file. */
-  if (full_write(fd, state_buf, state_n) < 0)
-    goto fail;
+  fail_if (full_write(fd, state_buf, state_n) < 0);
   free(state_buf);
   
   return 0;
   
- fail:
+ pfail:
   perror(*argv);
   free(state_buf);
   return -1;
@@ -296,23 +294,27 @@ void perform_reexec(int reexec)
   int reexec_fd;
   char shm_path[NAME_MAX + 1];
   ssize_t node;
-    
+  
   /* Join with all slaves threads. */
   with_mutex (slave_mutex,
 	      while (running_slaves > 0)
 		pthread_cond_wait(&slave_cond, &slave_mutex););
-    
+  
   /* Release resources. */
   pthread_mutex_destroy(&slave_mutex);
   pthread_cond_destroy(&slave_cond);
   pthread_mutex_destroy(&modify_mutex);
   pthread_cond_destroy(&modify_cond);
   hash_table_destroy(&modify_map, NULL, NULL);
-    
+  
   /* Marshal the state of the server. */
   xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
   reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-  fail_if (reexec_fd < 0);
+  if (reexec_fd < 0)
+    {
+      perror(*argv);
+      return;
+    }
   fail_if (marshal_server(reexec_fd) < 0);
   close(reexec_fd);
   reexec_fd = -1;
@@ -332,10 +334,8 @@ void perform_reexec(int reexec)
  pfail:
   perror(*argv);
   if (reexec_fd >= 0)
-    {
-      close(reexec_fd);
-      shm_unlink(shm_path);
-    }
+    close(reexec_fd);
+  shm_unlink(shm_path);
 }
 
 
@@ -354,10 +354,15 @@ void complete_reexec(int socket_fd)
   xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
   reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
   fail_if (reexec_fd < 0); /* Critical. */
+  
   /* Unmarshal state. */
   r = unmarshal_server(reexec_fd);
+  
+  /* Close and unlink marshalled data. */
   close(reexec_fd);
   shm_unlink(shm_path);
+  
+  /* Recover after failure. */
   if (r < 0)
     {
       /* Close all files (hopefully sockets) we do not know what they are. */

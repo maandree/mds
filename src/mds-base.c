@@ -28,21 +28,26 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+#include <fcntl.h>
 
 
-#define  try(INSTRUCTION)  if ((r = INSTRUCTION))  return r
+#define  try(INSTRUCTION)  if ((r = INSTRUCTION))  goto fail
 
 
 int argc = 0;
 char** argv = NULL;
 int is_respawn = 0;
 int is_reexec = 0;
+pthread_t master_thread;
+
+volatile sig_atomic_t terminating = 0;
+volatile sig_atomic_t reexecing = 0;
 
 int socket_fd = -1;
-pthread_t master_thread;
 
 
 
@@ -117,6 +122,135 @@ static int connect_to_display(void)
 
 
 /**
+ * Unmarshal the server's saved state
+ * 
+ * @return  Non-zero on error
+ */
+static int base_unmarshal(void)
+{
+  pid_t pid = getpid();
+  int reexec_fd, r;
+  char shm_path[NAME_MAX + 1];
+  char* state_buf;
+  char* state_buf_;
+  
+  /* Acquire access to marshalled data. */
+  xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
+  reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
+  fail_if (reexec_fd < 0); /* Critical. */
+  
+  /* Read the state file. */
+  fail_if ((state_buf = state_buf_ = full_read(reexec_fd)) == NULL);
+  
+  /* Release resources. */
+  close(reexec_fd);
+  shm_unlink(shm_path);
+  
+  
+  /* Unmarshal state. */
+  
+  /* Get the marshal protocal version. Not needed, there is only the one version right now. */
+  /* buf_get(state_buf_, int, 0, MDS_BASE_VARS_VERSION); */
+  buf_next(state_buf_, int, 1);
+  
+  buf_get_next(state_buf_, int, socket_fd);
+  r = unmarshal_server(state_buf_);
+  
+  
+  /* Release resources. */
+  free(state_buf);
+  
+  /* Recover after failure. */
+  if (r)
+    fail_if (reexec_failure_recover());
+  
+  return 0;
+ pfail:
+  perror(*argv);
+  return 1;
+}
+
+
+/**
+ * Marshal the server's state
+ * 
+ * @param   reexec_fd  The file descriptor of the file into which the state shall be saved
+ * @return             Non-zero on error
+ */
+static int base_marshal(int reexec_fd)
+{
+  size_t state_n;
+  char* state_buf;
+  char* state_buf_;
+  
+  /* Calculate the size of the state data when it is marshalled. */
+  state_n = 2 * sizeof(int);
+  state_n += marshal_server_size();
+  
+  /* Allocate a buffer for all data. */
+  state_buf = state_buf_ = malloc(state_n);
+  fail_if (state_buf == NULL);
+  
+  
+  /* Marshal the state of the server. */
+  
+  /* Tell the new version of the program what version of the program it is marshalling. */
+  buf_set_next(state_buf_, int, MDS_BASE_VARS_VERSION);
+  
+  /* Store the state. */
+  buf_set_next(state_buf_, int, socket_fd);
+  marshal_server(state_buf_);
+  
+  
+  /* Send the marshalled data into the file. */
+  fail_if (full_write(reexec_fd, state_buf, state_n) < 0);
+  free(state_buf);
+  
+  return 0;
+  
+ pfail:
+  perror(*argv);
+  return 1;
+}
+
+
+/**
+ * Marshal and re-execute the server
+ * 
+ * This function only returns on error,
+ * in which case the error will have been printed.
+ */
+static void perform_reexec(void)
+{
+  pid_t pid = getpid();
+  int reexec_fd;
+  char shm_path[NAME_MAX + 1];
+  
+  /* Marshal the state of the server. */
+  xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
+  reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+  if (reexec_fd < 0)
+    {
+      perror(*argv);
+      return;
+    }
+  if (base_marshal(reexec_fd) < 0)
+    goto fail;
+  close(reexec_fd);
+  reexec_fd = -1;
+  
+  /* Re-exec the server. */
+  reexec_server(argc, argv, is_reexec);
+  perror(*argv);
+  
+ fail:
+  if (reexec_fd >= 0)
+    close(reexec_fd);
+  shm_unlink(shm_path);
+}
+
+
+/**
  * Entry point of the server
  * 
  * @param   argc_  Number of elements in `argv_`
@@ -125,8 +259,7 @@ static int connect_to_display(void)
  */
 int main(int argc_, char** argv_)
 {
-  int r;
-  
+  int r = 1;
   
   argc = argc_;
   argv = argv_;
@@ -152,19 +285,44 @@ int main(int argc_, char** argv_)
   trap_signals();
   
   
-  /* Connect to the display. */
   if (is_reexec == 0)
-    try (connect_to_display());
+    {
+      if (server_characteristics.require_display)
+	/* Connect to the display. */
+	try (connect_to_display());
+      
+      /* Initialise the server. */
+      try (initialise_server());
+    }
+  else
+    {
+      /* Unmarshal the server's saved state. */
+      try (base_unmarshal());
+    }
   
+  
+  /* Run the server. */
+  try (master_loop());
+  
+  
+  /* Re-exec server if signal to re-exec. */
+  if (reexecing)
+    {
+      perform_reexec();
+      goto fail;
+    }
   
   close(socket_fd);
   return 0;
   
+  
  pfail:
   perror(*argv);
+  r = 1;
+ fail:
   if (socket_fd >= 0)
     close(socket_fd);
-  return 1;
+  return r;
 }
 
 
