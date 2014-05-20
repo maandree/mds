@@ -163,6 +163,10 @@ static size_t unmarshal_remapper(size_t old)
 /**
  * Unmarshal server implementation specific data and update the servers state accordingly
  * 
+ * On critical failure the program should `abort()` or exit by other means.
+ * That is, do not let `reexec_failure_recover` run successfully, if it unrecoverable
+ * error has occurred or one severe enough that it is better to simply respawn.
+ * 
  * @param   state_buf  The marshalled data that as not been read already
  * @return             Non-zero on error
  */
