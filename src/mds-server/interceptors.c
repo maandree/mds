@@ -18,9 +18,9 @@
 #include "interceptors.h"
 
 #include "globals.h"
-#include "interception_condition.h"
+#include "interception-condition.h"
 #include "client.h"
-#include "queued_interception.h"
+#include "queued-interception.h"
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/hash-help.h>

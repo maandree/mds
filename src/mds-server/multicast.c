@@ -17,7 +17,7 @@
  */
 #include "multicast.h"
 
-#include "interception_condition.h"
+#include "interception-condition.h"
 
 #include <libmdsserver/macros.h>
 

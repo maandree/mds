@@ -19,9 +19,9 @@
 #define MDS_MDS_SERVER_INTERCEPTORS_H
 
 
-#include "interception_condition.h"
+#include "interception-condition.h"
 #include "client.h"
-#include "queued_interception.h"
+#include "queued-interception.h"
 
 #include <stddef.h>
 #include <stdint.h>

@@ -19,7 +19,7 @@
 #define MDS_MDS_SERVER_CLIENT_H
 
 
-#include "interception_condition.h"
+#include "interception-condition.h"
 #include "multicast.h"
 
 #include <libmdsserver/mds-message.h>

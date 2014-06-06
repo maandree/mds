@@ -19,7 +19,7 @@
 
 #include "globals.h"
 #include "client.h"
-#include "queued_interception.h"
+#include "queued-interception.h"
 #include "multicast.h"
 
 #include <libmdsserver/mds-message.h>

@@ -18,9 +18,9 @@
 #include "mds-server.h"
 
 #include "globals.h"
-#include "interception_condition.h"
+#include "interception-condition.h"
 #include "client.h"
-#include "queued_interception.h"
+#include "queued-interception.h"
 #include "multicast.h"
 #include "interceptors.h"
 #include "sending.h"
