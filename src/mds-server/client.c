@@ -141,8 +141,7 @@ void client_destroy(client_t* restrict this)
  */
 size_t client_marshal_size(const client_t* restrict this)
 {
-  size_t n = sizeof(ssize_t) + 3 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
-  size_t i;
+  size_t i, n = sizeof(ssize_t) + 3 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
   
   n += mds_message_marshal_size(&(this->message));
   for (i = 0; i < this->interception_conditions_count; i++)
@@ -185,6 +184,8 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
   if (this->send_pending_size > 0)
     memcpy(data, this->send_pending, this->send_pending_size * sizeof(char));
   data += this->send_pending_size;
+  n = this->modify_message == NULL ? 0 : mds_message_marshal_size(this->modify_message);
+  buf_set_next(data, size_t, n);
   if (this->modify_message != NULL)
     mds_message_marshal(this->modify_message, data);
   return client_marshal_size(this);
@@ -200,7 +201,7 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
  */
 size_t client_unmarshal(client_t* restrict this, char* restrict data)
 {
-  size_t i, n, rc = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 4 * sizeof(size_t);
+  size_t i, n, rc = sizeof(ssize_t) + 3 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
   this->interception_conditions = NULL;
   this->multicasts = NULL;
   this->send_pending = NULL;
@@ -242,6 +243,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
       if (m == 0)
 	goto fail;
       data += m / sizeof(char);
+      rc += m;
     }
   buf_get_next(data, size_t, this->send_pending_size);
   if (this->send_pending_size > 0)
@@ -250,12 +252,14 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
 	goto fail;
       memcpy(this->send_pending, data, this->send_pending_size * sizeof(char));
       data += this->send_pending_size;
+      rc += this->send_pending_size * sizeof(char);
     }
   buf_get_next(data, size_t, n);
   if (n > 0)
     mds_message_unmarshal(this->modify_message, data);
   else
     this->modify_message = NULL;
+  rc += n * sizeof(char);
   return rc;
   
  fail:
@@ -283,7 +287,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
  */
 size_t client_unmarshal_skip(char* restrict data)
 {
-  size_t n, c, rc = sizeof(ssize_t) + 2 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
+  size_t n, c, rc = sizeof(ssize_t) + 3 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
   buf_next(data, int, 1);
   buf_next(data, ssize_t, 1);
   buf_next(data, int, 2);
@@ -294,18 +298,19 @@ size_t client_unmarshal_skip(char* restrict data)
   buf_get_next(data, size_t, c);
   while (c--)
     {
-      n = multicast_unmarshal_skip(data);
+      n = interception_condition_unmarshal_skip(data);
       data += n / sizeof(char);
       rc += n;
     }
   buf_get_next(data, size_t, c);
   while (c--)
     {
-      n = interception_condition_unmarshal_skip(data);
+      n = multicast_unmarshal_skip(data);
       data += n / sizeof(char);
       rc += n;
     }
   buf_get_next(data, size_t, n);
+  data += n;
   rc += n * sizeof(char);
   buf_get_next(data, size_t, n);
   rc += n * sizeof(char);
