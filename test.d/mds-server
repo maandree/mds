@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo mds-server pid: $$
 if [ -z "${NO_VALGRIND}" ]; then
     exec valgrind --leak-check=full --show-leak-kinds=all "$0".real "$@"
 else
