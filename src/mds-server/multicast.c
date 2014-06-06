@@ -93,8 +93,11 @@ size_t multicast_marshal(const multicast_t* restrict this, char* restrict data)
       data += n / sizeof(char);
       rc += n;
     }
-  memcpy(data, this->message, this->message_length * sizeof(char));
-  rc += this->message_length * sizeof(char);
+  if (this->message_length > 0)
+    {
+      memcpy(data, this->message, this->message_length * sizeof(char));
+      rc += this->message_length * sizeof(char);
+    }
   return rc;
 }
 
@@ -120,18 +123,22 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data)
   buf_get_next(data, size_t, this->message_length);
   buf_get_next(data, size_t, this->message_ptr);
   buf_get_next(data, size_t, this->message_prefix);
-  if (xmalloc(this->interceptions, this->interceptions_count, queued_interception_t))
-    return 0;
+  if (this->interceptions_count > 0)
+    if (xmalloc(this->interceptions, this->interceptions_count, queued_interception_t))
+      return 0;
   for (i = 0; i < this->interceptions_count; i++)
     {
       n = queued_interception_unmarshal(this->interceptions + i, data);
       data += n / sizeof(char);
       rc += n;
     }
-  if (xmalloc(this->message, this->message_length, char))
-    return 0;
-  memcpy(this->message, data, this->message_length * sizeof(char));
-  rc += this->message_length * sizeof(char);
+  if (this->message_length > 0)
+    {
+      if (xmalloc(this->message, this->message_length, char))
+	return 0;
+      memcpy(this->message, data, this->message_length * sizeof(char));
+      rc += this->message_length * sizeof(char);
+    }
   return rc;
 }
 
