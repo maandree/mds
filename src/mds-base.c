@@ -40,7 +40,7 @@
 
 int argc = 0;
 char** argv = NULL;
-int is_respawn = 0;
+int is_respawn = -1;
 int is_reexec = 0;
 pthread_t master_thread;
 
