@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-echo "Successfully spawned mdsinitrc. "
+echo "Successfully spawned mdsinitrc."
 
 export PATH="$(realpath bin):${PATH}"
 cd test.d
