@@ -182,6 +182,7 @@ static void spawn_server(size_t index)
     {
       states[index].pid = pid;
       states[index].state = ALIVE;
+      live_count++;
       return;
     }
   
@@ -442,7 +443,7 @@ static void joined_with_server(pid_t pid, int status)
       return;
     }
   
-  if (ended.tv_sec - states[i].started.tv_sec < RESPAWN_TIME_LIMIT_SECONDS)
+  if (ended.tv_sec - states[i].started.tv_sec < interval)
     {
       eprintf("%s died abnormally, burying because it died too fast.", commands[i][0]);
       states[i].state = DEAD_AND_BURIED;

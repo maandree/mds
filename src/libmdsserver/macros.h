@@ -245,7 +245,7 @@
  * @return  :int                        Zero on sucess, -1 on error
  */
 #define monotone(time_slot)  \
-  clock_gettime(CLOCK_MONOTONIC, time_slot)
+  clock_gettime(CLOCK_MONOTONIC_RAW, time_slot)
 
 
 /**

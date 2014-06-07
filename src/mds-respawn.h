@@ -22,6 +22,7 @@
 #include "mds-base.h"
 
 #include <sys/types.h>
+#include <time.h>
 
 
 
@@ -53,6 +54,16 @@
 
 
 /**
+ * Check that a state is a value state
+ * 
+ * @param   VALUE:int  The state
+ * @return  :int       Whether the state is value
+ */
+#define validate_state(VALUE)  ((UNBORN <= VALUE) && (VALUE <= CREMATED))
+
+
+
+/**
  * The state and identifier of a server
  */
 typedef struct server_state
@@ -66,6 +77,11 @@ typedef struct server_state
    * The server's state
    */
   int state;
+  
+  /**
+   * The time (monotonic) the server started
+   */
+  struct timespec started;
   
 } server_state_t;
 

@@ -340,7 +340,8 @@ int spawn_and_respawn_server(int fd)
     goto pfail;
   
   /* If the server exited normally or SIGTERM, do not respawn. */
-  if (WIFEXITED(status) || (WEXITSTATUS(status) && WTERMSIG(status)))
+  if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
+      ((WTERMSIG(status) == SIGTERM) || (WTERMSIG(status) == SIGINT)))
     goto done; /* Child exited normally, stop. */
   
   /* Get the current time. (End of child process.) */

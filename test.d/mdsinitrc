@@ -19,12 +19,16 @@
 
 echo "Successfully spawned mdsinitrc. "
 
+export PATH="$(realpath bin):${PATH}"
 cd test.d
 export XDG_CONFIG_HOME="${OLD_XDG_CONFIG_HOME}"
 unset OLD_XDG_CONFIG_HOME
 if [ -z "${XDG_CONFIG_HOME}" ]; then
     unset XDG_CONFIG_HOME
 fi
+mds-respawn --interval=10 \
+    { sleep 4s } \
+    { sleep 1m } &
 if which terminator 2>/dev/null >&2; then
     exec terminator
 else
