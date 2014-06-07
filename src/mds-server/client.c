@@ -216,8 +216,9 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   buf_get_next(data, int, this->open);
   buf_get_next(data, uint64_t, this->id);
   buf_get_next(data, size_t, n);
-  if (mds_message_unmarshal(&(this->message), data))
-    return 0;
+  if (n > 0)
+    if (mds_message_unmarshal(&(this->message), data))
+      return 0;
   data += n / sizeof(char);
   rc += n;
   buf_get_next(data, size_t, this->interception_conditions_count);
