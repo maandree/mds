@@ -56,7 +56,7 @@ int socket_fd = -1;
  * 
  * @return  Non-zero on error
  */
-static int parse_cmdline(void)
+int __attribute__((weak)) parse_cmdline(void)
 {
   int i;
   
@@ -90,10 +90,12 @@ static int parse_cmdline(void)
     }
   
   /* Check that manditory arguments have been specified. */
-  exit_if (is_respawn < 0,
-	   eprintf("missing state argument, require either %s or %s.",
-		   "--initial-spawn", "--respawn"););
-  
+  if (server_characteristics.require_respawn_info)
+    {
+      exit_if (is_respawn < 0,
+	       eprintf("missing state argument, require either %s or %s.",
+		       "--initial-spawn", "--respawn"););
+    }
   return 0;
 }
 
@@ -103,7 +105,7 @@ static int parse_cmdline(void)
  * 
  * @return  Non-zero on error
  */
-static int connect_to_display(void)
+int __attribute__((weak)) connect_to_display(void)
 {
   char* display;
   char pathname[PATH_MAX];
@@ -127,6 +129,44 @@ static int connect_to_display(void)
   if (socket_fd >= 0)
     close(socket_fd);
   return 1;
+}
+
+
+/**
+ * This function is called when a signal that
+ * signals the server to re-exec has been received
+ * 
+ * When this function is invoked, it should set `reexecing` to a non-zero value
+ * 
+ * @param  signo  The signal that has been received
+ */
+void __attribute__((weak)) received_reexec(int signo)
+{
+  (void) signo;
+  if (reexecing == 0)
+    {
+      reexecing = 1;
+      eprint("re-exec signal received.");
+    }
+}
+
+
+/**
+ * This function is called when a signal that
+ * signals the server to re-exec has been received
+ * 
+ * When this function is invoked, it should set `terminating` to a non-zero value
+ * 
+ * @param  signo  The signal that has been received
+ */
+void __attribute__((weak)) received_terminate(int signo)
+{
+  (void) signo;
+  if (terminating == 0)
+    {
+      terminating = 1;
+      eprint("terminate signal received.");
+    }
 }
 
 
@@ -360,6 +400,7 @@ int trap_signals(void)
   
   return 0;
  pfail:
+  perror(*argv);
   return 1;
 }
 

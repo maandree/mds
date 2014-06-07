@@ -35,12 +35,24 @@ typedef struct server_characteristics
   /**
    * Setting this to zero will cause the server to drop privileges as a security precaution
    */
-  int require_privileges : 1;
+  unsigned require_privileges : 1;
   
   /**
    * Setting this to non-zero will cause the server to connect to the display
    */
-  int require_display : 1;
+  unsigned require_display : 1;
+  
+  /**
+   * Setting this to non-zero will cause the server to refuse to
+   * start unless either --initial-spawn or --respawn is used
+   */
+  unsigned require_respawn_info : 1;
+  
+  /**
+   * Setting this to non-zero will cause the server to refuse to
+   * start if there are too many command line arguments
+   */
+  unsigned sanity_check_argc : 1;
   
 } __attribute__((packed)) server_characteristics_t;
 
@@ -112,7 +124,24 @@ int trap_signals(void);
 
 
 /**
+ * Parse command line arguments
+ * 
+ * @return  Non-zero on error
+ */
+int parse_cmdline(void); /* __attribute__((weak)) */
+
+
+/**
+ * Connect to the display
+ * 
+ * @return  Non-zero on error
+ */
+int connect_to_display(void); /* __attribute__((weak)) */
+
+
+/**
  * This function should be implemented by the actual server implementation
+ * if the server is multithreaded
  * 
  * This function is called when a signal that
  * signals the server to re-exec has been received
@@ -121,10 +150,11 @@ int trap_signals(void);
  * 
  * @param  signo  The signal that has been received
  */
-extern void received_reexec(int signo);
+void received_reexec(int signo); /* __attribute__((weak)) */
 
 /**
  * This function should be implemented by the actual server implementation
+ * if the server is multithreaded
  * 
  * This function is called when a signal that
  * signals the server to re-exec has been received
@@ -133,7 +163,7 @@ extern void received_reexec(int signo);
  * 
  * @param  signo  The signal that has been received
  */
-extern void received_terminate(int signo);
+void received_terminate(int signo); /* __attribute__((weak)) */
 
 /**
  * This function should be implemented by the actual server implementation
@@ -158,7 +188,7 @@ extern int initialise_server(void);
 /**
  * This function should be implemented by the actual server implementation
  * 
- * This function will be invoked asgter `initialise_server` (if not re-exec:ing)
+ * This function will be invoked after `initialise_server` (if not re-exec:ing)
  * or after `unmarshal_server` (if re-exec:ing)
  * 
  * @return  Non-zero on error

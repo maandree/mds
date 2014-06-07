@@ -76,7 +76,7 @@ LIBOBJ = linked-list hash-table fd-table mds-message util
 # Build rules.
 
 .PHONY: all
-all: obj/mds-base.o bin/mds bin/mds-server bin/libmdsserver.so
+all: obj/mds-base.o bin/mds bin/mds-respawn bin/mds-server bin/libmdsserver.so
 
 
 MDS_SERVER_OBJ_ = mds-server interception-condition client multicast  \
@@ -92,9 +92,13 @@ ifeq ($(DEBUG),y)
 	cp test.d/mds-server $@
 endif
 
-bin/%: obj/%.o bin/libmdsserver.so
+bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) obj/$*.o
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $< obj/mds-base.o
+
+bin/mds: obj/mds.o bin/libmdsserver.so
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $<
 
 obj/mds-server/%.o: src/mds-server/%.c src/mds-server/*.h src/libmdsserver/*.h
 	mkdir -p $(shell dirname $@)

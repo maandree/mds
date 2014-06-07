@@ -49,9 +49,9 @@ char* getenv_nonempty(const char* var)
  * Re-exec the server.
  * This function only returns on failure.
  * 
- * @param  argc      The number of elements in `argv`
- * @param  argv      The command line arguments
- * @param  reexeced  Whether the server has previously been re-exec:ed
+ * @param  argc                  The number of elements in `argv`
+ * @param  argv                  The command line arguments
+ * @param  reexeced              Whether the server has previously been re-exec:ed
  */
 void reexec_server(int argc, char** argv, int reexeced)
 {

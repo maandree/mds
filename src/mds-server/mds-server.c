@@ -54,7 +54,9 @@
 server_characteristics_t server_characteristics =
   {
     .require_privileges = 0,
-    .require_display = 0 /* We will service one ourself. */
+    .require_display = 0, /* We will service one ourself. */
+    .require_respawn_info = 1,
+    .sanity_check_argc = 1
   };
 
 
@@ -167,7 +169,7 @@ int initialise_server(void)
 
 
 /**
- * This function will be invoked asgter `initialise_server` (if not re-exec:ing)
+ * This function will be invoked after `initialise_server` (if not re-exec:ing)
  * or after `unmarshal_server` (if re-exec:ing)
  * 
  * @return  Non-zero on error
