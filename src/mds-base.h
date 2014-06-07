@@ -234,7 +234,7 @@ extern int unmarshal_server(char* state_buf);
 /**
  * This function should be implemented by the actual server implementation
  * 
- * Attempt to recover from an re-exec failure that has been
+ * Attempt to recover from a re-exec failure that has been
  * detected after the server successfully updated it execution image
  * 
  * @return  Non-zero on error
