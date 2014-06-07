@@ -172,11 +172,12 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
   buf_set_next(data, uint64_t, this->id);
   n = mds_message_marshal_size(&(this->message));
   buf_set_next(data, size_t, n);
-  mds_message_marshal(&(this->message), data);
+  if (n > 0)
+    mds_message_marshal(&(this->message), data);
   data += n / sizeof(char);
   buf_set_next(data, size_t, this->interception_conditions_count);
   for (i = 0; i < this->interception_conditions_count; i++)
-    data += interception_condition_marshal(this->interception_conditions + i, data) / sizeof(char);
+    data += n = interception_condition_marshal(this->interception_conditions + i, data) / sizeof(char);
   buf_set_next(data, size_t, this->multicasts_count);
   for (i = 0; i < this->multicasts_count; i++)
     data += multicast_marshal(this->multicasts + i, data) / sizeof(char);

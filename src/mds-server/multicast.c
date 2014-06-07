@@ -112,7 +112,7 @@ size_t multicast_marshal(const multicast_t* restrict this, char* restrict data)
  */
 size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data)
 {
-  size_t rc = 5 * sizeof(size_t);
+  size_t rc = sizeof(int) + 5 * sizeof(size_t);
   size_t i, n;
   this->interceptions = NULL;
   this->message = NULL;

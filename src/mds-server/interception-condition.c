@@ -74,7 +74,7 @@ size_t interception_condition_unmarshal(interception_condition_t* restrict this,
   if ((this->condition = malloc(n)) == NULL)
     return 0;
   memcpy(this->condition, data, n);
-  return sizeof(size_t) + sizeof(int64_t) + sizeof(int) + n;
+  return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + n;
 }
 
 
@@ -86,7 +86,7 @@ size_t interception_condition_unmarshal(interception_condition_t* restrict this,
  */
 size_t interception_condition_unmarshal_skip(char* restrict data)
 {
-  size_t n = sizeof(size_t) + sizeof(int64_t) + sizeof(int);
+  size_t n = sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int);
   buf_next(data, int, 1);
   buf_next(data, size_t, 1);
   buf_next(data, int64_t, 1);
