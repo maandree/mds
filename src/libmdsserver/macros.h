@@ -333,7 +333,7 @@
 /**
  * Run a set of instructions and return 1 if a condition is met
  * 
- * @param  CONDITION    The condition
+ * @param  CONDITION     The condition
  * @param  INSTRUCTIONS  The instruction (semicolon-terminated)
  */
 #define exit_if(CONDITION, INSTRUCTIONS)  if (CONDITION)  { INSTRUCTIONS return 1; }
