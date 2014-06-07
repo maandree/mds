@@ -385,7 +385,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  /* How much of the payload that has not yet been filled. */
 	  size_t need = this->payload_size - this->payload_ptr;
 	  /* How much we have of that what is needed. */
-	  size_t move = min(this->payload_ptr, need);
+	  size_t move = min(this->buffer_ptr, need);
 	  
 	  /* Copy what we have, and remove it from the the read buffer. */
 	  memcpy(this->payload + this->payload_ptr, this->buffer, move * sizeof(char));
