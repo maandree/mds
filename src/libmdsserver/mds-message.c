@@ -426,7 +426,7 @@ size_t mds_message_marshal_size(const mds_message_t* restrict this)
   for (i = 0; i < this->header_count; i++)
     rc += strlen(this->headers[i]);
   rc *= sizeof(char);
-  rc += 4 * sizeof(size_t) + 1 * sizeof(int);
+  rc += 4 * sizeof(size_t) + 2 * sizeof(int);
   return rc;
 }
 
@@ -483,6 +483,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   buf_get_next(data, size_t, this->payload_size);
   buf_get_next(data, size_t, this->payload_ptr);
   buf_get_next(data, size_t, this->buffer_size = this->buffer_ptr);
+  buf_get_next(data, int, this->stage);
   
   /* Make sure that the pointers are NULL so that they are
      not freed without being allocated when the message is
@@ -490,8 +491,6 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   this->headers = NULL;
   this->payload = NULL;
   this->buffer  = NULL;
-  
-  buf_get_next(data, int, this->stage);
   
   /* To 2-power-multiple of 128 bytes. */
   this->buffer_size >>= 7;
