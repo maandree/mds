@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #define reconnect_to_display() -1 /* TODO */
 
 
@@ -64,6 +65,16 @@ static mds_message_t received;
  */
 static int connected = 1;
 
+/**
+ * Buffer for message echoing
+ */
+static char* echo_buffer = NULL;
+
+/**
+ * The size allocated to `echo_buffer` divided by `sizeof(char)`
+ */
+static size_t echo_buffer_size = 0;
+
 
 
 /**
@@ -92,26 +103,9 @@ int initialise_server(void)
     "Length: 13\n"
     "\n"
     "Command: echo";
-  size_t length = strlen(message);
-  size_t sent;
   
-  while (length > 0)
-    {
-      sent = send_message(socket_fd, message, length);
-      if (sent > length)
-	{
-	  eprint("Sent more of a message than exists in the message, aborting.");
-	  return 1;
-	}
-      else if ((sent < length) && (errno != EINTR))
-	{
-	  perror(*argv);
-	  return 1;
-	}
-      message += sent;
-      length -= sent;
-    }
-  
+  if (full_send(message, strlen(message)))
+    return 1;
   mds_message_initialise(&received);
   return 0;
 }
@@ -220,6 +214,7 @@ int master_loop(void)
 	  if (r == 0)
 	    continue;
 	}
+      
       if (r == -2)
 	{
 	  eprint("corrupt message received, aborting.");
@@ -240,11 +235,13 @@ int master_loop(void)
     }
   
   mds_message_destroy(&received);
+  free(echo_buffer);
   return 0;
  pfail:
   perror(*argv);
  fail:
   mds_message_destroy(&received);
+  free(echo_buffer);
   return 1;
 }
 
@@ -257,6 +254,91 @@ int master_loop(void)
  */
 int echo_message(void)
 {
-  return 0; /* TODO */
+  const char* recv_client_id = NULL;
+  const char* recv_message_id = NULL;
+  const char* recv_length = NULL;
+  size_t i, n;
+  
+#define __get_header(storage, header, skip)  \
+  (startswith(received.headers[i], header))  \
+    storage = received.headers[i] + skip * strlen(header)
+  
+  for (i = 0; i < received.header_count; i++)
+    {
+      if      __get_header(recv_client_id,  "Client ID: ",  1);
+      else if __get_header(recv_message_id, "Message ID: ", 1);
+      else if __get_header(recv_length,     "Length: ",     0);
+      else
+	continue;
+      if (recv_client_id && recv_message_id && recv_length)
+	break;
+    }
+  
+#undef __get_header
+  
+  if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
+    {
+      eprint("received message from anonymous sender, ignoring.");
+      return 0;
+    }
+  else if (recv_message_id == NULL)
+    {
+      eprint("received message with ID, ignoring, master server is misbehaving.");
+      return 0;
+    }
+  
+  n = 1 + strlen("To: \nIn response to: \n\n") + strlen(recv_client_id) + strlen(recv_message_id);
+  if (recv_length)
+    n += strlen(recv_length) + 1;
+  
+  if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
+    {
+      char* old_buffer = echo_buffer;
+      if (xrealloc(echo_buffer, echo_buffer_size = n, char))
+	{
+	  free(old_buffer);
+	  return -1;
+	}
+    }
+  
+  sprintf(echo_buffer, "To: %s\nIn response to:%s\n%s%s\n",
+	  recv_client_id, recv_message_id,
+	  recv_length == NULL ? "" : recv_length,
+	  recv_length == NULL ? "" : "\n");
+  
+  if (full_send(echo_buffer, n - 1))
+    return 1;
+  return full_send(received.payload, received.payload_size);
+}
+
+
+/**
+ * Send a full message even if interrupted
+ * 
+ * @param   message  The message to send
+ * @param   length   The length of the message
+ * @return           Non-zero on success
+ */
+int full_send(const char* message, size_t length)
+{
+  size_t sent;
+  
+  while (length > 0)
+    {
+      sent = send_message(socket_fd, message, length);
+      if (sent > length)
+	{
+	  eprint("Sent more of a message than exists in the message, aborting.");
+	  return -1;
+	}
+      else if ((sent < length) && (errno != EINTR))
+	{
+	  perror(*argv);
+	  return -1;
+	}
+      message += sent;
+      length -= sent;
+    }
+  return 0;
 }
 

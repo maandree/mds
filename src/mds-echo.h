@@ -23,17 +23,21 @@
 
 
 /**
- * Echo the received message
+ * Echo the received message payload
  * 
- * @return  Non-zero on error or interruption, errno will be
- *          set accordingly. Destroy the message on error,
- *          be aware that the reading could have been
- *          interrupted by a signal rather than canonical error.
- *          If -2 is returned errno will not have been set,
- *          -2 indicates that the message is malformated,
- *          which is a state that cannot be recovered from.
+ * @return  Zero on success -1 on error or interruption,
+ *          errno will be set accordingly
  */
 int echo_message(void);
+
+/**
+ * Send a full message even if interrupted
+ * 
+ * @param   message  The message to send
+ * @param   length   The length of the message
+ * @return           Non-zero on success
+ */
+int full_send(const char* message, size_t length);
 
 
 #endif
