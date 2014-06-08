@@ -57,7 +57,7 @@ the type of message this is being sent. This technique
 is also used to intercept message or receive message
 as part of a service that a server provides. Servers
 that implement the ability to connect from another
-computer are encouraged to reject this time of message
+computer are encouraged to reject this type of message
 if it could be used for spying. To tell the server
 that you want to intercept a type of message the client
 sends a message with the header and value

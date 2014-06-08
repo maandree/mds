@@ -97,12 +97,12 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
-  const char* message =
+  const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 13\n"
+    "Length: 14\n"
     "\n"
-    "Command: echo";
+    "Command: echo\n";
   
   if (full_send(message, strlen(message)))
     return 1;

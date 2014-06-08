@@ -77,6 +77,7 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
   interception_condition_t* conds = client->interception_conditions;
   ssize_t nonmodifying = -1;
   char* header = condition;
+  char* colon = NULL;
   char* value;
   size_t hash;
   size_t i;
@@ -85,11 +86,15 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
   if ((value = strchr(header, ':')) != NULL)
     {
       *value = '\0'; /* NUL-terminate header. */
+      colon = value; /* End of header. */
       value += 2;    /* Skip over delimiter.  */
     }
   
   /* Calcuate header hash (comparison optimisation) */
   hash = string_hash(header);
+  /* Undo header–value splitting. */
+  if (colon != NULL)
+    *colon = ':';
   
   /* Remove of update condition of already registered,
      also look for non-modifying condition to swap position
