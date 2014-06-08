@@ -22,7 +22,7 @@
 #include <libmdsserver/mds-message.h>
 
 #include <errno.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@ server_characteristics_t server_characteristics =
   {
     .require_privileges = 0,
     .require_display = 1,
-    .require_respawn_info = 1,
+    .require_respawn_info = 0,
     .sanity_check_argc = 1
   };
 
@@ -287,7 +287,8 @@ int echo_message(void)
       return 0;
     }
   
-  n = 1 + strlen("To: \nIn response to: \n\n") + strlen(recv_client_id) + strlen(recv_message_id);
+  n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
   if (recv_length)
     n += strlen(recv_length) + 1;
   
@@ -301,10 +302,14 @@ int echo_message(void)
 	}
     }
   
-  sprintf(echo_buffer, "To: %s\nIn response to:%s\n%s%s\n",
-	  recv_client_id, recv_message_id,
+  sprintf(echo_buffer, "To: %s\nIn response to:%s\nMessage ID: " PRIi32 "\n%s%s\n",
+	  recv_client_id, recv_message_id, message_id,
 	  recv_length == NULL ? "" : recv_length,
 	  recv_length == NULL ? "" : "\n");
+  
+  message_id += 1;
+  if (message_id < 0)
+    message_id = 0;
   
   if (full_send(echo_buffer, n - 1))
     return 1;
