@@ -28,7 +28,9 @@ if [ -z "${XDG_CONFIG_HOME}" ]; then
 fi
 mds-respawn --interval=10 \
     { sleep 4s } \
-    { sleep 1m } &
+    { sleep 1m } \
+    { mds-echo } \
+    &
 if which terminator 2>/dev/null >&2; then
     exec terminator
 else

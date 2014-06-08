@@ -72,11 +72,14 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 # Object files for the libary
 LIBOBJ = linked-list hash-table fd-table mds-message util
 
+# Servers and utilities.
+SERVERS = mds mds-respawn mds-server mds-echo
+
 
 # Build rules.
 
 .PHONY: all
-all: obj/mds-base.o bin/mds bin/mds-respawn bin/mds-server bin/libmdsserver.so
+all: obj/mds-base.o $(foreach S,$(SERVERS),bin/$(S)) bin/libmdsserver.so
 
 
 MDS_SERVER_OBJ_ = mds-server interception-condition client multicast  \
@@ -94,7 +97,7 @@ endif
 
 bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $< obj/mds-base.o
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_$*) $< obj/mds-base.o
 
 bin/mds: obj/mds.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)

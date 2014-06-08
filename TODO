@@ -1,0 +1,26 @@
+Missing servers:
+
+	xmds		Translation from X to mds
+	wmds		Translation from Wayland to mds
+	mmds		Translation from Mir to mds
+	mdsx		Translation from mds to X
+	mdsw		Translation from mds to Wayland
+	mdsm		Translation from mds to Mir
+	hwgamma		Hardware implementation of gamma ramps
+	swgamma		Software implementation of gamma ramps
+	hwcursor	Hardware cursor
+	swcursor	Software cursor
+	cursorgamma	Fixes gamma ramps for cursors
+	coopgamma	Enables multiple gamma servers
+	inet		Network enabled display server
+	remote		Bind to a remote display server
+	fb		Framebuffer presenter
+	clipboard	Clipboard
+	kkbd		Keyboard input from kernel
+	kbd		Keyboard input
+	rat		Rat input
+	compositor	Composites the display
+	crtc		CRTC identifier
+	seat		Seat sandboxing
+	dri		DRI output
+
