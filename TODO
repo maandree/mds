@@ -26,4 +26,14 @@ Missing servers:
 	drag		Drag and drop
 	cursorshadow	Decorate cursors with shadows
 	registry	Server protocol availability registry
+	kill		Kill processes based on their windows
+	shm		Network enabled shared memory
+	sem		Network enabled shared semaphores
+	focus		Focuses the selected window
+	colour		Mapping of colour by name (system colours) and value
+	state		Keeps track of windows' states
+	decorator	A simple, reference implementation of a, window decorator
+	tile		A simple, reference implementation of a, tiling window manager
+	stack		A simple, reference implementation of a, stack window manager
+	workspace	A simple, reference implementation of a, workspaces
 
