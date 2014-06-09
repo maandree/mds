@@ -289,7 +289,7 @@ int echo_message(void)
     }
   
   n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
-  n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int32_t);
   if (recv_length != NULL)
     n += strlen(recv_length) + 1;
   
@@ -310,7 +310,7 @@ int echo_message(void)
   
   message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
   
-  if (full_send(echo_buffer, n - 1))
+  if (full_send(echo_buffer, strlen(echo_buffer)))
     return 1;
   return full_send(received.payload, received.payload_size);
 }
