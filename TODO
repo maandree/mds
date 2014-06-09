@@ -23,4 +23,7 @@ Missing servers:
 	crtc		CRTC identifier
 	seat		Seat sandboxing
 	dri		DRI output
+	drag		Drag and drop
+	cursorshadow	Decorate cursors with shadows
+	registry	Server protocol availability registry
 
