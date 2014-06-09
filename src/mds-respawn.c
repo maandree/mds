@@ -419,7 +419,7 @@ static void joined_with_server(pid_t pid, int status)
   
   if (states[i].state == CREMATED)
     {
-      eprintf("cremated child process %s exited, ignoring.", commands[i][0]);
+      eprintf("cremated child process `%s' exited, ignoring.", commands[i][0]);
       return;
     }
   
@@ -430,27 +430,32 @@ static void joined_with_server(pid_t pid, int status)
   if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
       ((WTERMSIG(status) == SIGTERM) || (WTERMSIG(status) == SIGINT)))
     {
-      eprintf("child process %s exited normally, cremating.", commands[i][0]);
+      eprintf("child process `%s' exited normally, cremating.", commands[i][0]);
       states[i].state = CREMATED;
       return;
     }
   
+  if (WIFEXITED(status))
+    eprintf("`%s' exited with code %i.", commands[i][0], WEXITSTATUS(status));
+  else
+    eprintf("`%s' died by signal %i.", commands[i][0], WTERMSIG(status));
+  
   if (monotone(&ended) < 0)
     {
       perror(*argv);
-      eprintf("%s died abnormally, burying because we could not read the time.", commands[i][0]);
+      eprintf("`%s' died abnormally, burying because we could not read the time.", commands[i][0]);
       states[i].state = DEAD_AND_BURIED;
       return;
     }
   
   if (ended.tv_sec - states[i].started.tv_sec < interval)
     {
-      eprintf("%s died abnormally, burying because it died too fast.", commands[i][0]);
+      eprintf("`%s' died abnormally, burying because it died too fast.", commands[i][0]);
       states[i].state = DEAD_AND_BURIED;
       return;
     }
   
-  eprintf("%s died abnormally, respawning.", commands[i][0]);
+  eprintf("`%s' died abnormally, respawning.", commands[i][0]);
   spawn_server(i);
 }
 
