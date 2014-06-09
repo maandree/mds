@@ -347,20 +347,25 @@ int spawn_and_respawn_server(int fd)
   /* Get the current time. (End of child process.) */
   time_error |= (monotone(&time_end) < 0);
   
+  if (WIFEXITED(status))
+    eprintf("`%s' exited with code %i.", master_server, WEXITSTATUS(status));
+  else
+    eprintf("`%s' died by signal %i.", master_server, WTERMSIG(status));
+  
   /* Do not respawn if we could not read the time. */
   if (time_error)
     {
       perror(*argv);
-      eprintf("%s died abnormally, not respawning because we could not read the time.", master_server);
+      eprintf("`%s' died abnormally, not respawning because we could not read the time.", master_server);
       goto fail;
     }
   
       /* Respawn if the server did not die too fast. */
   if (time_end.tv_sec - time_start.tv_sec >= RESPAWN_TIME_LIMIT_SECONDS)
-    eprintf("%s died abnormally, respawning.", master_server);
+    eprintf("`%s' died abnormally, respawning.", master_server);
   else
     {
-      eprintf("%s died abnormally, died too fast, not respawning.", master_server);
+      eprintf("`%s' died abnormally, died too fast, not respawning.", master_server);
       goto fail;
     }
   
