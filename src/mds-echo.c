@@ -276,6 +276,7 @@ int echo_message(void)
   
 #undef __get_header
   
+  
   if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
     {
       eprint("received message from anonymous sender, ignoring.");
@@ -289,7 +290,7 @@ int echo_message(void)
   
   n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
-  if (recv_length)
+  if (recv_length != NULL)
     n += strlen(recv_length) + 1;
   
   if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
@@ -302,14 +303,12 @@ int echo_message(void)
 	}
     }
   
-  sprintf(echo_buffer, "To: %s\nIn response to:%s\nMessage ID: " PRIi32 "\n%s%s\n",
+  sprintf(echo_buffer, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\n%s%s\n",
 	  recv_client_id, recv_message_id, message_id,
 	  recv_length == NULL ? "" : recv_length,
 	  recv_length == NULL ? "" : "\n");
   
-  message_id += 1;
-  if (message_id < 0)
-    message_id = 0;
+  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
   
   if (full_send(echo_buffer, n - 1))
     return 1;
