@@ -26,10 +26,14 @@ unset OLD_XDG_CONFIG_HOME
 if [ -z "${XDG_CONFIG_HOME}" ]; then
     unset XDG_CONFIG_HOME
 fi
-mds-respawn --interval=10 \
+g=
+if [ -z "${NO_VALGRIND}" ]; then
+    g="valgrind --leak-check=full --show-leak-kinds=all"
+fi
+$g mds-respawn --interval=10 \
     { sleep 4s } \
     { sleep 1m } \
-    { mds-echo } \
+    { $g mds-echo } \
     &
 if which terminator 2>/dev/null >&2; then
     exec terminator
