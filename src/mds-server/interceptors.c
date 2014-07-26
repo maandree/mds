@@ -265,6 +265,7 @@ queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char**
   /* Count clients. */
   foreach_linked_list_node (client_list, node)
     n++;
+  eprintf("n: %lu", n); /* TODO temporary */
   
   /* Allocate interceptor list. */
   if (xmalloc(interceptions, n, queued_interception_t))
@@ -280,6 +281,7 @@ queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char**
 	{
 	  int r = find_matching_condition(client, hashes, keys, headers, count,
 					  interceptions + interceptions_count);
+	  eprintf("%i", r); /* TODO temporary */
 	  if (r == -1)
 	    {
 	      free(interceptions);
@@ -291,6 +293,7 @@ queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char**
 	}
     }
   
+  eprint(""); /* TODO temporary */
   *interceptions_count_out = interceptions_count;
   return interceptions;
 }
