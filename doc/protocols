@@ -66,8 +66,13 @@ Reference implementation: mds-echo
 
 Command: register
   Register availability of a command for which you implement a service
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
   
-Required header: Length
+Conditionally required header: Length
+  Required if: `Action: list`
   Length of the message
 
 Optional header: Action
