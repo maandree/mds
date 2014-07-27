@@ -91,6 +91,18 @@ extern int is_respawn;
 extern int is_reexec;
 
 /**
+ * Whether to fork the process when the
+ * server has been properly initialised
+ */
+extern int on_init_fork;
+
+/**
+ * Command the run (`NULL` for none) when
+ * the server has been properly initialised
+ */
+extern char* on_init_sh;
+
+/**
  * The thread that runs the master loop
  */
 extern pthread_t master_thread;
@@ -137,6 +149,13 @@ int parse_cmdline(void); /* __attribute__((weak)) */
  * @return  Non-zero on error
  */
 int connect_to_display(void); /* __attribute__((weak)) */
+
+/**
+ * This function should be called when the server has
+ * been properly initialised but before initialisation
+ * of anything that is removed at forking is initialised
+ */
+void server_initialised(void); /* __attribute__((weak)) */
 
 
 /**

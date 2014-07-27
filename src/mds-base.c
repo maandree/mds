@@ -42,6 +42,8 @@ int argc = 0;
 char** argv = NULL;
 int is_respawn = -1;
 int is_reexec = 0;
+int on_init_fork = 0;
+char* on_init_sh = NULL;
 pthread_t master_thread;
 
 volatile sig_atomic_t terminating = 0;
@@ -82,6 +84,10 @@ int __attribute__((weak)) parse_cmdline(void)
 	is_reexec = 1;
       else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
 	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+      else if (strequals(arg, "--on-init-fork")) /* Fork process when initialised. */
+	on_init_fork = 1;
+      else if (startswith(arg, "--on-init-sh=")) /* Run a command when initialised. */
+	on_init_sh = arg + strlen("--on-init-sh=");
     }
   if (is_reexec)
     {
@@ -129,6 +135,30 @@ int __attribute__((weak)) connect_to_display(void)
   if (socket_fd >= 0)
     close(socket_fd);
   return 1;
+}
+
+/**
+ * This function should be called when the server has
+ * been properly initialised but before initialisation
+ * of anything that is removed at forking is initialised
+ */
+void __attribute__((weak)) server_initialised(void)
+{
+  pid_t r;
+  if (on_init_fork && (r = fork()))
+    {
+      if (r == (pid_t)-1)
+	{
+	  perror(*argv);
+	  eprint("while forking at completed initialisation");
+	  exit(1);
+	}
+      else
+	exit(0);
+    }
+  
+  if (on_init_sh != NULL)
+    system(on_init_sh);
 }
 
 
