@@ -106,6 +106,7 @@ int initialise_server(void)
   
   if (full_send(message, strlen(message)))
     return 1;
+  server_initialised();
   mds_message_initialise(&received);
   return 0;
 }
