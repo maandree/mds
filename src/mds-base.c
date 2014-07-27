@@ -150,7 +150,7 @@ void __attribute__((weak)) server_initialised(void)
       if (r == (pid_t)-1)
 	{
 	  perror(*argv);
-	  eprint("while forking at completed initialisation");
+	  eprint("while forking at completed initialisation.");
 	  exit(1);
 	}
       else
