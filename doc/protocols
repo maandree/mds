@@ -64,3 +64,27 @@ Reference implementation: mds-echo
 
 ---------------------------------------------------------------------
 
+Command: register
+  Register availability of a command for which you implement a service
+  
+Required header: Length
+  Length of the message
+
+Optional header: Action
+  Remove availability for registry if `remove`.
+  Wait until listed commands are available if `wait`.
+  Send a list of availability commands if `list`.
+
+Message: List of values for the header `Command` that you implement
+
+Purpose: Identify supported display server operations
+Purpose: Initialisation process synchronisation
+
+Compulsivity: highly recommended (infrastructures), programs may
+	      stall a bit from time to time without it, or at
+	      initialisation depending on the program's implementation
+
+Reference implementation: mds-registry
+
+---------------------------------------------------------------------
+
