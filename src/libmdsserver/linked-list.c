@@ -342,7 +342,7 @@ ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ss
   if (node == LINKED_LIST_UNUSED)
     return LINKED_LIST_UNUSED;
   this->values[node] = value;
-  this->previous[node] = this->next[successor];
+  this->previous[node] = this->previous[successor];
   this->previous[successor] = node;
   this->next[node] = successor;
   this->next[this->previous[node]] = node;
@@ -467,5 +467,40 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
   memcpy(this->previous, data, this->end * sizeof(ssize_t));
   
   return 0;
+}
+
+
+/**
+ * Print the content of the list
+ * 
+ * @param  this    The list
+ * @param  output  Output file
+ */
+void linked_list_dump(linked_list_t* restrict this, FILE* output)
+{
+  ssize_t i;
+  size_t j;
+  fprintf(output, "======= LINKED LIST DUMP =======\n");
+  fprintf(output, "Capacity:    %lu\n", this->capacity);
+  fprintf(output, "End:         %lu\n", this->end);
+  fprintf(output, "Reuse head:  %lu\n", this->reuse_head);
+  fprintf(output, "Edge:        %li\n", this->edge);
+  fprintf(output, "--------------------------------\n");
+  fprintf(output, "Node table (Next, Prev, Value):\n");
+  i = this->edge;
+  fprintf(output, "    %li: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+  foreach_linked_list_node((*this), i)
+    fprintf(output, "    %li: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+  i = this->edge;
+  fprintf(output, "    %li: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+  fprintf(output, "--------------------------------\n");
+  fprintf(output, "Raw node table:\n");
+  for (j = 0; j < this->end; j++)
+    fprintf(output, "    %lu: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+  fprintf(output, "--------------------------------\n");
+  fprintf(output, "Reuse stack:\n");
+  for (j = 0; j < this->reuse_head; j++)
+    fprintf(output, "    %lu: %li\n", j, this->reusable[j]);
+  fprintf(output, "================================\n");
 }
 
