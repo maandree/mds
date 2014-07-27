@@ -62,7 +62,7 @@ if it could be used for spying. To tell the server
 that you want to intercept a type of message the client
 sends a message with the header and value
 ‘Command: intercept’. It can also specify a priority
-that is an signed 64-bit integer, the default value is
+that is a signed 64-bit integer, the default value is
 zero. This is done by using the header ‘Priority’. A
 higher priority means that the message is sent earlier.
 If the client wishes to be able to modify the message

@@ -1,0 +1,66 @@
+---------------------------------------------------------------------
+
+Command: assign-id
+  Assign new ID to client, or fetch current ID
+
+Purpose: assigning ID to clients so server can respond to that client
+
+Compulsivity: manditory (core infrastructure)
+
+More documentation: doc/messages
+
+Reference implementation: mds-server
+
+---------------------------------------------------------------------
+
+Command: intercept
+  Sign up for reception of message
+
+Optional header: Stop
+  Stop reception of messages if `yes`
+
+Optional header: Priority
+  Signed 64-bit integer of reception priority (reversed of order)
+
+Optional header: Modifying
+  Send message asynchronously and await modification if `yes`
+
+Optional header: Length
+  Length of the message
+
+Message: list of headers and header–value-pairs that qualifies
+         a message for reception, all messages qualifies if this
+	 list is empty
+
+Purpose: filter received message for clients and servers
+Purpose: assigned interception order for modification of messages
+
+Compulsivity: manditory (core infrastructure)
+
+More documentation: doc/messages
+
+Reference implementation: mds-server
+
+---------------------------------------------------------------------
+
+Command: echo
+  Echo back a message
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+  
+Optional header: Length
+  Length of the message
+
+Message: message to echo
+
+Purpose: debugging and testing
+Purpose: network heartbeat
+
+Compulsivity: recommended for network enabled servers
+
+Reference implementation: mds-echo
+
+---------------------------------------------------------------------
+
