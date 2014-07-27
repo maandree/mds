@@ -73,7 +73,7 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 LIBOBJ = linked-list hash-table fd-table mds-message util
 
 # Servers and utilities.
-SERVERS = mds mds-respawn mds-server mds-echo
+SERVERS = mds mds-respawn mds-server mds-echo mds-registry
 
 
 # Build rules.

@@ -25,7 +25,6 @@ Missing servers:
 	dri		DRI output
 	drag		Drag and drop
 	cursorshadow	Decorate cursors with shadows
-	registry	Server protocol availability registry
 	kill		Kill processes based on their windows
 	shm		Network enabled shared memory
 	sem		Network enabled shared semaphores
