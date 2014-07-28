@@ -267,6 +267,8 @@ int echo_message(void)
   const char* recv_length = NULL;
   size_t i, n;
   
+  /* Fetch headers. */
+  
 #define __get_header(storage, header, skip)  \
   (startswith(received.headers[i], header))  \
     storage = received.headers[i] + skip * strlen(header)
@@ -278,6 +280,8 @@ int echo_message(void)
       else if __get_header(recv_length,     "Length: ",     0);
       else
 	continue;
+      
+      /* Stop fetch headers if we have found everything we want. */
       if (recv_client_id && recv_message_id && recv_length)
 	break;
     }
@@ -285,6 +289,7 @@ int echo_message(void)
 #undef __get_header
   
   
+  /* Validate headers. */
   if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
     {
       eprint("received message from anonymous sender, ignoring.");
@@ -295,6 +300,8 @@ int echo_message(void)
       eprint("received message with ID, ignoring, master server is misbehaving.");
       return 0;
     }
+  
+  /* Construct echo message headers. */
   
   n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
   n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int32_t);
@@ -316,8 +323,10 @@ int echo_message(void)
 	  recv_length == NULL ? "" : recv_length,
 	  recv_length == NULL ? "" : "\n");
   
+  /* Increase message ID */
   message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
   
+  /* Send echo. */
   if (full_send(echo_buffer, strlen(echo_buffer)))
     return 1;
   return full_send(received.payload, received.payload_size);
