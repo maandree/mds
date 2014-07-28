@@ -93,6 +93,11 @@ static pthread_mutex_t reg_mutex;
  */
 static pthread_cond_t reg_cond;
 
+/**
+ * Used to temporarily store the old value when reallocating heap-allocations
+ */
+static char* old;
+
 
 
 /**
@@ -436,11 +441,8 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
   
   if (received.payload_size == length)
     {
-      if (xrealloc(received.payload, received.payload_size <<= 1, char))
+      if (growalloc(old, received.payload, received.payload_size, char))
 	{
-	  received.payload = payload;
-	  received.payload_size >>= 1;
-	  perror(*argv);
 	  if (wait_set != NULL)
 	    {
 	      hash_table_destroy(wait_set, NULL, NULL);
@@ -578,20 +580,11 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
   
   if (send_buffer_size == 0)
     {
-      if (xmalloc(send_buffer, 256, char))
-	{
-	  perror(*argv);
-	  return -1;
-	}
+      fail_if (xmalloc(send_buffer, 256, char));
       send_buffer_size = 256;
     }
   
-  errno = pthread_mutex_lock(&reg_mutex);
-  if (errno)
-    {
-      perror(*argv);
-      return -1;
-    }
+  fail_if ((errno = pthread_mutex_lock(&reg_mutex)));
   
   for (i = 0; i < reg_table.capacity; i++)
     {
@@ -603,17 +596,8 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
 	  size_t len = strlen(command);
 	  
 	  while (ptr + len + 1 >= send_buffer_size)
-	    {
-	      char* old = send_buffer;
-	      if (xrealloc(send_buffer, send_buffer_size <<= 1, char))
-		{
-		  send_buffer = old;
-		  send_buffer_size >>= 1;
-		  perror(*argv);
-		  pthread_mutex_unlock(&reg_mutex);
-		  return -1;
-		}
-	    }
+	    if (growalloc(old, send_buffer, send_buffer_size, char))
+	      goto fail_in_mutex;
 	  
 	  memcpy(send_buffer + ptr, command, len * sizeof(char));
 	  ptr += len;
@@ -626,15 +610,8 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
   
   while (ptr + i >= send_buffer_size)
     {
-      char* old = send_buffer;
-      if (xrealloc(send_buffer, send_buffer_size <<= 1, char))
-	{
-	  send_buffer = old;
-	  send_buffer_size >>= 1;
-	  perror(*argv);
-	  pthread_mutex_unlock(&reg_mutex);
-	  return -1;
-	}
+      if (growalloc(old, send_buffer, send_buffer_size, char))
+	goto fail_in_mutex;
     }
   
   sprintf(send_buffer + ptr, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\nLength: %" PRIu64 "\n\n",
@@ -647,6 +624,15 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
   if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)))
     return 1;
   return full_send(send_buffer, ptr);
+  
+  
+ fail_in_mutex:
+  pthread_mutex_unlock(&reg_mutex);
+  return -1;
+  
+ pfail:
+  perror(*argv);
+  return -1;
 }
 
 

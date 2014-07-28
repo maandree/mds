@@ -323,6 +323,20 @@
 
 
 /**
+ * Double to the size of an allocation on the heap
+ * 
+ * @param   old       Variable in which to store the old value temporarily
+ * @param   var       The variable to which to assign the reallocation
+ * @param   elements  The number of elements to allocate
+ * @param   type      The data type of the elements for which to create an allocation
+ * @return  :int      Evaluates to true if an only if the allocation failed
+ */
+#define growalloc(old, var, elements, type)  \
+  (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, perror(*argv), 1) : 0)
+  
+
+
+/**
  * Go to the label `pfail` if a condition is met
  * 
  * @param  CONDITION  The condition
