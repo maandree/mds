@@ -15,20 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MDS_MDS_ECHO_H
-#define MDS_MDS_ECHO_H
+#ifndef MDS_MDS_REGISTRY_H
+#define MDS_MDS_REGISTRY_H
 
 
 #include "mds-base.h"
 
 
 /**
- * Echo the received message payload
+ * Handle the received message
  * 
  * @return  Zero on success -1 on error or interruption,
  *          errno will be set accordingly
  */
-int echo_message(void);
+int handle_message(void);
+
+/**
+ * Perform an action over the registry
+ * 
+ * @param   length           The length of the received message
+ * @param   action           -1 to remove command, +1 to add commands, 0 to
+ *                           wait until the message commnds are registered
+ * @param   recv_client_id   The ID of the client
+ * @param   recv_message_id  The ID of the received message
+ * @return                   Zero on success -1 on error or interruption,
+ *                           errno will be set accordingly
+ */
+int registry_action(size_t length, int action, const char* recv_client_id, const char* recv_message_id);
+
+/**
+ * Send a list of all registered commands to a client
+ * 
+ * @param   recv_client_id   The ID of the client
+ * @param   recv_message_id  The ID of the received message
+ * @return                   Zero on success -1 on error or interruption,
+ *                           errno will be set accordingly
+ */
+int list_registry(const char* recv_client_id, const char* recv_message_id);
 
 /**
  * Send a full message even if interrupted

@@ -77,7 +77,10 @@ Conditionally required header: Length
 
 Optional header: Action
   Remove availability for registry if `remove`.
-  Wait until listed commands are available if `wait`.
+  Wait until listed commands are available if `wait`,
+    however if a protocol becomes unavailable during this
+    wait period it will still be counted as available for
+    this wait action.
   Send a list of availability commands if `list`.
 
 Message: List of values for the header `Command` that you implement
@@ -90,6 +93,20 @@ Compulsivity: highly recommended (infrastructure), programs may
 	      initialisation depending on the program's implementation
 
 Reference implementation: mds-registry
+
+---------------------------------------------------------------------
+
+Command: reregister
+  Request that all servers resends `Command: register` with either
+  `Action: add` or without the `Action` header (does the same thing)
+
+Purpose: Rebuild registry created with `Command: register` if the
+	 registry server crashes
+
+Compulsivity: highly recommended (infrastructure), programs may
+	      think a protocol is not supported of the registry
+	      server crashes if you do not implement this in your
+	      server
 
 ---------------------------------------------------------------------
 
