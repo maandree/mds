@@ -201,22 +201,18 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 2 * sizeof(int) + sizeof(int32_t) + 3 * sizeof(size_t);
-  size_t i;
+  size_t i, rc = 2 * sizeof(int) + sizeof(int32_t) + 3 * sizeof(size_t);
+  hash_entry_t* entry;
   
   rc += mds_message_marshal_size(&received);
   
-  for (i = 0; i < reg_table.capacity; i++)
+  foreach_hash_table_entry (reg_table, i, entry)
     {
-      hash_entry_t* bucket = reg_table.buckets[i];
-      for (; bucket != NULL; bucket = bucket->next)
-	{
-	  char* command = (char*)(void*)(bucket->key);
-	  size_t len = strlen(command) + 1;
-	  client_list_t* list = (client_list_t*)(void*)(bucket->value);
-	  
-	  rc += len + sizeof(size_t) + client_list_marshal_size(list);
-	}
+      char* command = (char*)(void*)(entry->key);
+      size_t len = strlen(command) + 1;
+      client_list_t* list = (client_list_t*)(void*)(entry->value);
+      
+      rc += len + sizeof(size_t) + client_list_marshal_size(list);
     }
   
   return rc;
@@ -232,6 +228,8 @@ size_t marshal_server_size(void)
 int marshal_server(char* state_buf)
 {
   size_t i, n = mds_message_marshal_size(&received);
+  hash_entry_t* entry;
+  
   buf_set_next(state_buf, int, MDS_REGISTRY_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
@@ -241,23 +239,19 @@ int marshal_server(char* state_buf)
   
   buf_set_next(state_buf, size_t, reg_table.capacity);
   buf_set_next(state_buf, size_t, reg_table.size);
-  for (i = 0; i < reg_table.capacity; i++)
+  foreach_hash_table_entry (reg_table, i, entry)
     {
-      hash_entry_t* bucket = reg_table.buckets[i];
-      for (; bucket != NULL; bucket = bucket->next)
-	{
-	  char* command = (char*)(void*)(bucket->key);
-	  size_t len = strlen(command) + 1;
-	  client_list_t* list = (client_list_t*)(void*)(bucket->value);
-	  
-	  memcpy(state_buf, command, len * sizeof(char));
-	  state_buf += len;
-	  
-	  n = client_list_marshal_size(list);
-	  buf_set_next(state_buf, size_t, n);
-	  client_list_marshal(list, state_buf);
-	  state_buf += n / sizeof(char);
-	}
+      char* command = (char*)(void*)(entry->key);
+      size_t len = strlen(command) + 1;
+      client_list_t* list = (client_list_t*)(void*)(entry->value);
+      
+      memcpy(state_buf, command, len * sizeof(char));
+      state_buf += len;
+      
+      n = client_list_marshal_size(list);
+      buf_set_next(state_buf, size_t, n);
+      client_list_marshal(list, state_buf);
+      state_buf += n / sizeof(char);
     }
   
   hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
@@ -778,6 +772,7 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
 int list_registry(const char* recv_client_id, const char* recv_message_id)
 {
   size_t ptr = 0, i;
+  hash_entry_t* entry;
   
   if (send_buffer_size == 0)
     {
@@ -787,23 +782,19 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
   
   fail_if ((errno = pthread_mutex_lock(&reg_mutex)));
   
-  for (i = 0; i < reg_table.capacity; i++)
+  foreach_hash_table_entry (reg_table, i, entry)
     {
-      hash_entry_t* bucket = reg_table.buckets[i];
-      for (; bucket != NULL; bucket = bucket->next)
-	{
-	  size_t key = bucket->key;
-	  char* command = (char*)(void*)key;
-	  size_t len = strlen(command);
-	  
-	  while (ptr + len + 1 >= send_buffer_size)
-	    if (growalloc(old, send_buffer, send_buffer_size, char))
-	      goto fail_in_mutex;
-	  
-	  memcpy(send_buffer + ptr, command, len * sizeof(char));
-	  ptr += len;
-	  send_buffer[ptr++] = '\n';
-	}
+      size_t key = entry->key;
+      char* command = (char*)(void*)key;
+      size_t len = strlen(command);
+      
+      while (ptr + len + 1 >= send_buffer_size)
+	if (growalloc(old, send_buffer, send_buffer_size, char))
+	  goto fail_in_mutex;
+      
+      memcpy(send_buffer + ptr, command, len * sizeof(char));
+      ptr += len;
+      send_buffer[ptr++] = '\n';
     }
   
   i = strlen(recv_message_id) + strlen(recv_client_id) + 10 + 19;
