@@ -396,6 +396,145 @@ int handle_message(void)
 
 
 /**
+ * Convert a client ID string into a client ID integer
+ * 
+ * @param   str  The client ID string
+ * @return       The client ID integer
+ */
+static uint64_t parse_client_id(const char* str)
+{
+  char client_words[22];
+  char* client_high;
+  char* client_low;
+  uint64_t client;
+  
+  strcpy(client_high = client_words, str);
+  client_low = rawmemchr(client_words, ':');
+  *client_low++ = '\0';
+  client = (uint64_t)atoll(client_high);
+  client <<= 32;
+  client |= (uint64_t)atoll(client_low);
+  
+  return client;
+}
+
+
+/**
+ * Add a protocol to the registry
+ * 
+ * @param   has_key      Whether the command is already in the registry
+ * @param   command      The command
+ * @param   command_key  The address of `command`
+ * @param   client       The ID of the client that implements the server-side of the protocol
+ * @return               Non-zero on error
+ */
+static int registry_action_add(int has_key, char* command, size_t command_key, uint64_t client)
+{
+  if (has_key)
+    {
+      size_t address = hash_table_get(&reg_table, command_key);
+      client_list_t* list = (client_list_t*)(void*)address;
+      if (client_list_add(list, client) < 0)
+	goto pfail;
+    }
+  else
+    {
+      client_list_t* list = malloc(sizeof(client_list_t));
+      void* address = list;
+      if (list == NULL)
+	goto pfail;
+      if ((command = strdup(command)) == NULL)
+	{
+	  free(list);
+	  goto pfail;
+	}
+      command_key = (size_t)(void*)command;
+      if (client_list_create(list, 1) ||
+	  client_list_add(list, client) ||
+	  (hash_table_put(&reg_table, command_key, (size_t)address) == 0))
+	{
+	  client_list_destroy(list);
+	  free(list);
+	  free(command);
+	  goto pfail;
+	}
+    }
+  
+  return 0;
+ pfail:
+  perror(*argv);
+  return -1;
+}
+
+
+/**
+ * Remove a protocol from the registry
+ * 
+ * @param   command_key  The address of a string that contains the command
+ * @param   client       The ID of the client that implements the server-side of the protocol
+ * @return               Non-zero on error
+ */
+static void registry_action_remove(size_t command_key, uint64_t client)
+{
+  hash_entry_t* entry = hash_table_get_entry(&reg_table, command_key);
+  size_t address = entry->value;
+  client_list_t* list = (client_list_t*)(void*)address;
+  client_list_remove(list, client);
+  if (list->size == 0)
+    {
+      client_list_destroy(list);
+      free(list);
+      hash_table_remove(&reg_table, command_key);
+      reg_table_free_key(entry->key);
+    }
+}
+
+
+/**
+ * Modify the protocol registry or list missing protocols
+ * 
+ * @param   command      The command
+ * @param   action       -1 to remove command, +1 to add commands, 0 to
+ *                       wait until the message commnds are registered
+ * @param   client       The ID of the client that implements the server-side of the protocol
+ * @param   wait_set     Table to fill with missing protocols if `action == 0`
+ * @return               Non-zero on error
+ */
+static int registry_action_act(char* command, int action, uint64_t client, hash_table_t* wait_set)
+{
+  size_t command_key = (size_t)(void*)command;
+  int has_key = hash_table_contains_key(&reg_table, command_key);
+  
+  if (action == 1)
+    {
+      if (registry_action_add(has_key, command, command_key, client))
+	return -1;
+    }
+  else if ((action == -1) && has_key)
+    registry_action_remove(command_key, client);
+  else if ((action == 0) && !has_key)
+    {
+      if ((command = strdup(command)) == NULL)
+	goto pfail_wait;
+      command_key = (size_t)(void*)command;
+      if (hash_table_put(wait_set, command_key, 1) == 0)
+	if (errno)
+	  {
+	    free(command);
+	    goto pfail_wait;
+	  }
+    }
+  
+  return 0;
+ pfail_wait:
+  perror(*argv);
+  hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
+  free(wait_set);
+  return -1;
+}
+
+
+/**
  * Perform an action over the registry
  * 
  * @param   length           The length of the received message
@@ -409,31 +548,18 @@ int handle_message(void)
 int registry_action(size_t length, int action, const char* recv_client_id, const char* recv_message_id)
 {
   char* payload = received.payload;
-  uint64_t client = 0;
+  uint64_t client = action ? parse_client_id(recv_client_id) : 0;
   hash_table_t* wait_set = NULL;
   size_t begin;
-  char client_words[22];
-  char* client_high;
-  char* client_low;
   
-  if (action)
-    {
-      strcpy(client_high = client_words, recv_client_id);
-      client_low = rawmemchr(client_words, ':');
-      *client_low++ = '\0';
-      client = (uint64_t)atoll(client_high);
-      client <<= 32;
-      client |= (uint64_t)atoll(client_low);
-    }
-  else
+  if (action == 0)
     {
       wait_set = malloc(sizeof(hash_table_t));
       if (hash_table_create(wait_set))
 	{
-	  perror(*argv);
 	  hash_table_destroy(wait_set, NULL, NULL);
 	  free(wait_set);
-	  return -1;
+	  goto pfail;
 	}
       wait_set->key_comparator = (compare_func*)string_comparator;
       wait_set->hasher = (hash_func*)string_hash;
@@ -444,10 +570,7 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
       if (growalloc(old, received.payload, received.payload_size, char))
 	{
 	  if (wait_set != NULL)
-	    {
-	      hash_table_destroy(wait_set, NULL, NULL);
-	      free(wait_set);
-	    }
+	    hash_table_destroy(wait_set, NULL, NULL), free(wait_set);
 	  return -1;
 	}
       else
@@ -456,103 +579,19 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
   
   payload[length] = '\n';
   
-  errno = pthread_mutex_lock(&reg_mutex);
-  if (errno)
-    {
-      perror(*argv);
-      return -1;
-    }
+  fail_if ((errno = pthread_mutex_lock(&reg_mutex)));
   
   for (begin = 0; begin < length;)
     {
       char* end = rawmemchr(payload + begin, '\n');
       size_t len = (size_t)(end - payload) - begin - 1;
       char* command = payload + begin;
-      size_t command_key = (size_t)(void*)command;
       
       command[len] = '\0';
       begin += len + 1;
       
-      if (action == 1)
-	{
-	  if (hash_table_contains_key(&reg_table, command_key))
-	    {
-	      size_t address = hash_table_get(&reg_table, command_key);
-	      client_list_t* list = (client_list_t*)(void*)address;
-	      if (client_list_add(list, client) < 0)
-		{
-		  perror(*argv);
-		  pthread_mutex_unlock(&reg_mutex);
-		  return -1;
-		}
-	    }
-	  else
-	    {
-	      client_list_t* list = malloc(sizeof(client_list_t));
-	      void* address = list;
-	      if (list == NULL)
-		{
-		  perror(*argv);
-		  pthread_mutex_unlock(&reg_mutex);
-		  return -1;
-		}
-	      if ((command = strdup(command)) == NULL)
-		{
-		  perror(*argv);
-		  free(list);
-		  pthread_mutex_unlock(&reg_mutex);
-		  return -1;
-		}
-	      command_key = (size_t)(void*)command;
-	      if (client_list_create(list, 1) ||
-		  client_list_add(list, client) ||
-		  (hash_table_put(&reg_table, command_key, (size_t)address) == 0))
-		{
-		  perror(*argv);
-		  client_list_destroy(list);
-		  free(list);
-		  free(command);
-		  pthread_mutex_unlock(&reg_mutex);
-		  return -1;
-		}
-	    }
-	}
-      else if ((action == -1) && hash_table_contains_key(&reg_table, command_key))
-	{
-	  hash_entry_t* entry = hash_table_get_entry(&reg_table, command_key);
-	  size_t address = entry->value;
-	  client_list_t* list = (client_list_t*)(void*)address;
-	  client_list_remove(list, client);
-	  if (list->size == 0)
-	    {
-	      client_list_destroy(list);
-	      free(list);
-	      hash_table_remove(&reg_table, command_key);
-	      reg_table_free_key(entry->key);
-	    }
-	}
-      else if ((action == 0) && !hash_table_contains_key(&reg_table, command_key))
-	{
-	  if ((command = strdup(command)) == NULL)
-	    {
-	      perror(*argv);
-	      hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
-	      free(wait_set);
-	      pthread_mutex_unlock(&reg_mutex);
-	      return -1;
-	    }
-	  command_key = (size_t)(void*)command;
-	  if (hash_table_put(wait_set, command_key, 1) == 0)
-	    if (errno)
-	      {
-		perror(*argv);
-		free(command);
-		hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
-		free(wait_set);
-		pthread_mutex_unlock(&reg_mutex);
-		return -1;
-	      }
-	}
+      if (registry_action_act(command, action, client, wait_set))
+	goto fail_in_mutex;
     }
   
   pthread_mutex_unlock(&reg_mutex);
@@ -563,6 +602,14 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
     }
   
   return 0;
+  
+  
+ pfail:
+  perror(*argv);
+  return -1;
+ fail_in_mutex:
+  pthread_mutex_unlock(&reg_mutex);
+  return -1;
 }
 
 
