@@ -139,7 +139,7 @@ int initialise_server(void)
     "Length: 32\n"
     "\n"
     "Command: register\n"
-    "Client closed\n" /* FIXME support not implemented yet */
+    "Client closed\n"
     /* -- NEXT MESSAGE -- */
     "Command: reregister\n"
     "Message ID: 1\n"
@@ -391,12 +391,12 @@ int master_loop(void)
 
 
 /**
- * Handle the received message
+ * Handle the received message containing ‘Command: register’-header–value
  * 
  * @return  Zero on success -1 on error or interruption,
  *          errno will be set accordingly
  */
-int handle_message(void)
+static int handle_register_message(void)
 {
   const char* recv_client_id = NULL;
   const char* recv_message_id = NULL;
@@ -463,6 +463,37 @@ int handle_message(void)
     }
   
 #undef __registry_action
+}
+
+
+/**
+ * Handle the received message containing a ‘Client closed’-header
+ * 
+ * @return  Zero on success -1 on error or interruption,
+ *          errno will be set accordingly
+ */
+static int handle_close_message(void)
+{
+  /* FIXME */
+  return 0;
+}
+
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success -1 on error or interruption,
+ *          errno will be set accordingly
+ */
+int handle_message(void)
+{
+  size_t i;
+  for (i = 0; i < received.header_count; i++)
+    {
+      if (strequals(received.headers[i], "Command: register"))
+	return handle_register_message();
+    }
+  return handle_close_message();
 }
 
 
