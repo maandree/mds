@@ -17,6 +17,8 @@
  */
 #include "util.h"
 
+#include "globals.h"
+
 #include "../mds-base.h"
 
 #include <libmdsserver/util.h>

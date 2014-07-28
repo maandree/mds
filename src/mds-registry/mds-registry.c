@@ -18,6 +18,7 @@
 #include "mds-registry.h"
 
 #include "util.h"
+#include "globals.h"
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
@@ -52,53 +53,6 @@ server_characteristics_t server_characteristics =
     .require_respawn_info = 0,
     .sanity_check_argc = 1
   };
-
-
-
-/**
- * Value of the ‘Message ID’ header for the next message
- */
-static int32_t message_id = 2;
-
-/**
- * Buffer for received messages
- */
-static mds_message_t received;
-
-/**
- * Whether the server is connected to the display
- */
-static int connected = 1;
-
-/**
- * Protocol registry table
- */
-static hash_table_t reg_table;
-
-/**
- * Reusable buffer for data to send
- */
-static char* send_buffer = NULL;
-
-/**
- * The size of `send_buffer`
- */
-static size_t send_buffer_size = 0;
-
-/**
- * General mutex
- */
-static pthread_mutex_t reg_mutex;
-
-/**
- * General condition
- */
-static pthread_cond_t reg_cond;
-
-/**
- * Used to temporarily store the old value when reallocating heap-allocations
- */
-static char* old;
 
 
 
