@@ -184,7 +184,10 @@ int unmarshal_server(char* state_buf)
   buf_get_next(state_buf, int32_t, message_id);
   r = mds_message_unmarshal(&received, state_buf);
   if (r)
-    mds_message_destroy(&received);
+    {
+      perror(*argv);
+      mds_message_destroy(&received);
+    }
   return r;
 }
 

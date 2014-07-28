@@ -192,8 +192,24 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 2 * sizeof(int) + sizeof(int32_t) + sizeof(size_t);
+  size_t rc = 2 * sizeof(int) + sizeof(int32_t) + 3 * sizeof(size_t);
+  size_t i;
+  
   rc += mds_message_marshal_size(&received);
+  
+  for (i = 0; i < reg_table.capacity; i++)
+    {
+      hash_entry_t* bucket = reg_table.buckets[i];
+      for (; bucket != NULL; bucket = bucket->next)
+	{
+	  char* command = (char*)(void*)(bucket->key);
+	  size_t len = strlen(command) + 1;
+	  client_list_t* list = (client_list_t*)(void*)(bucket->value);
+	  
+	  rc += len + sizeof(size_t) + client_list_marshal_size(list);
+	}
+    }
+  
   return rc;
 }
 
@@ -206,14 +222,34 @@ size_t marshal_server_size(void)
  */
 int marshal_server(char* state_buf)
 {
-  size_t n = mds_message_marshal_size(&received);
+  size_t i, n = mds_message_marshal_size(&received);
   buf_set_next(state_buf, int, MDS_REGISTRY_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
   buf_set_next(state_buf, size_t, n);
   mds_message_marshal(&received, state_buf);
   state_buf += n / sizeof(char);
-  /* FIXME marshal &reg_table */
+  
+  buf_set_next(state_buf, size_t, reg_table.capacity);
+  buf_set_next(state_buf, size_t, reg_table.size);
+  for (i = 0; i < reg_table.capacity; i++)
+    {
+      hash_entry_t* bucket = reg_table.buckets[i];
+      for (; bucket != NULL; bucket = bucket->next)
+	{
+	  char* command = (char*)(void*)(bucket->key);
+	  size_t len = strlen(command) + 1;
+	  client_list_t* list = (client_list_t*)(void*)(bucket->value);
+	  
+	  memcpy(state_buf, command, len * sizeof(char));
+	  state_buf += len;
+	  
+	  n = client_list_marshal_size(list);
+	  buf_set_next(state_buf, size_t, n);
+	  client_list_marshal(list, state_buf);
+	  state_buf += n / sizeof(char);
+	}
+    }
   
   hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
   mds_message_destroy(&received);
@@ -233,22 +269,57 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
-  int r, rc = 0;
-  size_t n;
+  char* command;
+  client_list_t* list;
+  size_t i, n, m;
+  int stage = 0;
+  
   /* buf_get_next(state_buf, int, MDS_REGISTRY_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, int32_t, message_id);
   buf_get_next(state_buf, size_t, n);
-  rc |= r = mds_message_unmarshal(&received, state_buf);
-  if (r)
-    mds_message_destroy(&received);
+  fail_if (mds_message_unmarshal(&received, state_buf));
   state_buf += n / sizeof(char);
-  /* FIXME unmarshal &reg_table */
+  stage = 1;
+  
+  buf_get_next(state_buf, size_t, n);
+  fail_if (hash_table_create_tuned(&reg_table, n));
+  buf_get_next(state_buf, size_t, n);
+  for (i = 0; i < n; i++)
+    {
+      stage = 1;
+      fail_if ((command = strdup(state_buf)) == NULL);
+      state_buf += strlen(command) + 1;
+      
+      stage = 2;
+      fail_if ((list = malloc(sizeof(client_list_t))) == NULL);
+      buf_get_next(state_buf, size_t, m);
+      stage = 3;
+      fail_if (client_list_unmarshal(list, state_buf));
+      state_buf += m / sizeof(char);
+      
+      hash_table_put(&reg_table, (size_t)(void*)command, (size_t)(void*)list);
+      fail_if (errno);
+    }
   
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
-  return rc;
+  
+  return 0;
+ pfail:
+  perror(*argv);
+  mds_message_destroy(&received);
+  if (stage >= 1)
+    hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
+  if (stage >= 2)
+    free(command);
+  if (stage >= 3)
+    {
+      client_list_destroy(list);
+      free(list);
+    }
+  return -1;
 }
 
 
