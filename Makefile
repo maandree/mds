@@ -5,7 +5,7 @@
 
 
 # Include configurations.
-include config.mk
+include mk/config.mk
 
 
 # Object files for the libary.
@@ -32,7 +32,7 @@ OBJ_mds-registry = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
 .PHONY: all
 all: servers libraries
 
-include build.mk
+include mk/build.mk
 
 # Set permissions on built files.
 
