@@ -19,7 +19,7 @@
 #define MDS_MDS_REGISTRY_H
 
 
-#include "mds-base.h"
+#include "../mds-base.h"
 
 #include <stdint.h>
 

@@ -22,6 +22,11 @@ ifeq ($(DEBUG),y)
 endif
 
 
+bin/mds-registry: $(OBJ_mds-registry_) obj/mds-base.o bin/libmdsserver.so
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry_) obj/mds-base.o
+
+
 # Link small servers.
 
 bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so
