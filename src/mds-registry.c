@@ -139,7 +139,7 @@ int initialise_server(void)
     "Length: 32\n"
     "\n"
     "Command: register\n"
-    "Client closed\n" /* TODO support not implemented yet */
+    "Client closed\n" /* FIXME support not implemented yet */
     /* -- NEXT MESSAGE -- */
     "Command: reregister\n"
     "Message ID: 1\n"
@@ -213,7 +213,7 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, size_t, n);
   mds_message_marshal(&received, state_buf);
   state_buf += n / sizeof(char);
-  /* TODO marshal &reg_table */
+  /* FIXME marshal &reg_table */
   
   hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
   mds_message_destroy(&received);
@@ -244,7 +244,7 @@ int unmarshal_server(char* state_buf)
   if (r)
     mds_message_destroy(&received);
   state_buf += n / sizeof(char);
-  /* TODO unmarshal &reg_table */
+  /* FIXME unmarshal &reg_table */
   
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
@@ -598,7 +598,7 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
   
   if (action == 0)
     {
-      /* TODO */
+      /* FIXME */
     }
   
   return 0;
