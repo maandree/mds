@@ -20,7 +20,7 @@ OBJ_mds-server_ = mds-server interception-condition client multicast  \
                   queued-interception globals signals interceptors    \
                   sending slavery reexec receiving
 
-OBJ_mds-registry_ = mds-registry
+OBJ_mds-registry_ = mds-registry util
 
 OBJ_mds-server   = $(foreach O,$(OBJ_mds-server_),obj/mds-server/$(O).o)
 OBJ_mds-registry = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)

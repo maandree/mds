@@ -33,14 +33,6 @@
 int handle_message(void);
 
 /**
- * Convert a client ID string into a client ID integer
- * 
- * @param   str  The client ID string
- * @return       The client ID integer
- */
-uint64_t parse_client_id(const char* str);
-
-/**
  * Perform an action over the registry
  * 
  * @param   length           The length of the received message
@@ -62,29 +54,6 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
  *                           errno will be set accordingly
  */
 int list_registry(const char* recv_client_id, const char* recv_message_id);
-
-/**
- * Free a key from a table
- * 
- * @param  obj  The key
- */
-void reg_table_free_key(size_t obj);
-
-/**
- * Free a value from a table
- * 
- * @param  obj  The value
- */
-void reg_table_free_value(size_t obj);
-
-/**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Non-zero on success
- */
-int full_send(const char* message, size_t length);
 
 
 #endif
