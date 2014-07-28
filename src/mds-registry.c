@@ -187,7 +187,9 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  size_t rc = 2 * sizeof(int) + sizeof(int32_t) + sizeof(size_t);
+  rc += mds_message_marshal_size(&received);
+  return rc;
 }
 
 
@@ -199,10 +201,17 @@ size_t marshal_server_size(void)
  */
 int marshal_server(char* state_buf)
 {
+  size_t n = mds_message_marshal_size(&received);
   buf_set_next(state_buf, int, MDS_REGISTRY_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, size_t, n);
   mds_message_marshal(&received, state_buf);
+  state_buf += n / sizeof(char);
+  /* TODO marshal &reg_table */
+  
+  hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
+  mds_message_destroy(&received);
   return 0;
 }
 
@@ -219,18 +228,22 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
-  int r;
+  int r, rc = 0;
+  size_t n;
   /* buf_get_next(state_buf, int, MDS_REGISTRY_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, int32_t, message_id);
-  r = mds_message_unmarshal(&received, state_buf);
+  buf_get_next(state_buf, size_t, n);
+  rc |= r = mds_message_unmarshal(&received, state_buf);
   if (r)
     mds_message_destroy(&received);
+  state_buf += n / sizeof(char);
   /* TODO unmarshal &reg_table */
+  
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
-  return r;
+  return rc;
 }
 
 
@@ -291,11 +304,11 @@ int master_loop(void)
  fail:
   if (rc || !reexecing)
     {
-      /* TODO cleanup reg_table */
+      hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
+      mds_message_destroy(&received);
     }
   pthread_mutex_destroy(&reg_mutex);
   pthread_cond_destroy(&reg_cond);
-  mds_message_destroy(&received);
   free(send_buffer);
   return rc;
 }
@@ -459,50 +472,80 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
       begin += len + 1;
       
       if (action == 1)
-	if (hash_table_contains_key(&reg_table, command_key))
-	  {
-	    size_t address = hash_table_get(&reg_table, command_key);
-	    client_list_t* list = (client_list_t*)(void*)address;
-	    if (client_list_add(list, client) < 0)
-	      {
-		pthread_mutex_unlock(&reg_mutex);
-		return -1;
-	      }
-	  }
-	else
-	  {
-	    client_list_t* list = malloc(sizeof(client_list_t));
-	    void* address = list;
-	    if (list == NULL)
-	      {
-		perror(*argv);
-		pthread_mutex_unlock(&reg_mutex);
-		return -1;
-	      }
-	    if (client_list_create(list, 1) ||
-		client_list_add(list, client) ||
-		(hash_table_put(&reg_table, command_key, (size_t)address) == 0))
-	      {
-		perror(*argv);
-		client_list_destroy(list);
-		free(list);
-		pthread_mutex_unlock(&reg_mutex);
-		return -1;
-	      }
-	  }
+	{
+	  if (hash_table_contains_key(&reg_table, command_key))
+	    {
+	      size_t address = hash_table_get(&reg_table, command_key);
+	      client_list_t* list = (client_list_t*)(void*)address;
+	      if (client_list_add(list, client) < 0)
+		{
+		  perror(*argv);
+		  pthread_mutex_unlock(&reg_mutex);
+		  return -1;
+		}
+	    }
+	  else
+	    {
+	      client_list_t* list = malloc(sizeof(client_list_t));
+	      void* address = list;
+	      if (list == NULL)
+		{
+		  perror(*argv);
+		  pthread_mutex_unlock(&reg_mutex);
+		  return -1;
+		}
+	      if ((command = strdup(command)) == NULL)
+		{
+		  perror(*argv);
+		  free(list);
+		  pthread_mutex_unlock(&reg_mutex);
+		  return -1;
+		}
+	      command_key = (size_t)(void*)command;
+	      if (client_list_create(list, 1) ||
+		  client_list_add(list, client) ||
+		  (hash_table_put(&reg_table, command_key, (size_t)address) == 0))
+		{
+		  perror(*argv);
+		  client_list_destroy(list);
+		  free(list);
+		  free(command);
+		  pthread_mutex_unlock(&reg_mutex);
+		  return -1;
+		}
+	    }
+	}
       else if ((action == -1) && hash_table_contains_key(&reg_table, command_key))
 	{
-	  size_t address = hash_table_get(&reg_table, command_key);
+	  hash_entry_t* entry = hash_table_get_entry(&reg_table, command_key);
+	  size_t address = entry->value;
 	  client_list_t* list = (client_list_t*)(void*)address;
 	  client_list_remove(list, client);
+	  if (list->size == 0)
+	    {
+	      client_list_destroy(list);
+	      free(list);
+	      hash_table_remove(&reg_table, command_key);
+	      reg_table_free_key(entry->key);
+	    }
 	}
       else if ((action == 0) && !hash_table_contains_key(&reg_table, command_key))
 	{
+	  if ((command = strdup(command)) == NULL)
+	    {
+	      perror(*argv);
+	      hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
+	      free(wait_set);
+	      pthread_mutex_unlock(&reg_mutex);
+	      return -1;
+	    }
+	  command_key = (size_t)(void*)command;
 	  if (hash_table_put(wait_set, command_key, 1) == 0)
 	    if (errno)
 	      {
 		perror(*argv);
-		hash_table_destroy(wait_set, NULL, NULL);
+		free(command);
+		hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
 		free(wait_set);
 		pthread_mutex_unlock(&reg_mutex);
 		return -1;
@@ -604,6 +647,31 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
   if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)))
     return 1;
   return full_send(send_buffer, ptr);
+}
+
+
+/**
+ * Free a key from a table
+ * 
+ * @param  obj  The key
+ */
+void reg_table_free_key(size_t obj)
+{
+  char* command = (char*)(void*)obj;
+  free(command);
+}
+
+
+/**
+ * Free a value from a table
+ * 
+ * @param  obj  The value
+ */
+void reg_table_free_value(size_t obj)
+{
+  client_list_t* list = (client_list_t*)(void*)obj;
+  client_list_destroy(list);
+  free(list);
 }
 
 

@@ -54,6 +54,20 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
 int list_registry(const char* recv_client_id, const char* recv_message_id);
 
 /**
+ * Free a key from a table
+ * 
+ * @param  obj  The key
+ */
+void reg_table_free_key(size_t obj);
+
+/**
+ * Free a value from a table
+ * 
+ * @param  obj  The value
+ */
+void reg_table_free_value(size_t obj);
+
+/**
  * Send a full message even if interrupted
  * 
  * @param   message  The message to send

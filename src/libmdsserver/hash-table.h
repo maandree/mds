@@ -184,6 +184,15 @@ int hash_table_contains_key(const hash_table_t* restrict this, size_t key) __att
 size_t hash_table_get(const hash_table_t* restrict this, size_t key);
 
 /**
+ * Look up an entry in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key associated with the value
+ * @return        The entry associated with the key, `NULL` if the key was not used
+ */
+hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key);
+
+/**
  * Add an entry to the table
  * 
  * @param   this   The hash table

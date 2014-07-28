@@ -159,6 +159,8 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
   mds_message_marshal(&received, state_buf);
+  
+  mds_message_destroy(&received);
   return 0;
 }
 
@@ -206,6 +208,8 @@ int __attribute__((const)) reexec_failure_recover(void)
  */
 int master_loop(void)
 {
+  int rc = 1;
+  
   while (!reexecing && !terminating)
     {
       int r = mds_message_read(&received, socket_fd);
@@ -235,15 +239,15 @@ int master_loop(void)
       connected = 1;
     }
   
-  mds_message_destroy(&received);
-  free(echo_buffer);
-  return 0;
+  rc = 0;
+  goto fail;
  pfail:
   perror(*argv);
  fail:
-  mds_message_destroy(&received);
+  if (rc || !reexecing)
+    mds_message_destroy(&received);
   free(echo_buffer);
-  return 1;
+  return rc;
 }
 
 

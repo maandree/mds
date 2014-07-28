@@ -247,6 +247,30 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key)
 
 
 /**
+ * Look up an entry in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key associated with the value
+ * @return        The entry associated with the key, `NULL` if the key was not used
+ */
+hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key)
+{
+  size_t key_hash = hash(this, key);
+  size_t index = truncate_hash(this, key_hash);
+  hash_entry_t* restrict bucket = this->buckets[index];
+  
+  while (bucket)
+    {
+      if (TEST_KEY(this, bucket, key, key_hash))
+	return bucket;
+      bucket = bucket->next;
+    }
+  
+  return NULL;
+}
+
+
+/**
  * Add an entry to the table
  * 
  * @param   this   The hash table
