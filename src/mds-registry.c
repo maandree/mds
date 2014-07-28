@@ -322,6 +322,7 @@ int unmarshal_server(char* state_buf)
       client_list_destroy(list);
       free(list);
     }
+  abort();
   return -1;
 }
 
