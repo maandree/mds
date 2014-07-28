@@ -21,6 +21,8 @@
 
 #include "mds-base.h"
 
+#include <stdint.h>
+
 
 /**
  * Handle the received message
@@ -29,6 +31,14 @@
  *          errno will be set accordingly
  */
 int handle_message(void);
+
+/**
+ * Convert a client ID string into a client ID integer
+ * 
+ * @param   str  The client ID string
+ * @return       The client ID integer
+ */
+uint64_t parse_client_id(const char* str);
 
 /**
  * Perform an action over the registry

@@ -145,6 +145,15 @@ int initialise_server(void)
     "Message ID: 1\n"
     "\n";
   
+  /* We are asking all servers to reregister their
+     protocols for two reasons:
+     
+     1) The server would otherwise not get registrations
+        from servers started before this server.
+     2) If this server crashes we may miss registrations
+        that happen between the crash and the recovery.
+   */
+  
   if (full_send(message, strlen(message)))
     return 1;
   if (hash_table_create_tuned(&reg_table, 32))
@@ -474,8 +483,53 @@ static int handle_register_message(void)
  */
 static int handle_close_message(void)
 {
-  /* FIXME */
+  /* Servers do not close too often, there is no need to
+     optimise this with another hash table. */
+  
+  size_t i, j, ptr = 0, size = 1;
+  size_t* keys = NULL;
+  size_t* old_keys;
+  
+  for (i = 0; i < received.header_count; i++)
+    if (startswith(received.headers[i], "Client closed: "))
+      {
+	uint64_t client = parse_client_id(received.headers[i] + strlen("Client closed: "));
+	hash_entry_t* entry;
+	
+	foreach_hash_table_entry (reg_table, j, entry)
+	  {
+	    client_list_t* list = (client_list_t*)(void*)(entry->value);
+	    client_list_remove(list, client);
+	    if (list->size)
+	      continue;
+	    
+	    fail_if ((keys == NULL) && xmalloc(keys, size, size_t));
+	    if (ptr == size ? growalloc(old_keys, keys, size, size_t) : 0)
+	      goto fail;
+	    keys[ptr++] = entry->key;
+	  }
+      }
+  
+  for (i = 0; i < ptr; i++)
+    {
+      hash_entry_t* entry = hash_table_get_entry(&reg_table, keys[i]);
+      client_list_t* list = (client_list_t*)(void*)(entry->value);
+      char* command = (char*)(void*)(entry->key);
+      
+      hash_table_remove(&reg_table, entry->key);
+      
+      client_list_destroy(list);
+      free(list);
+      free(command);
+    }
+  
+  free(keys);
   return 0;
+ pfail:
+  perror(*argv);
+ fail:
+  free(keys);
+  return -1;
 }
 
 
@@ -489,10 +543,8 @@ int handle_message(void)
 {
   size_t i;
   for (i = 0; i < received.header_count; i++)
-    {
-      if (strequals(received.headers[i], "Command: register"))
-	return handle_register_message();
-    }
+    if (strequals(received.headers[i], "Command: register"))
+      return handle_register_message();
   return handle_close_message();
 }
 
@@ -503,7 +555,7 @@ int handle_message(void)
  * @param   str  The client ID string
  * @return       The client ID integer
  */
-static uint64_t parse_client_id(const char* str)
+uint64_t parse_client_id(const char* str)
 {
   char client_words[22];
   char* client_high;
