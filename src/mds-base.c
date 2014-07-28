@@ -38,17 +38,62 @@
 #define  try(INSTRUCTION)  if ((r = INSTRUCTION))  goto fail
 
 
+/**
+ * Number of elements in `argv`
+ */
 int argc = 0;
+
+/**
+ * Command line arguments
+ */
 char** argv = NULL;
+
+/**
+ * Whether the server has been respawn
+ * rather than this being the initial spawn.
+ * This will be at least as true as `is_reexec`.
+ */
 int is_respawn = -1;
+
+/**
+ * Whether the server is continuing
+ * from a self-reexecution
+ */
 int is_reexec = 0;
+
+/**
+ * Whether to fork the process when the
+ * server has been properly initialised
+ */
 int on_init_fork = 0;
+
+/**
+ * Command the run (`NULL` for none) when
+ * the server has been properly initialised
+ */
 char* on_init_sh = NULL;
+
+/**
+ * The thread that runs the master loop
+ */
 pthread_t master_thread;
 
+
+/**
+ * Whether the server has been signaled to terminate
+ */
 volatile sig_atomic_t terminating = 0;
+
+/**
+ * Whether the server has been signaled to re-exec
+ */
 volatile sig_atomic_t reexecing = 0;
 
+
+/**
+ * The file descriptor of the socket
+ * that is connected to the server
+ */
 int socket_fd = -1;
 
 
