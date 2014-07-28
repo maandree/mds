@@ -13,18 +13,18 @@ servers: $(foreach S,$(SERVERS),bin/$(S))
 
 # Link large servers.
 
-bin/mds-server: $(OBJ_mds-server_) obj/mds-base.o bin/libmdsserver.so
+bin/mds-server: $(OBJ_mds-server) obj/mds-base.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-server) $(OBJ_mds-server_) obj/mds-base.o
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-server) $(OBJ_mds-server) obj/mds-base.o
 ifeq ($(DEBUG),y)
 	mv $@ $@.real
 	cp test.d/mds-server $@
 endif
 
 
-bin/mds-registry: $(OBJ_mds-registry_) obj/mds-base.o bin/libmdsserver.so
+bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o bin/libmdsserver.so
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry_) obj/mds-base.o
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry) obj/mds-base.o
 
 
 # Link small servers.
