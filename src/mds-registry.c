@@ -485,6 +485,8 @@ static int handle_close_message(void)
   size_t* keys = NULL;
   size_t* old_keys;
   
+  fail_if ((errno = pthread_mutex_lock(&reg_mutex)));
+  
   for (i = 0; i < received.header_count; i++)
     if (startswith(received.headers[i], "Client closed: "))
       {
@@ -517,6 +519,8 @@ static int handle_close_message(void)
       free(list);
       free(command);
     }
+  
+  pthread_mutex_unlock(&reg_mutex);
   
   free(keys);
   return 0;
