@@ -96,6 +96,8 @@ static size_t live_count = 0;
  */
 int parse_cmdline(void)
 {
+  /* Parse command line arguments. */
+  
   int i;
   size_t j, args = 0, stack = 0;
   for (i = 1; i < argc; i++)
@@ -126,12 +128,21 @@ int parse_cmdline(void)
       eprint("re-exec performed.");
     }
   
+  
+  /* Validate command line arguments. */
+  
   exit_if (stack > 0, eprint("Non-terminated command specified, aborting."););
   exit_if (servers == 0, eprint("No programs to spawn, aborting."););
+  
+  
+  /* Allocate arrays. */
   
   fail_if (xmalloc(commands_args, args + servers, char*));
   fail_if (xmalloc(commands, servers, char**));
   fail_if (xmalloc(states, servers, server_state_t));
+  
+  
+  /* Fill command arrays. */
   
   for (i = 1, args = j = 0; i < argc; i++)
     {
@@ -160,6 +171,8 @@ static void spawn_server(size_t index)
   struct timespec started;
   pid_t pid;
   
+  /* When did the spawned server start? */
+  
   if (monotone(&started) < 0)
     {
       perror(*argv);
@@ -168,6 +181,9 @@ static void spawn_server(size_t index)
       return;
     }
   states[index].started = started;
+  
+  
+  /* Fork process to spawn the server. */
   
   pid = fork();
   if (pid == (pid_t)-1)
@@ -178,6 +194,9 @@ static void spawn_server(size_t index)
       return;
     }
   
+  
+  /* In the parent process (respawner): store spawned server information.  */
+ 
   if (pid)
     {
       states[index].pid = pid;
@@ -185,6 +204,8 @@ static void spawn_server(size_t index)
       live_count++;
       return;
     }
+  
+  /* In the child process (server): change execution image to the server..  */
   
   execvp(commands[index][0], commands[index]);
   perror(commands[index][0]);
@@ -255,9 +276,14 @@ int postinitialise_server(void)
 {
   size_t i, j;
   
+  /* Spawn servers that has not been spawned yet. */
+  
   for (i = 0; i < servers; i++)
     if (states[i].state == UNBORN)
       spawn_server(i);
+  
+  /* Forever mark newly spawned services (after this point in time)
+     as respawned. */
   
   for (i = j = 0; j < servers; i++)
     if (commands_args[i] == NULL)
@@ -265,6 +291,8 @@ int postinitialise_server(void)
     else if (strequals(commands_args[i], "--initial-spawn"))
       if ((commands_args[i] = strdup("--respawn")) == NULL)
 	goto pfail;
+  
+  /* Respawn dead and dead and buried servers.*/
   
   for (i = 0; i < servers; i++)
     if ((states[i].state == DEAD) ||
@@ -408,6 +436,7 @@ static void joined_with_server(pid_t pid, int status)
   struct timespec ended;
   size_t i;
   
+  /* Find index of reaped server. */
   for (i = 0; i < servers; i++)
     if (states[i].pid == pid)
       break;
@@ -417,16 +446,19 @@ static void joined_with_server(pid_t pid, int status)
       return;
     }
   
+  /* Do nothing if the server is cremated. */
   if (states[i].state == CREMATED)
     {
       eprintf("cremated child process `%s' exited, ignoring.", commands[i][0]);
       return;
     }
   
+  /* Mark server as dead if it was alive.  */
   if (states[i].state == ALIVE)
     live_count--;
   states[i].state = DEAD;
   
+  /* Cremate server if it exited normally or was killed nicely. */
   if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
       ((WTERMSIG(status) == SIGTERM) || (WTERMSIG(status) == SIGINT)))
     {
@@ -435,11 +467,13 @@ static void joined_with_server(pid_t pid, int status)
       return;
     }
   
+  /* Print exit status of the reaped server. */
   if (WIFEXITED(status))
     eprintf("`%s' exited with code %i.", commands[i][0], WEXITSTATUS(status));
   else
     eprintf("`%s' died by signal %i.", commands[i][0], WTERMSIG(status));
   
+  /* When did the server exit. */
   if (monotone(&ended) < 0)
     {
       perror(*argv);
@@ -448,6 +482,7 @@ static void joined_with_server(pid_t pid, int status)
       return;
     }
   
+  /* Bury the server if it died abnormally too fast. */
   if (ended.tv_sec - states[i].started.tv_sec < interval)
     {
       eprintf("`%s' died abnormally, burying because it died too fast.", commands[i][0]);
@@ -455,6 +490,7 @@ static void joined_with_server(pid_t pid, int status)
       return;
     }
   
+  /* Respawn server if it died abnormally in a responable time. */
   eprintf("`%s' died abnormally, respawning.", commands[i][0]);
   spawn_server(i);
 }
