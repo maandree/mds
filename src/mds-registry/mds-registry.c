@@ -61,7 +61,7 @@ server_characteristics_t server_characteristics =
  * 
  * @return  Non-zero on error
  */
-int __attribute__((const)) preinitialise_server(void)
+int preinitialise_server(void)
 {
   if ((errno = pthread_mutex_init(&reg_mutex, NULL)))
     {
