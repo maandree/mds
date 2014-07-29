@@ -150,11 +150,8 @@ int master_loop(void)
     {
       int r = mds_message_read(&received, socket_fd);
       if (r == 0)
-	{
-	  r = handle_message();
-	  if (r == 0)
-	    continue;
-	}
+	if (r = handle_message(), r == 0)
+	  continue;
       
       if (r == -2)
 	{
