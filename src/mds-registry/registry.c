@@ -35,82 +35,6 @@
 
 
 /**
- * Handle the received message containing ‘Command: register’-header–value
- * 
- * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
- */
-static int handle_register_message(void)
-{
-  const char* recv_client_id = NULL;
-  const char* recv_message_id = NULL;
-  const char* recv_length = NULL;
-  const char* recv_action = NULL;
-  size_t i, length = 0;
-  
-#define __get_header(storage, header)  \
-  (startswith(received.headers[i], header))  \
-    storage = received.headers[i] + strlen(header)
-  
-  for (i = 0; i < received.header_count; i++)
-    {
-      if      __get_header(recv_client_id,  "Client ID: ");
-      else if __get_header(recv_message_id, "Message ID: ");
-      else if __get_header(recv_length,     "Length: ");
-      else if __get_header(recv_action,     "Action: ");
-      else
-	continue;
-      if (recv_client_id && recv_message_id && recv_length && recv_action)
-	break;
-    }
-  
-#undef __get_header
-  
-  
-  if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
-    {
-      eprint("received message from anonymous sender, ignoring.");
-      return 0;
-    }
-  else if (strchr(recv_client_id, ':') == NULL)
-    {
-      eprint("received message from sender without a colon it its ID, ignoring, invalid ID.");
-      return 0;
-    }
-  else if ((recv_length == NULL) && ((recv_action == NULL) || !strequals(recv_action, "list")))
-    {
-      eprint("received empty message without `Action: list`, ignoring, has no effect.");
-      return 0;
-    }
-  else if (recv_message_id == NULL)
-    {
-      eprint("received message with ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
-  
-  
-  if (recv_length != NULL)
-    length = (size_t)atoll(recv_length);
-  if (recv_action != NULL)
-    recv_action = "add";
-  
-#define __registry_action(action)  registry_action(length, action, recv_client_id, recv_message_id)
-  
-  if      (strequals(recv_action, "add"))     return __registry_action(1);
-  else if (strequals(recv_action, "remove"))  return __registry_action(-1);
-  else if (strequals(recv_action, "wait"))    return __registry_action(0);
-  else if (strequals(recv_action, "list"))    return list_registry(recv_client_id, recv_message_id);
-  else
-    {
-      eprint("received invalid action, ignoring.");
-      return 0;
-    }
-  
-#undef __registry_action
-}
-
-
-/**
  * Handle the received message containing a ‘Client closed’-header
  * 
  * @return  Zero on success -1 on error or interruption,
@@ -169,22 +93,6 @@ static int handle_close_message(void)
  fail:
   free(keys);
   return -1;
-}
-
-
-/**
- * Handle the received message
- * 
- * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
- */
-int handle_message(void)
-{
-  size_t i;
-  for (i = 0; i < received.header_count; i++)
-    if (strequals(received.headers[i], "Command: register"))
-      return handle_register_message();
-  return handle_close_message();
 }
 
 
@@ -314,7 +222,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
  * @return                   Zero on success -1 on error or interruption,
  *                           errno will be set accordingly
  */
-int registry_action(size_t length, int action, const char* recv_client_id, const char* recv_message_id)
+static int registry_action(size_t length, int action, const char* recv_client_id, const char* recv_message_id)
 {
   char* payload = received.payload;
   uint64_t client = action ? parse_client_id(recv_client_id) : 0;
@@ -390,7 +298,7 @@ int registry_action(size_t length, int action, const char* recv_client_id, const
  * @return                   Zero on success -1 on error or interruption,
  *                           errno will be set accordingly
  */
-int list_registry(const char* recv_client_id, const char* recv_message_id)
+static int list_registry(const char* recv_client_id, const char* recv_message_id)
 {
   size_t ptr = 0, i;
   hash_entry_t* entry;
@@ -446,5 +354,108 @@ int list_registry(const char* recv_client_id, const char* recv_message_id)
  pfail:
   perror(*argv);
   return -1;
+}
+
+
+/**
+ * Handle the received message containing ‘Command: register’-header–value
+ * 
+ * @return  Zero on success -1 on error or interruption,
+ *          errno will be set accordingly
+ */
+static int handle_register_message(void)
+{
+  /* Fetch message headers. */
+  
+  const char* recv_client_id = NULL;
+  const char* recv_message_id = NULL;
+  const char* recv_length = NULL;
+  const char* recv_action = NULL;
+  size_t i, length = 0;
+  
+#define __get_header(storage, header)  \
+  (startswith(received.headers[i], header))  \
+    storage = received.headers[i] + strlen(header)
+  
+  for (i = 0; i < received.header_count; i++)
+    {
+      if      __get_header(recv_client_id,  "Client ID: ");
+      else if __get_header(recv_message_id, "Message ID: ");
+      else if __get_header(recv_length,     "Length: ");
+      else if __get_header(recv_action,     "Action: ");
+      else
+	continue;
+      
+      /* Stop if we got all headers we recognised. */
+      if (recv_client_id && recv_message_id && recv_length && recv_action)
+	break;
+    }
+  
+#undef __get_header
+  
+  
+  /* Validate headers. */
+  
+  if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
+    {
+      eprint("received message from anonymous sender, ignoring.");
+      return 0;
+    }
+  else if (strchr(recv_client_id, ':') == NULL)
+    {
+      eprint("received message from sender without a colon it its ID, ignoring, invalid ID.");
+      return 0;
+    }
+  else if ((recv_length == NULL) && ((recv_action == NULL) || !strequals(recv_action, "list")))
+    {
+      eprint("received empty message without `Action: list`, ignoring, has no effect.");
+      return 0;
+    }
+  else if (recv_message_id == NULL)
+    {
+      eprint("received message with ID, ignoring, master server is misbehaving.");
+      return 0;
+    }
+  
+  
+  /* Get message length, and make sure the action is defined. */
+  
+  if (recv_length != NULL)
+    length = (size_t)atoll(recv_length);
+  if (recv_action != NULL)
+    recv_action = "add";
+  
+  
+  /* Perform action. */
+  
+#define __registry_action(action)  registry_action(length, action, recv_client_id, recv_message_id)
+  
+  if      (strequals(recv_action, "add"))     return __registry_action(1);
+  else if (strequals(recv_action, "remove"))  return __registry_action(-1);
+  else if (strequals(recv_action, "wait"))    return __registry_action(0);
+  else if (strequals(recv_action, "list"))    return list_registry(recv_client_id, recv_message_id);
+  else
+    {
+      eprint("received invalid action, ignoring.");
+      return 0;
+    }
+  
+#undef __registry_action
+}
+
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success -1 on error or interruption,
+ *          errno will be set accordingly
+ */
+int handle_message(void)
+{
+  size_t i;
+  for (i = 0; i < received.header_count; i++)
+    if (strequals(received.headers[i], "Command: register"))
+      return handle_register_message();
+  return handle_close_message();
 }
 
