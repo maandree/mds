@@ -27,6 +27,9 @@
 #include <pthread.h>
 
 
+#define MDS_REGISTRY_VARS_VERSION  0
+
+
 
 /**
  * Value of the ‘Message ID’ header for the next message
