@@ -426,7 +426,7 @@ static int handle_register_message(void)
       else
 	continue;
       
-      /* Stop if we got all headers we recognised. */
+      /* Stop if we got all headers we recognised, except ‘Time to live’. */
       if (recv_client_id && recv_message_id && recv_length && recv_action)
 	break;
     }

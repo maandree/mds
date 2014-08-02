@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <time.h>
 
 
 
@@ -32,7 +33,7 @@
 /**
  * Slave information, a thread waiting for protocols to become available
  */
-typedef struct slave /* TODO: add time-to-live */
+typedef struct slave
 {
   /**
    * Set of protocols for which to wait that they become available
@@ -68,6 +69,17 @@ typedef struct slave /* TODO: add time-to-live */
    * The slave thread
    */
   pthread_t thread;
+  
+  /**
+   * The time slave should die if its condition
+   * has not be meet at that time
+   */
+  struct timespec dethklok;
+  
+  /**
+   * Whether `dethklok` should apply
+   */
+  int timed;
   
 } slave_t;
 

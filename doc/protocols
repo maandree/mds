@@ -83,6 +83,10 @@ Optional header: Action
     this wait action.
   Send a list of availability commands if `list`.
 
+Conditionally optional header: Time to live
+  Available and optional if: `Action: wait`
+  The maximum number of seconds to wait.
+
 Message: List of values for the header `Command` that you implement
 
 Purpose: Identify supported display server operations
