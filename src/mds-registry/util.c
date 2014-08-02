@@ -102,7 +102,7 @@ int full_send(const char* message, size_t length)
 	}
       else if ((sent < length) && (errno != EINTR))
 	{
-	  perror(*argv);
+	  xperror(*argv);
 	  return -1;
 	}
       message += sent;

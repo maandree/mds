@@ -21,9 +21,10 @@
 
 #include "config.h"
 
+#include <stdio.h>
+#include <errno.h>
 
 /*
-#include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
@@ -333,7 +334,15 @@
  */
 #define growalloc(old, var, elements, type)  \
   (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, perror(*argv), 1) : 0)
-  
+
+
+/**
+ * Call `perror` if `errno` is non-zero and set `errno` to zero
+ * 
+ * @param  str:const char*  The argument passed to `perror`
+ */
+#define xperror(str)  \
+  (errno ? perror(str), errno = 0 : 0)
 
 
 /**

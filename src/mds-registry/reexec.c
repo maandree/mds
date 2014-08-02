@@ -151,7 +151,7 @@ int unmarshal_server(char* state_buf)
   
   return 0;
  pfail:
-  perror(*argv);
+  xperror(*argv);
   mds_message_destroy(&received);
   if (stage >= 1)
     hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);

@@ -185,7 +185,7 @@ int unmarshal_server(char* state_buf)
   r = mds_message_unmarshal(&received, state_buf);
   if (r)
     {
-      perror(*argv);
+      xperror(*argv);
       mds_message_destroy(&received);
     }
   return r;
@@ -245,7 +245,7 @@ int master_loop(void)
   rc = 0;
   goto fail;
  pfail:
-  perror(*argv);
+  xperror(*argv);
  fail:
   if (rc || !reexecing)
     mds_message_destroy(&received);
@@ -323,7 +323,7 @@ int echo_message(void)
 	  recv_length == NULL ? "" : recv_length,
 	  recv_length == NULL ? "" : "\n");
   
-  /* Increase message ID */
+  /* Increase message ID. */
   message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
   
   /* Send echo. */
@@ -354,7 +354,7 @@ int full_send(const char* message, size_t length)
 	}
       else if ((sent < length) && (errno != EINTR))
 	{
-	  perror(*argv);
+	  xperror(*argv);
 	  return -1;
 	}
       message += sent;

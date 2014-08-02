@@ -65,7 +65,7 @@ int preinitialise_server(void)
   return 0;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   if (stage >= 1)  pthread_mutex_destroy(&slave_mutex);
   if (stage >= 2)  pthread_cond_destroy(&slave_cond);
   return 1;
@@ -105,7 +105,7 @@ int initialise_server(void)
     return 1;
   if (hash_table_create_tuned(&reg_table, 32))
     {
-      perror(*argv);
+      xperror(*argv);
       hash_table_destroy(&reg_table, NULL, NULL);
       return 1;
     }
@@ -176,7 +176,7 @@ int master_loop(void)
   rc = 0;
   goto fail;
  pfail:
-  perror(*argv);
+  xperror(*argv);
  fail:
   /* Join with all slaves threads. */
   with_mutex (slave_mutex,

@@ -61,7 +61,7 @@ int fetch_message(client_t* client)
   else if (errno != EINTR)
     {
       r = -2;
-      perror(*argv);
+      xperror(*argv);
     }
   
   return r;
@@ -79,13 +79,13 @@ int create_slave(pthread_t* thread_slot, int slave_fd)
 {
   if ((errno = pthread_create(thread_slot, NULL, slave_loop, (void*)(intptr_t)slave_fd)))
     {
-      perror(*argv);
+      xperror(*argv);
       with_mutex (slave_mutex, running_slaves--;);
       return -1;
     }
   if ((errno = pthread_detach(*thread_slot)))
     {
-      perror(*argv);
+      xperror(*argv);
       return -1;
     }
   return 0;

@@ -183,7 +183,7 @@ int unmarshal_server(char* state_buf)
   /* Create memory address remapping table. */
   if (hash_table_create(&unmarshal_remap_map))
     {
-      perror(*argv);
+      xperror(*argv);
       hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
       return -1;
     }
@@ -232,7 +232,7 @@ int unmarshal_server(char* state_buf)
       /* On error, seek past all clients. */
       continue;
     clients_fail:
-      perror(*argv);
+      xperror(*argv);
       with_error = 1;
       if (value != NULL)
 	{
@@ -294,7 +294,7 @@ int unmarshal_server(char* state_buf)
   
   
  critical_fail:
-  perror(*argv);
+  xperror(*argv);
   abort();
 }
 

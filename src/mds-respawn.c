@@ -156,7 +156,7 @@ int parse_cmdline(void)
   return 0;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 
@@ -175,7 +175,7 @@ static void spawn_server(size_t index)
   
   if (monotone(&started) < 0)
     {
-      perror(*argv);
+      xperror(*argv);
       eprintf("cannot read clock when starting %s, burying.", commands[index][0]);
       states[index].state = DEAD_AND_BURIED;
       return;
@@ -188,7 +188,7 @@ static void spawn_server(size_t index)
   pid = fork();
   if (pid == (pid_t)-1)
     {
-      perror(*argv);
+      xperror(*argv);
       eprintf("cannot fork in order to start %s, burying.", commands[index][0]);
       states[index].state = DEAD_AND_BURIED;
       return;
@@ -208,7 +208,7 @@ static void spawn_server(size_t index)
   /* In the child process (server): change execution image to the server..  */
   
   execvp(commands[index][0], commands[index]);
-  perror(commands[index][0]);
+  xperror(commands[index][0]);
   _exit(1);
 }
 
@@ -241,7 +241,7 @@ int preinitialise_server(void)
   
   return 0;
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 
@@ -301,7 +301,7 @@ int postinitialise_server(void)
   
   return 0;
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 
@@ -476,7 +476,7 @@ static void joined_with_server(pid_t pid, int status)
   /* When did the server exit. */
   if (monotone(&ended) < 0)
     {
-      perror(*argv);
+      xperror(*argv);
       eprintf("`%s' died abnormally, burying because we could not read the time.", commands[i][0]);
       states[i].state = DEAD_AND_BURIED;
       return;
@@ -519,7 +519,7 @@ int master_loop(void)
 	{
 	  if (errno == EINTR)
 	    continue;
-	  perror(*argv);
+	  xperror(*argv);
 	  rc = 1;
 	  break;
 	}

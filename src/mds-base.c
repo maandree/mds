@@ -176,7 +176,7 @@ int __attribute__((weak)) connect_to_display(void)
   return 0;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
   return 1;
@@ -194,7 +194,7 @@ void __attribute__((weak)) server_initialised(void)
     {
       if (r == (pid_t)-1)
 	{
-	  perror(*argv);
+	  xperror(*argv);
 	  eprint("while forking at completed initialisation.");
 	  exit(1);
 	}
@@ -302,7 +302,7 @@ static int base_unmarshal(void)
   
   return 0;
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 
@@ -345,7 +345,7 @@ static int base_marshal(int reexec_fd)
   return 0;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   free(state_buf);
   return 1;
 }
@@ -368,7 +368,7 @@ static void perform_reexec(void)
   reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
   if (reexec_fd < 0)
     {
-      perror(*argv);
+      xperror(*argv);
       return;
     }
   if (base_marshal(reexec_fd) < 0)
@@ -378,7 +378,7 @@ static void perform_reexec(void)
   
   /* Re-exec the server. */
   reexec_server(argc, argv, is_reexec);
-  perror(*argv);
+  xperror(*argv);
   
  fail:
   if (reexec_fd >= 0)
@@ -460,7 +460,7 @@ int main(int argc_, char** argv_)
   
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   r = 1;
  fail:
   if (socket_fd >= 0)
@@ -490,7 +490,7 @@ int trap_signals(void)
   
   return 0;
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 

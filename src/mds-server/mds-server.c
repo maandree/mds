@@ -71,7 +71,7 @@ server_characteristics_t server_characteristics =
   if (I >= 6)  linked_list_destroy(&client_list)
   
 #define error_if(I, CONDITION)  \
-  if (CONDITION)  { perror(*argv); __free(I); return 1; }
+  if (CONDITION)  { xperror(*argv); __free(I); return 1; }
 
 
 /**
@@ -147,7 +147,7 @@ int preinitialise_server(void)
   return 0;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 
@@ -239,7 +239,7 @@ int accept_connection(void)
     else if ((errno == ECONNABORTED) || (errno == EINVAL)) /* Closing. */
       running = 0;
     else if (errno != EINTR) /* Error. */
-      perror(*argv);
+      xperror(*argv);
   return 0;
 }
 
@@ -339,7 +339,7 @@ void* slave_loop(void* data)
   
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   goto fail;
   
   
@@ -477,7 +477,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
 	      new_buf = sender->multicasts;
 	      if (xrealloc(new_buf, sender->multicasts_count + 1, multicast_t))
 		{
-		  perror(*argv);
+		  xperror(*argv);
 		  goto fail_queue;
 		}
 	      sender->multicasts = new_buf;
@@ -499,7 +499,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   return;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   goto fail;
 }
 

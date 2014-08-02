@@ -56,7 +56,7 @@ static void remove_intercept_condition(client_t* client, size_t index)
     }
   else
     if (xrealloc(conds, n, interception_condition_t))
-      perror(*argv);
+      xperror(*argv);
     else
       client->interception_conditions = conds;
 }
@@ -142,14 +142,14 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
       /* Duplicate condition string. */
       if ((condition = strdup(condition)) == NULL)
 	{
-	  perror(*argv);
+	  xperror(*argv);
 	  return;
 	}
       
       /* Grow the interception condition list. */
       if (xrealloc(conds, n + 1, interception_condition_t))
 	{
-	  perror(*argv);
+	  xperror(*argv);
 	  free(condition);
 	  return;
 	}

@@ -79,7 +79,7 @@ static int send_multicast_to_recipient(multicast_t* multicast, client_t* recipie
 		  n -= sent;
 		  multicast->message_ptr += sent / sizeof(char);
 		  if ((n > 0) && (errno != EINTR))
-		    perror(*argv);
+		    xperror(*argv);
 		}
 	      );
   
@@ -188,7 +188,7 @@ void multicast_message(multicast_t* multicast)
 	  old_buf = multicast->message;
 	  if (xrealloc(multicast->message, multicast->message_prefix + n, char))
 	    {
-	      perror(*argv);
+	      xperror(*argv);
 	      multicast->message = old_buf;
 	    }
 	  else
@@ -256,7 +256,7 @@ void send_reply_queue(client_t* client)
 		  sendbuf_ += sent / sizeof(char);
 		  if ((n > 0) && (errno != EINTR)) /* Ignore EINTR */
 		    {
-		      perror(*argv);
+		      xperror(*argv);
 		      break;
 		    }
 		}

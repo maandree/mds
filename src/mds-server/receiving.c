@@ -94,7 +94,7 @@ static int modifying_notify(client_t* client, mds_message_t message, uint64_t mo
   
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   if (multicast != NULL)
     {
       mds_message_destroy(multicast);
@@ -328,7 +328,7 @@ int message_received(client_t* client)
   return 0;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   free(msgbuf);
   return 0;
 }

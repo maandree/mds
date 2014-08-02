@@ -63,7 +63,7 @@ static void* slave_loop(void* data)
   goto done;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
  done:
   with_mutex (slave_mutex,
 	      if (!reexecing)
@@ -102,17 +102,17 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
     goto pfail_in_mutex;
   
   if ((errno = pthread_detach(slave->thread)))
-    perror(*argv);
+    xperror(*argv);
   
   running_slaves++;
   pthread_mutex_unlock(&slave_mutex);
   
   return 0;
  pfail:
-  perror(*argv);
+  xperror(*argv);
   goto more_fail;
  pfail_in_mutex:
-  perror(*argv);
+  xperror(*argv);
   pthread_mutex_unlock(&slave_mutex);
  more_fail:
   if (node != LINKED_LIST_UNUSED)
