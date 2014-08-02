@@ -112,6 +112,33 @@ static void* slave_loop(void* data)
 
 
 /**
+ * Start a slave thread with an already created slave
+ * 
+ * @param   slave  The slave
+ * @return         Non-zero on error, `errno` will be set accordingly
+ */
+int start_created_slave(slave_t* restrict slave)
+{
+  if ((errno = pthread_mutex_lock(&slave_mutex)))
+    return -1;
+  
+  if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)))
+    {
+      pthread_mutex_unlock(&slave_mutex);
+      return -1;
+    }
+  
+  if ((errno = pthread_detach(slave->thread)))
+    xperror(*argv);
+  
+  running_slaves++;
+  pthread_mutex_unlock(&slave_mutex);
+  
+  return 0;
+}
+
+
+/**
  * Start a slave thread
  * 
  * @param   wait_set         Set of protocols for which to wait that they become available

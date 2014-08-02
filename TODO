@@ -26,8 +26,8 @@ Missing servers:
 	drag		Drag and drop
 	cursorshadow	Decorate cursors with shadows
 	kill		Kill processes based on their windows
-	shm		Network enabled shared memory
-	sem		Network enabled shared semaphores
+	shm		Network enabled SysV shared memory
+	sem		Network enabled SysV semaphore arrays
 	focus		Focuses the selected window
 	colour		Mapping of colour by name (system colours) and value
 	state		Keeps track of windows' states
@@ -36,8 +36,16 @@ Missing servers:
 	stack		A simple, reference implementation of a, stack window manager
 	workspace	A simple, reference implementation of a, workspaces
 	vt		VT switcher
+
+Missing commands:
+
 	cmd-registry	Command line interface for the protocol registry
+	conf		Command line interface for reconfiguring servers
+
+Need testing:
+
+	registry
 
 Fast lanes
-Optimise use of mutexe
+Optimise use of mutexe with shared and exclusive locks
 

@@ -75,7 +75,7 @@ extern size_t running_slaves;
 /**
  * List of running slaves
  */
-extern linked_list_t slave_list; /* TODO (un)marshal */
+extern linked_list_t slave_list;
 
 /**
  * Mutex for slave data

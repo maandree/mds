@@ -19,6 +19,7 @@
 
 #include "util.h"
 #include "globals.h"
+#include "slave.h"
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/hash-help.h>
@@ -41,10 +42,12 @@
  */
 size_t marshal_server_size(void)
 {
-  size_t i, rc = 2 * sizeof(int) + sizeof(int32_t) + 3 * sizeof(size_t);
+  size_t i, rc = 2 * sizeof(int) + sizeof(int32_t) + 4 * sizeof(size_t);
   hash_entry_t* entry;
+  ssize_t node;
   
   rc += mds_message_marshal_size(&received);
+  rc += linked_list_marshal_size(&slave_list);
   
   foreach_hash_table_entry (reg_table, i, entry)
     {
@@ -53,6 +56,12 @@ size_t marshal_server_size(void)
       client_list_t* list = (client_list_t*)(void*)(entry->value);
       
       rc += len + sizeof(size_t) + client_list_marshal_size(list);
+    }
+  
+  foreach_linked_list_node (slave_list, node)
+    {
+      slave_t* slave = (slave_t*)(void*)slave_list.values[node];
+      rc += slave_marshal_size(slave);
     }
   
   return rc;
@@ -69,6 +78,7 @@ int marshal_server(char* state_buf)
 {
   size_t i, n = mds_message_marshal_size(&received);
   hash_entry_t* entry;
+  ssize_t node;
   
   buf_set_next(state_buf, int, MDS_REGISTRY_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
@@ -94,8 +104,21 @@ int marshal_server(char* state_buf)
       state_buf += n / sizeof(char);
     }
   
+  n = linked_list_marshal_size(&slave_list);
+  buf_set_next(state_buf, size_t, n);
+  linked_list_marshal(&slave_list, state_buf);
+  state_buf += n / sizeof(char);
+  
+  foreach_linked_list_node (slave_list, node)
+    {
+      slave_t* slave = (slave_t*)(void*)(slave_list.values[node]);
+      state_buf += slave_marshal(slave, state_buf) / sizeof(char);
+      slave_destroy(slave);
+    }
+  
   hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
   mds_message_destroy(&received);
+  linked_list_destroy(&slave_list);
   return 0;
 }
 
@@ -114,7 +137,9 @@ int unmarshal_server(char* state_buf)
 {
   char* command;
   client_list_t* list;
+  slave_t* slave;
   size_t i, n, m;
+  ssize_t node;
   int stage = 0;
   
   /* buf_get_next(state_buf, int, MDS_REGISTRY_VARS_VERSION); */
@@ -145,9 +170,31 @@ int unmarshal_server(char* state_buf)
       hash_table_put(&reg_table, (size_t)(void*)command, (size_t)(void*)list);
       fail_if (errno);
     }
+  command = NULL;
+  stage = 4;
   
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
+  
+  buf_get_next(state_buf, size_t, n);
+  fail_if (linked_list_unmarshal(&slave_list, state_buf));
+  state_buf += n / sizeof(char);
+  
+  foreach_linked_list_node (slave_list, node)
+    {
+      stage = 5;
+      fail_if ((slave = malloc(sizeof(slave_t))) == NULL);
+      stage = 6;
+      fail_if ((n = slave_unmarshal(slave, state_buf)) == 0);
+      state_buf += n / sizeof(char);
+      slave_list.values[node] = (size_t)(void*)slave;
+    }
+  
+  foreach_linked_list_node (slave_list, node)
+    {
+      slave = (slave_t*)(void*)(slave_list.values[node]);
+      fail_if (start_created_slave(slave));
+    }
   
   return 0;
  pfail:
@@ -161,6 +208,13 @@ int unmarshal_server(char* state_buf)
     {
       client_list_destroy(list);
       free(list);
+    }
+  if (stage >= 5)
+    linked_list_destroy(&slave_list);
+  if (stage >= 6)
+    {
+      slave_destroy(slave);
+      free(slave);
     }
   abort();
   return -1;

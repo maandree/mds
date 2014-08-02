@@ -84,6 +84,14 @@ typedef struct slave /* TODO: add time-to-live */
 int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_client_id, const char* restrict recv_message_id);
 
 /**
+ * Start a slave thread with an already created slave
+ * 
+ * @param   slave  The slave
+ * @return         Non-zero on error, `errno` will be set accordingly
+ */
+int start_created_slave(slave_t* restrict slave);
+
+/**
  * Close all slaves associated with a client
  * 
  * @param  client  The client's ID
