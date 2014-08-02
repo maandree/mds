@@ -276,7 +276,6 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
 #define foreach_linked_list_node(list, node)  \
   for (node = (list).edge; node = (list).next[node], node != (list).edge;)
 
-
 /**
  * Print the content of the list
  * 

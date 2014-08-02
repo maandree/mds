@@ -15,45 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MDS_MDS_SERVER_H
-#define MDS_MDS_SERVER_H
+#ifndef MDS_MDS_REGISTRY_SIGNALS_H
+#define MDS_MDS_REGISTRY_SIGNALS_H
 
 
-#include "client.h"
-
-#include <stddef.h>
-
-
-/**
- * Accept an incoming and start a slave thread for it
- * 
- * @return  Zero normally, 1 if terminating
- */
-int accept_connection(void);
-
-/**
- * Master function for slave threads
- * 
- * @param   data  Input data
- * @return        Output data
- */
-void* slave_loop(void* data);
-
-/**
- * Queue a message for multicasting
- * 
- * @param  message  The message
- * @param  length   The length of the message
- * @param  sender   The original sender of the message
- */
-void queue_message_multicast(char* message, size_t length, client_t* sender);
-
-/**
- * Exec into the mdsinitrc script
- * 
- * @param  args  The arguments to the child process
- */
-void run_initrc(char** args);
+#include "../mds-base.h"
 
 
 #endif

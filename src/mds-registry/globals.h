@@ -21,6 +21,7 @@
 
 #include <libmdsserver/mds-message.h>
 #include <libmdsserver/hash-table.h>
+#include <libmdsserver/linked-list.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -62,19 +63,29 @@ extern char* send_buffer;
 extern size_t send_buffer_size;
 
 /**
- * General mutex
- */
-extern pthread_mutex_t reg_mutex;
-
-/**
- * General condition
- */
-extern pthread_cond_t reg_cond;
-
-/**
  * Used to temporarily store the old value when reallocating heap-allocations
  */
 extern char* old;
+
+/**
+ * The number of running slaves
+ */
+extern size_t running_slaves;
+
+/**
+ * List of running slaves
+ */
+extern linked_list_t slave_list; /* TODO (un)marshal */
+
+/**
+ * Mutex for slave data
+ */
+extern pthread_mutex_t slave_mutex;
+
+/**
+ * Condition for slave data
+ */
+extern pthread_cond_t slave_cond;
 
 
 #endif

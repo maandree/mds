@@ -208,6 +208,18 @@ void __attribute__((weak)) server_initialised(void)
 
 
 /**
+ * This function is called when an intraprocess signal
+ * that used to send a notification to a thread
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_noop(int signo)
+{
+  (void) signo;
+}
+
+
+/**
  * This function is called when a signal that
  * signals the server to re-exec has been received
  * 
@@ -472,6 +484,9 @@ int trap_signals(void)
   
   /* Implement clean exit on SIGINT. */
   fail_if (xsigaction(SIGINT, received_terminate) < 0);
+  
+  /* Implement clean exit on SIGRTMIN. */
+  fail_if (xsigaction(SIGRTMIN, received_noop) < 0);
   
   return 0;
  pfail:

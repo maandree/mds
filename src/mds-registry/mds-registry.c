@@ -23,6 +23,7 @@
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/hash-help.h>
+#include <libmdsserver/linked-list.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -54,20 +55,20 @@ server_characteristics_t server_characteristics =
  */
 int preinitialise_server(void)
 {
-  if ((errno = pthread_mutex_init(&reg_mutex, NULL)))
-    {
-      perror(*argv);
-      return 1;
-    }
+  int stage = 0;
   
-  if ((errno = pthread_cond_init(&reg_cond, NULL)))
-    {
-      perror(*argv);
-      pthread_mutex_destroy(&reg_mutex);
-      return 1;
-    }
+  fail_if ((errno = pthread_mutex_init(&slave_mutex, NULL)));  stage++;
+  fail_if ((errno = pthread_cond_init(&slave_cond, NULL)));  stage++;
+  
+  linked_list_create(&slave_list, 2);
   
   return 0;
+  
+ pfail:
+  perror(*argv);
+  if (stage >= 1)  pthread_mutex_destroy(&slave_mutex);
+  if (stage >= 2)  pthread_cond_destroy(&slave_cond);
+  return 1;
 }
 
 
@@ -177,13 +178,18 @@ int master_loop(void)
  pfail:
   perror(*argv);
  fail:
+  /* Join with all slaves threads. */
+  with_mutex (slave_mutex,
+              while (running_slaves > 0)
+                pthread_cond_wait(&slave_cond, &slave_mutex););
+  
   if (rc || !reexecing)
     {
       hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
       mds_message_destroy(&received);
     }
-  pthread_mutex_destroy(&reg_mutex);
-  pthread_cond_destroy(&reg_cond);
+  pthread_mutex_destroy(&slave_mutex);
+  pthread_cond_destroy(&slave_cond);
   free(send_buffer);
   return rc;
 }

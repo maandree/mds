@@ -50,17 +50,32 @@ char* send_buffer = NULL;
 size_t send_buffer_size = 0;
 
 /**
- * General mutex
- */
-pthread_mutex_t reg_mutex;
-
-/**
- * General condition
- */
-pthread_cond_t reg_cond;
-
-/**
  * Used to temporarily store the old value when reallocating heap-allocations
  */
 char* old;
+
+/**
+ * The master thread
+ */
+pthread_t master_thread;
+
+/**
+ * The number of running slaves
+ */
+size_t running_slaves = 0;
+
+/**
+ * List of running slaves
+ */
+linked_list_t slave_list;
+
+/**
+ * Mutex for slave data
+ */
+pthread_mutex_t slave_mutex;
+
+/**
+ * Condition for slave data
+ */
+pthread_cond_t slave_cond;
 

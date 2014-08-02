@@ -159,6 +159,14 @@ void server_initialised(void); /* __attribute__((weak)) */
 
 
 /**
+ * This function is called when an intraprocess signal
+ * that used to send a notification to a thread
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_noop(int signo) __attribute__((weak, const));
+
+/**
  * This function should be implemented by the actual server implementation
  * if the server is multithreaded
  * 

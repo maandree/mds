@@ -248,7 +248,7 @@ int accept_connection(void)
  * Master function for slave threads
  * 
  * @param   data  Input data
- * @return        Outout data
+ * @return        Output data
  */
 void* slave_loop(void* data)
 {
