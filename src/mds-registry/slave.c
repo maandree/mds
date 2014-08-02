@@ -73,6 +73,13 @@ static int slave_notify_client(slave_t* slave)
  */
 static void* slave_loop(void* data)
 {
+  /* pthread_cond_timedwait is required to handle re-exec and termination because
+     pthread_cond_timedwait and pthread_cond_wait ignore interruptions via signals. */
+  struct timespec timeout =
+    {
+      .tv_sec = 1,
+      .tv_nsec = 0
+    };
   slave_t* slave = data;
   
   if (slave->closed)
@@ -87,7 +94,7 @@ static void* slave_loop(void* data)
     {
       if ((slave->wait_set->size == 0) || slave->closed)
 	break;
-      pthread_cond_wait(&slave_cond, &slave_mutex);
+      pthread_cond_timedwait(&slave_cond, &slave_mutex, &timeout);
     }
   
   if (!(slave->closed) && (slave->wait_set->size == 0))
