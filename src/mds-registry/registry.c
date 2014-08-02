@@ -385,10 +385,10 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   
   /* Construct message headers. */
   sprintf(send_buffer + ptr, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\nLength: %" PRIu64 "\n\n",
-	  recv_message_id, recv_client_id, message_id, ptr);
+	  recv_client_id, recv_message_id, message_id, ptr);
   
   /* Increase message ID. */
-  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  with_mutex (slave_mutex, message_id = message_id == INT32_MAX ? 0 : (message_id + 1););
   
   /* Send message. */
   if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)))

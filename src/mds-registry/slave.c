@@ -22,12 +22,47 @@
 
 #include "../mds-base.h"
 
+#include <libmdsserver/util.h>
 #include <libmdsserver/macros.h>
 
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
+#include <inttypes.h>
 
+
+
+/**
+ * Notify the waiting client that it may resume
+ * 
+ * @param   slave  The slave
+ * @return         Non-zero, `errno` will be set accordingly
+ */
+static int slave_notify_client(slave_t* slave)
+{
+  char buf[sizeof("To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\n\n") / sizeof(char) + 40];
+  size_t ptr = 0, sent, left;
+  
+  /* Construct message headers. */
+  sprintf(buf, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\n\n",
+	  slave->client_id, slave->message_id, message_id);
+  
+  /* Increase message ID. */
+  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  
+  /* Send message to client. */
+  left = strlen(buf);
+  while (left > 0)
+    {
+      sent = send_message(socket_fd, buf + ptr, left);
+      if ((sent < left) && errno && (errno != EINTR))
+	return -1;
+      left -= sent;
+      ptr += sent;
+    }
+  
+  return 0;
+}
 
 
 /**
@@ -55,10 +90,10 @@ static void* slave_loop(void* data)
       pthread_cond_wait(&slave_cond, &slave_mutex);
     }
   
-  pthread_mutex_unlock(&slave_mutex);
+  if (!(slave->closed) && (slave->wait_set->size == 0))
+    slave_notify_client(slave);
   
-  if (!(slave->closed) && slave->wait_set->size)
-    ; /* FIXME send inside slave_mutex */
+  pthread_mutex_unlock(&slave_mutex);
   
   goto done;
   
