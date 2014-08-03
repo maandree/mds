@@ -286,6 +286,7 @@ Required header: Socket
 
 Conditionally required header: Max colour
   Required if: `Colour`-header is used
+  Required if: `Foreground`-header is used
   Required if: `Alpha`-header is used
   The maximum colour component value, for example, if using 24-bit
   colour, which component will be 8-bit and the maximum value will
@@ -307,8 +308,12 @@ Conditionally required header: Bytes
   subpixel has 8 bits, 48-bit colours will have this
   set to 2 because each subpixel has 16 bits
 
-Conditionally optional header: Colour
-  Available and option if: `Length`-header is not used
+Conditionally optional/required header: Colour
+  Available and optional if: `Length`-header is not used
+  Required if: `Foreground`-header but not `Length`-header is used
+  Single blank space-separated [0, <Max colour>] sRGB 3-tuple
+
+Conditionally optional header: Foreground
   Single blank space-separated [0, <Max colour>] sRGB 3-tuple
 
 Optional header: Alpha
@@ -316,6 +321,10 @@ Optional header: Alpha
 
 Optional header: Length
   Length of the message
+
+Optional header: Use urgency
+  yes)  The icon tray may blink
+  no)   The icon tray may not blink
 
 Message: Raw binary encoding of the background image, bytes
 	 are orders: row, pixel, channel (red, green, blue,
