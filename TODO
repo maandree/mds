@@ -47,6 +47,7 @@ Extra servers:
 	tile		A simple, reference implementation of a, tiling window manager
 	stack		A simple, reference implementation of a, stack window manager
 	workspace	A simple, reference implementation of a, workspaces
+	tray		A simple, reference implementation of a, status icon tray
 
 Missing commands:
 
