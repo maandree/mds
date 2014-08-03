@@ -264,18 +264,79 @@ Compulsivity: optional
 Command: update-tray-icon
   Change the status of a status icon
 
+Required header: Status
+  hide)      Hide the icon
+  show)      Show the icon
+  active)    The icon is active
+  inactive)  The icon is inactive
+
 Purpose: Enable status trays to automatically hide inactive icons
 Purpose: Hide icons without actually removing them
 
-Compulsivity: optional
+Compulsivity: required if supporting `Command: add-tray-icon`,
+	      only `Status: hide` and `Status show` is required
 
 ---------------------------------------------------------------------
 
 Command: tray-update
   Send updates about the status tray to the status icon
 
+Required header: Socket
+  Where the icon is embedded, used to identify the affected tray
+
+Conditionally required header: Max colour
+  Required if: `Colour`-header is used
+  Required if: `Alpha`-header is used
+  The maximum colour component value, for example, if using 24-bit
+  colour, which component will be 8-bit and the maximum value will
+  be 255, this also applies to the alpha component
+
+Conditionally required header: Size
+  Required if, otherwise optional: `Length`-header is used
+  The width and height, in pixels, the icon should have
+
+Conditionally required header: Has alpha
+  Required if: `Length`-header is used
+  yes)  The message contains an alpha channel
+  no)   The message does not contain an alpha channel
+
+Conditionally required header: Bytes
+  Required if: `Length`-header is used
+  The number of bytes the subpixels used, for example,
+  24-bit colours will have this set to 1 because each
+  subpixel has 8 bits, 48-bit colours will have this
+  set to 2 because each subpixel has 16 bits
+
+Conditionally optional header: Colour
+  Available and option if: `Length`-header is not used
+  Single blank space-separated [0, <Max colour>] sRGB 3-tuple
+
+Optional header: Alpha
+  The opacity of the tray
+
+Optional header: Length
+  Length of the message
+
+Message: Raw binary encoding of the background image, bytes
+	 are orders: row, pixel, channel (red, green, blue,
+	 then optionally alpha), subpixel value (most
+	 significant byte first)
+	 
+	 Example image (with `Bytes: 2`, `Has alpha: no` and `Size: 3`):
+	   sRGB(x0102, 0, 0), sRGB(0, x0304, 0), sRGB(0, 0, x0506)
+	   sRGB(x0708, 0, 0), sRGB(0, x090A, 0), sRGB(0, 0, x0B0C)
+	   sRGB(x0D0E, 0, 0), sRGB(0, x0F10, 0), sRGB(0, 0, x1112)
+	
+	 Encoding of example image (hexadecimal):
+	   0102 0000 0000 0000 0304 0000 0000 0000 0506
+	   0708 0000 0000 0000 090A 0000 0000 0000 0B0C
+	   0D0E 0000 0000 0000 0F10 0000 0000 0000 1112
+		
+
 Purpose: Enable clients to be aware of the appearance of the tray,
 	 such as colours, transparency and background image
+Purpose: Enable clients to be aware of how the user wants
+	 status icons to behave
 
 Compulsivity: optional
 
