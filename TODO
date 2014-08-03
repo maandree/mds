@@ -36,11 +36,20 @@ Missing servers:
 	workspace	A simple, reference implementation of a, workspaces
 	vt		VT switcher
 	iclipboard	User-private interdisplay clipboard
+	tray		Status notification tray
+
+Extra servers:
+
+	kbdbind		Bind keyboard combinations to external commands, e.g. super+p -> dmenu
+	ratbind		Bind cursor actions to external commands, e.g. hotcorners
+	gestures	Bind rat gestures to external commands, e.g. shacking to minimise windows
+	dcvs		Defective colour vision simulation
 
 Missing commands:
 
 	cmd-registry	Command line interface for the protocol registry
 	conf		Command line interface for reconfiguring servers
+	clip		Command line interface for the clipboard
 
 Need testing:
 
@@ -51,4 +60,5 @@ Fast lanes
 Optimise use of mutexe by replace them with rwlocks
 Listen for `Command: reregister`
 Register protocols
+Make it possible to forbid unauthorised servers for listening, needed for secure password fields
 
