@@ -22,6 +22,71 @@
 #include "mds-base.h"
 
 #include <stddef.h>
+#include <time.h>
+#include <stdint.h>
+
+
+
+/**
+ * Delete entry only when needed
+ */
+#define CLIPITEM_AUTOPURGE_NEVER  0
+
+/**
+ * Delete entry when the client closes, or needed
+ */
+#define CLIPITEM_AUTOPURGE_UPON_DEATH  1
+
+/**
+ * Delete entry when a point in time has elapsed, or needed
+ */
+#define CLIPITEM_AUTOPURGE_UPON_CLOCK  2
+
+/**
+ * Delete entry when the client closes or when a
+ * point in time has elapsed, or when needed 
+ */
+#define CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK  3
+
+
+/**
+ * A clipboard entry
+ */
+typedef struct clipitem
+{
+  /**
+   * The stored content
+   */
+  char* content;
+  
+  /**
+   * The length of the stored content
+   */
+  size_t length;
+  
+  /**
+   * Time of planned death if `autopurge` is `CLIPITEM_AUTOPURGE_UPON_CLOCK`
+   */
+  struct timespec dethklok;
+  
+  /**
+   * The client that issued the inclusion of this entry
+   */
+  uint64_t client;
+  
+  /**
+   * Rule for automatic deletion
+   */
+  int autopurge;
+  
+} clipitem_t;
+
+
+/**
+ * The number of levels in the clipboard
+ */
+#define CLIPBOARD_LEVELS  3
+
 
 
 /**
@@ -52,7 +117,7 @@ int clipboard_death(const char* recv_client_id);
  * Add a new entry to the clipboard
  * 
  * @param   level           The clipboard level
- * @param   time_to_live    --
+ * @param   time_to_live    When the entry should be removed
  * @param   recv_client_id  The ID of the client
  * @return                  Zero on success, -1 on error
  */

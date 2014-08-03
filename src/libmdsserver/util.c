@@ -30,6 +30,31 @@
 #include <ctype.h>
 
 
+
+/**
+ * Convert a client ID string into a client ID integer
+ * 
+ * @param   str  The client ID string
+ * @return       The client ID integer
+ */
+uint64_t parse_client_id(const char* str)
+{
+  char client_words[22];
+  char* client_high;
+  char* client_low;
+  uint64_t client;
+  
+  strcpy(client_high = client_words, str);
+  client_low = rawmemchr(client_words, ':');
+  *client_low++ = '\0';
+  client = (uint64_t)atoll(client_high);
+  client <<= 32;
+  client |= (uint64_t)atoll(client_low);
+  
+  return client;
+}
+
+
 /**
  * Read an environment variable, but handle it as undefined if empty
  * 

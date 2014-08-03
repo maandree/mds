@@ -20,16 +20,7 @@
 
 
 #include <stddef.h>
-#include <stdint.h>
 
-
-/**
- * Convert a client ID string into a client ID integer
- * 
- * @param   str  The client ID string
- * @return       The client ID integer
- */
-uint64_t parse_client_id(const char* str);
 
 /**
  * Free a key from a table

@@ -26,7 +26,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #define reconnect_to_display() -1 /* TODO */
 
 
@@ -49,67 +48,6 @@ server_characteristics_t server_characteristics =
     .sanity_check_argc = 1
   };
 
-
-
-/**
- * Delete entry only when needed
- */
-#define CLIPITEM_AUTOPURGE_NEVER  0
-
-/**
- * Delete entry when the client closes, or needed
- */
-#define CLIPITEM_AUTOPURGE_UPON_DEATH  1
-
-/**
- * Delete entry when a point in time has elapsed, or needed
- */
-#define CLIPITEM_AUTOPURGE_UPON_CLOCK  2
-
-/**
- * Delete entry when the client closes or when a
- * point in time has elapsed, or when needed 
- */
-#define CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK  3
-
-
-/**
- * A clipboard entry
- */
-typedef struct clipitem
-{
-  /**
-   * The stored content
-   */
-  char* content;
-  
-  /**
-   * The length of the stored content
-   */
-  size_t length;
-  
-  /**
-   * Time of planned death if `autopurge` is `CLIPITEM_AUTOPURGE_UPON_CLOCK`
-   */
-  struct timespec dethklok;
-  
-  /**
-   * The client that issued the inclusion of this entry
-   */
-  uint64_t client;
-  
-  /**
-   * Rule for automatic deletion
-   */
-  int autopurge;
-  
-} clipitem_t;
-
-
-/**
- * The number of levels in the clipboard
- */
-#define CLIPBOARD_LEVELS  3
 
 
 /**
@@ -598,7 +536,64 @@ int handle_message(void)
 
 
 /**
- * Remove old entries form a clipstack
+ * Free an entry from the clipboard
+ * 
+ * @param  entry  The clipboard entry to free
+ */
+static inline void free_clipboard_entry(clipitem_t* entry)
+{
+  if (entry->autopurge == CLIPITEM_AUTOPURGE_NEVER)
+    free(entry->content);
+  else
+    wipe_and_free(entry->content, entry->length);
+  entry->content = NULL;
+}
+
+
+/**
+ * Broadcast notification about an automatic removal of an entry
+ * 
+ * @param   level  The clipboard level
+ * @param   index  The index in the clipstack of the removed entry
+ * @return         Zero on success, -1 on error, `errno` will be set accordingly
+ */
+static int clipboard_notify_pop(int level, size_t index)
+{
+  size_t size = clipboard_size[level];
+  size_t used = clipboard_used[level];
+  size_t n = 10 + 3 * (3 * sizeof(size_t) + sizeof(int));
+  char* message;
+  
+  n += strlen("Command: clipboard-info\n"
+	      "Event: crash\n"
+	      "Message ID: %" PRIi32 "\n"
+	      "Level: %i\n"
+	      "Popped: %lu\n"
+	      "Size: %lu\n"
+	      "Used: %lu\n"
+	      "\n");
+  
+  if (xmalloc(message, n, char))
+    return -1;
+  
+  sprintf(message,
+	  "Command: clipboard-info\n"
+	  "Event: crash\n"
+	  "Message ID: %" PRIi32 "\n"
+	  "Level: %i\n"
+	  "Popped: %lu\n"
+	  "Size: %lu\n"
+	  "Used: %lu\n"
+	  "\n",
+	  message_id, level, index, size, used);
+  
+  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  return full_send(message, strlen(message)) ? -1 : 0;
+}
+
+
+/**
+ * Remove old entries from a clipstack
  * 
  * @param   level      The clipboard level
  * @param   client_id  The ID of the client that has newly closed, `NULL` if none
@@ -606,9 +601,42 @@ int handle_message(void)
  */
 static int clipboard_purge(int level, const char* client_id)
 {
-  /* TODO */
+  uint64_t client = client_id ? parse_client_id(client_id) : 0;
+  struct timespec now;
+  size_t i;
+  
+  fail_if (monotone(&now));
+  
+  for (i = 0; i < clipboard_used[level]; i++)
+    {
+      clipitem_t* clip = clipboard[level] + i;
+      if ((clip->autopurge & CLIPITEM_AUTOPURGE_UPON_DEATH))
+	{
+	  if (clip->client == client)
+	    goto removed;
+	}
+      if ((clip->autopurge & CLIPITEM_AUTOPURGE_UPON_CLOCK))
+	{
+	  if (clip->dethklok.tv_sec > now.tv_sec)
+	    goto removed;
+	  if (clip->dethklok.tv_sec == now.tv_sec)
+	    if (clip->dethklok.tv_nsec >= now.tv_nsec)
+	      goto removed;
+	}
+      
+      continue;
+    removed:
+      free_clipboard_entry(clipboard[level] + i);
+      clipboard_used[level]--;
+      fail_if (clipboard_notify_pop(level, i));
+      memmove(clipboard[level] + i, clipboard[level] + i + 1, (clipboard_used[level] - i) * sizeof(clipitem_t));
+      i--;
+    }
   
   return 0;
+ pfail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -638,12 +666,52 @@ int clipboard_death(const char* recv_client_id)
  */
 int clipboard_add(int level, const char* time_to_live, const char* recv_client_id)
 {
+  int autopurge = CLIPITEM_AUTOPURGE_UPON_CLOCK;
+  uint64_t client = recv_client_id ? parse_client_id(recv_client_id) : 0;
+  clipitem_t new_clip;
+  
   if (clipboard_purge(level, NULL))
     return -1;
   
-  /* TODO */
+  if (strequals(time_to_live, "forever"))
+    autopurge = CLIPITEM_AUTOPURGE_NEVER;
+  else if (strequals(time_to_live, "until-death"))
+    autopurge = CLIPITEM_AUTOPURGE_UPON_DEATH;
+  else if (startswith(time_to_live, "until-death "))
+    {
+      autopurge = CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK;
+      time_to_live += strlen("until-death ");
+    }
+  
+  if ((autopurge & CLIPITEM_AUTOPURGE_UPON_CLOCK))
+    {
+      struct timespec dethklok;
+      fail_if (monotone(&dethklok));
+      dethklok.tv_sec += (time_t)atoll(time_to_live);
+      new_clip.dethklok = dethklok;
+    }
+  else
+    {
+      new_clip.dethklok.tv_sec = 0;
+      new_clip.dethklok.tv_nsec = 0;
+    }
+  
+  new_clip.client = client;
+  new_clip.autopurge = autopurge;
+  new_clip.length = received.payload_size;
+  
+  fail_if (xmalloc(new_clip.content, new_clip.length, char));
+  memcpy(new_clip.content, received.payload, new_clip.length * sizeof(char));
+  
+  if (clipboard_used[level] == clipboard_size[level])
+    free_clipboard_entry(clipboard[level] + clipboard_used[level] - 1);
+  memmove(clipboard[level] + 1, clipboard[level], (clipboard_used[level] - 1) * sizeof(clipitem_t));
+  clipboard[level][0] = new_clip;
   
   return 0;
+ pfail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -731,12 +799,7 @@ int clipboard_clear(int level)
 {
   size_t i;
   for (i = 0; i < clipboard_used[level]; i++)
-    {
-      if (clipboard[level][i].autopurge == CLIPITEM_AUTOPURGE_NEVER)
-	free(clipboard[level][i].content);
-      else
-	wipe_and_free(clipboard[level][i].content, clipboard[level][i].length);
-    }
+    free_clipboard_entry(clipboard[level] + i);
   clipboard_used[level] = 0;
   return 0;
 }
@@ -762,10 +825,7 @@ int clipboard_set_size(int level, size_t size)
 	{
 	  clipboard_used[level] = size;
 	  for (i = size; i < old_used; i++)
-	    if (clipboard[level][i].autopurge == CLIPITEM_AUTOPURGE_NEVER)
-	      free(clipboard[level][i].content), clipboard[level][i].content = NULL;
-	    else
-	      wipe_and_free(clipboard[level][i].content, clipboard[level][i].length);
+	    free_clipboard_entry(clipboard[level] + i);
 	}
     }
   

@@ -23,6 +23,7 @@
 
 #include "../mds-base.h"
 
+#include <libmdsserver/util.h>
 #include <libmdsserver/macros.h>
 #include <libmdsserver/hash-help.h>
 #include <libmdsserver/client-list.h>
