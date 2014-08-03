@@ -252,7 +252,8 @@ size_t marshal_server_size(void)
  */
 static inline __attribute__((optimize("-O0"))) void wipe_and_free(void* s, size_t n)
 {
-  free(memset(s, 0, n));
+  if (s != NULL)
+    free(memset(s, 0, n));
 }
 
 
@@ -392,6 +393,7 @@ int __attribute__((const)) reexec_failure_recover(void)
 int master_loop(void)
 {
   int rc = 1;
+  size_t i, j;
   
   while (!reexecing && !terminating)
     {
@@ -427,8 +429,16 @@ int master_loop(void)
  pfail:
   xperror(*argv);
  fail:
-  if (rc || !reexecing)
-    mds_message_destroy(&received);
+  if (!rc && reexecing)
+    return 0;
+  mds_message_destroy(&received);
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    if (clipboard[i] != NULL)
+      {
+	for (j = 0; j < clipboard_used[i]; j++)
+	  wipe_and_free(clipboard[i][j].content, clipboard[i][j].length);
+	free(clipboard[i]);
+      }
   return rc;
 }
 
