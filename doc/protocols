@@ -70,7 +70,7 @@ Command: register
 Required header: Client ID
   Your ID, provided by `ID assignment`
   in response to `Command: assign-id`
-  
+
 Conditionally required header: Length
   Required if: `Action: list`
   Length of the message
@@ -111,6 +111,104 @@ Compulsivity: highly recommended (infrastructure), programs may
 	      think a protocol is not supported of the registry
 	      server crashes if you do not implement this in your
 	      server
+
+---------------------------------------------------------------------
+
+Command: clipboard
+  Read or manipulate a clipboard
+
+Required header: Level
+  The clipboard level, an [1, 3] integer:
+    1 "primary".    Text copied/pasted using
+      		    the keyboard or a menu item
+    2 "secondary".  Text copied/pasted using the rat
+    3 "tertiary".   Non-text, it is customary for this
+      		    data to begin with a line describing
+		    the data type.
+
+Required header: Action
+  What to do with the clipboard:
+    add)  Write the message to the clipboard
+    read)  Read the clipboard
+    clear)  Clear all entries on the selected level on the clipboard
+    set-size)  Shrink/grow the clipstack
+    get-size)  Read the size of the clipstack
+      In the reply, the server will send:
+	Size: <configured maximum size of the clipstack>
+	Used: <number of elements currently in the clipstack>
+
+Conditionally required header: Length
+  Required if: `Action: add`
+  Length of the message
+
+Conditionally required header: Size
+  Available and optional if: `Action: set-size`
+  The maximum number of elements in the clipstack
+
+Conditionally optional header: Index
+  Available and optional if: `Action: read`
+  The index of the item in the clipstack, starting at 0
+
+Conditionally required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`.
+  Required if: `Action: add` but not `Time to live: forever`
+
+Conditionally optional header: Time to live
+  Available and optional if: `Action: add`
+  The number of seconds the entry should be available
+  before it is removed by the server, or:
+    until-death: remove entry when the client closes
+    forever: never remove it (default)
+  The server will always remove the entry when:
+    1) it is at the bottom of the clipstack and a new
+       entry is added to the clipstack
+    2) `Action: clear` is issued for the clipstack
+  The entry will also be removed, unless
+  `Time to live: forever`, if the server crashes or is
+  reexecuted.
+  It is up to the implementation to choose when
+  the removal actually takes place. For example,
+  the reference implementation will pop entries
+  that have timed out when a new entry is added,
+  the reading on the clipstack is requested or the
+  server is reexecuted, but another implement may
+  choose to pop entires asynchronously using another
+  thread or an alarm an pop when when SIGARLM is
+  received.
+
+Purpose: Enable the user to duplicate content from one process
+	 into another process without requiring those processes
+	 to be aware of eathother to any extent
+
+Compulsivity: optional
+
+Reference implementation: mds-clipboard
+
+---------------------------------------------------------------------
+
+Command: clipboard-info
+  The clipboard server sends out some information about
+  what it is doing, such as automatically removing entires
+
+Included header: Event
+  pop)  An item in the clipstack has been removed
+    Included headers:
+      Level:   The clipboard level that has been affected
+      Popped:  The index of the item in the clipstack
+      	       that has been removed
+      Size:    Configured maximum size of the clipstack
+      Used:    Number of elements currently in the clipstack
+  crash)  The clipboard has been reset because of a software crash
+
+Purpose: Enable clients to get notification about changes
+	 to the clipboard, that cannot trivially derived
+	 from `Command: clipboard`
+
+Compulsivity: optional, optional add-on to the
+	      clipboard's functionallity
+
+Reference implementation: mds-clipboard
 
 ---------------------------------------------------------------------
 

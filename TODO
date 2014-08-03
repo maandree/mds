@@ -15,7 +15,6 @@ Missing servers:
 	inet		Network enabled display server
 	remote		Bind to a remote display server
 	fb		Framebuffer presenter
-	clipboard	Clipboard
 	kkbd		Keyboard input from kernel
 	kbd		Keyboard input
 	rat		Rat input
@@ -36,6 +35,7 @@ Missing servers:
 	stack		A simple, reference implementation of a, stack window manager
 	workspace	A simple, reference implementation of a, workspaces
 	vt		VT switcher
+	iclipboard	User-private interdisplay clipboard
 
 Missing commands:
 
@@ -45,7 +45,10 @@ Missing commands:
 Need testing:
 
 	registry
+	clipboard
 
 Fast lanes
-Optimise use of mutexe with shared and exclusive locks
+Optimise use of mutexe by replace them with rwlocks
+Listen for `Command: reregister`
+Register protocols
 
