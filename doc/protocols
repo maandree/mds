@@ -142,23 +142,28 @@ Conditionally required header: Length
   Length of the message
 
 Conditionally required header: Size
-  Available and optional if: `Action: set-size`
+  Required if: `Action: set-size`
   The maximum number of elements in the clipstack
-
-Conditionally optional header: Index
-  Available and optional if: `Action: read`
-  The index of the item in the clipstack, starting at 0
 
 Conditionally required header: Client ID
   Your ID, provided by `ID assignment`
   in response to `Command: assign-id`.
-  Required if: `Action: add` but not `Time to live: forever`
+  Required if: `Action: add` and a header starting with
+  	       `Time to live: until-death`
+  Required if: `Action: read`
+  Required if: `Action: get-size`
+
+Conditionally optional header: Index
+  Available and optional if: `Action: read`
+  The index of the item in the clipstack, starting at 0
 
 Conditionally optional header: Time to live
   Available and optional if: `Action: add`
   The number of seconds the entry should be available
   before it is removed by the server, or:
     until-death: remove entry when the client closes
+    until-death #: remove entry when the client closes,
+    		   or # seconds have elapsed
     forever: never remove it (default)
   The server will always remove the entry when:
     1) it is at the bottom of the clipstack and a new

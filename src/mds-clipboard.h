@@ -21,6 +21,8 @@
 
 #include "mds-base.h"
 
+#include <stddef.h>
+
 
 /**
  * Send a full message even if interrupted
@@ -30,6 +32,69 @@
  * @return           Non-zero on success
  */
 int full_send(const char* message, size_t length);
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void);
+
+/**
+ * Remove entries in the clipboard added by a client
+ * 
+ * @param   recv_client_id  The ID of the client
+ * @return                  Zero on success, -1 on error
+ */
+int clipboard_death(const char* recv_client_id);
+
+/**
+ * Add a new entry to the clipboard
+ * 
+ * @param   level           The clipboard level
+ * @param   time_to_live    --
+ * @param   recv_client_id  The ID of the client
+ * @return                  Zero on success, -1 on error
+ */
+int clipboard_add(int level, const char* time_to_live, const char* recv_client_id);
+
+/**
+ * Read an entry to the clipboard
+ * 
+ * @param   level            The clipboard level
+ * @param   index            The index of the clipstack element
+ * @param   recv_client_id   The ID of the client
+ * @param   recv_message_id  The message ID of the received message
+ * @return                   Zero on success, -1 on error
+ */
+int clipboard_read(int level, size_t index, const char* recv_client_id, const char* recv_message_id);
+
+/**
+ * Clear a clipstack
+ * 
+ * @param   level  The clipboard level
+ * @return         Zero on success, -1 on error
+ */
+int clipboard_clear(int level);
+
+/**
+ * Resize a clipstack
+ * 
+ * @param   level  The clipboard level
+ * @param   size   The new clipstack size
+ * @return         Zero on success, -1 on error
+ */
+int clipboard_set_size(int level, size_t size);
+
+/**
+ * Get the size of a clipstack and how many entries it contains
+ * 
+ * @param   level            The clipboard level
+ * @param   recv_client_id   The ID of the client
+ * @param   recv_message_id  The message ID of the received message
+ * @return                   Zero on success, -1 on error
+ */
+int clipboard_get_size(int level, const char* recv_client_id, const char* recv_message_id);
 
 
 #endif

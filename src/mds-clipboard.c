@@ -66,6 +66,12 @@ server_characteristics_t server_characteristics =
  */
 #define CLIPITEM_AUTOPURGE_UPON_CLOCK  2
 
+/**
+ * Delete entry when the client closes or when a
+ * point in time has elapsed, or when needed 
+ */
+#define CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK  3
+
 
 /**
  * A clipboard entry
@@ -162,9 +168,10 @@ int initialise_server(void)
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 19\n"
+    "Length: 33\n"
     "\n"
-    "Command: clipboard\n";
+    "Command: clipboard\n"
+    "Client closed\n";
   
   if (full_send(message, strlen(message)))
     return 1;
@@ -400,8 +407,7 @@ int master_loop(void)
       int r = mds_message_read(&received, socket_fd);
       if (r == 0)
 	{
-	  r = 0; /* FIXME */
-	  if (r == 0)
+	  if (r = handle_message(), r == 0)
 	    continue;
 	}
       
@@ -471,5 +477,358 @@ int full_send(const char* message, size_t length)
       length -= sent;
     }
   return 0;
+}
+
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void)
+{
+  /* Fetch message headers. */
+  
+  const char* recv_client_id = "0:0";
+  const char* recv_message_id = NULL;
+  const char* recv_length = NULL;
+  const char* recv_level = NULL;
+  const char* recv_action = NULL;
+  const char* recv_size = NULL;
+  const char* recv_index = "0";
+  const char* recv_time_to_live = "forever";
+  const char* recv_client_closed = NULL;
+  size_t i;
+  int level;
+  
+#define __get_header(storage, header)  \
+  (startswith(received.headers[i], header))  \
+    storage = received.headers[i] + strlen(header)
+  
+  for (i = 0; i < received.header_count; i++)
+    {
+      if      __get_header(recv_client_id,     "Client ID: ");
+      else if __get_header(recv_message_id,    "Message ID: ");
+      else if __get_header(recv_length,        "Length: ");
+      else if __get_header(recv_action,        "Action: ");
+      else if __get_header(recv_level,         "Level: ");
+      else if __get_header(recv_size,          "Size: ");
+      else if __get_header(recv_index,         "Index: ");
+      else if __get_header(recv_time_to_live,  "Time to live: ");
+      else if __get_header(recv_client_closed, "Client closed: ");
+      else
+	continue;
+    }
+  
+#undef __get_header
+  
+  
+  /* Validate headers and take appropriate action. */
+  
+  if (recv_message_id == NULL)
+    {
+      eprint("received message with ID, ignoring, master server is misbehaving.");
+      return 0;
+    }
+  
+  if (recv_client_closed)
+    {
+      if (strequals(recv_client_closed, "0:0"))
+	return 0;
+      return clipboard_death(recv_client_closed);
+    }
+  
+  if (recv_action == NULL)
+    {
+      eprint("received message without any action, ignoring.");
+      return 0;
+    }
+  if (recv_level == NULL)
+    {
+      eprint("received message without specified clipboard level, ignoring.");
+      return 0;
+    }
+  level = atoi(recv_level);
+  if ((level < 0) || (CLIPBOARD_LEVELS <= level))
+    {
+      eprint("received message without invalid clipboard level, ignoring.");
+      return 0;
+    }
+  if (strequals(recv_client_id, "0:0"))
+    if (strequals(recv_message_id, "read") || strequals(recv_message_id, "get-size"))
+      {
+	eprint("received information request from an anonymous client, ignoring.");
+	return 0;
+      }
+  
+  if (strequals(recv_message_id, "add"))
+    {
+      if (recv_length == NULL)
+	{
+	  eprint("received request for adding a clipboard entry but did not receive any content, ignoring.");
+	  return 0;
+	}
+      if ((strequals(recv_client_id, "0:0")) && startswith(recv_time_to_live, "until-death"))
+	{
+	  eprint("received request new clipboard entry with autopurge upon"
+		 " client close from an anonymous client, ignoring.");
+	  return 0;
+	}
+      return clipboard_add(level, recv_time_to_live, recv_client_id);
+    }
+  else if (strequals(recv_message_id, "read"))
+    return clipboard_read(level, (size_t)atoll(recv_index), recv_client_id, recv_message_id);
+  else if (strequals(recv_message_id, "clear"))
+    return clipboard_clear(level);
+  else if (strequals(recv_message_id, "set-size"))
+    {
+      if (recv_size == NULL)
+	{
+	  eprint("received request for clipboard resizing without a new size, ignoring.");
+	  return 0;
+	}
+      return clipboard_set_size(level, (size_t)atoll(recv_size));
+    }
+  else if (strequals(recv_message_id, "get-size"))
+    return clipboard_get_size(level, recv_client_id, recv_message_id);
+  
+  eprint("received message with invalid action, ignoring.");
+  return 0;
+}
+
+
+/**
+ * Remove old entries form a clipstack
+ * 
+ * @param   level      The clipboard level
+ * @param   client_id  The ID of the client that has newly closed, `NULL` if none
+ * @return             Zero on success, -1 on error
+ */
+static int clipboard_purge(int level, const char* client_id)
+{
+  /* TODO */
+  
+  return 0;
+}
+
+
+/**
+ * Remove entries in the clipboard added by a client
+ * 
+ * @param   recv_client_id  The ID of the client
+ * @return                  Zero on success, -1 on error
+ */
+int clipboard_death(const char* recv_client_id)
+{
+  int i;
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    if (clipboard_purge(i, recv_client_id))
+      return -1;
+  return 0;
+}
+
+
+/**
+ * Add a new entry to the clipboard
+ * 
+ * @param   level           The clipboard level
+ * @param   time_to_live    When the entry should be removed
+ * @param   recv_client_id  The ID of the client
+ * @return                  Zero on success, -1 on error
+ */
+int clipboard_add(int level, const char* time_to_live, const char* recv_client_id)
+{
+  if (clipboard_purge(level, NULL))
+    return -1;
+  
+  /* TODO */
+  
+  return 0;
+}
+
+
+/**
+ * Read an entry to the clipboard
+ * 
+ * @param   level            The clipboard level
+ * @param   index            The index of the clipstack element
+ * @param   recv_client_id   The ID of the client
+ * @param   recv_message_id  The message ID of the received message
+ * @return                   Zero on success, -1 on error
+ */
+int clipboard_read(int level, size_t index, const char* recv_client_id, const char* recv_message_id)
+{
+  char* message = NULL;
+  clipitem_t* clip = NULL;
+  size_t n;
+  
+  if (clipboard_purge(level, NULL))
+    return -1;
+  
+  if (clipboard_used[level] == 0)
+    {
+      n = strlen("To: %s\n"
+		 "In response to: %s\n"
+		 "Message ID: %" PRIi32 "\n"
+		 "\n");
+      n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
+      
+      fail_if (xmalloc(message, n, char));
+      
+      sprintf(message,
+	      "To: %s\n"
+	      "In response to: %s\n"
+	      "Message ID: %" PRIi32 "\n"
+	      "\n",
+	      recv_client_id, recv_message_id, message_id);
+      
+      goto send;
+    }
+  
+  if (index >= clipboard_used[level])
+    index = clipboard_used[level] - 1;
+  
+  clip = clipboard[level] + index;
+  
+  n = strlen("To: %s\n"
+	     "In response to: %s\n"
+	     "Message ID: %" PRIi32 "\n"
+	     "Length: %lu\n"
+	     "\n");
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 3 * sizeof(size_t);
+  
+  fail_if (xmalloc(message, n, char));
+  
+  sprintf(message,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIi32 "\n"
+	  "Length: %lu\n"
+	  "\n",
+	  recv_client_id, recv_message_id, message_id, clip->length);
+  
+ send:
+  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  fail_if (full_send(message, strlen(message)));
+  if (clip != NULL)
+    fail_if (full_send(clip->content, clip->length));
+  
+  free(message);
+  return 0;
+ pfail:
+  xperror(*argv);
+  return -1;
+}
+
+
+/**
+ * Clear a clipstack
+ * 
+ * @param   level  The clipboard level
+ * @return         Zero on success, -1 on error
+ */
+int clipboard_clear(int level)
+{
+  size_t i;
+  for (i = 0; i < clipboard_used[level]; i++)
+    {
+      if (clipboard[level][i].autopurge == CLIPITEM_AUTOPURGE_NEVER)
+	free(clipboard[level][i].content);
+      else
+	wipe_and_free(clipboard[level][i].content, clipboard[level][i].length);
+    }
+  clipboard_used[level] = 0;
+  return 0;
+}
+
+
+/**
+ * Resize a clipstack
+ * 
+ * @param   level  The clipboard level
+ * @param   size   The new clipstack size
+ * @return         Zero on success, -1 on error
+ */
+int clipboard_set_size(int level, size_t size)
+{
+  size_t i;
+  if (clipboard_purge(level, NULL))
+    return -1;
+  
+  if (size < clipboard_size[level])
+    {
+      size_t old_used = clipboard_used[level];
+      if (size < old_used)
+	{
+	  clipboard_used[level] = size;
+	  for (i = size; i < old_used; i++)
+	    if (clipboard[level][i].autopurge == CLIPITEM_AUTOPURGE_NEVER)
+	      free(clipboard[level][i].content), clipboard[level][i].content = NULL;
+	    else
+	      wipe_and_free(clipboard[level][i].content, clipboard[level][i].length);
+	}
+    }
+  
+  if (size != clipboard_size[level])
+    {
+      clipitem_t* old = clipboard[level];
+      if (xrealloc(clipboard[level], size, clipitem_t))
+	{
+	  clipboard[level] = old;
+	  goto pfail;
+	}
+      clipboard_size[level] = size;
+    }
+  
+  return 0;
+ pfail:
+  xperror(*argv);
+  return -1;
+}
+
+
+/**
+ * Get the size of a clipstack and how many entries it contains
+ * 
+ * @param   level            The clipboard level
+ * @param   recv_client_id   The ID of the client
+ * @param   recv_message_id  The message ID of the received message
+ * @return                   Zero on success, -1 on error
+ */
+int clipboard_get_size(int level, const char* recv_client_id, const char* recv_message_id)
+{
+  char* message = NULL;
+  size_t n;
+  if (clipboard_purge(level, NULL))
+    return -1;
+  
+  n = strlen("To: %s\n"
+	     "In response to: %s\n"
+	     "Message ID: %" PRIi32 "\n"
+	     "Size: %lu\n"
+	     "Used: %lu\n"
+	     "\n");
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 2 * 3 * sizeof(size_t);
+  
+  fail_if (xmalloc(message, n, char));
+  sprintf(message,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIi32 "\n"
+	  "Size: %lu\n"
+	  "Used: %lu\n"
+	  "\n",
+	  recv_client_id, recv_message_id, message_id, clipboard_size[level], clipboard_used[level]);
+  
+  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  
+  fail_if (full_send(message, strlen(message)));
+  
+  free(message);
+  return 0;
+ pfail:
+  xperror(*argv);
+  free(message);
+  return -1;
 }
 
