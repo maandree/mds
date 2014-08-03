@@ -30,16 +30,12 @@ Missing servers:
 	focus		Focuses the selected window
 	colour		Mapping of colour by name (system colours) and value
 	state		Keeps track of windows' states
-	decorator	A simple, reference implementation of a, window decorator
-	tile		A simple, reference implementation of a, tiling window manager
-	stack		A simple, reference implementation of a, stack window manager
-	workspace	A simple, reference implementation of a, workspaces
 	vt		VT switcher
 	iclipboard	User-private interdisplay clipboard
 
 Missing protocols:
 
-	tray		Status notification tray
+	embed		Embedding windows inside other windows such as a status icon tray
 
 Extra servers:
 
@@ -47,6 +43,10 @@ Extra servers:
 	ratbind		Bind cursor actions to external commands, e.g. hotcorners
 	gestures	Bind rat gestures to external commands, e.g. shacking to minimise windows
 	dcvs		Defective colour vision simulation
+	decorator	A simple, reference implementation of a, window decorator
+	tile		A simple, reference implementation of a, tiling window manager
+	stack		A simple, reference implementation of a, stack window manager
+	workspace	A simple, reference implementation of a, workspaces
 
 Missing commands:
 

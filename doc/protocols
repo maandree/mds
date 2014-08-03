@@ -182,6 +182,8 @@ Conditionally optional header: Time to live
   thread or an alarm an pop when when SIGARLM is
   received.
 
+Message: The content to add to the clipboard
+
 Purpose: Enable the user to duplicate content from one process
 	 into another process without requiring those processes
 	 to be aware of eathother to any extent
@@ -214,6 +216,79 @@ Compulsivity: optional, optional add-on to the
 	      clipboard's functionallity
 
 Reference implementation: mds-clipboard
+
+---------------------------------------------------------------------
+
+Command: add-tray-icon
+  Add a status icons to the status icon tray
+  The client should keep in mind that there can be any number of
+  trays available on the system: zero, one, two or three, ...,
+  and that it will get a response once from every tray
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+
+Required header: Package
+  The name of the package to which the program announced the icon
+  belongs
+
+Required header: Icon ID
+  An ID of the icon that can be used identify the icon, icon ID:s
+  are not unique, but the combination of a package and a icon ID
+  should be unque and can be used to ignore already added icons
+  and hide icons that the user has been configured to be hidden
+
+Required header: Title
+  A title describing the icon for the user, used to configured
+  when icons should be hidden and shown among other configuration
+
+Required header: Icon
+  The name or pathname of an icon to use together with the title
+
+Response:
+  To: <Client ID>
+  In response to: <Message ID>
+  Message ID: <the status tray's message ID>
+  Socket: <Where to embed the icon>
+  Will send update: <`yes` if this message will be followed by
+       	    	     `Command: tray-update`, otherwise `no`>
+
+Purpose: Enable clients to add a small icon that displays the status
+	 of programs, particularly minimised programs and services
+
+Compulsivity: optional
+
+---------------------------------------------------------------------
+
+Command: update-tray-icon
+  Change the status of a status icon
+
+Purpose: Enable status trays to automatically hide inactive icons
+Purpose: Hide icons without actually removing them
+
+Compulsivity: optional
+
+---------------------------------------------------------------------
+
+Command: tray-update
+  Send updates about the status tray to the status icon
+
+Purpose: Enable clients to be aware of the appearance of the tray,
+	 such as colours, transparency and background image
+
+Compulsivity: optional
+
+---------------------------------------------------------------------
+
+Command: new-tray
+  Announce the existence of a new status icon trays
+
+Purpose: Allow clients to add their status icons to status icon
+	 trays that have been added to the display after those
+	 programs have started and attempted to add their icons
+
+Compulsivity: required if supporting `Command: add-tray-icon`
 
 ---------------------------------------------------------------------
 
