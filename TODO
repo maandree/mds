@@ -50,6 +50,7 @@ Missing commands:
 	cmd-registry	Command line interface for the protocol registry
 	conf		Command line interface for reconfiguring servers
 	clip		Command line interface for the clipboard
+	screenshot	Take a screenshot
 
 Need testing:
 
