@@ -32,6 +32,7 @@ Missing servers:
 	state		Keeps track of windows' states
 	vt		VT switcher
 	iclipboard	User-private interdisplay clipboard
+	screensaver	Launch screensaver when the computer is idle
 
 Missing protocols:
 
