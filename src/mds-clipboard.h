@@ -15,20 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MDS_MDS_ECHO_H
-#define MDS_MDS_ECHO_H
+#ifndef MDS_MDS_CLIPBOARD_H
+#define MDS_MDS_CLIPBOARD_H
 
 
 #include "mds-base.h"
 
-
-/**
- * Echo the received message payload
- * 
- * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
- */
-int echo_message(void);
 
 /**
  * Send a full message even if interrupted

@@ -112,8 +112,13 @@ int initialise_server(void)
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
   server_initialised();
-  mds_message_initialise(&received);
-  return 0;
+  fail_if (mds_message_initialise(&received));
+  
+  return 0;  
+ pfail:
+  xperror(*argv);
+  mds_message_destroy(&received);
+  return 1;
 }
 
 

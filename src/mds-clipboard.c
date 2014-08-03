@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #define reconnect_to_display() -1 /* TODO */
 
 
@@ -51,6 +52,61 @@ server_characteristics_t server_characteristics =
 
 
 /**
+ * Delete entry only when needed
+ */
+#define CLIPITEM_AUTOPURGE_NEVER  0
+
+/**
+ * Delete entry when the client closes, or needed
+ */
+#define CLIPITEM_AUTOPURGE_UPON_DEATH  1
+
+/**
+ * Delete entry when a point in time has elapsed, or needed
+ */
+#define CLIPITEM_AUTOPURGE_UPON_CLOCK  2
+
+
+/**
+ * A clipboard entry
+ */
+typedef struct clipitem
+{
+  /**
+   * The stored content
+   */
+  char* content;
+  
+  /**
+   * The length of the stored content
+   */
+  size_t length;
+  
+  /**
+   * Time of planned death if `autopurge` is `CLIPITEM_AUTOPURGE_UPON_CLOCK`
+   */
+  struct timespec dethklok;
+  
+  /**
+   * The client that issued the inclusion of this entry
+   */
+  uint64_t client;
+  
+  /**
+   * Rule for automatic deletion
+   */
+  int autopurge;
+  
+} clipitem_t;
+
+
+/**
+ * The number of levels in the clipboard
+ */
+#define CLIPBOARD_LEVELS  3
+
+
+/**
  * Value of the ‘Message ID’ header for the next message
  */
 static int32_t message_id = 1;
@@ -64,6 +120,21 @@ static mds_message_t received;
  * Whether the server is connected to the display
  */
 static int connected = 1;
+
+/**
+ * The size of each clipstack
+ */
+static size_t clipboard_size[CLIPBOARD_LEVELS] = { 10, 1, 1 };
+
+/**
+ * The number of used elements in each clipstack
+ */
+static size_t clipboard_used[CLIPBOARD_LEVELS] = { 0, 0, 0 };
+
+/**
+ * The entries in each clipstack
+ */
+static clipitem_t* clipboard[CLIPBOARD_LEVELS];
 
 
 
@@ -87,6 +158,7 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
+  ssize_t i = 0;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
@@ -96,9 +168,35 @@ int initialise_server(void)
   
   if (full_send(message, strlen(message)))
     return 1;
+  
+  if (is_respawn)
+    {
+      const char* const crash_message =
+	"Command: clipboard-info\n"
+	"Event: crash\n"
+	"Message ID: 1\n"
+	"\n";
+      
+      if (full_send(crash_message, strlen(crash_message)))
+	return 1;
+      
+      message_id++;
+    }
+  
   server_initialised();
-  mds_message_initialise(&received);
+  fail_if (mds_message_initialise(&received));
+  
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    fail_if (xcalloc(clipboard[i], clipboard_size[i], clipitem_t));
+  
   return 0;
+  
+ pfail:
+  xperror(*argv);
+  mds_message_destroy(&received);
+  while (--i >= 0)
+    free(clipboard[i]);
+  return 1;
 }
 
 
@@ -133,7 +231,28 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  size_t i, j, rc =  2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  rc += 2 * CLIPBOARD_LEVELS * sizeof(size_t);
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    for (j = 0; j < clipboard_used[i]; j++)
+      {
+	clipitem_t clip = clipboard[i][j];
+	rc += sizeof(size_t) + sizeof(time_t) + sizeof(long) + sizeof(uint64_t) + sizeof(int);
+	rc += clip.length * sizeof(char);
+      }
+  return rc;
+}
+
+
+/**
+ * Wipe a memory area and free it
+ * 
+ * @param  s  The memory area
+ * @param  n  The number of bytes to write
+ */
+static inline __attribute__((optimize("-O0"))) void wipe_and_free(void* s, size_t n)
+{
+  free(memset(s, 0, n));
 }
 
 
@@ -145,10 +264,49 @@ size_t marshal_server_size(void)
  */
 int marshal_server(char* state_buf)
 {
+  size_t i, j;
+  
   buf_set_next(state_buf, int, MDS_CLIPBOARD_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
   mds_message_marshal(&received, state_buf);
+  
+  /* Removed entires from the clipboard that may not be marshalled. */
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    for (j = 0; j < clipboard_used[i]; j++)
+      {
+	clipitem_t clip = clipboard[i][j];
+	
+	if (clip.autopurge == CLIPITEM_AUTOPURGE_NEVER)
+	  continue;
+	
+	wipe_and_free(clip.content, clip.length * sizeof(char));
+	
+	memmove(clipboard[i] + j, clipboard[i] + j + 1, (clipboard_used[i] - j - 1) * sizeof(clipitem_t));
+	clipboard_used[i]--;
+	j--;
+      }
+  
+  /* Marshal clipboard. */
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    {
+      buf_set_next(state_buf, size_t, clipboard_size[i]);
+      buf_set_next(state_buf, size_t, clipboard_used[i]);
+      for (j = 0; j < clipboard_used[i]; j++)
+	{
+	  clipitem_t clip = clipboard[i][j];
+	  buf_set_next(state_buf, size_t, clip.length);
+	  buf_set_next(state_buf, time_t, clip.dethklok.tv_sec);
+	  buf_set_next(state_buf, long, clip.dethklok.tv_nsec);
+	  buf_set_next(state_buf, uint64_t, clip.client);
+	  buf_set_next(state_buf, int, clip.autopurge);
+	  memcpy(state_buf, clip.content, clip.length * sizeof(char));
+	  state_buf += clip.length;
+	  
+	  free(clip.content);
+	}
+      free(clipboard[i]);
+    }
   
   mds_message_destroy(&received);
   return 0;
@@ -167,18 +325,50 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
-  int r;
+  size_t i, j;
+  
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    clipboard[i] = NULL;
+  
   /* buf_get_next(state_buf, int, MDS_CLIPBOARD_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, int32_t, message_id);
-  r = mds_message_unmarshal(&received, state_buf);
-  if (r)
+  fail_if (mds_message_unmarshal(&received, state_buf));
+  
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
     {
-      xperror(*argv);
-      mds_message_destroy(&received);
+      buf_get_next(state_buf, size_t, clipboard_size[i]);
+      buf_get_next(state_buf, size_t, clipboard_used[i]);
+      fail_if (xcalloc(clipboard[i], clipboard_size[i], clipitem_t));
+      
+      for (j = 0; j < clipboard_used[i]; j++)
+	{
+	  clipitem_t* clip = clipboard[i] + j;
+	  buf_get_next(state_buf, size_t, clip->length);
+	  buf_get_next(state_buf, time_t, clip->dethklok.tv_sec);
+	  buf_get_next(state_buf, long, clip->dethklok.tv_nsec);
+	  buf_get_next(state_buf, uint64_t, clip->client);
+	  buf_get_next(state_buf, int, clip->autopurge);
+	  fail_if (xmalloc(clip->content, clip->length, char));
+	  memcpy(clip->content, state_buf, clip->length * sizeof(char));
+	  state_buf += clip->length;
+	}
     }
-  return r;
+  
+  return 0;
+ pfail:
+  xperror(*argv);
+  mds_message_destroy(&received);
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    if (clipboard[i] != NULL)
+      {
+	for (j = 0; j < clipboard_used[i]; j++)
+	  free(clipboard[i][j].content);
+	free(clipboard[i]);
+      }
+  abort();
+  return -1;
 }
 
 
