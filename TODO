@@ -17,6 +17,7 @@ Missing servers:
 	fb		Framebuffer presenter
 	kkbd		Keyboard input from kernel
 	kbd		Keyboard input
+	keytrans	Translates pure (but possibly remapped) scancodes in characters
 	rat		Rat input
 	compositor	Composites the display
 	crtc		CRTC identifier
