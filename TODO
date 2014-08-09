@@ -26,8 +26,6 @@ Missing servers:
 	drag		Drag and drop
 	cursorshadow	Decorate cursors with shadows
 	kill		Kill processes based on their windows
-	shm		Network enabled SysV shared memory
-	sem		Network enabled SysV semaphore arrays
 	focus		Focuses the selected window
 	colour		Mapping of colour by name (system colours) and value
 	state		Keeps track of windows' states
