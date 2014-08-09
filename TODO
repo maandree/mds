@@ -18,6 +18,7 @@ Missing servers:
 	kkbd		Keyboard input from kernel
 	kbd		Keyboard input
 	keytrans	Translates pure (but possibly remapped) scancodes in characters
+	keystick	Sticky keys
 	rat		Rat input
 	compositor	Composites the display
 	crtc		CRTC identifier
