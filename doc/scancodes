@@ -1,0 +1,108 @@
+:: 105-keys (qwerty)
+
+1 :: escape
+2 :: 1
+3 :: 2
+4 :: 3
+5 :: 4
+6 :: 5
+7 :: 6
+8 :: 7
+9 :: 8
+10 :: 9
+11 :: 0
+12 :: right of 0
+13 :: left of backspace
+14 :: backspace
+15 :: tab
+16 :: q
+17 :: w
+18 :: e
+19 :: r
+20 :: t
+21 :: y
+22 :: u
+23 :: i
+24 :: o
+25 :: p
+26 :: right of p, once removed
+27 :: right of p, twice removed
+28 :: return
+29 :: left control
+30 :: a
+31 :: s
+32 :: d
+33 :: f
+34 :: g
+35 :: h
+36 :: j
+37 :: k
+38 :: l
+39 :: right of l, once removed
+40 :: right of l, twice removed
+41 :: left of 1
+42 :: left shift
+43 :: right of l, three times removed
+44 :: z
+45 :: x
+46 :: c
+47 :: v
+48 :: b
+49 :: n
+50 :: m
+51 :: right of m, once removed
+52 :: right of m, twice removed
+53 :: right of m, three times removed
+54 :: right shift
+55 :: #multiply
+56 :: alternative
+57 :: space
+58 :: caps
+59 :: f1
+60 :: f2
+61 :: f3
+62 :: f4
+63 :: f5
+64 :: f6
+65 :: f7
+66 :: f8
+67 :: f9
+68 :: f10
+69 :: num
+70 :: scroll
+71 :: #7
+72 :: #8
+73 :: #9
+74 :: #minus
+75 :: #4
+76 :: #5
+77 :: #6
+78 :: #plus
+79 :: #1
+80 :: #2
+81 :: #3
+82 :: #0
+83 :: #comma
+86 :: left of z
+87 :: f11
+88 :: f12
+96 :: #return
+97 :: right control
+98 :: #divide
+99 :: sysrq
+100 :: alternative graph
+102 :: home
+103 :: up
+104 :: page up
+105 :: left
+106 :: right
+107 :: end
+108 :: down
+109 :: page down
+110 :: insert
+111 :: delete
+119 :: break
+125 :: left super
+126 :: right super
+127 :: application menu
+
