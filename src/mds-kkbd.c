@@ -111,6 +111,25 @@ static struct termios saved_stty;
  */
 static int saved_kbd_mode;
 
+/**
+ * Keycode remapping table
+ */
+static int* restrict mapping = NULL;
+
+/**
+ * The size of `mapping`
+ */
+static size_t mapping_size = 0;
+
+/**
+ * Scancode buffer
+ */
+static int scancode_buf[3] = { 0, 0, 0 };
+
+/**
+ * The number of elements stored in `scancode_buf`
+ */
+static int scancode_ptr = 0;
 
 
 
@@ -211,7 +230,8 @@ void fork_cleanup(int status)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 5 * sizeof(int) + sizeof(int32_t) + sizeof(struct termios);
+  size_t rc = 9 * sizeof(int) + sizeof(int32_t) + sizeof(struct termios);
+  rc += sizeof(size_t) + mapping_size * sizeof(int);
   rc += mds_message_marshal_size(&received);
   return rc;
 }
@@ -232,9 +252,20 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, int, saved_leds);
   buf_set_next(state_buf, struct termios, saved_stty);
   buf_set_next(state_buf, int, saved_kbd_mode);
+  buf_set_next(state_buf, int, scancode_ptr);
+  buf_set_next(state_buf, int, scancode_buf[0]);
+  buf_set_next(state_buf, int, scancode_buf[1]);
+  buf_set_next(state_buf, int, scancode_buf[2]);
+  buf_set_next(state_buf, size_t, mapping_size);
+  if (mapping_size > 0)
+    {
+      memcpy(state_buf, mapping, mapping_size * sizeof(int));
+      state_buf += mapping_size * sizeof(int) / sizeof(char);
+    }
   mds_message_marshal(&received, state_buf);
   
   mds_message_destroy(&received);
+  free(mapping);
   return 0;
 }
 
@@ -259,12 +290,24 @@ int unmarshal_server(char* state_buf)
   buf_get_next(state_buf, int, saved_leds);
   buf_get_next(state_buf, struct termios, saved_stty);
   buf_get_next(state_buf, int, saved_kbd_mode);
+  buf_get_next(state_buf, int, scancode_ptr);
+  buf_get_next(state_buf, int, scancode_buf[0]);
+  buf_get_next(state_buf, int, scancode_buf[1]);
+  buf_get_next(state_buf, int, scancode_buf[2]);
+  buf_get_next(state_buf, size_t, mapping_size);
+  if (mapping_size > 0)
+    {
+      fail_if (xmalloc(mapping, mapping_size, int));
+      memcpy(mapping, state_buf, mapping_size * sizeof(int));
+      state_buf += mapping_size * sizeof(int) / sizeof(char);
+    }
   fail_if (mds_message_unmarshal(&received, state_buf));
   
   return 0;
  pfail:
   xperror(*argv);
   mds_message_destroy(&received);
+  free(mapping);
   abort(); /* We must abort on failure to not risk the keyboard
 	      getting stuck and freeze up the computer until
 	      someone ssh:es into it and kill the server. */
@@ -292,44 +335,11 @@ int __attribute__((const)) reexec_failure_recover(void)
 int master_loop(void)
 {
   int rc = 1;
-  int c, keycode, released;
-  int scancode[3];
   
-  while ((c = getchar()) != 1) /* Exit with ESCAPE */
-    {
-    redo:
-      keycode = c & 0x7F;
-      released = !!(c & 0x80);
-      scancode[0] = keycode;
-      
-      if (keycode == 0)
-	{
-	  scancode[1] = getchar();
-	  if ((scancode[1] & 0x80) == 0)
-	    {
-	      c = scancode[1];
-	      goto redo;
-	    }
-	  scancode[2] = getchar();
-	  if ((scancode[2] & 0x80) == 0)
-	    {
-	      printf("scancode: %i\n", scancode[1]);
-	      printf("keycode: %i\n", scancode[1]);
-	      printf("released: no\n");
-	      c = scancode[2];
-	      goto redo;
-	    }
-	  keycode = (scancode[1] & 0x7F) << 7;
-	  keycode |= (scancode[2] & 0x7F);
-	  printf("scancode: %i %i %i\n",
-		 scancode[0], scancode[1], scancode[2]);
-	}
-      else
-	printf("scancode: %i\n", scancode[0]);
-      printf("keycode: %i\n", keycode);
-      printf("released: %s\n", released ? "yes" : "no");
-    }
-  
+  while (!reexecing && !terminating)
+    if (fetch_keys() < 0)
+      if (errno != EINTR)
+	goto pfail;
   /*
   while (!reexecing && !terminating)
     {
@@ -368,6 +378,7 @@ int master_loop(void)
   if (!rc && reexecing)
     return 0;
   mds_message_destroy(&received);
+  free(mapping);
   return rc;
 }
 
@@ -502,6 +513,114 @@ void close_input(void)
     xperror(*argv);
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty) < 0)
     xperror(*argv);
+}
+
+
+/**
+ * Broadcast a keyboard input event
+ * 
+ * @param   scancode  The scancode
+ * @param   trio      Whether the scancode has three integers rather than one
+ * @return            Zero on success, -1 on error
+ */
+int send_key(int* restrict scancode, int trio)
+{
+  int keycode, released = (scancode[0] & 0x80) == 0x80;
+  scancode[0] &= 0x7F;
+  if (trio)
+    {
+      keycode = (scancode[1] &= 0x7F) << 7;
+      keycode |= (scancode[2] &= 0x7F);
+    }
+  else
+    keycode = scancode[0];
+  
+  if ((size_t)keycode < mapping_size)
+    keycode = mapping[keycode];
+  
+  printf("Command: key-sent\n");
+  if (trio)
+    printf("Scancode: %i %i %i\n", scancode[0], scancode[1], scancode[2]);
+  else
+    printf("Scancode: %i\n", scancode[0]);
+  printf("Keycode: %i\n", keycode);
+  printf("Released: %s\n", released ? "yes" : "no");
+  printf("Keyboard: kernel\n\n");
+  
+  return 0;
+}
+
+
+/**
+ * Fetch and broadcast keys until interrupted
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int fetch_keys(void)
+{
+#ifdef DEBUG
+  int consecutive_escapes = 0;
+#endif
+  int c;
+  ssize_t r;
+  
+  for (;;)
+    {
+      r = read(STDIN_FILENO, &c, sizeof(int));
+      if (r <= 0)
+	{
+	  if (r == 0)
+	    {
+	      raise(SIGTERM);
+	      errno = 0;
+	    }
+	  break;
+	}
+      
+#ifdef DEBUG
+      if ((c & 0x7F) == 1) /* Exit with ESCAPE, ESCAPE, ESCAPE */
+	{
+	  if (++consecutive_escapes >= 6)
+	    {
+	      raise(SIGTERM);
+	      break;
+	    }
+	}
+      else
+	consecutive_escapes = 0;
+#endif
+      
+    redo:
+      scancode_buf[scancode_ptr] = c;
+      if (scancode_ptr == 0)
+	{
+	  if ((c & 0x7F) == 0)
+	    scancode_ptr++;
+	  else
+	    send_key(scancode_buf, 0);
+	}
+      else if (scancode_ptr == 1)
+	{
+	  if ((c & 0x80) == 0)
+	    {
+	      scancode_ptr = 0;
+	      goto redo;
+	    }
+	  scancode_ptr++;
+	}
+      else
+	{
+	  scancode_ptr = 0;
+	  if ((c & 0x80) == 0)
+	    {
+	      send_key(scancode_buf + 1, 0);
+	      goto redo;
+	    }
+	  send_key(scancode_buf, 1);
+	}
+    }
+  
+  return errno == 0 ? 0 : -1;
 }
 
 

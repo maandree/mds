@@ -362,3 +362,115 @@ Compulsivity: required if supporting `Command: add-tray-icon`
 
 ---------------------------------------------------------------------
 
+Command: key-sent
+  Announce a keyboard input event
+
+Required header: Keyboard
+  Any string that uniquely identifies the keyboard
+  Purpose: Enable multi-keyboard aware programs and give at
+  	   least on keyboard per seat in a multi-seat environment
+  Note: mds-kkbd uses `kernel` to indicate that it uses the kernel
+  	and thus lumps together all keyboards.
+
+Required header: Released
+  `yes` if the key was released
+  `no` otherwise, that is, held down or pressed
+  Note: pause/break is automatically released directly after it
+  	has been pressed. This is feature built into keyboards
+	and servers should not try to circumvent this
+
+Required header: Keycode
+  An unsigned 14-bit integer identifying the key, may be remapped
+
+Optional header: Scancode
+  Either an unsigned 7-bit integer or a single blank space
+  separated trio of unsigned 7-bit integers, identifying the key.
+  This is the scancode sent from the keyboard and optionally
+  unified by the keyboard driver, however with the typed/released
+  bit zeroed out. This may not be remapped.
+
+Optional header: Modifiers
+  Single blank space separated list of active modifiers:
+    shift) Shift (level 2)
+    ctrl) Control
+    alt) Alternative/Option
+    altgr) Alternative Graphic (level 3)
+    lvl*) * may be any 2ⁿ + 1 integer greater than 4
+    super) Super
+    hyper) Hyper
+    caps) Caps (usually a lock key)
+    num) Num (usually a lock key)
+    scrl) Scroll (usually a lock key)
+    top) Top (historical)
+    front) Front (historical)
+    greek) Greek (historical)
+    compose) Compose (rare, it is usally a dead key)
+  Any key that has been locked should be prefix with `+`,
+  if the key has been locked by nullified with non-lock
+  modifier it should be prefixed with a `-`.
+  If no modifier is active or has been nullified, `none`
+  should be used.
+
+Optional header: Key
+  A textual representation of the key that has been typed or
+  released, as mapped by the keyboard layout.
+    esc) Escape
+    f*) F* where * is any integer
+    sysrq) System Request/Print Screen
+    scrl) Scroll (lock)
+    break) Break/Pause
+    backspace) Backspace
+    tab) Tab
+    return) Return/Enter
+    space) Blank Space
+    menu) Application Menu
+    ins) Insert
+    home) Home
+    pgup) Page Up
+    del) Delete
+    end) End
+    pgdown) Page Down
+    up) Up Arrow
+    left) Left Arrow
+    down) Down Arrow
+    right) Right Arrow
+    shift) Shift (level 2)
+    ctrl) Control
+    alt) Alternative/Option
+    altgr) Alternative Graphic (level 3)
+    lvl*) * may be any 2ⁿ + 1 integer greater than 4
+    super) Super
+    hyper) Hyper
+    caps) Caps (usually a lock key)
+    num) Num (usually a lock key)
+    scrl) Scroll (usually a lock key)
+    top) Top (historical)
+    front) Front (historical)
+    greek) Greek (historical)
+    compose) Compose (usally a dead key)
+    letter *) * may be any UTF-8 encoded letter
+  Keys that lock/unlock a modifer should be suffixed with a
+  blank space and a `lock`. If the key is a dead key (even
+  the compose key) should use `dead` instead. A position,
+  either `left`, `right` or `keypad`, followed by a blank
+  space, should prefix any key that occurs on multiple
+  position on the keyboard. Keys without any meaning should
+  be identified as `unknown`. Modifiers and dead keys should
+  not affect the value.
+
+Optional header: Characters
+  UTF-8 encoded string that has been written
+
+Purpose: Enable the user to use a keyboard, physical or on-screen
+Purpose: Enable programs to send keys as part of a script or
+	 a reply of a recorded session
+
+Compulsivity: highly-recommended, a computer is as good as useless
+	      without a keyboard
+
+Reference implementation: kkbd
+Reference implementation: kbd
+Reference implementation: keytrans
+
+---------------------------------------------------------------------
+

@@ -70,6 +70,22 @@ int open_input(void);
  */
 void close_input(void);
 
+/**
+ * Broadcast a keyboard input event
+ * 
+ * @param   scancode  The scancode
+ * @param   trio      Whether the scancode has three integers rather than one
+ * @return            Zero on success, -1 on error
+ */
+int send_key(int* restrict scancode, int trio);
+
+/**
+ * Fetch and broadcast keys until interrupted
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int fetch_keys(void);
+
 
 #endif
 

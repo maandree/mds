@@ -49,6 +49,8 @@ Extra servers:
 	workspace	A simple, reference implementation of a, workspaces
 	tray		A simple, reference implementation of a, status icon tray
 	cool-old-crt	Old CRT emulator, like cool-old-term but display-wide
+	kbd2rat		Control the rat cursor with the keyboard
+	multikey	Bind keys to send sequences of keys
 
 Missing commands:
 
