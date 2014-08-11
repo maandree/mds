@@ -15,7 +15,6 @@ Missing servers:
 	inet		Network enabled display server
 	remote		Bind to a remote display server
 	fb		Framebuffer presenter
-	kkbd		Keyboard input from kernel
 	kbd		Keyboard input
 	keytrans	Translates pure (but possibly remapped) scancodes in characters
 	keystick	Sticky keys
