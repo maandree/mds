@@ -453,6 +453,11 @@ int main(int argc_, char** argv_)
     fail_if (drop_privileges());
   
   
+  /* Use /proc/self/exe when re:exec-ing */
+  if (prepare_reexec())
+    xperror(*argv);
+  
+  
   /* Sanity check the number of command line arguments. */
   exit_if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT,
 	   eprint("that number of arguments is ridiculous, I will not allow it."););

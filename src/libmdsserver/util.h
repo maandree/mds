@@ -41,8 +41,32 @@ uint64_t parse_client_id(const char* str);
 char* getenv_nonempty(const char* var);
 
 /**
+ * Prepare the server so that it can reexec into
+ * a newer version of the executed file.
+ * 
+ * This is required for two reasons:
+ * 1:  We cannot use argv[0] as PATH-resolution may
+ *     cause it to reexec into another pathname, and
+ *     maybe to wrong program. Additionally argv[0]
+ *     may not even refer to the program, and chdir
+ *     could also hinter its use.
+ * 2:  The kernel appends ` (deleted)` to
+ *     `/proc/self/exe` once it has been removed,
+ *     so it cannot be replaced.
+ * 
+ * The function will should be called immediately, it
+ * will store the content of `/proc/self/exe`.
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int prepare_reexec(void);
+
+/**
  * Re-exec the server.
  * This function only returns on failure.
+ * 
+ * If `prepare_reexec` failed or has not been called,
+ * `argv[0]` will be used as a fallback.
  * 
  * @param  argc      The number of elements in `argv`
  * @param  argv      The command line arguments

@@ -34,6 +34,14 @@
 
 
 /**
+ * The content of `/proc/self/exe`, when
+ * `prepare_reexec` was invoked.
+ */
+static char self_exe[PATH_MAX] = {0};
+
+
+
+/**
  * Convert a client ID string into a client ID integer
  * 
  * @param   str  The client ID string
@@ -73,27 +81,54 @@ char* getenv_nonempty(const char* var)
 
 
 /**
+ * Prepare the server so that it can reexec into
+ * a newer version of the executed file.
+ * 
+ * This is required for two reasons:
+ * 1:  We cannot use argv[0] as PATH-resolution may
+ *     cause it to reexec into another pathname, and
+ *     maybe to wrong program. Additionally argv[0]
+ *     may not even refer to the program, and chdir
+ *     could also hinter its use.
+ * 2:  The kernel appends ` (deleted)` to
+ *     `/proc/self/exe` once it has been removed,
+ *     so it cannot be replaced.
+ * 
+ * The function will should be called immediately, it
+ * will store the content of `/proc/self/exe`.
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int prepare_reexec(void)
+{
+  ssize_t len;
+  len = readlink(SELF_EXE, self_exe, (sizeof(self_exe) / sizeof(char)) - 1);
+  if (len < 0)
+    return -1;
+  /* ‘readlink() does not append a null byte to buf.’ */
+  self_exe[len] = '\0';
+  return 0;
+}
+
+
+/**
  * Re-exec the server.
  * This function only returns on failure.
  * 
- * @param  argc                  The number of elements in `argv`
- * @param  argv                  The command line arguments
- * @param  reexeced              Whether the server has previously been re-exec:ed
+ * If `prepare_reexec` failed or has not been called,
+ * `argv[0]` will be used as a fallback.
+ * 
+ * @param  argc      The number of elements in `argv`
+ * @param  argv      The command line arguments
+ * @param  reexeced  Whether the server has previously been re-exec:ed
  */
 void reexec_server(int argc, char** argv, int reexeced)
 {
-  char readlink_buf[PATH_MAX];
-  ssize_t readlink_ptr;
   char** reexec_args;
   char** reexec_args_;
   int i;
   
   /* Re-exec the server. */
-  readlink_ptr = readlink(SELF_EXE, readlink_buf, (sizeof(readlink_buf) / sizeof(char)) - 1);
-  if (readlink_ptr < 0)
-    return;
-  /* ‘readlink() does not append a null byte to buf.’ */
-  readlink_buf[readlink_ptr] = '\0';
   reexec_args = alloca(((size_t)argc + 2) * sizeof(char*));
   reexec_args_ = reexec_args;
   if (reexeced == 0)
@@ -110,7 +145,7 @@ void reexec_server(int argc, char** argv, int reexeced)
   for (i = 1; i < argc; i++)
     reexec_args_[i] = argv[i];
   reexec_args_[argc] = NULL;
-  execv(readlink_buf, reexec_args);
+  execv(self_exe[0] ? self_exe : argv[0], reexec_args);
 }
 
 
