@@ -182,12 +182,54 @@ int __attribute__((weak)) connect_to_display(void)
   return 1;
 }
 
+
+/**
+ * Put the server into a fork of itself as
+ * described by the `fork_for_safety`
+ * server characteristics
+ * 
+ * @return  Zero on success, -1 on error
+ */
+static int server_initialised_fork_for_safety(void)
+{
+  unsigned pending_alarm = alarm(0);
+  pid_t pid = fork();
+  
+  if (pid == (pid_t)-1)
+    {
+      xperror(*argv);
+      eprint("while forking for safety.");
+      return -1;
+    }
+  else if (pid == 0)
+    alarm(pending_alarm);
+  else
+    {
+      int status;
+      if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
+	{
+	  xperror(*argv);
+	  kill(pid, SIGABRT);
+	  sleep(5);
+	}
+      fork_cleanup(status);
+      if      (WIFEXITED(status))    exit(WEXITSTATUS(status));
+      else if (WIFSIGNALED(status))  raise(WTERMSIG(status));
+      exit(1);
+    }
+  
+  return 0;
+}
+
+
 /**
  * This function should be called when the server has
  * been properly initialised but before initialisation
  * of anything that is removed at forking is initialised
+ * 
+ * @return  Zero on success, -1 on error
  */
-void __attribute__((weak)) server_initialised(void)
+int __attribute__((weak)) server_initialised(void)
 {
   pid_t r;
   if (on_init_fork && (r = fork()))
@@ -196,7 +238,7 @@ void __attribute__((weak)) server_initialised(void)
 	{
 	  xperror(*argv);
 	  eprint("while forking at completed initialisation.");
-	  exit(1);
+	  return -1;
 	}
       else
 	exit(0);
@@ -204,6 +246,10 @@ void __attribute__((weak)) server_initialised(void)
   
   if (on_init_sh != NULL)
     system(on_init_sh);
+  
+  if (server_characteristics.fork_for_safety)
+    return server_initialised_fork_for_safety();
+  return 0;
 }
 
 
@@ -492,6 +538,24 @@ int trap_signals(void)
  pfail:
   xperror(*argv);
   return 1;
+}
+
+
+/**
+ * This function should be implemented by the actual server implementation
+ * if the server has set `server_characteristics.fork_for_safety` to be
+ * true
+ * 
+ * This function is called by the parent server process when the
+ * child server process exits, if the server has completed its
+ * initialisation
+ * 
+ * @param  status  The status the child died with
+ */
+void __attribute__((weak)) fork_cleanup(int status)
+{
+  (void) status;
+  fprintf(stderr, "Something is wrong, `fork_cleanup` has been called but not reimplemented.");
 }
 
 

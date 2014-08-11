@@ -45,7 +45,8 @@ server_characteristics_t server_characteristics =
     .require_privileges = 0,
     .require_display = 1,
     .require_respawn_info = 1,
-    .sanity_check_argc = 1
+    .sanity_check_argc = 1,
+    .fork_for_safety = 0
   };
 
 
@@ -128,7 +129,7 @@ int initialise_server(void)
       message_id++;
     }
   
-  server_initialised();
+  fail_if (server_initialised() < 0);
   fail_if (mds_message_initialise(&received));
   
   for (i = 0; i < CLIPBOARD_LEVELS; i++)

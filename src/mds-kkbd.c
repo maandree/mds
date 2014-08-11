@@ -15,22 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "mds-echo.h"
+#include "mds-kkbd.h"
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
 #include <libmdsserver/mds-message.h>
 
-#include <errno.h>
 #include <inttypes.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/kd.h>
 #define reconnect_to_display() -1 /* TODO */
 
 
 
-#define MDS_ECHO_VARS_VERSION  0
+#ifdef __sparc__
+# define GET_LED  KIOCGLED
+# define SET_LED  KIOCSLED
+#else
+# define GET_LED  KDGETLED
+# define SET_LED  KDSETLED
+#endif
+
+
+#ifdef __sparc__
+# define LED_NUM_LOCK   1
+# define LED_CAPS_LOCK  8
+# define LED_SCRL_LOCK  4
+# define LED_COMPOSE    2
+#else
+# define LED_NUM_LOCK   LED_NUM
+# define LED_CAPS_LOCK  LED_CAP
+# define LED_SCRL_LOCK  LED_SCR
+#endif
+
+
+
+#define MDS_KKBD_VARS_VERSION  0
 
 
 
@@ -46,7 +71,7 @@ server_characteristics_t server_characteristics =
     .require_display = 1,
     .require_respawn_info = 0,
     .sanity_check_argc = 1,
-    .fork_for_safety = 0
+    .fork_for_safety = 1
   };
 
 
@@ -67,14 +92,25 @@ static mds_message_t received;
 static int connected = 1;
 
 /**
- * Buffer for message echoing
+ * File descriptor for accessing the keyboard LED:s
  */
-static char* echo_buffer = NULL;
+static int ledfd = 0;
 
 /**
- * The size allocated to `echo_buffer` divided by `sizeof(char)`
+ * Saved LED states
  */
-static size_t echo_buffer_size = 0;
+static int saved_leds;
+
+/**
+ * Saved TTY settings
+ */
+static struct termios saved_stty;
+
+/**
+ * Save keyboard mode
+ */
+static int saved_kbd_mode;
+
 
 
 
@@ -98,21 +134,32 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
+  int stage = 0;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 14\n"
+    "Length: 18\n"
     "\n"
-    "Command: echo\n";
+    "Command: keyboard\n";
   
   if (full_send(message, strlen(message)))
     return 1;
-  fail_if (server_initialised() < 0);
+  
+  open_leds();
+  stage = 1;
+  open_input();
+  stage = 2;
+  
+  fail_if (server_initialised());
+  stage = 0;
   fail_if (mds_message_initialise(&received));
   
   return 0;
+  
  pfail:
   xperror(*argv);
+  if (stage >= 2)  close_input();
+  if (stage >= 1)  close_leds();
   mds_message_destroy(&received);
   return 1;
 }
@@ -140,6 +187,21 @@ int postinitialise_server(void)
 
 
 /**
+ * This function is called by the parent server process when the
+ * child server process exits, if the server has completed its
+ * initialisation
+ * 
+ * @param  status  The status the child died with
+ */
+void fork_cleanup(int status)
+{
+  (void) status;
+  close_input();
+  close_leds();
+}
+
+
+/**
  * Calculate the number of bytes that will be stored by `marshal_server`
  * 
  * On failure the program should `abort()` or exit by other means.
@@ -149,7 +211,9 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  size_t rc = 5 * sizeof(int) + sizeof(int32_t) + sizeof(struct termios);
+  rc += mds_message_marshal_size(&received);
+  return rc;
 }
 
 
@@ -161,9 +225,13 @@ size_t marshal_server_size(void)
  */
 int marshal_server(char* state_buf)
 {
-  buf_set_next(state_buf, int, MDS_ECHO_VARS_VERSION);
+  buf_set_next(state_buf, int, MDS_KKBD_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, int, ledfd);
+  buf_set_next(state_buf, int, saved_leds);
+  buf_set_next(state_buf, struct termios, saved_stty);
+  buf_set_next(state_buf, int, saved_kbd_mode);
   mds_message_marshal(&received, state_buf);
   
   mds_message_destroy(&received);
@@ -183,18 +251,24 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
-  int r;
-  /* buf_get_next(state_buf, int, MDS_ECHO_VARS_VERSION); */
+  /* buf_get_next(state_buf, int, MDS_KKBDOARD_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, int32_t, message_id);
-  r = mds_message_unmarshal(&received, state_buf);
-  if (r)
-    {
-      xperror(*argv);
-      mds_message_destroy(&received);
-    }
-  return r;
+  buf_get_next(state_buf, int, ledfd);
+  buf_get_next(state_buf, int, saved_leds);
+  buf_get_next(state_buf, struct termios, saved_stty);
+  buf_get_next(state_buf, int, saved_kbd_mode);
+  fail_if (mds_message_unmarshal(&received, state_buf));
+  
+  return 0;
+ pfail:
+  xperror(*argv);
+  mds_message_destroy(&received);
+  abort(); /* We must abort on failure to not risk the keyboard
+	      getting stuck and freeze up the computer until
+	      someone ssh:es into it and kill the server. */
+  return -1;
 }
 
 
@@ -218,14 +292,51 @@ int __attribute__((const)) reexec_failure_recover(void)
 int master_loop(void)
 {
   int rc = 1;
+  int c, keycode, released;
+  int scancode[3];
   
+  while ((c = getchar()) != 1) /* Exit with ESCAPE */
+    {
+    redo:
+      keycode = c & 0x7F;
+      released = !!(c & 0x80);
+      scancode[0] = keycode;
+      
+      if (keycode == 0)
+	{
+	  scancode[1] = getchar();
+	  if ((scancode[1] & 0x80) == 0)
+	    {
+	      c = scancode[1];
+	      goto redo;
+	    }
+	  scancode[2] = getchar();
+	  if ((scancode[2] & 0x80) == 0)
+	    {
+	      printf("scancode: %i\n", scancode[1]);
+	      printf("keycode: %i\n", scancode[1]);
+	      printf("released: no\n");
+	      c = scancode[2];
+	      goto redo;
+	    }
+	  keycode = (scancode[1] & 0x7F) << 7;
+	  keycode |= (scancode[2] & 0x7F);
+	  printf("scancode: %i %i %i\n",
+		 scancode[0], scancode[1], scancode[2]);
+	}
+      else
+	printf("scancode: %i\n", scancode[0]);
+      printf("keycode: %i\n", keycode);
+      printf("released: %s\n", released ? "yes" : "no");
+    }
+  
+  /*
   while (!reexecing && !terminating)
     {
       int r = mds_message_read(&received, socket_fd);
       if (r == 0)
 	{
-	  r = echo_message();
-	  if (r == 0)
+	  if (r = 0, r == 0) \/* TODO handle_message() *\/
 	    continue;
 	}
       
@@ -247,95 +358,17 @@ int master_loop(void)
 	goto fail;
       connected = 1;
     }
+  */
   
   rc = 0;
   goto fail;
  pfail:
   xperror(*argv);
  fail:
-  if (rc || !reexecing)
-    mds_message_destroy(&received);
-  free(echo_buffer);
+  if (!rc && reexecing)
+    return 0;
+  mds_message_destroy(&received);
   return rc;
-}
-
-
-/**
- * Echo the received message payload
- * 
- * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
- */
-int echo_message(void)
-{
-  const char* recv_client_id = NULL;
-  const char* recv_message_id = NULL;
-  const char* recv_length = NULL;
-  size_t i, n;
-  
-  /* Fetch headers. */
-  
-#define __get_header(storage, header, skip)  \
-  (startswith(received.headers[i], header))  \
-    storage = received.headers[i] + skip * strlen(header)
-  
-  for (i = 0; i < received.header_count; i++)
-    {
-      if      __get_header(recv_client_id,  "Client ID: ",  1);
-      else if __get_header(recv_message_id, "Message ID: ", 1);
-      else if __get_header(recv_length,     "Length: ",     0);
-      else
-	continue;
-      
-      /* Stop fetch headers if we have found everything we want. */
-      if (recv_client_id && recv_message_id && recv_length)
-	break;
-    }
-  
-#undef __get_header
-  
-  
-  /* Validate headers. */
-  if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
-    {
-      eprint("received message from anonymous sender, ignoring.");
-      return 0;
-    }
-  else if (recv_message_id == NULL)
-    {
-      eprint("received message with ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
-  
-  /* Construct echo message headers. */
-  
-  n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
-  n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int32_t);
-  if (recv_length != NULL)
-    n += strlen(recv_length) + 1;
-  
-  if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
-    {
-      char* old_buffer = echo_buffer;
-      if (xrealloc(echo_buffer, echo_buffer_size = n, char))
-	{
-	  free(old_buffer);
-	  return -1;
-	}
-    }
-  
-  sprintf(echo_buffer, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\n%s%s\n",
-	  recv_client_id, recv_message_id, message_id,
-	  recv_length == NULL ? "" : recv_length,
-	  recv_length == NULL ? "" : "\n");
-  
-  /* Increase message ID. */
-  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
-  
-  /* Send echo. */
-  if (full_send(echo_buffer, strlen(echo_buffer)))
-    return 1;
-  return full_send(received.payload, received.payload_size);
 }
 
 
@@ -368,4 +401,109 @@ int full_send(const char* message, size_t length)
     }
   return 0;
 }
+
+
+/**
+ * Acquire access of the keyboard's LED:s
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int open_leds(void)
+{
+#ifdef __sparc__
+  if ((ledfd = open(SPARC_KBD, O_RDONLY)) < 0)
+    return -1;
+  if (ioctl(ledfd, GET_LED, &saved_leds) < 0)
+    {
+      close(ledfd);
+      return -1;
+    }
+  return 0;
+#else
+  return ioctl(ledfd, GET_LED, &saved_leds);
+#endif
+}
+
+
+/**
+ * Release access of the keyboard's LED:s
+ */
+void close_leds(void)
+{
+  if (ioctl(ledfd, SET_LED, saved_leds) < 0)
+    xperror(*argv);
+#ifdef __sparc__
+  close(ledfd);
+#endif
+}
+
+
+/**
+ * Get active LED:s on the keyboard
+ * 
+ * @return  Active LED:s, -1 on error
+ */
+int get_leds(void)
+{
+  int leds;
+  if (ioctl(ledfd, GET_LED, &leds) < 0)
+    return -1;
+#ifdef __sparc__
+  leds &= 15;
+#endif
+  return leds;
+}
+
+
+/**
+ * Set active LED:s on the keyboard
+ * 
+ * @param   leds  Active LED:s
+ * @return        Zero on success, -1 on error
+ */
+int set_leds(int leds)
+{
+  return ioctl(ledfd, SET_LED, leds);
+}
+
+
+/**
+ * Acquire access of keyboard input
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int open_input(void)
+{
+  struct termios stty;
+  if (tcgetattr(STDIN_FILENO, &saved_stty) < 0)
+    return -1;
+  stty = saved_stty;
+  stty.c_lflag &= (tcflag_t)~(ECHO | ICANON | ISIG);
+  stty.c_iflag = 0;
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty) < 0)
+    return -1;
+  /* K_MEDIUMRAW: utilise keyboard drivers, but not layout */
+  if ((ioctl(STDIN_FILENO, KDGKBMODE, &saved_kbd_mode) < 0) ||
+      (ioctl(STDIN_FILENO, KDSKBMODE, K_MEDIUMRAW) < 0))
+    {
+      xperror(*argv);
+      return tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
+    }
+  return 0;
+}
+
+
+/**
+ * Release access of keyboard input
+ */
+void close_input(void)
+{
+  if (ioctl(STDIN_FILENO, KDSKBMODE, saved_kbd_mode) < 0)
+    xperror(*argv);
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty) < 0)
+    xperror(*argv);
+}
+
+
+/* TODO delay and repetition */
 

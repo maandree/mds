@@ -46,7 +46,8 @@ server_characteristics_t server_characteristics =
     .require_privileges = 0,
     .require_display = 0,
     .require_respawn_info = 1,
-    .sanity_check_argc = 0
+    .sanity_check_argc = 0,
+    .fork_for_safety = 0
   };
 
 
@@ -508,7 +509,7 @@ int master_loop(void)
   
   while (!reexecing && !terminating && live_count)
     {
-      pid_t pid = waitpid(-1, &status, 0);
+      pid_t pid = uninterruptable_waitpid(-1, &status, 0);
       
       if (reviving)
 	for (reviving = 0, i = 0; i < servers; i++)
@@ -517,8 +518,6 @@ int master_loop(void)
       
       if (pid == (pid_t)-1)
 	{
-	  if (errno == EINTR)
-	    continue;
 	  xperror(*argv);
 	  rc = 1;
 	  break;

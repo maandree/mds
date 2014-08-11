@@ -28,6 +28,8 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <ctype.h>
+#include <time.h>
+#include <sys/wait.h>
 
 
 
@@ -292,5 +294,42 @@ int startswith_n(const char* haystack, const char* needle, size_t haystack_n, si
       return 0;
   
   return 1;
+}
+
+
+/**
+ * Wrapper around `waitpid` that never returns on an interruption unless
+ * it is interrupted 100 times within the same second
+ * 
+ * @param   pid  See description of `pid` in the documentation for `waitpid`
+ * @param   pid  See description of `status` in the documentation for `waitpid`
+ * @param   pid  See description of `options` in the documentation for `waitpid`
+ * @return       See the documentation for `waitpid`
+ */
+pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options)
+{
+  struct timespec time_start;
+  struct timespec time_intr;
+  int intr_count = 0, have_time;
+  pid_t rc;
+  
+  have_time = (monotone(&time_start) >= 0);
+  
+ rewait:
+  rc = waitpid(pid, status, options);
+  if (rc == (pid_t)-1)
+    {
+      if (errno != EINTR)
+	goto fail;
+      if (have_time && (monotone(&time_intr) >= 0))
+	if (time_start.tv_sec != time_intr.tv_sec)
+	  intr_count = 0;
+      if (intr_count++ < 100)
+	goto rewait;
+      /* Don't let the CPU catch fire! */
+      errno = EINTR;
+    }
+ fail:
+  return rc;
 }
 

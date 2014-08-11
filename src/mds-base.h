@@ -54,6 +54,16 @@ typedef struct server_characteristics
    */
   unsigned sanity_check_argc : 1;
   
+  /**
+   * Setting this to non-zero will cause the server to place
+   * itself in a fork of itself when initialised. This can be
+   * used to let the server clean up fatal stuff after itself
+   * if it crashes. When the child exits, no matter how it
+   * exits, the parent will call `fork_cleanup` and then
+   * die it the same manner as the child.
+   */
+  unsigned fork_for_safety : 1;
+  
 } __attribute__((packed)) server_characteristics_t;
 
 
@@ -154,8 +164,10 @@ int connect_to_display(void); /* __attribute__((weak)) */
  * This function should be called when the server has
  * been properly initialised but before initialisation
  * of anything that is removed at forking is initialised
+ * 
+ * @return  Zero on success, -1 on error
  */
-void server_initialised(void); /* __attribute__((weak)) */
+int server_initialised(void); /* __attribute__((weak)) */
 
 
 /**
@@ -276,6 +288,19 @@ extern int reexec_failure_recover(void);
  * @return  Non-zero on error
  */
 extern int master_loop(void);
+
+/**
+ * This function should be implemented by the actual server implementation
+ * if the server has set `server_characteristics.fork_for_safety` to be
+ * true
+ * 
+ * This function is called by the parent server process when the
+ * child server process exits, if the server has completed its
+ * initialisation
+ * 
+ * @param  status  The status the child died with
+ */
+void fork_cleanup(int status); /* __attribute__((weak)) */
 
 
 #endif

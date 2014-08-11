@@ -30,14 +30,20 @@ g=
 if [ -z "${NO_VALGRIND}" ]; then
     g="valgrind --leak-check=full --show-leak-kinds=all"
 fi
-$g mds-respawn --interval=10 \
-    { sleep 4s } \
-    { sleep 1m } \
-    { $g mds-echo } \
-    &
-if which terminator 2>/dev/null >&2; then
-    exec terminator
+if [ -z "${MDS_TEST}" ]; then
+    $g mds-respawn --interval=10 \
+	{ sleep 4s } \
+	{ sleep 1m } \
+	{ $g mds-echo } \
+	&
+    if which terminator 2>/dev/null >&2; then
+        exec terminator
+    else
+        exec xterm
+    fi
+elif [ "${MDS_TEST}" = kkbd ]; then
+    exec $g mds-kkbd
 else
-    exec xterm
+    echo 'Bad value of ${MDS_TEST}'
 fi
 

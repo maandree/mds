@@ -42,7 +42,8 @@ server_characteristics_t server_characteristics =
     .require_privileges = 0,
     .require_display = 1,
     .require_respawn_info = 0,
-    .sanity_check_argc = 1
+    .sanity_check_argc = 1,
+    .fork_for_safety = 0
   };
 
 
@@ -111,7 +112,7 @@ int initialise_server(void)
     }
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
-  server_initialised();
+  fail_if (server_initialised() < 0);
   fail_if (mds_message_initialise(&received));
   
   return 0;  

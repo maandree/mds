@@ -336,7 +336,7 @@ int spawn_and_respawn_server(int fd)
     perror(*argv);
   
   /* Wait for master server to die. */
-  if (waitpid(pid, &status, 0) == (pid_t)-1)
+  if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
     goto pfail;
   
   /* If the server exited normally or SIGTERM, do not respawn. */

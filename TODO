@@ -62,6 +62,7 @@ Need testing:
 
 	registry
 	clipboard
+	kkbd, on a SPARC
 
 Fast lanes
 Optimise use of mutexe by replace them with rwlocks
