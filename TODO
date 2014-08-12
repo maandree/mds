@@ -12,7 +12,7 @@ Missing servers:
 	swcursor	Software cursor
 	cursorgamma	Fixes gamma ramps for cursors
 	coopgamma	Enables multiple gamma servers
-	inet		Network enabled display server
+	host		Network enabled display server
 	remote		Bind to a remote display server
 	fb		Framebuffer presenter
 	kbd		Keyboard input
