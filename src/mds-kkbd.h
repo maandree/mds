@@ -31,6 +31,58 @@
 void* keyboard_loop(void* data);
 
 /**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void);
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: enumerate-keyboards`
+ * 
+ * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_modify_id   The value of the `Modify ID`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
+ */
+int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_message_id,
+			       const char* recv_modify_id);
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: keyboard-enumeration`
+ * 
+ * @param   recv_modify_id  The value of the `Modify ID`-header, `NULL` if omitted
+ * @return                  Zero on success, -1 on error
+ */
+int handle_keyboard_enumeration(const char* recv_modify_id);
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: set-keyboard-leds`
+ * 
+ * @param   recv_active    The value of the `Active`-header, `NULL` if omitted
+ * @param   recv_mask      The value of the `Mask`-header, `NULL` if omitted
+ * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                 Zero on success, -1 on error
+ */
+int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
+			     const char* recv_keyboard);
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: get-keyboard-leds`
+ * 
+ * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
+ */
+int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
+			     const char* recv_keyboard);
+
+/**
  * Send a full message even if interrupted
  * 
  * @param   message  The message to send

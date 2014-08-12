@@ -59,6 +59,12 @@
 #define MDS_KKBD_VARS_VERSION  0
 
 
+/**
+ * The name of the keyboard for which its server implements control
+ */
+#define KEYBOARD_ID  "kernel"
+
+
 
 /**
  * This variable should declared by the actual server implementation.
@@ -80,7 +86,7 @@ server_characteristics_t server_characteristics =
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-static int32_t message_id = 1;
+static int32_t message_id = 2;
 
 /**
  * Buffer for received messages
@@ -173,9 +179,19 @@ int initialise_server(void)
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 18\n"
+    "Length: 54\n"
     "\n"
-    "Command: keyboard\n";
+    "Command: set-keyboard-leds\n"
+    "Command: get-keyboard-leds\n"
+    /* NEXT MESSAGE */
+    "Command: intercept\n"
+    "Message ID: 1\n"
+    "Modifying: yes\n"
+    "Length: 59\n"
+    "\n"
+    "Command: enumerate-keyboards\n"
+    "Command: keyboard-enumeration\n"
+    ;
   
   if (full_send(message, strlen(message)))
     return 1;
@@ -361,7 +377,7 @@ int master_loop(void)
       int r = mds_message_read(&received, socket_fd);
       if (r == 0)
 	{
-	  if (r = 0, r == 0) /* TODO handle_message() */
+	  if (r = handle_message(), r == 0)
 	    continue;
 	}
       
@@ -425,6 +441,179 @@ void* keyboard_loop(void* data)
   free(mapping);
   raise(SIGTERM);
   return (void*)1024;
+}
+
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void)
+{
+  const char* recv_command = NULL;
+  const char* recv_client_id = "0:0";
+  const char* recv_message_id = NULL;
+  const char* recv_modify_id = NULL;
+  const char* recv_active = NULL;
+  const char* recv_mask = NULL;
+  const char* recv_keyboard = NULL;
+  size_t i;
+  
+#define __get_header(storage, header)  \
+  (startswith(received.headers[i], header))  \
+    storage = received.headers[i] + strlen(header)
+  
+  for (i = 0; i < received.header_count; i++)
+    {
+      if      __get_header(recv_command,    "Command: ");
+      else if __get_header(recv_client_id,  "Client ID: ");
+      else if __get_header(recv_message_id, "Message ID: ");
+      else if __get_header(recv_modify_id,  "Modify ID: ");
+      else if __get_header(recv_active,     "Active: ");
+      else if __get_header(recv_mask,       "Mask: ");
+      else if __get_header(recv_keyboard,   "Keyboard: ");
+    }
+  
+#undef __get_header
+  
+  if (recv_message_id == NULL)
+    {
+      eprint("received message with ID, ignoring, master server is misbehaving.");
+      return 0;
+    }
+  
+  if (recv_command == NULL)
+    return 0; /* How did that get here, not matter, just ignore it? */
+  
+  if (strequals(recv_command, "enumerate-keyboards"))
+    return handle_enumerate_keyboards(recv_client_id, recv_message_id, recv_modify_id);
+  if (strequals(recv_command, "keyboard-enumeration"))
+    return handle_keyboard_enumeration(recv_modify_id);
+  if (strequals(recv_command, "set-keyboard-leds"))
+    return handle_set_keyboard_leds(recv_active, recv_mask, recv_keyboard);
+  if (strequals(recv_command, "get-keyboard-leds"))
+    return handle_get_keyboard_leds(recv_client_id, recv_message_id, recv_keyboard);
+  
+  return 0; /* How did that get here, not matter, just ignore it? */
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: enumerate-keyboards`
+ * 
+ * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_modify_id   The value of the `Modify ID`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
+ */
+int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_message_id,
+			       const char* recv_modify_id)
+{
+  if (recv_modify_id == NULL)
+    {
+      eprint("did not get add modify ID, ignoring.");
+      return 0;
+    }
+  
+  if (strequals(recv_client_id, "0:0"))
+    {
+      eprint("received information request from an anonymous client, sending non-modifying response.");
+      /* TODO send non-modifying response */
+      return 0;
+    }
+  
+  /* TODO */
+  
+  return 0;
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: keyboard-enumeration`
+ * 
+ * @param   recv_modify_id  The value of the `Modify ID`-header, `NULL` if omitted
+ * @return                  Zero on success, -1 on error
+ */
+int handle_keyboard_enumeration(const char* recv_modify_id)
+{
+  if (recv_modify_id == NULL)
+    {
+      eprint("did not get add modify ID, ignoring.");
+      return 0;
+    }
+  
+  /* TODO */
+  
+  return 0;
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: set-keyboard-leds`
+ * 
+ * @param   recv_active    The value of the `Active`-header, `NULL` if omitted
+ * @param   recv_mask      The value of the `Mask`-header, `NULL` if omitted
+ * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                 Zero on success, -1 on error
+ */
+int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
+			     const char* recv_keyboard)
+{
+  if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
+    return 0;
+  
+  if (recv_active == NULL)
+    {
+      eprint("received LED writing request without active header, ignoring.");
+      return 0;
+    }
+  
+  if (recv_mask == NULL)
+    {
+      eprint("received LED writing request without mask header, ignoring.");
+      return 0;
+    }
+  
+  /* TODO */
+  
+  return 0;
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: get-keyboard-leds`
+ * 
+ * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
+ */
+int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
+			     const char* recv_keyboard)
+{
+  if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
+    return 0;
+  
+  if (recv_keyboard == NULL)
+    {
+      eprint("received LED reading request but no specified keyboard, ignoring.");
+      return 0;
+    }
+  
+  if (strequals(recv_client_id, "0:0"))
+    {
+      eprint("received information request from an anonymous client, ignoring.");
+      return 0;
+    }
+  
+  /* TODO */
+  
+  return 0;
 }
 
 
@@ -607,7 +796,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Scancode: %i %i %i\n"
 	    "Keycode: %i\n"
 	    "Released: %s\n"
-	    "Keyboard: kernel\n"
+	    "Keyboard: " KEYBOARD_ID "\n"
 	    "Message ID: " PRIi32 "\n"
 	    "\n",
 	    scancode[0], scancode[1], scancode[2], keycode,
@@ -618,7 +807,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Scancode: %i\n"
 	    "Keycode: %i\n"
 	    "Released: %s\n"
-	    "Keyboard: kernel\n"
+	    "Keyboard: " KEYBOARD_ID "\n"
 	    "Message ID: " PRIi32 "\n"
 	    "\n",
 	    scancode[0], keycode,
