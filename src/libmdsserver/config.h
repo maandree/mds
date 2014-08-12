@@ -98,7 +98,7 @@
 #define NOBODY_GROUP_GID  ROOT_GROUP_GID
 #endif
 
-/* There three names above are redundant, but that is to avoid errors. */
+/* These three names above are redundant, but that is to avoid errors. */
 
 
 /**
