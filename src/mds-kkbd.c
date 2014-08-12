@@ -393,9 +393,9 @@ int master_loop(void)
  fail:
   if (!rc && reexecing)
     return 0;
-  mds_message_destroy(&received);
   if ((!joined) && (errno = pthread_join(kbd_thread, NULL)))
     xperror(*argv);
+  mds_message_destroy(&received);
   return rc;
 }
 
