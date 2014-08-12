@@ -142,10 +142,10 @@ int startswith_n(const char* haystack, const char* needle, size_t haystack_n, si
  * Wrapper around `waitpid` that never returns on an interruption unless
  * it is interrupted 100 times within the same second
  * 
- * @param   pid  See description of `pid` in the documentation for `waitpid`
- * @param   pid  See description of `status` in the documentation for `waitpid`
- * @param   pid  See description of `options` in the documentation for `waitpid`
- * @return       See the documentation for `waitpid`
+ * @param   pid      See description of `pid` in the documentation for `waitpid`
+ * @param   status   See description of `status` in the documentation for `waitpid`
+ * @param   options  See description of `options` in the documentation for `waitpid`
+ * @return           See the documentation for `waitpid`
  */
 pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options);
 
