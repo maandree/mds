@@ -180,21 +180,26 @@ void received_noop(int signo) __attribute__((weak, const));
 
 /**
  * This function should be implemented by the actual server implementation
- * if the server is multithreaded
+ * if the server is multi-threaded
  * 
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo) __attribute__((weak));
+
+/**
  * This function is called when a signal that
  * signals the server to re-exec has been received
  * 
- * When this function is invoked, it should set `reexecing` to a non-zero value
+ * When this function is invoked, it should set `reexecing` and
+ * `terminating` to a non-zero value
  * 
  * @param  signo  The signal that has been received
  */
 void received_reexec(int signo); /* __attribute__((weak)) */
 
 /**
- * This function should be implemented by the actual server implementation
- * if the server is multithreaded
- * 
  * This function is called when a signal that
  * signals the server to re-exec has been received
  * 

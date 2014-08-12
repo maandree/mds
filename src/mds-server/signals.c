@@ -22,9 +22,7 @@
 #include <libmdsserver/linked-list.h>
 #include <libmdsserver/macros.h>
 
-#include <stdio.h>
 #include <pthread.h>
-#include <errno.h>
 
 
 /**
@@ -32,7 +30,7 @@
  * 
  * @param  signo  The signal
  */
-static void signal_all(int signo)
+void signal_all(int signo)
 {      
   pthread_t current_thread;
   ssize_t node;
@@ -50,43 +48,5 @@ static void signal_all(int signo)
 		    pthread_kill(value->thread, signo);
 		}
 	      );
-}
-
-
-/**
- * This function is called when a signal that
- * signals the server to re-exec has been received
- * 
- * When this function is invoked, it should set `reexecing` to a non-zero value
- * 
- * @param  signo  The signal that has been received
- */
-void received_reexec(int signo)
-{
-  if (reexecing == 0)
-    {
-      terminating = reexecing = 1;
-      eprint("re-exec signal received.");
-      signal_all(signo);
-    }
-}
-
-
-/**
- * This function is called when a signal that
- * signals the server to re-exec has been received
- * 
- * When this function is invoked, it should set `terminating` to a non-zero value
- * 
- * @param  signo  The signal that has been received
- */
-void received_terminate(int signo)
-{
-  if (terminating == 0)
-    {
-      terminating = 1;
-      eprint("terminate signal received.");
-      signal_all(signo);
-    }
 }
 

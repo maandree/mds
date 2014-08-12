@@ -23,6 +23,14 @@
 
 
 /**
+ * The keyboard listener thread's main function
+ * 
+ * @param   data  Input data
+ * @return        Output data
+ */
+void* keyboard_loop(void* data);
+
+/**
  * Send a full message even if interrupted
  * 
  * @param   message  The message to send

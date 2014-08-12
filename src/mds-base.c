@@ -265,11 +265,29 @@ void received_noop(int signo)
 }
 
 
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
+/**
+ * This function should be implemented by the actual server implementation
+ * if the server is multi-threaded
+ * 
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void __attribute__((weak)) signal_all(int signo)
+{
+  (void) signo;
+}
+# pragma GCC diagnostic pop
+
+
 /**
  * This function is called when a signal that
  * signals the server to re-exec has been received
  * 
- * When this function is invoked, it should set `reexecing` to a non-zero value
+ * When this function is invoked, it should set `reexecing` and
+ * `terminating` to a non-zero value
  * 
  * @param  signo  The signal that has been received
  */
@@ -278,8 +296,9 @@ void __attribute__((weak)) received_reexec(int signo)
   (void) signo;
   if (reexecing == 0)
     {
-      reexecing = 1;
+      reexecing = terminating = 1;
       eprint("re-exec signal received.");
+      signal_all(signo);
     }
 }
 
@@ -299,6 +318,7 @@ void __attribute__((weak)) received_terminate(int signo)
     {
       terminating = 1;
       eprint("terminate signal received.");
+      signal_all(signo);
     }
 }
 

@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/kd.h>
+#include <pthread.h>
 #define reconnect_to_display() -1 /* TODO */
 
 
@@ -131,6 +132,21 @@ static int scancode_buf[3] = { 0, 0, 0 };
  */
 static int scancode_ptr = 0;
 
+/**
+ * Message buffer for `send_key`
+ */
+static char* key_send_buffer = NULL;
+
+/**
+ * The keyboard listener thread
+ */
+static pthread_t kbd_thread;
+
+/**
+ * Whether `kbd_thread` has started
+ */
+static int kbd_thread_started = 0;
+
 
 
 /**
@@ -172,6 +188,7 @@ int initialise_server(void)
   fail_if (server_initialised());
   stage = 0;
   fail_if (mds_message_initialise(&received));
+  fail_if (xmalloc(key_send_buffer, 111, char));
   
   return 0;
   
@@ -334,19 +351,17 @@ int __attribute__((const)) reexec_failure_recover(void)
  */
 int master_loop(void)
 {
-  int rc = 1;
+  int rc = 1, joined = 0;
+  void* kbd_ret;
   
-  while (!reexecing && !terminating)
-    if (fetch_keys() < 0)
-      if (errno != EINTR)
-	goto pfail;
-  /*
+  fail_if ((errno = pthread_create(&kbd_thread, NULL, keyboard_loop, NULL)));
+  
   while (!reexecing && !terminating)
     {
       int r = mds_message_read(&received, socket_fd);
       if (r == 0)
 	{
-	  if (r = 0, r == 0) \/* TODO handle_message() *\/
+	  if (r = 0, r == 0) /* TODO handle_message() */
 	    continue;
 	}
       
@@ -368,9 +383,10 @@ int master_loop(void)
 	goto fail;
       connected = 1;
     }
-  */
   
-  rc = 0;
+  joined = 1;
+  fail_if ((errno = pthread_join(kbd_thread, &kbd_ret)));
+  rc = kbd_ret == NULL ? 0 : 1;
   goto fail;
  pfail:
   xperror(*argv);
@@ -378,8 +394,55 @@ int master_loop(void)
   if (!rc && reexecing)
     return 0;
   mds_message_destroy(&received);
-  free(mapping);
+  if ((!joined) && (errno = pthread_join(kbd_thread, NULL)))
+    xperror(*argv);
   return rc;
+}
+
+
+/**
+ * The keyboard listener thread's main function
+ * 
+ * @param   data  Input data
+ * @return        Output data
+ */
+void* keyboard_loop(void* data)
+{
+  (void) data;
+  
+  kbd_thread_started = 1;
+  
+  while (!reexecing && !terminating)
+    if (fetch_keys() < 0)
+      if (errno != EINTR)
+	goto pfail;
+  
+  free(mapping);
+  return NULL;
+  
+ pfail:
+  xperror(*argv);
+  free(mapping);
+  raise(SIGTERM);
+  return (void*)1024;
+}
+
+
+/**
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo)
+{
+  pthread_t current_thread = pthread_self();
+  
+  if (pthread_equal(current_thread, master_thread) == 0)
+    pthread_kill(master_thread, signo);
+  
+  if (kbd_thread_started)
+    if (pthread_equal(current_thread, kbd_thread) == 0)
+      pthread_kill(kbd_thread, signo);
 }
 
 
@@ -538,16 +601,31 @@ int send_key(int* restrict scancode, int trio)
   if ((size_t)keycode < mapping_size)
     keycode = mapping[keycode];
   
-  printf("Command: key-sent\n");
   if (trio)
-    printf("Scancode: %i %i %i\n", scancode[0], scancode[1], scancode[2]);
+    sprintf(key_send_buffer,
+	    "Command: key-sent\n"
+	    "Scancode: %i %i %i\n"
+	    "Keycode: %i\n"
+	    "Released: %s\n"
+	    "Keyboard: kernel\n"
+	    "Message ID: " PRIi32 "\n"
+	    "\n",
+	    scancode[0], scancode[1], scancode[2], keycode,
+	    released ? "yes" : "no", message_id);
   else
-    printf("Scancode: %i\n", scancode[0]);
-  printf("Keycode: %i\n", keycode);
-  printf("Released: %s\n", released ? "yes" : "no");
-  printf("Keyboard: kernel\n\n");
+    sprintf(key_send_buffer,
+	    "Command: key-sent\n"
+	    "Scancode: %i\n"
+	    "Keycode: %i\n"
+	    "Released: %s\n"
+	    "Keyboard: kernel\n"
+	    "Message ID: " PRIi32 "\n"
+	    "\n",
+	    scancode[0], keycode,
+	    released ? "yes" : "no", message_id);
   
-  return 0;
+  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  return full_send(key_send_buffer, strlen(key_send_buffer));
 }
 
 
@@ -580,9 +658,10 @@ int fetch_keys(void)
 #ifdef DEBUG
       if ((c & 0x7F) == 1) /* Exit with ESCAPE, ESCAPE, ESCAPE */
 	{
-	  if (++consecutive_escapes >= 6)
+	  if (++consecutive_escapes >= 2 * 3)
 	    {
 	      raise(SIGTERM);
+	      errno = 0;
 	      break;
 	    }
 	}
