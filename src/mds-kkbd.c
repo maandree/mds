@@ -630,7 +630,7 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
   
 #undef __test
   
-  current = (current & active & mask) | ((current ^ active) & ~mask);
+  current = (active & mask) | ((current ^ active) & ~mask);
   if (set_leds(current) < 0)
     {
       xperror(*argv); /* Not fatal */
