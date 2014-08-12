@@ -474,3 +474,127 @@ Reference implementation: keytrans
 
 ---------------------------------------------------------------------
 
+Command: enumerate-keyboards
+  List available keyboards
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+
+Instructions: This message must be consumed by the first server
+              that receives it and implements support for it,
+	      and then send out a `Command: keyboard-enumeration`
+	      populated with the keyboard it provide as named
+	      in the `Keyboard` header for protocols such as
+	      `Command: key-sent`
+
+Purpose: Make it possible for clients to list all available keyboards
+	 so that can be configured individually
+
+Compulsivity: optional
+
+Reference implementation: kkbd
+Reference implementation: kbd
+
+---------------------------------------------------------------------
+
+Command: keyboard-enumeration
+  Response to `enumerate-keyboards`
+
+Required header: To
+  The ID received under `Client ID` in the
+  `Command: enumerate-keyboards` message that triggered this
+  message to be broadcasted
+
+Required header: Length
+  Length of the message
+
+Message: New line separated list of available keyboards
+
+Instructions: All keyboard servers should listen for this message
+	      and append all keyboards it implement to the message
+	      once recieved
+
+Purpose: Make it possible for clients to list all available keyboards
+         so that can be configured individually
+
+Compulsivity: required if you implement `Command: enumerate-keyboards`
+
+Reference implementation: kkbd
+Reference implementation: kbd
+
+---------------------------------------------------------------------
+
+Command: set-keyboard-leds
+  Activate and deactivate LED:s on a keyboard
+
+Required header: Active
+  LED:s that should be turned on.
+  If a LED is listed here but not in `Mask` that LED
+  should be turned on if it is off, and turned off
+  if it is on.
+  The value is a single blank space separated list of LED:s:
+    num)      Num lock
+    caps)     Caps lock
+    scroll)   Scroll lock
+    compose)  Compose
+  Unsupported LED:s should be silently ignored.
+
+Required header: Mask
+  LED:s listed here that do not appear in `Active`
+  should be turned off.
+  The value of this header follows the same rules
+  as for `Active`.
+
+Optional header: Keyboard
+  A string that identifies the keyboard that should be
+  affected. If omitted all keyboard are affected.
+
+Purpose: Enable keyboard layout servers to activate and deactive
+	 LED:s on the keyboard to indicate active locks
+
+Compulsivity: optional
+
+Reference implementation: kkbd
+Reference implementation: kbd
+Reference implementation: kbdtrans
+
+---------------------------------------------------------------------
+
+Command: get-keyboard-leds
+  List exisiting LED:s on a keyboard and their state
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+
+Required header: Keyboard
+  A string that identifies the keyboard that should be
+  affected.
+
+Response: The server implementing support for
+	  `Command: get-keyboard-leds` for the keyboard indicated
+	  by `Keyboard` should send a message back to the client
+	  indicated by `Client ID` (using the `To` header) with
+	  the headers:
+	    Active: list of currently turned on LED:s
+	    Present: list of LED:s that the server believes
+	    	     to be present on the keyboards
+	  Both of these headers followes the rules of the
+	  `Active` header under `Command: set-keyboard-leds`
+
+Purpose: Enable keyboard layout servers to automatically
+	 set active locks when the server starts based on
+	 currently active LED:s
+
+Compulsivity: recommended, required if you implement support for
+	      `Command: set-keyboard-leds`. If you do not support
+	      this protocol servers and clients and stall when
+	      they try to get the active LED:s
+
+Reference implementation: kkbd
+Reference implementation: kbd
+Reference implementation: kbdtrans
+
+---------------------------------------------------------------------
+

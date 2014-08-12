@@ -18,6 +18,7 @@ Missing servers:
 	kbd		Keyboard input
 	keytrans	Translates pure (but possibly remapped) scancodes in characters
 	keystick	Sticky keys
+	kkbdrate	Rate and delay for kkbd
 	rat		Rat input
 	compositor	Composites the display
 	crtc		CRTC identifier

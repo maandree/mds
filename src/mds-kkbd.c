@@ -702,6 +702,3 @@ int fetch_keys(void)
   return errno == 0 ? 0 : -1;
 }
 
-
-/* TODO delay and repetition */
-
