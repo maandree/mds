@@ -1,0 +1,29 @@
+When creating servers that can lock up the computer in some matter, it is
+important to set `server_characteristics.fork_for_safety = 1` and set clean
+up code in `fork_cleanup`. This should also be done if there is a risk for
+global memory leaks such as IPC semaphores that have not be removed. Everything
+that must be cleaned up should be initialised before `server_initialised` is
+called and cleanup properly if the server failes before `server_initialised`
+has be successfulled invoked. After `server_initialised` has returned with a
+zero value the cleanups should be done in `fork_cleanup`. Keep in mind that
+`fork_cleanup` is only called if `server_characteristics.fork_for_safety == 1`.
+
+Additionally it is good practice to have another computer which you can use to
+SSH into the development computer and kill a server that is looking up the
+computer. If a server has a child process that is the same program, the child
+is probably the fork created by `server_initialised` when
+`server_characteristics.fork_for_safety == 1`. If these cases, it is the child
+process that should be killed and the parent process should be left alone. If
+you do not have another computer you can use, you should use the `--alarm=`
+option on the server to make it kill itself after a select time period. On
+`server_initialised` the parent processes alarm will be transfered to the
+child process. There is a race codition here, the alarm could be triggered
+after the fork but before the child server has acknowledged this marked to
+not do the cleanup, additional there is not specification on whether how
+the return value of `alarm` is rounded, if an OS would return 0 if the
+time left is for example 0,25 seconds, the alarm would be disabled. Therefore
+do not make the value of the `--alarm=` option to small like for example
+one second (that is `--alarm=1`). Note that the alarm is restricted by
+`src/mds-base.c` to be at most one minute, any value larger than 60 will
+be truncated down to 60.
+
