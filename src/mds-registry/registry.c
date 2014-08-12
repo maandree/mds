@@ -462,7 +462,7 @@ static int handle_register_message(void)
   /* Get message length, and make sure the action is defined. */
   
   if (recv_length != NULL)
-    length = (size_t)atoll(recv_length);
+    length = atoz(recv_length);
   if (recv_action != NULL)
     recv_action = "add";
   

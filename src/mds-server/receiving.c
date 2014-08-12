@@ -263,8 +263,8 @@ int message_received(client_t* client)
       else if (strequals(h,  "Modifying: yes"))      modifying  = 1;
       else if (strequals(h,  "Stop: yes"))           stop       = 1;
       else if (startswith(h, "Message ID: "))        message_id = strstr(h, ": ") + 2;
-      else if (startswith(h, "Priority: "))          priority   = (int64_t)atoll(strstr(h, ": ") + 2);
-      else if (startswith(h, "Modify ID: "))         modify_id  = (uint64_t)atoll(strstr(h, ": ") + 2);
+      else if (startswith(h, "Priority: "))          priority   = ato64(strstr(h, ": ") + 2);
+      else if (startswith(h, "Modify ID: "))         modify_id  = atou64(strstr(h, ": ") + 2);
     }
   
   

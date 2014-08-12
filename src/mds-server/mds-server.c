@@ -104,7 +104,7 @@ int preinitialise_server(void)
 		   eprintf("invalid value for %s: %s.", "--socket-fd", arg););
 	}
       else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
-	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+	alarm((unsigned)min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
       else
 	if (!strequals(arg, "--initial-spawn") && !strequals(arg, "--respawn"))
 	  /* Not recognised, it is probably for another server. */

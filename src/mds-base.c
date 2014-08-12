@@ -128,7 +128,7 @@ int __attribute__((weak)) parse_cmdline(void)
       else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
 	is_reexec = 1;
       else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
-	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+	alarm(min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
       else if (strequals(arg, "--on-init-fork")) /* Fork process when initialised. */
 	on_init_fork = 1;
       else if (startswith(arg, "--on-init-sh=")) /* Run a command when initialised. */

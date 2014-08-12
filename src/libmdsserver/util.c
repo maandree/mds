@@ -57,9 +57,8 @@ uint64_t parse_client_id(const char* str)
   strcpy(client_high = client_words, str);
   client_low = rawmemchr(client_words, ':');
   *client_low++ = '\0';
-  client = (uint64_t)atoll(client_high);
-  client <<= 32;
-  client |= (uint64_t)atoll(client_low);
+  client = atou64(client_high) << 32;
+  client |= atou64(client_low);
   
   return client;
 }

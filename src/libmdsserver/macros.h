@@ -20,6 +20,7 @@
 
 
 #include "config.h"
+#include "macro-bits.h"
 
 #include <stdio.h>
 #include <errno.h>

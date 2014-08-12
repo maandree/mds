@@ -105,7 +105,7 @@ int parse_cmdline(void)
     {
       char* arg = argv[i];
       if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
-	alarm((unsigned)min(atoi(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+	alarm((unsigned)min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
       else if (startswith(arg, "--interval="))
 	interval = min(atoi(arg + strlen("--interval=")), 60); /* At most 1 minute. */
       else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */

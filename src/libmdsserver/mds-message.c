@@ -163,7 +163,7 @@ static int get_payload_length(mds_message_t* restrict this)
       {
 	/* Store the message length. */
 	header = this->headers[i] + strlen("Length: ");
-	this->payload_size = (size_t)atoll(header);
+	this->payload_size = atoz(header);
 	
 	/* Do not except a length that is not correctly formated. */
 	for (; *header; header++)

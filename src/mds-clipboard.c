@@ -516,7 +516,7 @@ int handle_message(void)
       return clipboard_add(level, recv_time_to_live, recv_client_id);
     }
   else if (strequals(recv_message_id, "read"))
-    return clipboard_read(level, (size_t)atoll(recv_index), recv_client_id, recv_message_id);
+    return clipboard_read(level, atoz(recv_index), recv_client_id, recv_message_id);
   else if (strequals(recv_message_id, "clear"))
     return clipboard_clear(level);
   else if (strequals(recv_message_id, "set-size"))
@@ -526,7 +526,7 @@ int handle_message(void)
 	  eprint("received request for clipboard resizing without a new size, ignoring.");
 	  return 0;
 	}
-      return clipboard_set_size(level, (size_t)atoll(recv_size));
+      return clipboard_set_size(level, atoz(recv_size));
     }
   else if (strequals(recv_message_id, "get-size"))
     return clipboard_get_size(level, recv_client_id, recv_message_id);
@@ -689,6 +689,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
       struct timespec dethklok;
       fail_if (monotone(&dethklok));
       dethklok.tv_sec += (time_t)atoll(time_to_live);
+      /* It should really be `atol`, but we want to be future proof. */
       new_clip.dethklok = dethklok;
     }
   else

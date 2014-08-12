@@ -185,6 +185,7 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
 	if (monotone(&(slave->dethklok)))
 	  goto pfail_in_mutex;
 	slave->dethklok.tv_sec += (time_t)atoll(ttl);
+	/* It should really be `atol`, but we want to be future proof. */
 	break;
       }
   

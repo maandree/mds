@@ -136,7 +136,7 @@ void multicast_message(multicast_t* multicast)
       char* value = multicast->message + n;
       char* lf = strchr(value, '\n');
       *lf = '\0';
-      modify_id = (uint64_t)atoll(value);
+      modify_id = atou64(value);
       *lf = '\n';
     }
   
