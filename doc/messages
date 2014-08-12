@@ -95,7 +95,11 @@ is not modified. If the message should be modify
 it the value of the ‘Modify’ header should be
 ‘yes’ and the payload should be the new message
 with all the, possibly modified, headers the new
-payload.
+payload. A server may also choose to consume a
+message message, this is done by responding
+without a payload and include ‘Modify: yes’.
+Once a message is consumed it will not be sent
+to any additional servers.
 
 
 Unless a client's ID is 0:0 (allowed even if it is

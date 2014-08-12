@@ -127,8 +127,10 @@ static void wait_for_reply(client_t* recipient, uint64_t modify_id)
  */
 void multicast_message(multicast_t* multicast)
 {
+  int consumed = 0;
   uint64_t modify_id = 0;
   size_t n = strlen("Modify ID: ");
+  
   if (startswith_n(multicast->message, "Modify ID: ", multicast->message_length, n))
     {
       char* value = multicast->message + n;
@@ -180,9 +182,10 @@ void multicast_message(multicast_t* multicast)
 	if (strequals(mod->headers[i], "Modify: yes"))
 	  {
 	    modifying = 1;
+	    consumed = mod->payload_size == 0;
 	    break;
 	  }
-      if (modifying)
+      if (modifying && !consumed)
 	{
 	  n = mod->payload_size;
 	  old_buf = multicast->message;
@@ -200,6 +203,9 @@ void multicast_message(multicast_t* multicast)
       
       /* Reset how much of the message has been sent before we continue with next recipient. */
       multicast->message_ptr = 0;
+      
+      if (consumed)
+	break;
     }
 }
 
