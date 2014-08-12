@@ -42,7 +42,7 @@ side effects. Servers serialises their state saves it
 to RAM (in a directory created by the kernel), re-exec
 themself and loads their serialised state. The kernel
 cannot do this because when has spawn the master server
-it has no reasone to re-exec, its only mission is to
+it has no reason to re-exec, its only mission is to
 respawn the master server it if would happen to crash.
 It would (probably) technically be possible to enable
 the kernel to re-exec but it is not worth it as it as
