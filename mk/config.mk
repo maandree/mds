@@ -53,7 +53,11 @@ WARN = -Wall -Wextra -pedantic -Wdouble-promotion -Wformat=2 -Winit-self       \
 STD = gnu99
 
 # Libraries linking flags.
+ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
 LDS = -pthread -Lbin -lmdsserver -lrt
+else
+LDS = -pthread -lmdsserver -lrt
+endif
 
 # C compiler debug flags.
 DEBUG_FLAGS =
