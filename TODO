@@ -17,7 +17,6 @@ Missing servers:
 	fb		Framebuffer presenter
 	kbd		Keyboard input
 	keytrans	Translates pure (but possibly remapped) scancodes in characters
-	keystick	Sticky keys
 	kkbdrate	Rate and delay for kkbd
 	rat		Rat input
 	compositor	Composites the display
@@ -31,7 +30,6 @@ Missing servers:
 	colour		Mapping of colour by name (system colours) and value
 	state		Keeps track of windows' states
 	vt		VT switcher
-	iclipboard	User-private interdisplay clipboard
 	screensaver	Launch screensaver when the computer is idle
 
 Missing protocols:
@@ -52,6 +50,8 @@ Extra servers:
 	cool-old-crt	Old CRT emulator, like cool-old-term but display-wide
 	kbd2rat		Control the rat cursor with the keyboard
 	multikey	Bind keys to send sequences of keys
+	iclipboard	User-private interdisplay clipboard
+	keystick	Sticky keys
 
 Missing commands:
 
