@@ -153,6 +153,11 @@ static pthread_t kbd_thread;
  */
 static int kbd_thread_started = 0;
 
+/**
+ * Mutex that should be used when sending message
+ */
+static pthread_mutex_t send_mutex;
+
 
 
 /**
@@ -190,19 +195,20 @@ int initialise_server(void)
     "Length: 59\n"
     "\n"
     "Command: enumerate-keyboards\n"
-    "Command: keyboard-enumeration\n"
-    ;
+    "Command: keyboard-enumeration\n";
+  
+  fail_if (open_leds() < 0);
+  stage = 1;
+  fail_if (open_input() < 0);
+  stage = 2;
+  fail_if (pthread_mutex_init(&send_mutex, NULL));
+  stage = 3;
   
   if (full_send(message, strlen(message)))
     return 1;
   
-  open_leds();
-  stage = 1;
-  open_input();
-  stage = 2;
-  
   fail_if (server_initialised());
-  stage = 0;
+  stage = 4;
   fail_if (mds_message_initialise(&received));
   fail_if (xmalloc(key_send_buffer, 111, char));
   
@@ -210,8 +216,13 @@ int initialise_server(void)
   
  pfail:
   xperror(*argv);
-  if (stage >= 2)  close_input();
-  if (stage >= 1)  close_leds();
+  if (stage < 4)
+    {
+      if (stage >= 2)  close_input();
+      if (stage >= 1)  close_leds();
+    }
+  if (stage >= 3)
+    pthread_mutex_destroy(&send_mutex);
   mds_message_destroy(&received);
   return 1;
 }
@@ -563,6 +574,12 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
 int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
 			     const char* recv_keyboard)
 {
+  int active = 0;
+  int mask = 0;
+  int current;
+  const char* begin;
+  const char* end;
+  
   if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
     return 0;
   
@@ -578,7 +595,47 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
       return 0;
     }
   
-  /* TODO */
+  current = get_leds();
+  if (current < 0)
+    {
+      xperror(*argv);
+      return 0; /* Not fatal */
+    }
+  
+#define __test(have, want)  (startswith(have, want " ") || strequals(have, want))
+  
+  for (begin = end = recv_active; end != NULL;)
+    {
+      end = strchr(begin, ' ');
+      if      (__test(begin, "num"))      active |= LED_NUM_LOCK;
+      else if (__test(begin, "caps"))     active |= LED_CAPS_LOCK;
+      else if (__test(begin, "scroll"))   active |= LED_SCRL_LOCK;
+#ifdef LED_COMPOSE
+      else if (__test(begin, "compose"))  active |= LED_COMPOSE;
+#endif
+      begin = end + 1;
+    }
+  
+  for (begin = end = recv_mask; end != NULL;)
+    {
+      end = strchr(begin, ' ');
+      if      (__test(begin, "num"))      mask |= LED_NUM_LOCK;
+      else if (__test(begin, "caps"))     mask |= LED_CAPS_LOCK;
+      else if (__test(begin, "scroll"))   mask |= LED_SCRL_LOCK;
+#ifdef LED_COMPOSE
+      else if (__test(begin, "compose"))  mask |= LED_COMPOSE;
+#endif
+      begin = end + 1;
+    }
+  
+#undef __test
+  
+  current = (current & active & mask) | ((current ^ active) & ~mask);
+  if (set_leds(current) < 0)
+    {
+      xperror(*argv); /* Not fatal */
+      return 0;
+    }
   
   return 0;
 }
@@ -777,7 +834,7 @@ void close_input(void)
  */
 int send_key(int* restrict scancode, int trio)
 {
-  int keycode, released = (scancode[0] & 0x80) == 0x80;
+  int r, keycode, released = (scancode[0] & 0x80) == 0x80;
   scancode[0] &= 0x7F;
   if (trio)
     {
@@ -814,7 +871,10 @@ int send_key(int* restrict scancode, int trio)
 	    released ? "yes" : "no", message_id);
   
   message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
-  return full_send(key_send_buffer, strlen(key_send_buffer));
+  with_mutex (send_mutex,
+	      r = full_send(key_send_buffer, strlen(key_send_buffer));
+	      );
+  return r;
 }
 
 
