@@ -67,9 +67,9 @@ int client_list_create(client_list_t* restrict this, size_t capacity)
     capacity = CLIENT_LIST_DEFAULT_INITIAL_CAPACITY;
   
   /* Initialise the client list. */
-  this->capacity   = capacity = to_power_of_two(capacity);
-  this->size       = 0;
-  this->clients     = NULL;
+  this->capacity = capacity = to_power_of_two(capacity);
+  this->size     = 0;
+  this->clients  = NULL;
   if (xmalloc(this->clients, capacity, uint64_t))
     return -1;
   
