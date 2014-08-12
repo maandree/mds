@@ -455,8 +455,6 @@ int handle_message(void)
       else if __get_header(recv_index,         "Index: ");
       else if __get_header(recv_time_to_live,  "Time to live: ");
       else if __get_header(recv_client_closed, "Client closed: ");
-      else
-	continue;
     }
   
 #undef __get_header
