@@ -618,6 +618,11 @@ Optional header: Keyboard
   A string that identifies the keyboard that should be
   affected. If omitted all keyboard are affected.
 
+Conditionally required header: Client ID
+  Required if: `Action: query`
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+
 Conditionally optional header: Length
   Available and optional if: `Action: remap`
   The length of the message

@@ -41,8 +41,8 @@ int handle_message(void);
  * Handle the received message after it has been
  * identified to contain `Command: enumerate-keyboards`
  * 
- * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
- * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
  * @param   recv_modify_id   The value of the `Modify ID`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
@@ -74,8 +74,8 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
  * Handle the received message after it has been
  * identified to contain `Command: get-keyboard-leds`
  * 
- * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
- * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
  * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
@@ -86,11 +86,14 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
  * Handle the received message after it has been
  * identified to contain `Command: keycode-map`
  * 
- * @param   recv_action    The value of the `Action`-header, `NULL` if omitted
- * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
- * @return                 Zero on success, -1 on error
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
+ * @param   recv_action      The value of the `Action`-header, `NULL` if omitted
+ * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
  */
-int handle_keycode_map(const char* recv_action, const char* recv_keyboard);
+int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
+		       const char* recv_action, const char* recv_keyboard);
 
 /**
  * Send a full message even if interrupted

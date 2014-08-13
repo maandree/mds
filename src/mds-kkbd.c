@@ -538,7 +538,7 @@ int handle_message(void)
   if (strequals(recv_command, "get-keyboard-leds"))
     return handle_get_keyboard_leds(recv_client_id, recv_message_id, recv_keyboard);
   if (strequals(recv_command, "keycode-map"))
-    return handle_keycode_map(recv_action, recv_keyboard);
+    return handle_keycode_map(recv_client_id, recv_message_id, recv_action, recv_keyboard);
   
   return 0; /* How did that get here, not matter, just ignore it? */
 }
@@ -573,8 +573,8 @@ static int ensure_send_buffer_size(size_t size)
  * Handle the received message after it has been
  * identified to contain `Command: enumerate-keyboards`
  * 
- * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
- * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
  * @param   recv_modify_id   The value of the `Modify ID`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
@@ -809,8 +809,8 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
  * Handle the received message after it has been
  * identified to contain `Command: get-keyboard-leds`
  * 
- * @param   recv_client_id   The value of the `Client ID`-header, `NULL` if omitted
- * @param   recv_message_id  The value of the `Message ID`-header, `NULL` if omitted
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
  * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
@@ -997,14 +997,31 @@ static int remap(char* table, size_t n)
 
 
 /**
+ * Responde to a keycode mapping query
+ * 
+ * @param   recv_client_id   The value of the `Client ID`-header
+ * @param   recv_message_id  The value of the `Message ID`-header
+ * @return                   Zero on success, -1 on error
+ */
+static int mapping_query(const char* recv_client_id, const char* recv_message_id)
+{
+  /* FIXME */
+  return 0;
+}
+
+
+/**
  * Handle the received message after it has been
  * identified to contain `Command: keycode-map`
  * 
- * @param   recv_action    The value of the `Action`-header, `NULL` if omitted
- * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
- * @return                 Zero on success, -1 on error
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
+ * @param   recv_action      The value of the `Action`-header, `NULL` if omitted
+ * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
  */
-int handle_keycode_map(const char* recv_action, const char* recv_keyboard)
+int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
+		       const char* recv_action, const char* recv_keyboard)
 {
   int r = 0;
   
@@ -1032,8 +1049,15 @@ int handle_keycode_map(const char* recv_action, const char* recv_keyboard)
 		  mapping_size = 0;
 		  );
     }
-  else if (strequals(recv_action, "query")) /* FIXME */
+  else if (strequals(recv_action, "query"))
     {
+      if (strequals(recv_client_id, "0:0"))
+	{
+	  eprint("received information request from an anonymous client, ignoring.");
+	  return 0;
+	}
+      
+      r = mapping_query(recv_client_id, recv_message_id);
     }
   else
     eprint("received keycode map request with invalid action, ignoring.");
