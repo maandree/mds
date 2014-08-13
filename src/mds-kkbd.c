@@ -606,7 +606,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
       sprintf(send_buffer,
 	      "Modify: no\n"
 	      "Modify ID: %s\n"
-	      "Message ID: " PRIi32 "\n"
+	      "Message ID: %" PRIi32 "\n"
 	      "\n",
 	      recv_modify_id, msgid);
       
@@ -629,14 +629,14 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   sprintf(send_buffer,
 	  "Modify: yes\n"
 	  "Modify ID: %s\n"
-	  "Message ID: " PRIi32 "\n"
+	  "Message ID: %" PRIi32 "\n"
 	  "\n"
 	  /* NEXT MESSAGE */
 	  "Command: keyboard-enumeration\n"
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Length: %lu\n"
-	  "Message ID: " PRIi32 "\n"
+	  "Message ID: %" PRIi32 "\n"
 	  "\n"
 	  KEYBOARD_ID "\n",
 	  recv_modify_id, msgid,
@@ -709,7 +709,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   
   sprintf(send_buffer,
 	  "Modify ID: %s\n"
-	  "Message ID: " PRIi32 "\n"
+	  "Message ID: %" PRIi32 "\n"
 	  "Length: %lu\n",
 	  recv_modify_id, msgid, n);
   top = strlen(send_buffer) + 1;
@@ -857,7 +857,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
   sprintf(send_buffer,
 	  "To: %s\n"
 	  "In response to: %s\n"
-	  "Message ID: " PRIi32 "\n"
+	  "Message ID: %" PRIi32 "\n"
 	  "Active:%s%s%s%s%s\n"
 	  "Present: " PRESENT_LEDS "\n"
 	  "\n",
@@ -1005,8 +1005,55 @@ static int remap(char* table, size_t n)
  */
 static int mapping_query(const char* recv_client_id, const char* recv_message_id)
 {
-  /* FIXME */
-  return 0;
+  size_t top = 64 + 3 * sizeof(size_t), n = 0, off, i;
+  int greatest = (int)mapping_size, r;
+  int32_t msgid;
+  
+  for (i = 0; i < mapping_size; i++)
+    if (mapping[i] != (int)i)
+      {
+	greatest = max(greatest, mapping[i]);
+	n++;
+      }
+  
+  n *= 3 + (greatest > 0xFFFF ? (3 * sizeof(int)) : 
+	    greatest > 0x00FF ? 5 : 3);
+  
+  if (ensure_send_buffer_size(top + n + 2) < 0)
+    return -1;
+  
+  with_mutex (send_mutex,
+	      msgid = message_id;
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      );
+  
+  off = top + 1;
+  for (i = 0; i < mapping_size; i++)
+    if (mapping[i] != (int)i)
+      {
+	sprintf(send_buffer + off, "%i %i\n", i, mapping[i]);
+	off += strlen(send_buffer + off);
+      }
+  
+  n = (size_t)(off - (top + 1));
+  
+  sprintf(send_buffer,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIi32 "\n"
+	  "Length: %lu\n"
+	  "\n",
+	  recv_client_id, recv_message_id, msgid, n);
+  
+  off = top + 1;
+  off -= top = strlen(send_buffer);
+  memmove(send_buffer + off, send_buffer, top * sizeof(char));
+  
+  with_mutex (send_mutex,
+	      r = full_send(send_buffer + off, top + n);
+	      );
+  
+  return r;
 }
 
 
@@ -1254,7 +1301,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Keycode: %i\n"
 	    "Released: %s\n"
 	    "Keyboard: " KEYBOARD_ID "\n"
-	    "Message ID: " PRIi32 "\n"
+	    "Message ID: %" PRIi32 "\n"
 	    "\n",
 	    scancode[0], scancode[1], scancode[2], keycode,
 	    released ? "yes" : "no", msgid);
@@ -1265,7 +1312,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Keycode: %i\n"
 	    "Released: %s\n"
 	    "Keyboard: " KEYBOARD_ID "\n"
-	    "Message ID: " PRIi32 "\n"
+	    "Message ID: %" PRIi32 "\n"
 	    "\n",
 	    scancode[0], keycode,
 	    released ? "yes" : "no", msgid);
@@ -1372,7 +1419,7 @@ int send_errno(int error, const char* recv_client_id, const char* recv_message_i
 		      "Command: error\n"
 		      "To: %s\n"
 		      "In response to: %s\n"
-		      "Message ID: " PRIi32 "\n"
+		      "Message ID: %" PRIi32 "\n"
 		      "Error: %i\n"
 		      "\n",
 		      recv_client_id, recv_message_id, message_id, error);
