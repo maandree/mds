@@ -660,13 +660,12 @@ Conditionally optional header: Length
   Available and optional if: "custom" as used in `Error`
   The length of the message
 
-Message: Description of the error, single line, mid-
-	 sentence case, no punctuation in the end, must
-	 not be question but rather it must be a statement
+Message: Description of the error, single line, mid-sentence case,
+	 no punctuation in the end, must not be question but rather
+	 it must be a statement
 
-Purpose: Enable keyboard layout servers to automatically
-	 set active locks when the server starts based on
-	 currently active LED:s
+Purpose: Enable keyboard layout servers to automatically set active
+	 locks when the server starts based on currently active LED:s
 
 Compulsivity: optional
 
