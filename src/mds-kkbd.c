@@ -890,23 +890,27 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 /**
  * Parse a keycode rampping line
  * 
- * @param  begin  The beginning of the line
- * @param  end    The end of the line, `NULL` if it is not terminated by a new line
- * @param  n      The size of the table from the position of `begin`
- * @param  in     Output parameter for the keycode that should be remapped
- * @param  out    Output parameter for the keycode's new mapping
+ * @param   begin  The beginning of the line
+ * @param   end    The end of the line, `NULL` if it is not terminated by a new line
+ * @param   n      The size of the table from the position of `begin`
+ * @param   in     Output parameter for the keycode that should be remapped
+ * @param   out    Output parameter for the keycode's new mapping
+ * @return         -1 on error, 1 if parsed, 0 if the line is empty
  */
-static void parse_remap_line(char* begin, char* end, size_t n, int* restrict in, int* restrict out)
+static int parse_remap_line(char* begin, char* end, size_t n, int* restrict in, int* restrict out)
 {
   static char buf[3 * sizeof(int) + 1];
   
   size_t len = end == NULL ? n : (size_t)(end - begin);
   char* delimiter = memchr(begin, ' ', len);
   
+  if (len == 0)
+    return 0;
+  
   if (delimiter == NULL)
     {
       *in = -1, *out = -1;
-      return;
+      return -1;
     }
   
   *delimiter++ = '\0';
@@ -922,6 +926,8 @@ static void parse_remap_line(char* begin, char* end, size_t n, int* restrict in,
       *end = '\0';
       *out = atoi(delimiter);
     }
+  
+  return 1;
 }
 
 
@@ -975,7 +981,8 @@ static int remap(char* table, size_t n)
       char* end = memchr(begin, '\n', n);
       int in, out;
       
-      parse_remap_line(begin, end, n, &in, &out);
+      if (!parse_remap_line(begin, end, n, &in, &out))
+	goto next;
       if ((in < 0) || (out < 0) || ((in | out) >= 0x4000))
 	{
 	  eprint("received malformated remapping table.");
