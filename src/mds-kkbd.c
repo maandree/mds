@@ -177,6 +177,11 @@ static int kbd_thread_started = 0;
  */
 static pthread_mutex_t send_mutex;
 
+/**
+ * Mutex that should be used when accessing the keycode map
+ */
+static pthread_mutex_t mapping_mutex;
+
 
 
 /**
@@ -203,10 +208,11 @@ int initialise_server(void)
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 54\n"
+    "Length: 75\n"
     "\n"
     "Command: set-keyboard-leds\n"
     "Command: get-keyboard-leds\n"
+    "Command: keycode-map\n"
     /* NEXT MESSAGE */
     "Command: intercept\n"
     "Message ID: 1\n"
@@ -222,25 +228,29 @@ int initialise_server(void)
   stage = 2;
   fail_if (pthread_mutex_init(&send_mutex, NULL));
   stage = 3;
+  fail_if (pthread_mutex_init(&mapping_mutex, NULL));
+  stage = 4;
   
   if (full_send(message, strlen(message)))
     return 1;
   
   fail_if (server_initialised());
-  stage = 4;
+  stage = 5;
   fail_if (mds_message_initialise(&received));
   
   return 0;
   
  pfail:
   xperror(*argv);
-  if (stage < 4)
+  if (stage < 5)
     {
       if (stage >= 2)  close_input();
       if (stage >= 1)  close_leds();
     }
   if (stage >= 3)
     pthread_mutex_destroy(&send_mutex);
+  if (stage >= 4)
+    pthread_mutex_destroy(&mapping_mutex);
   mds_message_destroy(&received);
   return 1;
 }
@@ -437,12 +447,14 @@ int master_loop(void)
   xperror(*argv);
  fail:
   pthread_mutex_destroy(&send_mutex);
+  pthread_mutex_destroy(&mapping_mutex);
   free(send_buffer);
   if ((!joined) && (errno = pthread_join(kbd_thread, NULL)))
     xperror(*argv);
   if (!rc && reexecing)
     return 0;
   mds_message_destroy(&received);
+  free(mapping);
   return rc;
 }
 
@@ -464,12 +476,10 @@ void* keyboard_loop(void* data)
       if (errno != EINTR)
 	goto pfail;
   
-  free(mapping);
   return NULL;
   
  pfail:
   xperror(*argv);
-  free(mapping);
   raise(SIGTERM);
   return (void*)1024;
 }
@@ -489,6 +499,7 @@ int handle_message(void)
   const char* recv_active = NULL;
   const char* recv_mask = NULL;
   const char* recv_keyboard = NULL;
+  const char* recv_action = NULL;
   size_t i;
   
 #define __get_header(storage, header)  \
@@ -504,6 +515,7 @@ int handle_message(void)
       else if __get_header(recv_active,     "Active: ");
       else if __get_header(recv_mask,       "Mask: ");
       else if __get_header(recv_keyboard,   "Keyboard: ");
+      else if __get_header(recv_action,     "Action: ");
     }
   
 #undef __get_header
@@ -525,6 +537,8 @@ int handle_message(void)
     return handle_set_keyboard_leds(recv_active, recv_mask, recv_keyboard);
   if (strequals(recv_command, "get-keyboard-leds"))
     return handle_get_keyboard_leds(recv_client_id, recv_message_id, recv_keyboard);
+  if (strequals(recv_command, "keycode-map"))
+    return handle_keycode_map(recv_action, recv_keyboard);
   
   return 0; /* How did that get here, not matter, just ignore it? */
 }
@@ -867,6 +881,173 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 
 
 /**
+ * Parse a keycode rampping line
+ * 
+ * @param  begin  The beginning of the line
+ * @param  end    The end of the line, `NULL` if it is not terminated by a new line
+ * @param  n      The size of the table from the position of `begin`
+ * @param  in     Output parameter for the keycode that should be remapped
+ * @param  out    Output parameter for the keycode's new mapping
+ */
+static void parse_remap_line(char* begin, char* end, size_t n, int* restrict in, int* restrict out)
+{
+  static char buf[3 * sizeof(int) + 1];
+  
+  size_t len = end == NULL ? n : (size_t)(end - begin);
+  char* delimiter = memchr(begin, ' ', len);
+  
+  if (delimiter == NULL)
+    {
+      *in = -1, *out = -1;
+      return;
+    }
+  
+  *delimiter++ = '\0';
+  *in = atoi(begin);
+  if (end == NULL)
+    {
+      snprintf(buf, sizeof(buf) / sizeof(char), "%.*s",
+	       (int)(len - (size_t)(delimiter - begin)), delimiter);
+      *out = atoi(buf);
+    }
+  else
+    {
+      *end = '\0';
+      *out = atoi(delimiter);
+    }
+}
+
+
+/**
+ * Add a mapping to the keycode mapping table
+ * 
+ * @param   in   The keycode to remap
+ * @parma   out  The keycode's new mapping
+ * @return       Zero on success, -1 on error
+ */
+static int add_mapping(int in, int out)
+{
+  size_t n = ((size_t)in) + 1;
+  int* old;
+  
+  if (n > mapping_size)
+    {
+      if (in == out)
+	return 0;
+      
+      if (old = mapping, xrealloc(mapping, n, int))
+	{
+	  mapping = old;
+	  return -1;
+	}
+      
+      for (; mapping_size < n; mapping_size++)
+	mapping[mapping_size] = (int)mapping_size;
+    }
+  
+  mapping[in] = out;
+  return 0;
+}
+
+
+/**
+ * Change the keycode mapping
+ * 
+ * @param   table  The remapping table as described by the `Command: keycode-map` protocol
+ * @param   n      The size of `table`
+ * @return         Zero on success, -1 on error
+ */
+static int remap(char* table, size_t n)
+{
+  char* begin = table;
+  int greatest_remap = -1;
+  int greatest_reset = -1;
+  
+  for (;;)
+    {
+      char* end = memchr(begin, '\n', n);
+      int in, out;
+      
+      parse_remap_line(begin, end, n, &in, &out);
+      if ((in < 0) || (out < 0))
+	{
+	  eprint("received malformated remapping table.");
+	  goto next;
+	}
+      
+      if (in != out)  greatest_remap = max(greatest_remap, in);
+      else            greatest_reset = max(greatest_reset, in);
+      
+      if (add_mapping(in, out) < 0)
+	return -1;
+      
+    next:
+      if (end == NULL)
+	break;
+      end++;
+      n -= (size_t)(end - begin);
+      begin = end;
+    }
+  
+  if ((greatest_reset > greatest_remap) && (((((size_t)greatest_remap) + 1) >> 1) < mapping_size))
+    shrink_map();
+  
+  return 0;
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: keycode-map`
+ * 
+ * @param   recv_action    The value of the `Action`-header, `NULL` if omitted
+ * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                 Zero on success, -1 on error
+ */
+int handle_keycode_map(const char* recv_action, const char* recv_keyboard)
+{
+  int r;
+  
+  if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
+    return 0;
+  
+  if (recv_action == NULL)
+    {
+      eprint("received keycode map request but without any action, ignoring.");
+      return 0;
+    }
+  
+  if (strequals(recv_action, "remap"))
+    {
+      if (received.payload_size == 0)
+	{
+	  eprint("received keycode remap request without a payload, ignoring.");
+	  return 0;
+	}
+      
+      with_mutex (mapping_mutex,
+		  r = remap(received.payload, received.payload_size);
+		  );
+      return r;
+    }
+  else if (strequals(recv_action, "reset"))
+    {
+      with_mutex (mapping_mutex,
+		  free(mapping);
+		  mapping_size = 0;
+		  );
+      return 0;
+    }
+  else if (strequals(recv_action, "query")) /* FIXME */
+    {
+    }
+  
+  eprint("received keycode map request with invalid action, ignoring.");
+  return 0;
+}
+
+
+/**
  * Send a singal to all threads except the current thread
  * 
  * @param  signo  The signal
@@ -1037,8 +1218,10 @@ int send_key(int* restrict scancode, int trio)
   else
     keycode = scancode[0];
   
-  if ((size_t)keycode < mapping_size)
-    keycode = mapping[keycode];
+  with_mutex (mapping_mutex,
+	      if ((size_t)keycode < mapping_size)
+		keycode = mapping[keycode];
+	      );
   
   with_mutex (send_mutex,
 	      msgid = message_id;
@@ -1179,5 +1362,41 @@ int send_errno(int error, const char* recv_client_id, const char* recv_message_i
 	      r = full_send(send_buffer, strlen(send_buffer));
 	      );
   return r;
+}
+
+
+/**
+ * Attempt to shrink `mapping`
+ */
+void shrink_map(void)
+{
+  size_t i, greatest_mapping = 0;
+  int* old;
+  
+  for (i = mapping_size; i > 0; i--)
+    if (mapping[i] != (int)i)
+      {
+	greatest_mapping = i;
+	break;
+      }
+  
+  if (greatest_mapping == 0)
+    {
+      if (mapping[0] == 0)
+	{
+	  free(mapping);
+	  mapping_size = 0;
+	}
+    }
+  else if (greatest_mapping + 1 < mapping_size)
+    {
+      if (old = mapping, xrealloc(mapping, greatest_mapping + 1, int))
+	{
+	  mapping = old;
+	  xperror(*argv);
+	}
+      else
+	mapping_size = greatest_mapping + 1;
+    }
 }
 

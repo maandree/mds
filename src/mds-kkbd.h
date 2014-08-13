@@ -83,6 +83,16 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 			     const char* recv_keyboard);
 
 /**
+ * Handle the received message after it has been
+ * identified to contain `Command: keycode-map`
+ * 
+ * @param   recv_action    The value of the `Action`-header, `NULL` if omitted
+ * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                 Zero on success, -1 on error
+ */
+int handle_keycode_map(const char* recv_action, const char* recv_keyboard);
+
+/**
  * Send a full message even if interrupted
  * 
  * @param   message  The message to send
@@ -155,6 +165,11 @@ int fetch_keys(void);
  * @return                   Zero on success, -1 on error
  */
 int send_errno(int error, const char* recv_client_id, const char* recv_message_id);
+
+/**
+ * Attempt to shrink `mapping`
+ */
+void shrink_map(void);
 
 
 #endif
