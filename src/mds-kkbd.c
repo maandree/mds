@@ -64,6 +64,15 @@
  */
 #define KEYBOARD_ID  "kernel"
 
+/**
+ * LED:s that we believe are pressent on the keyboard
+ */
+#ifdef LED_COMPOSE
+# define PRESENT_LEDS  "num caps scrl compose"
+#else
+# define PRESENT_LEDS  "num caps scrl"
+#endif
+
 
 
 /**
@@ -141,7 +150,17 @@ static int scancode_ptr = 0;
 /**
  * Message buffer for `send_key`
  */
-static char* key_send_buffer = NULL;
+static char key_send_buffer[111];
+
+/**
+ * Message buffer for the main thread
+ */
+static char* send_buffer = NULL;
+
+/**
+ * The size of `send_buffer`
+ */
+static size_t send_buffer_size = 0;
 
 /**
  * The keyboard listener thread
@@ -210,7 +229,6 @@ int initialise_server(void)
   fail_if (server_initialised());
   stage = 4;
   fail_if (mds_message_initialise(&received));
-  fail_if (xmalloc(key_send_buffer, 111, char));
   
   return 0;
   
@@ -418,10 +436,12 @@ int master_loop(void)
  pfail:
   xperror(*argv);
  fail:
-  if (!rc && reexecing)
-    return 0;
+  pthread_mutex_destroy(&send_mutex);
+  free(send_buffer);
   if ((!joined) && (errno = pthread_join(kbd_thread, NULL)))
     xperror(*argv);
+  if (!rc && reexecing)
+    return 0;
   mds_message_destroy(&received);
   return rc;
 }
@@ -511,6 +531,31 @@ int handle_message(void)
 
 
 /**
+ * Make sure `send_buffer` is large enough
+ * 
+ * @param   size  The size required for the buffer
+ * @return        Zero on success, -1 on error
+ */
+static int ensure_send_buffer_size(size_t size)
+{
+  char* old = send_buffer;
+  
+  if (send_buffer_size >= size)
+    return 0;
+  
+  if (xrealloc(send_buffer, size, char))
+    {
+      send_buffer = old;
+      return -1;
+    }
+  else
+    send_buffer_size = size,
+  
+  return 0;
+}
+
+
+/**
  * Handle the received message after it has been
  * identified to contain `Command: enumerate-keyboards`
  * 
@@ -522,22 +567,71 @@ int handle_message(void)
 int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_message_id,
 			       const char* recv_modify_id)
 {
+  int32_t msgid;
+  size_t n;
+  
   if (recv_modify_id == NULL)
     {
       eprint("did not get add modify ID, ignoring.");
       return 0;
     }
   
+  
   if (strequals(recv_client_id, "0:0"))
     {
       eprint("received information request from an anonymous client, sending non-modifying response.");
-      /* TODO send non-modifying response */
-      return 0;
+      
+      with_mutex (send_mutex,
+		  msgid = message_id;
+		  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+		  );
+      
+      if (ensure_send_buffer_size(48 + strlen(recv_modify_id) + 1) < 0)
+	return -1;
+      sprintf(send_buffer,
+	      "Modify: no\n"
+	      "Modify ID: %s\n"
+	      "Message ID: " PRIi32 "\n"
+	      "\n",
+	      recv_modify_id, msgid);
+      
+      with_mutex (send_mutex,
+		  r = full_send(send_buffer, strlen(send_buffer));
+		  );
+      return r;
     }
   
-  /* TODO */
+  with_mutex (send_mutex,
+	      msgid = message_id;
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      );
   
-  return 0;
+  n = 176 + 3 * sizeof(size_t) + strlen(KEYBOARD_ID);
+  n += strlen(recv_modify_id) + strlen(recv_message_id);
+  if (ensure_send_buffer_size(n + 1) < 0)
+    return -1;
+  sprintf(send_buffer,
+	  "Modify: yes\n"
+	  "Modify ID: %s\n"
+	  "Message ID: " PRIi32 "\n"
+	  "\n"
+	  /* NEXT MESSAGE */
+	  "Command: keyboard-enumeration\n"
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Length: %lu\n"
+	  "Message ID: " PRIi32 "\n"
+	  "\n"
+	  KEYBOARD_ID "\n",
+	  recv_modify_id, msgid,
+	  recv_message_id, recv_client_id, strlen(KEYBOARD_ID) + 1, msgid + 1);
+  
+  with_mutex (send_mutex,
+	      r = full_send(send_buffer, strlen(send_buffer));
+	      );
+  
+  return r;
 }
 
 
@@ -653,6 +747,8 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
 int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
 			     const char* recv_keyboard)
 {
+  int r;
+  
   if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
     return 0;
   
@@ -668,9 +764,38 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
       return 0;
     }
   
-  /* TODO */
+  with_mutex (send_mutex,
+	      msgid = message_id;
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      );
   
-  return 0;
+  n = 95 + 3 * sizeof(size_t) + 2 * strlen(PRESENT_LEDS);
+  n += strlen(recv_client_id) + strlen(recv_message_id);
+  if (ensure_send_buffer_size(n + 1) < 0)
+    return -1;
+  sprintf(send_buffer,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: " PRIi32 "\n"
+	  "Active:%s%s%s%s%s\n"
+	  "Present: " PRESENT_LEDS "\n"
+	  "\n"
+	  recv_client_id, recv_message_id, msgid,
+	  (leds & LED_NUM_LOCK)  ? " num"    : "",
+	  (leds & LED_CAPS_LOCK) ? " caps"   : "",
+	  (leds & LED_SCRL_LOCK) ? " scroll" : "",
+#ifdef LED_COMPOSE
+	  (leds & LED_COMPOSE) ? " compose"  :
+#endif
+	  "",
+	  leds == 0 ? " none" : ""
+	  );
+  
+  with_mutex (send_mutex,
+	      r = full_send(send_buffer, strlen(send_buffer));
+	      );
+  
+  return r;
 }
 
 
@@ -835,6 +960,7 @@ void close_input(void)
 int send_key(int* restrict scancode, int trio)
 {
   int r, keycode, released = (scancode[0] & 0x80) == 0x80;
+  int32_t msgid;
   scancode[0] &= 0x7F;
   if (trio)
     {
@@ -847,6 +973,11 @@ int send_key(int* restrict scancode, int trio)
   if ((size_t)keycode < mapping_size)
     keycode = mapping[keycode];
   
+  with_mutex (send_mutex,
+	      msgid = message_id;
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      );
+  
   if (trio)
     sprintf(key_send_buffer,
 	    "Command: key-sent\n"
@@ -857,7 +988,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Message ID: " PRIi32 "\n"
 	    "\n",
 	    scancode[0], scancode[1], scancode[2], keycode,
-	    released ? "yes" : "no", message_id);
+	    released ? "yes" : "no", msgid);
   else
     sprintf(key_send_buffer,
 	    "Command: key-sent\n"
@@ -868,9 +999,8 @@ int send_key(int* restrict scancode, int trio)
 	    "Message ID: " PRIi32 "\n"
 	    "\n",
 	    scancode[0], keycode,
-	    released ? "yes" : "no", message_id);
+	    released ? "yes" : "no", msgid);
   
-  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
   with_mutex (send_mutex,
 	      r = full_send(key_send_buffer, strlen(key_send_buffer));
 	      );

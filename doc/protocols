@@ -506,6 +506,11 @@ Required header: To
   `Command: enumerate-keyboards` message that triggered this
   message to be broadcasted
 
+Required header: In response to
+  The ID received under `Message ID` in the
+  `Command: enumerate-keyboards` message that triggered this
+  message to be broadcasted
+
 Required header: Length
   Length of the message
 

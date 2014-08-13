@@ -74,4 +74,6 @@ Register protocols
 Make it possible to forbid unauthorised servers for listening, needed for secure password fields
   I guess we can let servers create their own abstract sockets, report them to mdsinitrc and
   let mdsinitrc export appropriate environment variables.
+Signals that should be supported, and be replaced with realtime signals if not defined:
+  SIGDANGER  system or process is running out of memory
 
