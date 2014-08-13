@@ -63,6 +63,7 @@
  * The name of the keyboard for which its server implements control
  */
 #define KEYBOARD_ID  "kernel"
+/* NOTE: length hardcoded in `initialise_server` */
 
 /**
  * LED:s that we believe are pressent on the keyboard
@@ -95,7 +96,7 @@ server_characteristics_t server_characteristics =
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-static int32_t message_id = 2;
+static int32_t message_id = 3;
 
 /**
  * Buffer for received messages
@@ -220,7 +221,13 @@ int initialise_server(void)
     "Length: 59\n"
     "\n"
     "Command: enumerate-keyboards\n"
-    "Command: keyboard-enumeration\n";
+    "Command: keyboard-enumeration\n"
+    /* NEXT MESSAGE */
+    "Command: new-keyboard\n"
+    "Message ID: 2\n"
+    "Length: 7\n"
+    "\n"
+    KEYBOARD_ID "\n";
   
   fail_if (open_leds() < 0);
   stage = 1;
