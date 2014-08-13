@@ -1006,18 +1006,14 @@ static int remap(char* table, size_t n)
  */
 int handle_keycode_map(const char* recv_action, const char* recv_keyboard)
 {
-  int r;
+  int r = 0;
   
   if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
     return 0;
   
   if (recv_action == NULL)
-    {
-      eprint("received keycode map request but without any action, ignoring.");
-      return 0;
-    }
-  
-  if (strequals(recv_action, "remap"))
+    eprint("received keycode map request but without any action, ignoring.");
+  else if (strequals(recv_action, "remap"))
     {
       if (received.payload_size == 0)
 	{
@@ -1028,7 +1024,6 @@ int handle_keycode_map(const char* recv_action, const char* recv_keyboard)
       with_mutex (mapping_mutex,
 		  r = remap(received.payload, received.payload_size);
 		  );
-      return r;
     }
   else if (strequals(recv_action, "reset"))
     {
@@ -1036,14 +1031,14 @@ int handle_keycode_map(const char* recv_action, const char* recv_keyboard)
 		  free(mapping);
 		  mapping_size = 0;
 		  );
-      return 0;
     }
   else if (strequals(recv_action, "query")) /* FIXME */
     {
     }
+  else
+    eprint("received keycode map request with invalid action, ignoring.");
   
-  eprint("received keycode map request with invalid action, ignoring.");
-  return 0;
+  return r;
 }
 
 
