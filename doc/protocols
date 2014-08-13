@@ -398,6 +398,7 @@ Optional header: Modifiers
     lvl*) * may be any 2ⁿ + 1 integer greater than 4
     super) Super
     hyper) Hyper
+    ultra) Ultra
     caps) Caps (usually a lock key)
     num) Num (usually a lock key)
     scrl) Scroll (usually a lock key)
@@ -441,6 +442,7 @@ Optional header: Key
     lvl*) * may be any 2ⁿ + 1 integer greater than 4
     super) Super
     hyper) Hyper
+    ultra) Ultra
     caps) Caps (usually a lock key)
     num) Num (usually a lock key)
     scrl) Scroll (usually a lock key)
