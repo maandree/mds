@@ -646,6 +646,41 @@ Reference implementation: kbd
 
 ---------------------------------------------------------------------
 
+Command: new-keyboard
+  Announce the existance of a new keyboard
+
+Required header: Length
+  The length of the message
+
+Message: List of strings that identifies the keyboards
+	 that have been added.
+
+Purpose: Enable servers and clients to detect new keyboards
+
+Compulsivity: recommended
+
+Reference implementation: kkbd
+Reference implementation: kbd
+
+---------------------------------------------------------------------
+
+Command: old-keyboard
+  Announce the removal of an old keyboard
+
+Required header: Length
+  The length of the message
+
+Message: List of strings that identifies the keyboards
+	 that have been removed.
+
+Purpose: Enable servers and clients to detect removal of keyboards
+
+Compulsivity: recommended
+
+Reference implementation: kbd
+
+---------------------------------------------------------------------
+
 Command: error
   Notify a client about a request failure
 
