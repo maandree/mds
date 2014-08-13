@@ -395,7 +395,7 @@ Optional header: Modifiers
     ctrl) Control
     alt) Alternative/Option
     altgr) Alternative Graphic (level 3)
-    lvl*) * may be any 2ⁿ + 1 integer greater than 4
+    lvl*) * may be any 2ⁿ + 1 integer greater than 4 with n < 20
     super) Super
     hyper) Hyper
     ultra) Ultra
@@ -439,7 +439,7 @@ Optional header: Key
     ctrl) Control
     alt) Alternative/Option
     altgr) Alternative Graphic (level 3)
-    lvl*) * may be any 2ⁿ + 1 integer greater than 4
+    lvl*) * may be any 2ⁿ + 1 integer greater than 4 with n < 20
     super) Super
     hyper) Hyper
     ultra) Ultra
