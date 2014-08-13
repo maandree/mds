@@ -603,13 +603,49 @@ Reference implementation: kbdtrans
 
 ---------------------------------------------------------------------
 
+Command: keycode-map
+  Remap keyboard keycodes and query current mapping
+
+Required header: Action
+  remap)  Remap keys
+  reset)  Reset all mappings to identity mapping
+  query)  Query mapping
+    Each affected server will send a message format
+    like that of `Action: remap` with current mapping
+    that are not identity mappings
+
+Optional header: Keyboard
+  A string that identifies the keyboard that should be
+  affected. If omitted all keyboard are affected.
+
+Conditionally optional header: Length
+  Available and optional if: `Action: remap`
+  The length of the message
+
+Message: Each line contains contains two single space delimited numbers,
+	 the first number is the keycode as determined by the scancode,
+	 the second number is keycode that scancode should generate.
+	 For example, `1 1` resets Escape to be mapped to Escape,
+	 and `1 59` remaps Escape to F1, while `1 59\n59 1`, where
+	 `\n` is a new lone, swaps Escape and F1.
+
+Purpose: Enable the user to swap or replace keys on the keyboard
+Purpose: Enable the user manually correct an incorrectly mapped keyboard
+
+Compulsivity: optional
+
+Reference implementation: kkbd
+Reference implementation: kbd
+
+---------------------------------------------------------------------
+
 Command: error
   Notify a client about a request failure
 
 Required header: To
   The ID of the client that send a request that failed
 
-Required header: Message ID
+Required header: In response to
   The ID of the message whose request failed
 
 Required header: Error
@@ -632,7 +668,7 @@ Purpose: Enable keyboard layout servers to automatically
 	 set active locks when the server starts based on
 	 currently active LED:s
 
-Compulsivity: highly recommended
+Compulsivity: optional
 
 ---------------------------------------------------------------------
 
