@@ -16,7 +16,7 @@ Missing servers:
 	remote		Bind to a remote display server
 	fb		Framebuffer presenter
 	kbd		Keyboard input
-	keytrans	Translates pure (but possibly remapped) keycodes in characters
+	keytrans	Translates pure (but possibly remapped) keycodes into characters and keys
 	kkbdrate	Rate and delay for kkbd
 	rat		Rat input
 	compositor	Composites the display
