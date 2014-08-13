@@ -454,8 +454,8 @@ Optional header: Key
   Keys that lock/unlock a modifer should be suffixed with a
   blank space and a `lock`. If the key is a dead key (even
   the compose key) should use `dead` instead. A position,
-  either `left`, `right` or `keypad`, followed by a blank
-  space, should prefix any key that occurs on multiple
+  either `left`, `right`, `keypad` or an index, followed by a
+  blank space, should prefix any key that occurs on multiple
   position on the keyboard. Keys without any meaning should
   be identified as `unknown`. Modifiers and dead keys should
   not affect the value.
