@@ -146,6 +146,16 @@ int send_key(int* restrict scancode, int trio);
  */
 int fetch_keys(void);
 
+/**
+ * Send a response with an error number
+ * 
+ * @param   error            The error number
+ * @param   recv_client_id   The client's ID
+ * @param   recv_message_id  The message ID of the message the client sent
+ * @return                   Zero on success, -1 on error
+ */
+int send_errno(int error, const char* recv_client_id, const char* recv_message_id);
+
 
 #endif
 

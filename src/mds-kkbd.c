@@ -549,7 +549,7 @@ static int ensure_send_buffer_size(size_t size)
       return -1;
     }
   else
-    send_buffer_size = size,
+    send_buffer_size = size;
   
   return 0;
 }
@@ -569,6 +569,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 {
   int32_t msgid;
   size_t n;
+  int r;
   
   if (recv_modify_id == NULL)
     {
@@ -630,7 +631,6 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   with_mutex (send_mutex,
 	      r = full_send(send_buffer, strlen(send_buffer));
 	      );
-  
   return r;
 }
 
@@ -644,15 +644,71 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
  */
 int handle_keyboard_enumeration(const char* recv_modify_id)
 {
+  size_t i, off, top, n = 1 + strlen(KEYBOARD_ID "\n") + 3 * sizeof(size_t);
+  int32_t msgid;
+  int r, have_len = 0;
+  
   if (recv_modify_id == NULL)
     {
       eprint("did not get add modify ID, ignoring.");
       return 0;
     }
   
-  /* TODO */
+  for (i = 0; i < received.header_count; i++)
+    n += strlen(received.headers[i]);
+  n += received.header_count;
+  n += received.payload_size;
   
-  return 0;
+  n += off = 64 + strlen(recv_modify_id) + 3 * sizeof(size_t);
+  
+  if (ensure_send_buffer_size(n + 1) < 0)
+    return -1;
+  
+  with_mutex (send_mutex,
+	      msgid = message_id;
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      );
+  
+  n = off;
+  for (i = 0; i < received.header_count; i++)
+    {
+      const char* header = received.headers[i];
+      if (!have_len && startswith(header, "Length: "))
+	{
+	  have_len = 1;
+	  sprintf(send_buffer + n,
+		  "Length: %lu\n",
+		  strlen(KEYBOARD_ID "\n") + received.payload_size);
+	  n += strlen(send_buffer + n);
+	}
+      else
+	{
+	  sprintf(send_buffer + n,
+		  "%s\n",
+		  header);
+	  n += strlen(header) + 1;
+	}
+    }
+  memcpy(send_buffer + n, received.payload, received.payload_size * sizeof(char));
+  n += received.payload_size;
+  n -= off;
+  
+  sprintf(send_buffer,
+	  "Modify ID: %s\n"
+	  "Message ID: " PRIi32 "\n"
+	  "Length: %lu\n",
+	  recv_modify_id, msgid, n);
+  top = strlen(send_buffer) + 1;
+  send_buffer[top - 1] = '\n';
+  off -= top;
+  n += top;
+  memmove(send_buffer + off, send_buffer, top * sizeof(char));
+  
+  with_mutex (send_mutex,
+	      r = full_send(send_buffer + off, n);
+	      );
+  
+  return r;
 }
 
 
@@ -747,7 +803,9 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
 int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
 			     const char* recv_keyboard)
 {
-  int r;
+  int32_t msgid;
+  size_t n;
+  int r, leds;
   
   if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
     return 0;
@@ -762,6 +820,15 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
     {
       eprint("received information request from an anonymous client, ignoring.");
       return 0;
+    }
+  
+  leds = get_leds();
+  if (leds < 0)
+    {
+      int error = errno;
+      xperror(*argv);
+      send_errno(error, recv_client_id, recv_message_id);
+      return -1;
     }
   
   with_mutex (send_mutex,
@@ -779,7 +846,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 	  "Message ID: " PRIi32 "\n"
 	  "Active:%s%s%s%s%s\n"
 	  "Present: " PRESENT_LEDS "\n"
-	  "\n"
+	  "\n",
 	  recv_client_id, recv_message_id, msgid,
 	  (leds & LED_NUM_LOCK)  ? " num"    : "",
 	  (leds & LED_CAPS_LOCK) ? " caps"   : "",
@@ -1079,5 +1146,38 @@ int fetch_keys(void)
     }
   
   return errno == 0 ? 0 : -1;
+}
+
+
+/**
+ * Send a response with an error number
+ * 
+ * @param   error            The error number
+ * @param   recv_client_id   The client's ID
+ * @param   recv_message_id  The message ID of the message the client sent
+ * @return                   Zero on success, -1 on error
+ */
+int send_errno(int error, const char* recv_client_id, const char* recv_message_id)
+{
+  size_t n = 79 + strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int);
+  int r;
+  
+  if (ensure_send_buffer_size(n + 1) < 0)
+    return -1;
+  
+  with_mutex (send_mutex,
+	      sprintf(send_buffer,
+		      "Command: error\n"
+		      "To: %s\n"
+		      "In response to: %s\n"
+		      "Message ID: " PRIi32 "\n"
+		      "Error: %i\n"
+		      "\n",
+		      recv_client_id, recv_message_id, message_id, error);
+	      
+	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+	      r = full_send(send_buffer, strlen(send_buffer));
+	      );
+  return r;
 }
 
