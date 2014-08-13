@@ -976,7 +976,7 @@ static int remap(char* table, size_t n)
       int in, out;
       
       parse_remap_line(begin, end, n, &in, &out);
-      if ((in < 0) || (out < 0))
+      if ((in < 0) || (out < 0) || ((in | out) >= 0x4000))
 	{
 	  eprint("received malformated remapping table.");
 	  goto next;
@@ -1023,8 +1023,7 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
 	n++;
       }
   
-  n *= 3 + (greatest > 0xFFFF ? (3 * sizeof(int)) : 
-	    greatest > 0x00FF ? 5 : 3);
+  n *= 3 + (size_t)(greatest > 0x00FF ? 5 : 3);
   
   if (ensure_send_buffer_size(top + n + 2) < 0)
     return -1;
