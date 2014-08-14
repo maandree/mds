@@ -788,7 +788,30 @@ end for
 # TODO Mathematical Alphanumeric Symbols
 # TODO Mende Kikakui
 # TODO Arabic Mathematical Alphabetic Symbols
-# TODO Mahjong Tiles
+
+# Mahjong Tiles:
+<shift compose> "m" "t" ">" : "\u1F000"
+<shift compose> "m" "t" "v" : "\u1F001"
+<shift compose> "m" "t" "<" : "\u1F002"
+<shift compose> "m" "t" [<dead letter ^> "^"] : "\u1F003"
+<shift compose> "m" "t" "r" : "\u1F004"
+<shift compose> "m" "t" "g" : "\u1F005"
+<shift compose> "m" "t" "w" : "\u1F006"
+for "1" to "9" as \1
+  <shift compose> "m" "t" "w" "\1" : "\add(\u1F007 \sub(\1 "1"))"
+  <shift compose> "m" "t" "t" "\1" : "\add(\u1F010 \sub(\1 "1"))"
+  <shift compose> "m" "t" "b" "\1" : "\add(\u1F019 \sub(\1 "1"))"
+end for
+<shift compose> "m" "t" "m" : "\u1F022"
+<shift compose> "m" "t" "l" : "\u1F023"
+<shift compose> "m" "t" "z" : "\u1F024"
+<shift compose> "m" "t" "j" : "\u1F025"
+<shift compose> "m" "t" "1" : "\u1F026"
+<shift compose> "m" "t" "2" : "\u1F027"
+<shift compose> "m" "t" "3" : "\u1F028"
+<shift compose> "m" "t" "4" : "\u1F029"
+<shift compose> "m" "t" "*" : "\u1F02A"
+<shift compose> "m" "t" "/" : "\u1F02B"
 
 # Domino Tiles:
 <shift compose> "d" "t" "-" ["-" <space>] : "\u1F030"
