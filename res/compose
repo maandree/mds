@@ -789,7 +789,16 @@ end for
 # TODO Mende Kikakui
 # TODO Arabic Mathematical Alphabetic Symbols
 # TODO Mahjong Tiles
-# TODO Domino Tiles
+
+# Domino Tiles:
+<shift compose> "d" "t" "-" ["-" <space>] : "\u1F030"
+<shift compose> "d" "t" "|" ["|" <space>] : "\u1F062"
+for "0" to "6" as \1
+  for "0" to "6" as \2
+    <shift compose> "d" "t" "-" "\1" "\2" : "\add(\u1F031 \add(\mul(\sub(\1 "0") 7) \sub(\2 "0")))"
+    <shift compose> "d" "t" "|" "\1" "\2" : "\add(\u1F063 \add(\mul(\sub(\1 "0") 7) \sub(\2 "0")))"
+  end for
+end for
 
 # Playing Cards:
 <shift compose> "p" "c" : "🂠"
