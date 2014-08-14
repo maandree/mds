@@ -373,7 +373,52 @@ dead_ascii("ˇ")
 # TODO Dingbats
 # TODO Miscellaneous Mathematical Symbols-A
 # TODO Supplemental Arrows-A
-# TODO Braille Patterns
+
+# Braille Patterns:
+<shift compose> "b" <space> : "\u2800"
+<shift compose> "b" "1" : "\u2801"
+<shift compose> "b" "2" : "\u2802"
+<shift compose> "b" "3" : "\u2804"
+<shift compose> "b" "4" : "\u2808"
+<shift compose> "b" "5" : "\u2810"
+<shift compose> "b" "6" : "\u2820"
+<shift compose> "b" "7" : "\u2840"
+<shift compose> "b" "8" : "\u2880"
+macro braille_double/1
+  let \2 : "\u2800"
+  if \and(\1, 1) = 1
+    let \2 : \or(\2, 8)
+  endif
+  if \and(\1, 2) = 2
+    let \2 : \or(\2, 16)
+  endif
+  if \and(\1, 4) = 4
+    let \2 : \or(\2, 32)
+  endif
+  if \and(\1, 8) = 8
+    let \2 : \or(\2, 1)
+  endif
+  if \and(\1, 16) = 16
+    let \2 : \or(\2, 2)
+  endif
+  if \and(\1, 32) = 32
+    let \2 : \or(\2, 4)
+  endif
+  if \and(\1, 64) = 64
+    let \2 : \or(\2, 128)
+  endif
+  if \and(\1, 128) = 128
+    let \2 : \or(\2, 64)
+  endif
+  <compose> "\1" "\1" : "\or(\1, \2)"
+end macro
+for "\u2800" to "\u28FF" as \1
+  braille_double(\1)
+  for \add(\1, 1) to "\u28FF" as \2
+    <compose> ("\1" "\2") : "\or(\1, \2)"
+  end for
+end for
+
 # TODO Supplemental Arrows-B
 # TODO Miscellaneous Mathematical Symbols-B
 # TODO Supplemental Mathematical Operators
