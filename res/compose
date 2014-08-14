@@ -19,10 +19,18 @@ macro composite/4
 end macro
 
 
+<compose> "u" "+" : <dead hexcompose>
+<compose> "U" "+" : <dead longhexcompose>
+
+
+# TODO C0 Controls
+
 # Basic Latin:
 dead_ascii("^")
 dead_ascii("`")
 dead_ascii("~")
+
+# TODO C1 Controls
 
 # Latin-1 Supplement:
 <compose> "!" "!" : "¡"
@@ -192,7 +200,117 @@ composite("¨" "\"" "y" "ÿ")
 # TODO Combining Diacritical Marks Supplement
 # TODO Latin Extended Additional
 # TODO Greek Extended
-# TODO General Punctuation
+
+# General Punctuation:
+<compose> <space> "_" "." : "\u2000" # en quad
+<compose> <space> "_" "_" : "\u2001" # em quad
+<compose> <space> "-" "." : "\u2002" # en space
+<compose> <space> "-" "-" : "\u2003" # em space
+<compose> <space> "3" : "\u2004" # three-per-em space
+<compose> <space> "4" : "\u2005" # four-per-em space
+<compose> <space> "6" : "\u2006" # six-per-em space
+<compose> <space> "f" : "\u2007" # figure space
+<compose> <space> "." : "\u2008" # punctuation space
+<compose> <space> "t" : "\u2009" # thin space
+<compose> <space> "h" : "\u200A" # hairspace
+<compose> <space> "0" : "\u200B" # zero width space
+<compose> <space> "J" : "\u200C" # zero width non-joiner
+<compose> <space> "j" : "\u200D" # zero width joiner
+<compose> <space> "l" : "\u200E" # left-to-right mark
+<compose> <space> "r" : "\u200F" # right-to-left mark
+<compose> "-" <space> : "\u2010" # hyphen
+<compose> "-" " " : "\u2011" # non-breaking hyphen
+<compose> "-" "-" "f" : "\u2012" # figure dash
+<compose> "-" "-" "." : "\u2013" # en dash
+<compose> "-" "-" "-" : "\u2014" # em dash
+<compose> "-" "-" "_" : "\u2015" # horizontal bar
+<compose> "|" "|" : "\u2016" # double verical line
+<compose> "-" "_" : "\u2017" # double low line
+<compose> ("(" "'") : "‘"
+<compose> (")" "'") : "’"
+<compose> ("(" ",") : "‚"
+<compose> (")" ",") : "‛"
+<compose> ("(" "\"") : "“"
+<compose> (")" "\"") : "”"
+<compose> ("(" ";") : "„"
+<compose> (")" ";") : "‟"
+<compose> "+" "T" : "†"
+<compose> "+" "+" "T" : "‡"
+<shift compose> "." "." : "•"
+<shift compose> "|" ">" : "‣"
+<compose> "." "," : "\u2024" # one dot leader
+<compose> "." ";" : "\u2025" # two dot leader
+<compose> "." "." : "…"
+<compose> "-" "." : "\u2027" # hyphenation point
+<compose> "l" <space> : "\u2028" # line separator
+<compose> "p" <space> : "\u2029" # paragraph separator
+<compose> <space> "e" "l" : "\u202A" # left-to-right embedding
+<compose> <space> "e" "r" : "\u202B" # right-to-left embedding
+<compose> <space> "e" "p" : "\u202C" # pop directional formatting
+<compose> <space> "o" "l" : "\u202D" # left-to-right override
+<compose> <space> "o" "r" : "\u202E" # right-to-left override
+<compose> "m" " " : "\u202F" # narrow no-break space
+<compose> "%" ["o" "."] : "‰"
+<compose> "%" ["O" ":"] : "‱"
+<compose> ("1" ["'", "´"]) : "′"
+<compose> ("2" ["'", "´"]) : "″"
+<compose> ("3" ["'", "´"]) : "‴"
+<compose> ("1" "`") : "‵"
+<compose> ("2" "`") : "‶"
+<compose> ("3" "`") : "‷"
+<shift compose> ("." "^") : "‸"
+<shift compose> ("." "<") : "‹"
+<shift compose> ("." ">") : "›"
+<compose> ("x" "+") : "※"
+<shift compose> "!" "!" : "‼"
+<compose> "!" "?" : "‽"
+<shift compose> "^" "_" : "‾"
+<shift compose> ("_" "u") : "‿"
+<shift compose> ("^" "u") : "⁀"
+<shift compose> "/" "/" : "⁁"
+<compose> "*" "*" : "⁂"
+<shift compose> "-" "-" : "⁃"
+<compose> "/" "/" : "⁄"
+<compose> ("[" "-") : "⁅"
+<compose> ("]" "-") : "⁆"
+<shift compose> "?" "?" : "⁇"
+<shift compose> "?" "!" : "⁈"
+<shift compose> "!" "?" : "⁉"
+<compose> ("/" "7"): "⁊"
+<compose> "¶" "¶" : "⁋"
+<compose> ("?" ["p" "P"]) : "⁋"
+<compose> "(" "|" : "⁌"
+<compose> "|" ")" : "⁍"
+<compose> ("*" ".") : "⁎"
+<compose> ";" ";" : "⁏"
+<shift compose> "(" ")": "⁐"
+<compose> ("*" ":") : "⁑"
+<compose> "%" "%" : "⁒"
+<shift compose> "~" ["-" "~"] : "⁓"
+<shift compose> "-" "~" : "⁓"
+<sjift compose> ("_" "U") : "⁔"
+<compose> ("x" "*") : "⁕"
+<compose> "." ":" <space>  : "⁖"
+<compose> ("4" ["'", "´"]) : "⁗"
+<compose> "." ":" "." : "⁘"
+<compose> ":" "." ":" : "⁙"
+<compose> "|" "." "." : "⁚"
+<shift compose> "." ":" "." : "⁛"
+<compose> ("x" ":") : "⁜"
+<compose> "|" ":" "." : "⁝"
+<compose> "|" ":" ":" : "⁞"
+<compose> <space> "m" : "\u205F" # medium mathematical space
+<compose> <space> "w" : "\u2060" # word joiner
+<shift compose> ("f" " ") : "\u2061" # function application
+<shift compose> (["x" "×" "*"] " ") : "\u2062" # invisible times
+<shift compose> (["," "."] " ") : "\u2063" # invisible separator
+<shift compose> ("+" " ") : "\u2064" # invisible plus
+<compose> <space> "i" "l" : "\u2066" # left-to-right isolate
+<compose> <space> "i" "r" : "\u2067" # right-to-left isolate
+<compose> <space> "i" "s" : "\u2068" # first strong isolate
+<compose> <space> "i" "p" : "\u2069" # pop directional isolate
+# U+206A through U+206C are deprecated
+
 # TODO Superscripts and Subscripts
 # TODO Currency Symbols
 # TODO Combining Diacritical Marks for Symbols

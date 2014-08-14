@@ -450,6 +450,10 @@ Optional header: Key
     front) Front (historical)
     greek) Greek (historical)
     compose) Compose (usally a dead key)
+    hexcompose) Hex-Compose (usally a dead key)
+                (use to create aribitrary characters)
+    longhexcompose) Long Hex-Compose (usally a dead key)
+                    (variant of hexcompose for longer codepoints)
     modelock) Mode Lock
     letter *) * may be any UTF-8 encoded letter
   Keys that lock/unlock a modifer should be suffixed with a
