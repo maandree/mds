@@ -1,3 +1,5 @@
+# Based on the Unicode Character Database 7.0
+
 macro dead_ascii/1
   <dead letter \1> [" " <dead letter \1>] : "\1"
   <compose> "\1" : <dead letter \1>
@@ -17,9 +19,12 @@ macro composite/4
 end macro
 
 
+# Basic Latin:
 dead_ascii("^")
 dead_ascii("`")
 dead_ascii("~")
+
+# Latin-1 Supplement:
 <compose> "!" "!" : "¡"
 <compose> ("/" "c") : "¢"
 <compose> ("|" ["c" "L"]) : "¢"
@@ -120,3 +125,247 @@ composite("¨" "\"" "u" "ü")
 composite("´" "'" "y" "ý")
 <compose> "t" "h" : "þ"
 composite("¨" "\"" "y" "ÿ")
+
+# TODO Latin Extended-A
+# TODO Latin Extended-B
+# TODO IPA Extensions
+# TODO Spacing Modifier Letter
+# TODO Combining Diacritical Marks
+# TODO Greek and Coptic
+# TODO Cyrillic
+# TODO Cyrillic Supplement
+# TODO Armenian
+# TODO Hebrew
+# TODO Arabic
+# TODO Syriac
+# TODO Arabic Supplement
+# TODO Thaana
+# TODO NKo
+# TODO Samaritan
+# TODO Mandaic
+# TODO Arabic Extended-A
+# TODO Devanagari
+# TODO Bengali
+# TODO Gurmukhi
+# TODO Gujarati
+# TODO Oriya
+# TODO Tamil
+# TODO Telugu
+# TODO Kannada
+# TODO Malayalam
+# TODO Sinhala
+# TODO Thai
+# TODO Lao
+# TODO Tibetan
+# TODO Myanmar
+# TODO Georgian
+# TODO Hangul Jamo
+# TODO Ethiopic
+# TODO Ethiopic Supplement
+# TODO Cherokee
+# TODO Unified Canadian Aboriginal Syllabics
+# TODO Ogham
+# TODO Runic
+# TODO Tagalog
+# TODO Hanunoo
+# TODO Buhid
+# TODO Tagbanwa
+# TODO Khmer
+# TODO Mongolian
+# TODO Unified Canadian Aboriginal Syllabics Extended
+# TODO Limbu
+# TODO Tai Le
+# TODO New Tai Lue
+# TODO Khmer Symbols
+# TODO Buginese
+# TODO Tai Tham
+# TODO Combining Diacritical Marks Extended
+# TODO Balinese
+# TODO Sundanese
+# TODO Batak
+# TODO Lepcha
+# TODO Ol Chiki
+# TODO Sundanese Supplement
+# TODO Vedic Extensions
+# TODO Phonetic Extensions
+# TODO Phonetic Extensions Supplement
+# TODO Combining Diacritical Marks Supplement
+# TODO Latin Extended Additional
+# TODO Greek Extended
+# TODO General Punctuation
+# TODO Superscripts and Subscripts
+# TODO Currency Symbols
+# TODO Combining Diacritical Marks for Symbols
+# TODO Letterlike Symbols
+# TODO Number Forms
+# TODO Arrows
+# TODO Mathematical Operators
+# TODO Miscellaneous Technical
+# TODO Control Pictures
+# TODO Optical Character Recognition
+# TODO Enclosed Alphanumerics
+# TODO Box Drawing
+# TODO Block Elements
+# TODO Geometric Shapes
+# TODO Miscellaneous Symbols
+# TODO Dingbats
+# TODO Miscellaneous Mathematical Symbols-A
+# TODO Supplemental Arrows-A
+# TODO Braille Patterns
+# TODO Supplemental Arrows-B
+# TODO Miscellaneous Mathematical Symbols-B
+# TODO Supplemental Mathematical Operators
+# TODO Miscellaneous Symbols and Arrows
+# TODO Glagolitic
+# TODO Latin Extended-C
+# TODO Coptic
+# TODO Georgian Supplement
+# TODO Tifinagh
+# TODO Ethiopic Extended
+# TODO Cyrillic Extended-A
+# TODO Supplemental Punctuation
+# TODO CJK Radicals Supplement
+# TODO Kangxi Radicals
+# TODO Ideographic Description Characters
+# TODO CJK Symbols and Punctuation
+# TODO Hiragana
+# TODO Katakana
+# TODO Bopomofo
+# TODO Hangul Compatibility Jamo
+# TODO Kanbun
+# TODO Bopomofo Extended
+# TODO CJK Strokes
+# TODO Katakana Phonetic Extensions
+# TODO Enclosed CJK Letters and Months
+# TODO CJK Compatibility
+# TODO CJK Unified Ideographs Extension A
+# TODO Yijing Hexagram Symbols
+# TODO CJK Unified Ideographs
+# TODO Yi Syllables
+# TODO Yi Radicals
+# TODO Lisu
+# TODO Vai
+# TODO Cyrillic Extended-B
+# TODO Bamum
+# TODO Modifier Tone Letters
+# TODO Latin Extended-D
+# TODO Syloti Nagri
+# TODO Common Indic Number Forms
+# TODO Phags-pa
+# TODO Saurashtra
+# TODO Devanagari Extended
+# TODO Kayah Li
+# TODO Rejang
+# TODO Hangul Jamo Extended-A
+# TODO Javanese
+# TODO Myanmar Extended-B
+# TODO Cham
+# TODO Myanmar Extended-A
+# TODO Tai Viet
+# TODO Meetei Mayek Extensions
+# TODO Ethiopic Extended-A
+# TODO Latin Extended-E
+# TODO Meetei Mayek
+# TODO Hangul Syllables
+# TODO Hangul Jamo Extended-B
+# TODO CJK Compatibility Ideographs
+# TODO Alphabetic Presentation Forms
+# TODO Arabic Presentation Forms-A
+# TODO Variation Selectors
+# TODO Vertical Forms
+# TODO Combining Half Marks
+# TODO CJK Compatibility Forms
+# TODO Small Form Variants
+# TODO Arabic Presentation Forms-B
+# TODO Halfwidth and Fullwidth Forms
+# TODO Specials
+# TODO Linear B Syllabary
+# TODO Linear B Ideograms
+# TODO Aegean Numbers
+# TODO Ancient Greek Numbers
+# TODO Ancient Symbols
+# TODO Phaistos Disc
+# TODO Lycian
+# TODO Carian
+# TODO Coptic Epact Numbers
+# TODO Old Italic
+# TODO Gothic
+# TODO Old Permic
+# TODO Ugaritic
+# TODO Old Persian
+# TODO Deseret
+# TODO Shavian
+# TODO Osmanya
+# TODO Elbasan
+# TODO Caucasian Albanian
+# TODO Linear A
+# TODO Cypriot Syllabary
+# TODO Imperial Aramaic
+# TODO Palmyrene
+# TODO Nabataean
+# TODO Phoenician
+# TODO Lydian
+# TODO Meroitic Hieroglyphs
+# TODO Meroitic Cursive
+# TODO Kharoshthi
+# TODO Old South Arabian
+# TODO Old North Arabian
+# TODO Manichaean
+# TODO Avestan
+# TODO Inscriptional Parthian
+# TODO Psalter Pahlavi
+# TODO Old Turkic
+# TODO Rumi Numeral Symbols
+# TODO Brahmi
+# TODO Kaithi
+# TODO Sora Sompeng
+# TODO Chakma
+# TODO Mahajani
+# TODO Sharada
+# TODO Sinhala Archaic Numbers
+# TODO Khojki
+# TODO Khudawadi
+# TODO Grantha
+# TODO Tirhuta
+# TODO Siddham
+# TODO Modi
+# TODO Takri
+# TODO Warang Citi
+# TODO Pau Cin Hau
+# TODO Cuneiform
+# TODO Cuneiform Numbers and Punctuation
+# TODO Egyptian Hieroglyphs
+# TODO Bamum Supplement
+# TODO Mro
+# TODO Bassa Vah
+# TODO Pahawh Hmong
+# TODO Miao
+# TODO Kana Supplement
+# TODO Duployan
+# TODO Shorthand Format Controls
+# TODO Byzantine Musical Symbols
+# TODO Musical Symbols
+# TODO Ancient Greek Musical Notation
+# TODO Tai Xuan Jing Symbols
+# TODO Counting Rod Numerals
+# TODO Mathematical Alphanumeric Symbols
+# TODO Mende Kikakui
+# TODO Arabic Mathematical Alphabetic Symbols
+# TODO Mahjong Tiles
+# TODO Domino Tiles
+# TODO Playing Cards
+# TODO Enclosed Alphanumeric Supplement
+# TODO Enclosed Ideographic Supplement
+# TODO Miscellaneous Symbols and Pictographs
+# TODO Emoticons
+# TODO Ornamental Dingbats
+# TODO Transport and Map Symbols
+# TODO Alchemical Symbols
+# TODO Geometric Shapes Extended
+# TODO Supplemental Arrows-C
+# TODO CJK Unified Ideographs Extension B
+# TODO CJK Unified Ideographs Extension C
+# TODO CJK Unified Ideographs Extension D
+# TODO CJK Compatibility Ideographs Supplement
+# TODO Tags
+# TODO Variation Selectors Supplement
