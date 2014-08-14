@@ -529,5 +529,7 @@ dead_ascii("ˇ")
 # TODO CJK Unified Ideographs Extension C
 # TODO CJK Unified Ideographs Extension D
 # TODO CJK Compatibility Ideographs Supplement
-# TODO Tags
+
+# Tags: These are deprecated
+
 # TODO Variation Selectors Supplement
