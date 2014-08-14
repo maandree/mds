@@ -558,7 +558,45 @@ end for
 <shift compose> "B" [">" "→"] : "╺"
 <shift compose> "B" ["v" "," "↓"] : "╻"
 
-# TODO Block Elements
+# Block Elements:
+<shift compose> "B" <compose> : <dead letter █>
+dead_ascii("█")
+<dead letter █> "|" : <dead letter ▀>
+dead_ascii("▀")
+<dead letter ▀> "0" : "▀"
+<dead letter ▀> "1" : "▁"
+<dead letter ▀> "2" : "▂"
+<dead letter ▀> "3" : "▃"
+<dead letter ▀> "4" : "▄"
+<dead letter ▀> "5" : "▅"
+<dead letter ▀> "6" : "▆"
+<dead letter ▀> "7" : "▇"
+<dead letter █> "-" : <dead letter ▐>
+dead_ascii("▐")
+<dead letter ▐> "7" : "▉"
+<dead letter ▐> "6" : "▊"
+<dead letter ▐> "5" : "▋"
+<dead letter ▐> "4" : "▌"
+<dead letter ▐> "3" : "▍"
+<dead letter ▐> "2" : "▎"
+<dead letter ▐> "1" : "▏"
+<dead letter ▐> "0" : "▐"
+<dead letter █> "1" : "░"
+<dead letter █> "2" : "▒"
+<dead letter █> "3" : "▓"
+<dead letter ▀> "-" : "▔"
+<dead letter ▐> "|" : "▕"
+<dead letter █> "," : "▖"
+<dead letter █> "." : "▗"
+<dead letter █> ";" : "▘"
+<dead letter █> "▝" : "▙"
+<compose> "▗" "▘" : "▚"
+<dead letter █> "▗" : "▛"
+<dead letter █> "▖" : "▜"
+<dead letter █> ":" : "▝"
+<compose> "▖" "▝" : "▞"
+<dead letter █> "▘" : "▟"
+
 # TODO Geometric Shapes
 # TODO Miscellaneous Symbols
 # TODO Dingbats
