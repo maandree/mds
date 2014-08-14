@@ -311,7 +311,51 @@ composite("¨" "\"" "y" "ÿ")
 <compose> <space> "i" "p" : "\u2069" # pop directional isolate
 # U+206A through U+206C are deprecated
 
-# TODO Superscripts and Subscripts
+# Superscripts and Subscripts:
+<dead letter ^> "0" : "⁰"
+<shift compose> ["^" <dead letter "^">] "i" : "ⁱ"
+<dead letter ^> "4" : "⁴"
+<dead letter ^> "5" : "⁵"
+<dead letter ^> "6" : "⁶"
+<dead letter ^> "7" : "⁷"
+<dead letter ^> "8" : "⁸"
+<dead letter ^> "9" : "⁹"
+<dead letter ^> "+" : "⁺"
+<dead letter ^> "-" : "⁻"
+<dead letter ^> "=" : "⁼"
+<dead letter ^> "(" : "⁽"
+<dead letter ^> ")" : "⁾"
+<shift compose> ["^" <dead letter "^">] "n" : "ⁿ"
+dead_ascii("ˇ")
+<dead letter ˇ> "0" : "₀"
+<dead letter ˇ> "1" : "₁"
+<dead letter ˇ> "2" : "₂"
+<dead letter ˇ> "3" : "₃"
+<dead letter ˇ> "4" : "₄"
+<dead letter ˇ> "5" : "₅"
+<dead letter ˇ> "6" : "₆"
+<dead letter ˇ> "7" : "₇"
+<dead letter ˇ> "8" : "₈"
+<dead letter ˇ> "9" : "₉"
+<dead letter ˇ> "+" : "₊"
+<dead letter ˇ> "-" : "₋"
+<dead letter ˇ> "=" : "₌"
+<dead letter ˇ> "(" : "₍"
+<dead letter ˇ> ")" : "₎"
+<shift compose> ["ˇ" <dead letter "ˇ">] "a" : "ₐ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "e" : "ₑ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "o" : "ₒ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "x" : "ₓ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "ə" : "ₔ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "h" : "ₕ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "k" : "ₖ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "l" : "ₗ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "m" : "ₘ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "n" : "ₙ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "p" : "ₚ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "s" : "ₛ"
+<shift compose> ["ˇ" <dead letter "ˇ">] "t" : "ₜ"
+
 # TODO Currency Symbols
 # TODO Combining Diacritical Marks for Symbols
 # TODO Letterlike Symbols
