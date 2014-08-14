@@ -365,7 +365,45 @@ dead_ascii("ˇ")
 # TODO Miscellaneous Technical
 # TODO Control Pictures
 # TODO Optical Character Recognition
-# TODO Enclosed Alphanumerics
+
+# Enclosed Alphanumerics:
+for "1" to "9" as \1
+  <compose> "(" "\1" ")"             : "\add(\u2460 \sub(\1 "1"))"
+  <compose> "(" " " "\1" [" " .] ")" : "\add(\u2474 \sub(\1 "1"))"
+  <compose> "(" "\1" " " ")"         : "\add(\u2474 \sub(\1 "1"))"
+  <compose> "\1" "."                 : "\add(\u2488 \sub(\1 "1"))"
+end for
+for "0" to "9" as \1
+  <compose> "(" "1" "\1" ")"             : "\add(\u2469 \sub(\1 "0"))"
+  <compose> "(" " " "1" "\1" [" " .] ")" : "\add(\u247D \sub(\1 "0"))"
+  <compose> "(" "1" "\1" " " ")"         : "\add(\u247D \sub(\1 "0"))"
+  <compose> "1" "\1" "."                 : "\add(\u2491 \sub(\1 "0"))"
+end for
+<compose> "(" "2" "0" ")"             : "\u2473"
+<compose> "(" " " "2" "0" [" " .] ")" : "\u2487"
+<compose> "(" "2" "0" " " ")"         : "\u2473"
+<compose> "2" "0" "."                 : "\u2498"
+for "a" to "z" as \1
+  <compose> "(" " " "\1" [" " .] ")" : "\add(\u249C \sub(\1 "a"))"
+  <compose> "(" "\1" " " ")"         : "\add(\u249C \sub(\1 "a"))"
+end for
+for "A" to "Z" as \1
+  <compose> "(" "\1" ")" : "\add(\u24B6 \sub(\1 "A"))"
+end for
+for "a" to "z" as \1
+  <compose> "(" "\1" ")" : "\add(\u24D0 \sub(\1 "a"))"
+end for
+<compose> "(" "0" ")" : "\u24EA"
+for "1" to "9" as \1
+  <compose> "(" "(" "(" "1" "\1" ")" ")" ")" : "\add(\u24EB \sub(\1 "1"))"
+end for
+<compose> "(" "(" "(" "2" "0" ")" ")" ")" : "\u24F4"
+for "1" to "9" as \1
+  <compose> "(" "(" "\1" ")" ")" : "\add(\u24F5 \sub(\1 "1"))"
+end for
+<compose> "(" "(" "1" "0" ")" ")" : "\u24FE"
+<compose> "(" "(" "(" "0" ")" ")" ")" : "\u24FF"
+
 # TODO Box Drawing
 # TODO Block Elements
 # TODO Geometric Shapes
@@ -419,7 +457,6 @@ for "\u2800" to "\u28FF" as \1
     <compose> ("\1" "\2") : "\or(\1 \2)"
   end for
 end for
-
 
 # TODO Supplemental Arrows-B
 # TODO Miscellaneous Mathematical Symbols-B
