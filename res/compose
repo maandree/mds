@@ -404,7 +404,140 @@ end for
 <compose> "(" "(" "1" "0" ")" ")" : "\u24FE"
 <compose> "(" "(" "(" "0" ")" ")" ")" : "\u24FF"
 
-# TODO Box Drawing
+# Box Drawing:
+<compose> ("╴" "╶") : "─"
+<compose> ("╸" "╺") : "━"
+<shift compose> "b" "-" : "─"
+<shift compose> "B" "-" : "━"
+<shift compose> "b" "|" : "│"
+<shift compose> "B" "|" : "┃"
+<shift compose> "b" "." "-" : "┄"
+<shift compose> "B" "." "-" : "┅"
+<compose> "┄" "┄" : "┅"
+<shift compose> "b" "." "|" : "┆"
+<shift compose> "B" "." "|" : "┇"
+<compose> "┆" "┆" : "┇"
+<shift compose> "b" ":" "-" : "┈"
+<shift compose> "B" ":" "-" : "┉"
+<compose> "┈" "┈" : "┉"
+<shift compose> "b" ":" "|" : "┊"
+<shift compose> "B" ":" "|" : "┋"
+<compose> "┊" "┊" : "┋"
+macro boxes/2
+  let \3 : {
+    3 48 12 192      999 999 999 999  999 999 999 999  10 40 130 160
+    9 24 129 144     6 36 66 96       5 20 65 80       14 44 74 132
+    194 104 164 224  13 28 73 133     193 88 146 208   11 26 41 56
+    131 146 161 176  7 22 37 52       67 82 97 112     15 30 45 60
+    75 135 195 90    105 150 165 120  180 210 225 240  999 999 999 999
+    999 999 999 999  999 999 999 999  999 999 999 999  999 999 999 999
+    999 999 999 999  999 999 999 999  999 999 999 999  999 999 999 999
+    999 999 999 999  1 4 2 8          16 64 32 128     33 132 18 40
+  }
+  let \4 : \get(\3 \1)
+  let \5 : \get(\3 \2)
+  if \or(\equals(\4 999) \equals(\5 999))
+    return
+  endif
+  let \6 : { \and(\4 16) \and(\4 32) \and(\4 64) \and(\4 128) }
+  let \7 : { \and(\5 16) \and(\5 32) \and(\5 64) \and(\5 128) }
+  let \4 : { \and(\4 1) \and(\4 2) \and(\4 4) \and(\4 8) }
+  let \5 : { \and(\5 1) \and(\5 2) \and(\5 4) \and(\5 8) }
+  for 0 to 3 as \8
+    \set(\4 \8 \add(\rsh(\get(\4 \8) \8) \mul(2 \rsh(\get(\6 \8)))))
+    \set(\5 \8 \add(\rsh(\get(\5 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
+    \set(\4 \8 \add(\get(\4 \8) \get(\4 \8)))
+    if \greater(\get(\4 \8), 2)
+      \set(\4, \8, 2)
+    endif
+  end for
+  for 0 to 127 as \5
+    let \6 : \get(\3 \5)
+    if \equals(\4 999)
+      continue
+    endif
+    let \7 : { \and(\6 16) \and(\6 32) \and(\6 64) \and(\6 128) }
+    let \6 : { \and(\6 1) \and(\6 2) \and(\6 4) \and(\6 8) }
+    for 0 to 3 as \8
+      \set(\6 \8 \add(\rsh(\get(\6 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
+    end for
+    if \equals(\get(\6 0) \get(\4 0))
+      if \equals(\get(\6 1) \get(\4 1))
+        if \equals(\get(\6 2) \get(\4 2))
+          if \equals(\get(\6 3) \get(\4 3))
+            <compose> ("\add(\u2500 \1)" "\add(\u2500 \2)") : "\add(\u2500 \5)"
+          end if
+        end if
+      end if
+    end if
+  end for
+end macro
+for 0 to 127 as \1
+  for \1 to 127 as \2
+    boxes(\1 \2)
+  end for
+end for
+<shift compose> "b" "+" : "┼"
+<shift compose> "B" "+" : "╋"
+<compose> (["-" "─"] ["|" "│"]) : "┼"
+<shift compose> "b" "." "." : "╌"
+<shift compose> "B" "." "." : "╍"
+<compose> "╌" "╌" : "╍"
+<shift compose> "b" "¦" : "╎"
+<shift compose> "b" "." ":" : "╎"
+<shift compose> "B" "¦" : "╏"
+<shift compose> "B" "." ":" : "╏"
+<compose> "╎" "╎" : "╏"
+<shift compose> "b" "=" "-" : "═"
+<compose> ("=" "─") : "═"
+<shift compose> "b" "=" "|" : "║"
+<compose> ("=" "│") : "║"
+<compose> ("+" "┍") : "╒"
+<compose> ("+" "┎") : "╓"
+<compose> ("+" ["┌" "┏"]) : "╔"
+<compose> ("+" "┑") : "╕"
+<compose> ("+" "┒") : "╖"
+<compose> ("+" ["┐" "┓"]) : "╗"
+<compose> ("+" "┕") : "╘"
+<compose> ("+" "┖") : "╙"
+<compose> ("+" ["└" "┗"]) : "╚"
+<compose> ("+" "┙") : "╛"
+<compose> ("+" "┚") : "╜"
+<compose> ("+" ["┘" "┛"]) : "╝"
+<compose> ("+" "┝") : "╞"
+<compose> ("+" "┠") : "╟"
+<compose> ("+" ["├" "┣"]) : "╠"
+<compose> ("+" "┥") : "╡"
+<compose> ("+" "┨") : "╢"
+<compose> ("+" ["┤" "┫"]) : "╣"
+<compose> ("+" "┯") : "╤"
+<compose> ("+" "┰") : "╥"
+<compose> ("+" ["┬" "┳"]) : "╦"
+<compose> ("+" "┷") : "╧"
+<compose> ("+" "┸") : "╨"
+<compose> ("+" ["┴" "┻"]) : "╩"
+<compose> ("+" "┿") : "╪"
+<compose> ("+" "╂") : "╫"
+<compose> ("+" ["┼" "╋"]) : "╬"
+<shift compose> "b" "=" "+" : "╬"
+<compose> ("=" "┼") : "╬"
+<compose> (["o" "O"] "┌") : "╭"
+<compose> (["o" "O"] "┐") : "╮"
+<compose> (["o" "O"] "┘") : "╯"
+<compose> (["o" "O"] "└") : "╰"
+<shift compose> "b" "/" : "╱"
+<shift compose> "b" "\" : "╲"
+<compose> ("╱" "╲") : "╳"
+<shift compose> "b" "X" : "╳"
+<shift compose> "b" ["<" "←"] : "╴"
+<shift compose> "b" [<dead letter ^> "^" "↑"] : "╵"
+<shift compose> "b" [">" "→"] : "╶"
+<shift compose> "b" ["v" "," "↓"] : "╷"
+<shift compose> "B" ["<" "←"] : "╸"
+<shift compose> "B" [<dead letter ^> "^" "↑"] : "╹"
+<shift compose> "B" [">" "→"] : "╺"
+<shift compose> "B" ["v" "," "↓"] : "╻"
+
 # TODO Block Elements
 # TODO Geometric Shapes
 # TODO Miscellaneous Symbols
@@ -671,3 +804,4 @@ end for
 # Tags: These are deprecated
 
 # TODO Variation Selectors Supplement
+
