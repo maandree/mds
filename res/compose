@@ -600,7 +600,61 @@ end for
 # TODO Mahjong Tiles
 # TODO Domino Tiles
 # TODO Playing Cards
-# TODO Enclosed Alphanumeric Supplement
+
+# Enclosed Alphanumeric Supplement:
+<compose> "0" "." : "\u1F100"
+for "0" to "9" as \1
+  <compose> "\1" "," : "\add(\u1F101 \sub(\1 "0")"
+end for
+<compose> "(" "0" "." ")" : "\u1F10B"
+<compose> "(" "(" "(" "0" "." ")" ")" ")" : "\u1F10C"
+for "A" to "Z" as \1
+  <compose> "(" " " "\1" [" " .] ")" : "\add(\u1F110 \sub(\1 "A"))"
+  <compose> "(" "\1" " " ")"         : "\add(\u1F110 \sub(\1 "A"))"
+end for
+<compose> "[" " " "S" [" " .] "]" : "\u1F12A"
+<compose> "[" "S" " " "]"         : "\u1F12A"
+<compose> "(" "/" "C" ["/" .] ")" : "\u1F12B"
+<compose> "(" "C" "/" ")"         : "\u1F12B"
+<compose> "(" "/" "R" ["/" .] ")" : "\u1F12C"
+<compose> "(" "R" "/" ")"         : "\u1F12C"
+<compose> "(" "C" "D" ")"         : "\u1F12D"
+<compose> "(" "W" "z" ")"         : "\u1F12E"
+for "A" to "Z" as \1
+  <compose> "[" "\1" "]"                 : "\add(\u1F130 \sub(\1 "A"))"
+  <compose> "(" "(" "(" "\1" ")" ")" ")" : "\add(\u1F160 \sub(\1 "A"))"
+  <compose> "[" "[" "[" "\1" "]" "]" "]" : "\add(\u1F170 \sub(\1 "A"))"
+end for
+<compose> "[" "H" "V" "]" : "\u1F14A"
+<compose> "[" "M" "V" "]" : "\u1F14B"
+<compose> "[" "S" "D" "]" : "\u1F14C"
+<compose> "[" "S" "S" "]" : "\u1F14D"
+<compose> "[" "P" "P" "V" "]" : "\u1F14E"
+<compose> "[" "W" "C" "]" : "\u1F14F"
+<compose> "(" "M" "C" ")" : "\u1F16A"
+<compose> "(" "M" "D" ")" : "\u1F16B"
+<compose> "[" "[" "[" "X" "P" "]" "]" "]" : "\u1F18A"
+<compose> "[" "[" "[" "I" "C" "]" "]" "]" : "\u1F18B"
+<compose> "[" "[" "[" "P" "A" "]" "]" "]" : "\u1F18C"
+<compose> "[" "[" "[" "S" "A" "]" "]" "]" : "\u1F18D"
+<compose> "[" "[" "[" "A" "B" "]" "]" "]" : "\u1F18E"
+<compose> "[" "[" "[" "W" "C" "]" "]" "]" : "\u1F18F"
+<compose> "[" "D" "J" "]" : "\u1F190"
+<compose> "[" "C" "L" "]" : "\u1F191"
+<compose> "[" "C" "O" "O" "L" "]" : "\u1F192"
+<compose> "[" "F" "R" "E" "E" "]" : "\u1F193"
+<compose> "[" "I" "D" "]" : "\u1F194"
+<compose> "[" "N" "E" "W" "]" : "\u1F195"
+<compose> "[" "N" "G" "]" : "\u1F196"
+<compose> "[" "O" "K" "]" : "\u1F197"
+<compose> "[" "S" "O" "S" "]" : "\u1F198"
+<compose> "[" "U" "P" "]" : "\u1F199
+<compose> "[" "U" "P" "!" "]" : "\u1F199
+<compose> "[" "V" "S" "]" : "\u1F19A
+for "a" to "z" as \1
+  <compose> "[" "r" "\1" "]" : "\add(\u1F1E6 \sub(\1 "a"))"
+end for
+
 # TODO Enclosed Ideographic Supplement
 # TODO Miscellaneous Symbols and Pictographs
 # TODO Emoticons
