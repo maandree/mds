@@ -790,7 +790,50 @@ end for
 # TODO Arabic Mathematical Alphabetic Symbols
 # TODO Mahjong Tiles
 # TODO Domino Tiles
-# TODO Playing Cards
+
+# Playing Cards:
+<shift compose> "p" "c" : "🂠"
+dead_ascii(🂠)
+macro playing_card/2
+  <compose> (["♠" "♤"] "\1") : "\add(\u1F0A0 \2)"
+  <compose> (["♥" "♡"] "\1") : "\add(\u1F0B0 \2)"
+  <compose> (["♦" "♢"] "\1") : "\add(\u1F0C0 \2)"
+  <compose> (["♣" "♧"] "\1") : "\add(\u1F0D0 \2)"
+end macro
+for "1" to "9" as \1
+  playing_card("\1" \sub(\1 "0") 1)
+endfor
+playing_card(["a" "A"] 1)
+playing_card("0" 10)
+playing_card(["j" "J"] 11)
+playing_card(["c" "C"] 12)
+playing_card(["q" "Q"] 13)
+playing_card(["k" "K"] 14)
+<compose> "🂠" "j" "r" : "\u1F0BF"
+<compose> "🂠" "j" "b" : "\u1F0CF"
+<compose> "🂠" "j" "w" : "\u1F0DF"
+<compose> "🂠" "0" <space> : "\u1F0E0"
+<compose> "🂠" "1" <space> : "\u1F0E1"
+<compose> "🂠" "2" <space> : "\u1F0E2"
+<compose> "🂠" "3" <space> : "\u1F0E3"
+<compose> "🂠" "4" <space> : "\u1F0E4"
+<compose> "🂠" "5" <space> : "\u1F0E5"
+<compose> "🂠" "6" <space> : "\u1F0E6"
+<compose> "🂠" "7" <space> : "\u1F0E7"
+<compose> "🂠" "8" <space> : "\u1F0E8"
+<compose> "🂠" "9" <space> : "\u1F0E9"
+<compose> "🂠" "1" "0" : "\u1F0EA"
+<compose> "🂠" "1" "1" : "\u1F0EB"
+<compose> "🂠" "1" "2" : "\u1F0EC"
+<compose> "🂠" "1" "3" : "\u1F0ED"
+<compose> "🂠" "1" "4" : "\u1F0EE"
+<compose> "🂠" "1" "5" : "\u1F0EF"
+<compose> "🂠" "1" "6" : "\u1F0F0"
+<compose> "🂠" "1" "7" : "\u1F0F1"
+<compose> "🂠" "1" "8" : "\u1F0F2"
+<compose> "🂠" "1" "9" : "\u1F0F3"
+<compose> "🂠" "2" "0" : "\u1F0F4"
+<compose> "🂠" "2" "1" : "\u1F0F5"
 
 # Enclosed Alphanumeric Supplement:
 <compose> "0" "." : "\u1F100"
