@@ -1,0 +1,122 @@
+macro dead_ascii/1
+  <dead letter \1> [" " <dead letter \1>] : "\1"
+  <compose> "\1" : <dead letter \1>
+end macro
+macro dead_ascii/2
+  <dead letter \1> [" " "\2" <dead letter \1>] : "\1"
+  <compose> ["\1" "\2"] : <dead letter \1>
+end macro
+
+macro composite/3
+  <dead letter \2> "\1" : "\3"
+  <compose> "\1" "\2" : "\3"
+end macro
+macro composite/4
+  <dead letter \2> "\1" : "\4"
+  <compose> "\1" ["\2" "\3"] : "\4"
+end macro
+
+
+dead_ascii("^")
+dead_ascii("`")
+dead_ascii("~")
+<compose> "!" "!" : "¡"
+<compose> ("/" "c") : "¢"
+<compose> ("|" ["c" "L"]) : "¢"
+<compose> ("-" ["l" "L"]) : "£"
+<compose> (["o" "O"] ["x" "X"]) : "¤"
+<compose> (["-" "="] ["y" "Y"]) : "¥"
+<compose> ("!" "|") : "¦"
+<compose> (["o" "O"] ["s" "S"]) : "§"
+dead_ascii("¨", "\"")
+<compose> (["o" "O"] ["c" "C"]) : "©"
+(<compose> <dead letter ~>) "_" "a" : "ª"
+<compose> "<" "<" : "«"
+<compose> ("-" ",") : "¬"
+<compose> "-" "-" " " : "­"
+<compose> (["o" "O"] ["r" "R"]) : "®"
+<compose> "-" : <dead letter ¯>
+<compose> "o" : <dead letter °>
+dead_ascii("°")
+<compose> "+" "-" : "±"
+<dead letter ^> "2" : "²"
+<dead letter ^> "3" : "³"
+dead_ascii("´" "'")
+<compose> "m" "u" : "µ"
+<compose> ["p" "P"] ["p" "P" "!"] : "¶"
+<compose> "!" ["p" "P"] : "¶"
+<compose> "." "-" : "·"
+dead_ascii("," ",")
+<dead letter ^> "1" : "¹"
+(<compose> <dead letter ~>) "_" "o" : "º"
+<compose> ">" ">" : "»"
+<compose> "1" "4" : "¼"
+<compose> "1" "2" : "½"
+<compose> "3" "4" : "¾"
+<compose> "?" "?" : "¿"
+composite("`" "A" "À")
+composite("´" "'" "A" "Á")
+composite("~" "A" "Ã")
+composite("¨" "\"" "A" "Ä")
+<dead letter °> "A" : "Å"
+<compose> "A" "E" : "Æ"
+composite("¸" "," "C" "Ç")
+composite("`" "E" "È")
+composite("´" "'" "E" "É")
+composite("^" "E" "Ê")
+composite("¨" "\"" "E" "Ë")
+composite("`" "I" "Ì")
+composite("´" "'" "I" "Í")
+composite("^" "I" "Î")
+composite("¨" "\"" "I" "Ï")
+<compose> "-" : <dead letter ->
+composite("-" "D" "Đ")
+<compose> "/" : <dead letter />
+composite("/" "D" "Đ")
+composite("~" "N" "Ñ")
+composite("`" "O" "Ò")
+composite("´" "'" "O" "Ó")
+composite("^" "O" "Ô")
+composite("~" "O" "Õ")
+composite("¨" "\"" "O" "Ö")
+<compose> "x" "x" : "×"
+composite("/" "O" "Ø")
+composite("`" "U" "Ù")
+composite("´" "'" "U" "Ú")
+composite("^" "U" "Û")
+composite("¨" "\"" "U" "Ü")
+composite("´" "'" "Y" "Ý")
+<compose> "T" "H" : "Þ"
+<compose> "s" "s" : "ß"
+<compose> "ſ" "s" : "ß"
+composite("`" "a" "à")
+composite("´" "'" "a" "á")
+composite("~" "a" "ã")
+composite("¨" "\"" "a" "ä")
+<dead letter °> "a" : "å"
+<compose> "a" "e" : "æ"
+composite("¸" "," "c" "ç")
+composite("`" "e" "è")
+composite("´" "'" "e" "é")
+composite("^" "e" "ê")
+composite("¨" "\"" "e" "ë")
+composite("`" "i" "ì")
+composite("´" "'" "i" "í")
+composite("^" "i" "î")
+composite("¨" "\"" "i" "ï")
+composite("/" "d" "ð")
+composite("~" "n" "ñ")
+composite("`" "o" "ò")
+composite("´" "'" "o" "ó")
+composite("^" "o" "ô")
+composite("~" "o" "õ")
+composite("¨" "\"" "o" "ö")
+<compose> ":" "-" : "÷"
+composite("/" "o" "ø")
+composite("`" "u" "ù")
+composite("´" "'" "u" "ú")
+composite("^" "u" "û")
+composite("¨" "\"" "u" "ü")
+composite("´" "'" "y" "ý")
+<compose> "t" "h" : "þ"
+composite("¨" "\"" "y" "ÿ")
