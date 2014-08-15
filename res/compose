@@ -1133,9 +1133,10 @@ end for
 <shift compose> ("." "≡") : "⩧"
 <compose> "3" "#" : "⩨"
 <compose> "4" "#" : "⩩"
-
-# TODO ⩪ ⩫ ⩬ ⩭
-
+<compose> "." ["~" <dead letter ~>] : "⩪"
+<dead letter ~> "/" ":" : "⩫"
+<shift compose> ["~" <dead letter ~>] "-" ["~" <dead letter ~>] : "⩬"
+<compose> "." "≅" : "⩭"
 <shift compose> ("*" "=") : "⩮"
 <dead letter ^> "≈" : "⩯"
 <compose> "≈" ("~" <dead letter ~>) : "⩯"
@@ -1254,9 +1255,11 @@ end for
 <shift compose> "⊃" "⊃" : "⫖"
 <shift compose> "⊃" "⊂" : "⫗"
 <compose> ("-" "⫗") : "⫘"
-
-# TODO ⫙ ⫚ ⫛ ⫝̸ ⫝
-
+<compose> "⋔" "." : "⫙"
+<compose> ("∩" "Y") : "⫚"
+<compose> "⋔" "⋔" : "⫛"
+<compose> ("/" "⫝") : "⫝̸"
+<compose> ("|" "u") : "⫝"
 <compose> "." "⊣" : "⫞"
 <compose> "." "⊤" : "⫟"
 <compose> "⫠" "⫠" : "⫟"
