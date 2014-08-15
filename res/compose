@@ -31,11 +31,11 @@ end macro
 
 macro composite/3
   <dead letter \2> "\1" : "\3"
-  <compose> "\1" "\2" : "\3"
+  <compose> "\1" ["\2" <dead letter \2>] : "\3"
 end macro
 macro composite/4
   <dead letter \2> "\1" : "\4"
-  <compose> "\1" ["\2" "\3"] : "\4"
+  <compose> "\1" ["\2" <dead letter \2> "\3"] : "\4"
 end macro
 
 
@@ -1079,7 +1079,84 @@ for "\u2800" to "\u28FF" as \1
 end for
 
 # TODO Supplemental Arrows-B
-# TODO Miscellaneous Mathematical Symbols-B
+
+# Miscellaneous Mathematical Symbols-B:
+<shift compose> ":" "3" "|" : "⦀"
+<shift compose> "z" "." : "⦁"
+<shift compose> "z" ":" : "⦂"
+<compose> "{" "|" : "⦃"
+<compose> "|" "}" : "⦄"
+<shift compose> "|" "(" : "⦅"
+<shift compose> ")" "|" : "⦆"
+<shift compose> "(" "|" : "⦇"
+<shift compose> "|" ")" : "⦈"
+<compose> "⟨" "|" : "⦉"
+<compose> "|" "⟩" : "⦊"
+<compose> ("_" "[") : "⦋"
+<compose> ("_" "]") : "⦌"
+<compose> ("[" "\\") : "⦍"
+<compose> ("]" "\\") : "⦎"
+<compose> ("[" "/") : "⦏"
+<compose> ("]" "/") : "⦐"
+<compose> ("⟨" ["." "⋅"]) : "⦑"
+<compose> ("⟩" ["." "⋅"]) : "⦒"
+<shift compose> ("(" "<") : "⦓"
+<shift compose> (")" ">") : "⦔"
+<compose> (">" "⸨") : "⦕"
+<compose> ("<" "⸩") : "⦖"
+<compose> "⟬" "⟬" : "⦗"
+<compose> "⟭" "⟭" : "⦘"
+
+# TODO ⦙ ⦚ ⦛ ⦜ ⦝ ⦞ ⦟ ⦠ ⦡ ⦢ ⦣ ⦤ ⦥ ⦦ ⦧ ⦨ ⦩ ⦪ ⦫ ⦬ ⦭ ⦮ ⦯
+
+<compose> "∅" "∅" : "⦰"
+<compose> ("∅" "_") : "⦱"
+composite("∅" "°" "⦲")
+<compose> ("∅" "→") : "⦳"
+<compose> ("∅" "←") : "⦴"
+<shift compose> "(" "-" "-" ")" : "⦵"
+<shift compose> "(" "|" ")" : "⦶"
+<shift compose> "(" "|" "|" ")" : "⦷"
+<shift compose> "(" "\\" ")" : "⦸"
+<shift compose> "(" ["⟂" "⊥"] ")" : "⦹"
+<compose> "⦺" "⦺" : "⦹"
+<shift compose> "(" "⫠" ")" : "⦺"
+<compose> "⦹" "⦹" : "⦺"
+<shift compose> "(" "X" )" : "⦻"
+<shift compose> "(" "%" )" : "⦼"
+<shift compose> ("O" "↑") : "⦽"
+<shift compose> "(" "o" )" : "⦾"
+<shift compose> "(" "(" ")" )" : "⦾"
+<shift compose> "(" "(" "o" ")" )" : "⦿"
+<shift compose> "(" "(" "(" ")" ")" )" : "⦿"
+<shift compose> "(" "<" ")" : "⧀"
+<shift compose> "(" ">" ")" : "⧁"
+<shift compose> "O" "o" : "⧂"
+<shift compose> "O" "=" : "⧃"
+<shift compose> "[" "/" "]" : "⧄"
+<shift compose> "[" "\\" "]" : "⧅"
+<shift compose> "[" "*" "]" : "⧆"
+<shift compose> "[" "o" "]" : "⧇"
+<shift compose> "[" "[" "]" "]" : "⧈"
+<shift compose> "[" "]" "[" "]" : "⧉"
+<compose> (["Δ" "∆"] ".") : "⧊"
+<compose> (["Δ" "∆"] "_") : "⧋"
+<compose> (["Δ" "∆"] "s") : "⧌"
+<shift compose> (["Δ" "∆"] "_") : "⧍"
+<shift compose> "⊳" "/" "⊲" : "⧎"
+<shift compose> "⊲" "|" : "⧏"
+<shift compose> "|" "⊳" : "⧐"
+
+# TODO ⧑ ⧒ ⧓ ⧔ ⧕ ⧖ ⧗ ⧘ ⧙ ⧚ ⧛ ⧜ ⧝ ⧞ ⧟ ⧠ ⧡ ⧢ ⧣ ⧤ ⧥ ⧦ ⧧ ⧨ ⧩ ⧪ ⧫ ⧬ ⧭ ⧮ ⧯ ⧰ ⧱ ⧲ ⧳
+
+<compose> ":" "→" : "⧴"
+
+# TODO ⧵ ⧶ ⧷ ⧸ ⧹ ⧺ ⧻
+
+<shift compose> ")" "<" : "⧼"
+<shift compose> ">" "(" : "⧽"
+
+# TODO ⧾ ⧿
 
 # Supplemental Mathematical Operators:
 <compose> "⊙" "⊙" : "⨀"
