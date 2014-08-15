@@ -287,7 +287,7 @@ composite("¨" "\"" "y" "ÿ")
 <shift compose> "^" "_" : "‾"
 <shift compose> ("_" "u") : "‿"
 <shift compose> ("^" "u") : "⁀"
-<shift compose> "/" "/" : "⁁"
+<shift compose> "/" "/" "." : "⁁"
 <compose> "*" "*" : "⁂"
 <shift compose> "-" "-" : "⁃"
 <compose> "/" "/" : "⁄"
@@ -1146,13 +1146,54 @@ composite("∅" "°" "⦲")
 <shift compose> "⊳" "/" "⊲" : "⧎"
 <shift compose> "⊲" "|" : "⧏"
 <shift compose> "|" "⊳" : "⧐"
+<compose> "⧑" "⧑" : "⧒"
+<compose> "|" "⧕" : "⧒"
+<compose> "⧔" "|" : "⧑"
+<compose> "⧒" "⧒" : "⧑"
+<compose> ("⧑" "⧒") : "⧓"
+<compose> "⧕" "⧕" : "⧔"
+<shift compose> "|" ">" "<" : "⧔"
+<shift compose> ">" "<" "|" : "⧕"
+<compose> "⧔" "⧔" : "⧕"
+<compose> "⧖" "⧖" : "⧗"
+<compose> "}" "|" : "⧘"
+<compose> "|" "{" : "⧙"
+<compose> "⧘" "⧘" : "⧚"
+<compose> "⧙" "⧙" : "⧛"
 
-# TODO ⧑ ⧒ ⧓ ⧔ ⧕ ⧖ ⧗ ⧘ ⧙ ⧚ ⧛ ⧜ ⧝ ⧞ ⧟ ⧠ ⧡ ⧢ ⧣ ⧤ ⧥ ⧦ ⧧ ⧨ ⧩ ⧪ ⧫ ⧬ ⧭ ⧮ ⧯ ⧰ ⧱ ⧲ ⧳
+# TODO ⧜ ⧝ ⧞ ⧟ ⧠ ⧡ ⧢
 
+<compose> ("/" "#") : "⧣"
+<dead letter ~> "⧣" : "⧤"
+<compose> "⧣" "⧣" : "⧥"
+<shift compose> "|" "=" "|" : "⧦"
+<shift compose> "=" "|" : "⧧"
+<compose> "\\" "\\" "|" "/" : "⧨"
+<compose> "⧨" "⧨" : "⧩"
+<compose> "\\" "|" "/" "/" : "⧩"
+<compose> "⧩" "⧩" : "⧨"
+<compose> ("⧫" "↓") : "⧪"
+<shift compose> "<" "<" "<" ">" ">" ">" : "⧫"
+<shift compose> (["o" "O"] "↓") : "⧬"
+<compose> "⧬" "⧬" : "⧭"
+<shift compose> "]" "[" "[" "]" : "⧮"
+<shift compose> "[" "]" "]" "[" : "⧮"
+<compose> "⧮" "⧮" : "⧯"
+<shift compose> "]" "[" "<" ">" : "⧰"
+<shift compose> "<" ">" "]" "[" : "⧰"
+<compose> "⧰" "⧰" : "⧱"
+<shift compose> "]" "[" "(" ")" : "⧲"
+<shift compose> "(" ")" "]" "[" : "⧲"
+<shift compose> "]" "[" ["O" "o"] : "⧲"
+<shift compose> ["O" "o"] "]" "[" : "⧲"
+<compose> "⧲" "⧲" : "⧳"
 <compose> ":" "→" : "⧴"
 
-# TODO ⧵ ⧶ ⧷ ⧸ ⧹ ⧺ ⧻
+# TODO ⧵ ⧶ ⧷ ⧸ ⧹
 
+<shift compose> "-" "|" "-" "|" "-" : "⧺"
+<shift compose> "-" "|" "|" "|" "-" : "⧻"
+<compose> "⧺" "⧺" : "⧻"
 <shift compose> ")" "<" : "⧼"
 <shift compose> ">" "(" : "⧽"
 
@@ -1439,7 +1480,7 @@ composite("∅" "°" "⦲")
 <compose> "⫭" "⫭" : "⫬"
 <compose> "⊨" "." : "⫭"
 <compose> "⫬" "⫬" : "⫭"
-<compose> "\\" "|" : "⫮"
+<shift compose> "\\" "|" : "⫮"
 <shift compose> "o" "|" : "⫯"
 <compose> "⫰" "⫰" : "⫯"
 <shift compose> "|" "o" : "⫰"
@@ -1465,7 +1506,7 @@ composite("∅" "°" "⦲")
 <shift compose> "/" "/" <space> : "⫽"
 <shift compose> "." "[" "]" : "⫾"
 <compose> "." "⫿" : "⫾"
-<shift compose> "[" "]" : "⫿"
+<shift compose> "[" "]" "|" : "⫿"
 
 # TODO Miscellaneous Symbols and Arrows
 # TODO Glagolitic
