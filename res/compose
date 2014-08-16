@@ -2371,7 +2371,156 @@ end for
 <shift compose> "s" "2" "*" "*" : "\u1F7D3"
 <shift compose> "s" "0" "*" "*" : "\u1F7D4"
 
-# TODO Supplemental Arrows-C
+# Supplemental Arrows-C:
+<shift compose> "1" "←" : "\u1F800" #  leftwards arrow with small triangle arrowhead
+<shift compose> "1" "↑" : "\u1F801" #    upwards arrow with small triangle arrowhead
+<shift compose> "1" "→" : "\u1F802" # rightwards arrow with small triangle arrowhead
+<shift compose> "1" "↓" : "\u1F803" #  downwards arrow with small triangle arrowhead
+<shift compose> "2" "←" : "\u1F804" #  leftwards arrow with medium triangle arrowhead
+<shift compose> "2" "↑" : "\u1F805" #    upwards arrow with medium triangle arrowhead
+<shift compose> "2" "→" : "\u1F806" # rightwards arrow with medium triangle arrowhead
+<shift compose> "2" "↓" : "\u1F807" #  downwards arrow with medium triangle arrowhead
+<shift compose> "3" "←" : "\u1F808" #  leftwards arrow with large triangle arrowhead
+<shift compose> "3" "↑" : "\u1F809" #    upwards arrow with large triangle arrowhead
+<shift compose> "3" "→" : "\u1F80A" # rightwards arrow with large triangle arrowhead
+<shift compose> "3" "↓" : "\u1F80B" #  downwards arrow with large triangle arrowhead
+<shift compose> "1" "=" "←" : "\u1F810" #  leftwards arrow with small equilateral arrowhead
+<shift compose> "1" "=" "↑" : "\u1F811" #    upwards arrow with small equilateral arrowhead
+<shift compose> "1" "=" "→" : "\u1F812" # rightwards arrow with small equilateral arrowhead
+<shift compose> "1" "=" "↓" : "\u1F813" #  downwards arrow with small equilateral arrowhead
+<shift compose> "2" "=" "←" : "\u1F814" #  leftwards arrow with equilateral arrowhead
+<shift compose> "2" "=" "↑" : "\u1F815" #    upwards arrow with equilateral arrowhead
+<shift compose> "2" "=" "→" : "\u1F816" # rightwards arrow with equilateral arrowhead
+<shift compose> "2" "=" "↓" : "\u1F817" #  downwards arrow with equilateral arrowhead
+<shift compose> "4" "=" "←" : "\u1F818" # heavy  leftwards arrow with equilateral arrowhead
+<shift compose> "4" "=" "↑" : "\u1F819" # heavy    upwards arrow with equilateral arrowhead
+<shift compose> "4" "=" "→" : "\u1F81A" # heavy rightwards arrow with equilateral arrowhead
+<shift compose> "4" "=" "↓" : "\u1F81B" # heavy  downwards arrow with equilateral arrowhead
+<shift compose> "5" "=" "←" : "\u1F81C" # heavy  leftwards arrow with large equilateral arrowhead
+<shift compose> "5" "=" "↑" : "\u1F81D" # heavy    upwards arrow with large equilateral arrowhead
+<shift compose> "5" "=" "→" : "\u1F81E" # heavy rightwards arrow with large equilateral arrowhead
+<shift compose> "5" "=" "↓" : "\u1F81F" # heavy  downwards arrow with large equilateral arrowhead
+<shift compose> "1" "-" "←" : "\u1F820" #  leftwards triangle-headed arrow with narrow shaft
+<shift compose> "1" "-" "↑" : "\u1F821" #    upwards triangle-headed arrow with narrow shaft
+<shift compose> "1" "-" "→" : "\u1F822" # rightwards triangle-headed arrow with narrow shaft
+<shift compose> "1" "-" "↓" : "\u1F823" #  downwards triangle-headed arrow with narrow shaft
+<shift compose> "2" "-" "←" : "\u1F824" #  leftwards triangle-headed arrow with medium shaft
+<shift compose> "2" "-" "↑" : "\u1F825" #    upwards triangle-headed arrow with medium shaft
+<shift compose> "2" "-" "→" : "\u1F826" # rightwards triangle-headed arrow with medium shaft
+<shift compose> "2" "-" "↓" : "\u1F827" #  downwards triangle-headed arrow with medium shaft
+<shift compose> "3" "-" "←" : "\u1F828" #  leftwards triangle-headed arrow with bold shaft
+<shift compose> "3" "-" "↑" : "\u1F829" #    upwards triangle-headed arrow with bold shaft
+<shift compose> "3" "-" "→" : "\u1F82A" # rightwards triangle-headed arrow with bold shaft
+<shift compose> "3" "-" "↓" : "\u1F82B" #  downwards triangle-headed arrow with bold shaft
+<shift compose> "4" "-" "←" : "\u1F82C" #  leftwards triangle-headed arrow with heavy shaft
+<shift compose> "4" "-" "↑" : "\u1F82D" #    upwards triangle-headed arrow with heavy shaft
+<shift compose> "4" "-" "→" : "\u1F82E" # rightwards triangle-headed arrow with heavy shaft
+<shift compose> "4" "-" "↓" : "\u1F82F" #  downwards triangle-headed arrow with heavy shaft
+<shift compose> "5" "-" "←" : "\u1F830" #  leftwards triangle-headed arrow with very heavy shaft
+<shift compose> "5" "-" "↑" : "\u1F831" #    upwards triangle-headed arrow with very heavy shaft
+<shift compose> "5" "-" "→" : "\u1F832" # rightwards triangle-headed arrow with very heavy shaft
+<shift compose> "5" "-" "↓" : "\u1F833" #  downwards triangle-headed arrow with very heavy shaft
+<shift compose> "←" "f" : "\u1F834" #  leftwards finger-post arrow
+<shift compose> "↑" "f" : "\u1F835" #    upwards finger-post arrow
+<shift compose> "→" "f" : "\u1F836" # rightwards finger-post arrow
+<shift compose> "↓" "f" : "\u1F837" #  downwards finger-post arrow
+<shift compose> "←" "s" : "\u1F838" #  leftwards squared arrow
+<shift compose> "↑" "s" : "\u1F839" #    upwards squared arrow
+<shift compose> "→" "s" : "\u1F83A" # rightwards squared arrow
+<shift compose> "↓" "s" : "\u1F83B" #  downwards squared arrow
+<shift compose> "2" "|" "←" : "\u1F83C" #  leftwards compressed arrow
+<shift compose> "2" "|" "↑" : "\u1F83D" #    upwards compressed arrow
+<shift compose> "2" "|" "→" : "\u1F83E" # rightwards compressed arrow
+<shift compose> "2" "|" "↓" : "\u1F83F" #  downwards compressed arrow
+<shift compose> "4" "|" "←" : "\u1F840" #  leftwards heavy compressed arrow
+<shift compose> "4" "|" "↑" : "\u1F841" #    upwards heavy compressed arrow
+<shift compose> "4" "|" "→" : "\u1F842" # rightwards heavy compressed arrow
+<shift compose> "4" "|" "↓" : "\u1F843" #  downwards heavy compressed arrow
+<shift compose> "4" "←" : "\u1F844" #  leftwards heavy arrow
+<shift compose> "4" "↑" : "\u1F845" #    upwards heavy arrow
+<shift compose> "4" "→" : "\u1F846" # rightwards heavy arrow
+<shift compose> "4" "↓" : "\u1F847" #  downwards heavy arrow
+<shift compose> "s" "s" "←" : "\u1F850" #  leftwards sans-serif arrow
+<shift compose> "s" "s" "↑" : "\u1F851" #    upwards sans-serif arrow
+<shift compose> "s" "s" "→" : "\u1F852" # rightwards sans-serif arrow
+<shift compose> "s" "s" "↓" : "\u1F853" #  downwards sans-serif arrow
+<shift compose> "s" "s" "↗" : "\u1F854" # north west sans-serif arrow
+<shift compose> "s" "s" "↖" : "\u1F855" # north east sans-serif arrow
+<shift compose> "s" "s" "↙" : "\u1F856" # south east sans-serif arrow
+<shift compose> "s" "s" "↘" : "\u1F857" # south west sans-serif arrow
+<shift compose> "s" "s" "↔" : "\u1F858" # left right sans-serif arrow
+<shift compose> "s" "s" "↕" : "\u1F859" #    up down sans-serif arrow
+<shift compose> "1" "b" "←" : "\u1F860" # wide-headed  leftwards light barb arrow
+<shift compose> "1" "b" "↑" : "\u1F861" # wide-headed    upwards light barb arrow
+<shift compose> "1" "b" "→" : "\u1F862" # wide-headed rightwards light barb arrow
+<shift compose> "1" "b" "↓" : "\u1F863" # wide-headed  downwards light barb arrow
+<shift compose> "1" "b" "↗" : "\u1F864" # wide-headed north west light barb arrow
+<shift compose> "1" "b" "↖" : "\u1F865" # wide-headed north east light barb arrow
+<shift compose> "1" "b" "↙" : "\u1F866" # wide-headed south east light barb arrow
+<shift compose> "1" "b" "↘" : "\u1F867" # wide-headed south west light barb arrow
+<shift compose> "2" "b" "←" : "\u1F868" # wide-headed  leftwards barb arrow
+<shift compose> "2" "b" "↑" : "\u1F869" # wide-headed    upwards barb arrow
+<shift compose> "2" "b" "→" : "\u1F86A" # wide-headed rightwards barb arrow
+<shift compose> "2" "b" "↓" : "\u1F86B" # wide-headed  downwards barb arrow
+<shift compose> "2" "b" "↗" : "\u1F86C" # wide-headed north west barb arrow
+<shift compose> "2" "b" "↖" : "\u1F86D" # wide-headed north east barb arrow
+<shift compose> "2" "b" "↙" : "\u1F86E" # wide-headed south east barb arrow
+<shift compose> "2" "b" "↘" : "\u1F86F" # wide-headed south west barb arrow
+<shift compose> "3" "b" "←" : "\u1F870" # wide-headed  leftwards medium barb arrow
+<shift compose> "3" "b" "↑" : "\u1F871" # wide-headed    upwards medium barb arrow
+<shift compose> "3" "b" "→" : "\u1F872" # wide-headed rightwards medium barb arrow
+<shift compose> "3" "b" "↓" : "\u1F873" # wide-headed  downwards medium barb arrow
+<shift compose> "3" "b" "↗" : "\u1F874" # wide-headed north west medium barb arrow
+<shift compose> "3" "b" "↖" : "\u1F875" # wide-headed north east medium barb arrow
+<shift compose> "3" "b" "↙" : "\u1F876" # wide-headed south east medium barb arrow
+<shift compose> "3" "b" "↘" : "\u1F877" # wide-headed south west medium barb arrow
+<shift compose> "4" "b" "←" : "\u1F878" # wide-headed  leftwards heavy barb arrow
+<shift compose> "4" "b" "↑" : "\u1F879" # wide-headed    upwards heavy barb arrow
+<shift compose> "4" "b" "→" : "\u1F87A" # wide-headed rightwards heavy barb arrow
+<shift compose> "4" "b" "↓" : "\u1F87B" # wide-headed  downwards heavy barb arrow
+<shift compose> "4" "b" "↗" : "\u1F87C" # wide-headed north west heavy barb arrow
+<shift compose> "4" "b" "↖" : "\u1F87D" # wide-headed north east heavy barb arrow
+<shift compose> "4" "b" "↙" : "\u1F87E" # wide-headed south east heavy barb arrow
+<shift compose> "4" "b" "↘" : "\u1F87F" # wide-headed south west heavy barb arrow
+<shift compose> "5" "b" "←" : "\u1F880" # wide-headed  leftwards very heavy barb arrow
+<shift compose> "5" "b" "↑" : "\u1F881" # wide-headed    upwards very heavy barb arrow
+<shift compose> "5" "b" "→" : "\u1F882" # wide-headed rightwards very heavy barb arrow
+<shift compose> "5" "b" "↓" : "\u1F883" # wide-headed  downwards very heavy barb arrow
+<shift compose> "5" "b" "↗" : "\u1F884" # wide-headed north west very heavy barb arrow
+<shift compose> "5" "b" "↖" : "\u1F885" # wide-headed north east very heavy barb arrow
+<shift compose> "5" "b" "↙" : "\u1F886" # wide-headed south east very heavy barb arrow
+<shift compose> "5" "b" "↘" : "\u1F887" # wide-headed south west very heavy barb arrow
+<shift compose> "←" "h" : "\u1F890" #  leftwards triangle arrowhead
+<shift compose> "↑" "h" : "\u1F891" #    upwards triangle arrowhead
+<shift compose> "→" "h" : "\u1F892" # rightwards triangle arrowhead
+<shift compose> "↓" "h" : "\u1F893" #  downwards triangle arrowhead
+<shift compose> "←" "H" : "\u1F894" #  leftwards white arrow within triangle arrowhead
+<shift compose> "↑" "H" : "\u1F895" #    upwards white arrow within triangle arrowhead
+<shift compose> "→" "H" : "\u1F896" # rightwards white arrow within triangle arrowhead
+<shift compose> "↓" "H" : "\u1F897" #  downwards white arrow within triangle arrowhead
+<shift compose> "←" "N" : "\u1F898" #  leftwards arrow with notched tail
+<shift compose> "↑" "N" : "\u1F899" #    upwards arrow with notched tail
+<shift compose> "→" "N" : "\u1F89A" # rightwards arrow with notched tail
+<shift compose> "↓" "N" : "\u1F89B" #  downwards arrow with notched tail
+<shift compose> ["←" "↔" "→"] "-" "4" : "\u1F89C" # heavy arrow shaft width one
+<shift compose> ["←" "↔" "→"] "-" "3" : "\u1F89D" # heavy arrow shaft width two thirds
+<shift compose> ["←" "↔" "→"] "-" "2" : "\u1F89E" # heavy arrow shaft width one half
+<shift compose> ["←" "↔" "→"] "-" "1" : "\u1F89F" # heavy arrow shaft width one third
+<shift compose> "←" "s" "↓" : "\u1F8A0" #  leftwards bottom-shaded white arrow
+<shift compose> "→" "s" "↓" : "\u1F8A1" # rightwards bottom-shaded white arrow
+<shift compose> "←" "s" "↑" : "\u1F8A2" #  leftwards    top-shaded white arrow
+<shift compose> "→" "s" "↑" : "\u1F8A3" # rightwards    top-shaded white arrow
+<shift compose> "←" "s" "←" : "\u1F8A4" #  leftwards   left-shaded white arrow
+<shift compose> "→" "s" "→" : "\u1F8A5" # rightwards  right-shaded white arrow
+<shift compose> "←" "s" "→" : "\u1F8A6" #  leftwards  right-shaded white arrow
+<shift compose> "→" "s" "←" : "\u1F8A7" # rightwards   left-shaded white arrow
+<shift compose> "←" "s" ["↙" "↘"] : "\u1F8A8" #  leftwards   back-tilted shadowed white arrow
+<shift compose> "→" "s" ["↙" "↘"] : "\u1F8A9" # rightwards   back-tilted shadowed white arrow
+<shift compose> "←" "s" ["↖" "↗"] : "\u1F8AA" #  leftwards  front-tilted shadowed white arrow
+<shift compose> "→" "s" ["↖" "↗"] : "\u1F8AB" # rightwards  front-tilted shadowed white arrow
+<shift compose> ["←" "↔" "→"] "=" "4" : "\u1F8AC" # white arrow shaft width one
+<shift compose> ["←" "↔" "→"] "=" "3" : "\u1F8AD" # white arrow shaft width two thirds
+
 # TODO CJK Unified Ideographs Extension B
 # TODO CJK Unified Ideographs Extension C
 # TODO CJK Unified Ideographs Extension D
