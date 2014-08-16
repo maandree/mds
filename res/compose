@@ -1106,8 +1106,23 @@ end for
 <compose> ("<" "⸩") : "⦖"
 <compose> "⟬" "⟬" : "⦗"
 <compose> "⟭" "⟭" : "⦘"
+<shift compose> ":" ":" "|" : "⦙"
+<compose> ("⧘" "⧙") : "⦚"
+<compose> "}" "{" : "⦚"
+<compose> ("(" ["⦣" "⦣"]) : "⦛"
+<compose> ("∟" "]") : "⦜"
+<compose> ("∟" ".") : "⦝"
+<compose> (["∠" "⦟"] "s") : "⦞"
 
-# TODO ⦙ ⦚ ⦛ ⦜ ⦝ ⦞ ⦟ ⦠ ⦡ ⦢ ⦣ ⦤ ⦥ ⦦ ⦧ ⦨ ⦩ ⦪ ⦫ ⦬ ⦭ ⦮ ⦯
+# TODO ⦟ ⦠ ⦡ ⦢ ⦣
+
+<compose> ("_" ["⦣" "⦣"]) : "⦤"
+<compose> ("_" ["∠" "⦟"]) : "⦥"
+<shift compose> "\\" "_" : "⦦"
+<shift compose> "/" ["^" <dead letter ~>] "_" : "⦧"
+<shift compose> "/" "¯" : "⦧"
+
+# TODO ⦨ ⦩ ⦪ ⦫ ⦬ ⦭ ⦮ ⦯  (⩗⩘∟∠∡⦛)
 
 <compose> "∅" "∅" : "⦰"
 <compose> ("∅" "_") : "⦱"
@@ -1160,17 +1175,23 @@ composite("∅" "°" "⦲")
 <compose> "|" "{" : "⧙"
 <compose> "⧘" "⧘" : "⧚"
 <compose> "⧙" "⧙" : "⧛"
-
-# TODO ⧜ ⧝ ⧞ ⧟ ⧠ ⧡ ⧢
-
+<shift compose> "o" "-" "u" : "⧜"
+<shift compose> "o" "°" "o" : "⧝"
+<shift compose> "o" "|" "o" : "⧞"
+<shift compose> "o" "-" "o" : "⧟"
+<compose> "⧉" "⧉" : "⧠"
+<shift compose> "[" "[" "]" <space> : "⧠"
+<compose> "⦤" "|" : "⧡"
+<shift compose> "w" "w" : "⧢"
+<shift compose> "W" "W" : "⧢"
 <compose> ("/" "#") : "⧣"
 <dead letter ~> "⧣" : "⧤"
 <compose> "⧣" "⧣" : "⧥"
 <shift compose> "|" "=" "|" : "⧦"
 <shift compose> "=" "|" : "⧧"
-<compose> "\\" "\\" "|" "/" : "⧨"
+<compose> "+" "\\" "\\" "|" "/" : "⧨"
 <compose> "⧨" "⧨" : "⧩"
-<compose> "\\" "|" "/" "/" : "⧩"
+<compose> "+" "\\" "|" "/" "/" : "⧩"
 <compose> "⧩" "⧩" : "⧨"
 <compose> ("⧫" "↓") : "⧪"
 <shift compose> "<" "<" "<" ">" ">" ">" : "⧫"
@@ -1188,16 +1209,22 @@ composite("∅" "°" "⦲")
 <shift compose> ["O" "o"] "]" "[" : "⧲"
 <compose> "⧲" "⧲" : "⧳"
 <compose> ":" "→" : "⧴"
-
-# TODO ⧵ ⧶ ⧷ ⧸ ⧹
-
+<compose> "\\" "\\" : "⧵"
+<compose> ("_" "∕") : "⧶"
+<shift compose> ("-" "\\") : "⧷"
+<compose> "⟋" "⟋" : "⧸"
+<compose> "∕" "∕" : "⧸"
+<compose> "⟍" "⟍" : "⧹"
+<compose> "⧵" "⧵" : "⧸"
 <shift compose> "-" "|" "-" "|" "-" : "⧺"
 <shift compose> "-" "|" "|" "|" "-" : "⧻"
 <compose> "⧺" "⧺" : "⧻"
 <shift compose> ")" "<" : "⧼"
 <shift compose> ">" "(" : "⧽"
-
-# TODO ⧾ ⧿
+<shift compose> "+" "+" : "⧾"
+<compose> "⧿" "⧿" : "⧾"
+<shift compose> "−" "−" : "⧿"
+<compose> "⧾" "⧾" : "⧿"
 
 # Supplemental Mathematical Operators:
 <compose> "⊙" "⊙" : "⨀"
@@ -1496,7 +1523,7 @@ composite("∅" "°" "⦲")
 <compose> "3" "|" : "⫴"
 <compose> ("-" "⫴") : "⫵"
 <compose> "-" "3" "|" : "⫵"
-<shift compose> "." ":" "|" : "⫶"
+<shift compose> ("." ":") "|" : "⫶"
 <shift compose> "." "<" "<" "<" : "⫷"
 <shift compose> "." ">" ">" ">" : "⫸"
 <compose> "<" "=" : "⫹"
