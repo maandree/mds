@@ -425,8 +425,8 @@ composite("→" "~" "↝")
 <compose> "↱" ↱" : "↳"
 <compose> "-" "↘" : "↴ "
 <compose> "." "↲" : "↵"
-<compose> (["(" ")"] "↙") : "↶"
-<compose> (["(" ")"] "↘") : "↷"
+<shift compose> ("n" "↙") : "↶"
+<shift compose> ("n" "↘") : "↷"
 <dead letter ^> "_" "↖" : "↸"
 <dead letter ¯> "↖" : "↸"
 <compose> "¯" "↖" : "↸"
@@ -1312,8 +1312,8 @@ dead_ascii("▐")
 <compose> ")" "|" : "⟯"
 
 # Supplemental Arrows-A:
-<compose> "⇑" "⇑" : "⟰"
-<compose> "⇓" "⇓" : "⟱"
+<compose> "⤊" "⤊" : "⟰"
+<compose> "⤋" "⤋" : "⟱"
 <compose> ("↶" ["O" "o"]) : "⟲"
 <compose> "↺" "↺" : "⟲"
 <compose> ("↷" ["O" "o"]) : "⟳"
@@ -1384,7 +1384,77 @@ for "\u2800" to "\u28FF" as \1
   end for
 end for
 
-# TODO Supplemental Arrows-B: ⤀⤁⤂⤃⤄⤅⤆⤇⤈⤉⤊⤋⤌⤍⤎⤏⤐⤑⤒⤓⤔⤕⤖⤗⤘⤙⤚⤛⤜⤝⤞⤟⤠⤡⤢⤣⤤⤥⤦⤧⤨⤩⤪⤫⤬⤭⤮⤯⤰⤱⤲⤳⤴⤵⤶⤷⤸⤹⤺⤻⤼⤽⤾⤿⥀⥁⥂⥃⥄⥅⥆⥇⥈⥉⥊⥋⥌⥍⥎⥏⥐⥑⥒⥓⥔⥕⥖⥗⥘⥙⥚⥛⥜⥝⥞⥟⥠⥡⥢⥣⥤⥥⥦⥧⥨⥩⥪⥫⥬⥭⥮⥯⥰⥱⥲⥳⥴⥵⥶⥷⥸⥹⥺⥻⥼⥽⥾⥿
+# Supplemental Arrows-B:
+# TODO ⤀ ⤁ ⤂ ⤃ ⤄ ⤅ ⤆ ⤇ ⤈ ⤉
+<compose> "⇑" "⇑" : "⤊"
+<compose> "⇓" "⇓" : "⤋"
+# TODO ⤌ ⤍ ⤎ ⤏ ⤐ ⤑ ⤒ ⤓ ⤔ ⤕ ⤖ ⤗ ⤘
+<shift compose> "-" "-" "<" : "⤙"
+<shift compose> ">" "-" "-" : "⤚"
+<shift compose> "⤙" ["<" "⤙"] : "⤛"
+<shift compose> [">" "⤚"] "⤚" : "⤜"
+# TODO ⤝ ⤞
+<compose> "⤝" "|" : "⤟"
+<compose> "|" "⤞" : "⤠"
+<shift compose> "↖" "↘" : "⤡"
+<shift compose> "↙" "↗" : "⤢"
+<compose> ")" "↖" : "⤣"
+<compose> "↗" "(" : "⤤"
+<compose> "↘" "(" : "⤥"
+<compose> ")" "↙" : "⤦"
+<compose> "↖" "↗" "⤧"
+<compose> "↗" "↘" "⤨"
+<compose> "↘" "↙" "⤩"
+<compose> "↙" "↖" "⤪"
+# TODO ⤫ ⤬
+<compose> "⤬" "⤨" : "⤭"
+<compose> "⤬" ("↗" "↘") : "⤭"
+<shift compose> "↗" "↘" : "⤭"
+<compose> "⤫" "⤨" : "⤮"
+<compose> "⤫" ("↗" "↘") : "⤮"
+<shift compose> "↘" "↗" : "⤮"
+<compose> "⤬" "↗" : "⤯"
+<shift compose> "↗" "\\" : "⤯"
+<compose> "⤫" "↘" : "⤰"
+<shift compose> "↘" "/" : "⤰"
+<compose> "⤫" "⤧" : "⤱"
+<compose> "⤫" "(↖" "↗") : "⤱"
+<shift compose> "↖" "↗" : "⤱"
+<compose> "⤬" "⤧" : "⤲"
+<compose> "⤬" "(↖" "↗") : "⤱"
+<shift compose> "↗" "↖" : "⤱"
+# TODO ⤳ ⤴ ⤵ ⤶ ⤷
+<compose> (")" "↓") : "⤸"
+<compose> ("(" "↓") : "⤹"
+<shift compose> ("n" "←") : "⤺"
+<shift compose> ("u" "→") : "⤻"
+# TODO ⤼ ⤽ ⤾ ⤿ ⥀ ⥁ ⥂ ⥃ ⥄ ⥅ ⥆ ⥇ ⥈ ⥉
+<shift compose> "↼" "⇁" : "⥊"
+<shift compose> "↽" "⇀" : "⥋"
+<shift compose> "↾" "⇃" : "⥌"
+<shift compose> "↿" "⇂" : "⥍"
+<shift compose> "↼" "⇀" : "⥎"
+<shift compose> "↾" "⇂" : "⥏"
+<shift compose> "↽" "⇁" : "⥐"
+<shift compose> "↿" "⇃" : "⥑"
+<compose> "|" "↼" : "⥒"
+<compose> "⇀" "|" : "⥓"
+# TODO ⥔ ⥕ ⥖ ⥗ ⥘ ⥙ ⥚ ⥛ ⥜ ⥝ ⥞ ⥟ ⥠ ⥡
+<compose> "↼" "↽" : "⥢"
+<compose> "↿" "↾" : "⥣"
+<compose> "⇀" "⇁" : "⥤"
+<compose> "⇃" "⇂" : "⥥"
+<compose> "↼" "⇀" : "⥦"
+<compose> "↽" "⇁" : "⥧"
+<compose> "⇀" "↼" : "⥨"
+<compose> "⇁" "↽" : "⥩"
+<compose> "↼" "-" : "⥪"
+<compose> "↽" "-" : "⥫"
+<compose> "-" "⇀" : "⥬"
+<compose> "-" "⇁" : "⥭"
+<compose> "↿" "⇂" : "⥮"
+<compose> "⇃" "↾" : "⥯"
+# TODO ⥰ ⥱ ⥲ ⥳ ⥴ ⥵ ⥶ ⥷ ⥸ ⥹ ⥺ ⥻ ⥼ ⥽ ⥾ ⥿
 
 # Miscellaneous Mathematical Symbols-B:
 <shift compose> ":" "3" "|" : "⦀"
