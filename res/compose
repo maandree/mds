@@ -1311,7 +1311,32 @@ dead_ascii("▐")
 <compose> "|" "(" : "⟮"
 <compose> ")" "|" : "⟯"
 
-# TODO Supplemental Arrows-A: ⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿
+# Supplemental Arrows-A:
+<compose> "⇑" "⇑" : "⟰"
+<compose> "⇓" "⇓" : "⟱"
+<compose> ("↶" ["O" "o"]) : "⟲"
+<compose> "↺" "↺" : "⟲"
+<compose> ("↷" ["O" "o"]) : "⟳"
+<compose> "↻" "↻" : "⟳"
+<compose> ("O" "→") : "⟴"
+<compose> "⇴" "⇴" : "⟴"
+<compose> ("|" "⇴") : "⟴"
+<compose> "←" "-" : "⟵"
+<compose> "-" "→" : "⟶"
+<compose> "⟵" "⟶" : "⟷"
+<compose> "⇐" "=" : "⟸"
+<compose> "=" "⇒" : "⟹"
+<compose> "⟸" "⟹" : "⟺"
+<compose> "↤" "↤" : "⟻"
+<compose> "⟵" "|" : "⟻"
+<compose> "↦" "↦" : "⟼"
+<compose> "|" "⟶" : "⟼"
+<compose> "⟸" "|" : "⟽"
+<compose> "|" "⟹" : "⟾"
+<compose> "⇝" "⇝" : "⟿"
+<compose> "←" "|" : "↤"
+<compose> ("-" "↑") : "↥"
+<compose> "|" "→" : "↦"
 
 # Braille Patterns:
 function braille/1
