@@ -113,10 +113,9 @@ caps("-" "ø" "Ø")
 nocaps("ö" "|" "¦")
 nocaps("ä" "«" "ª")
 nocaps("q" "»" "º")
-<altgr letter j> : "©"
-<altgr shift letter j> : <void>
+caps("j" "π" "Π")
 <altgr letter k> : "ĸ"
-<altgr shift letter k> : <void>
+<altgr shift letter k> : "©"
 nocaps("x" "‘" "“")
 nocaps("b" "’" "”")
 caps("m" "µ" "º")

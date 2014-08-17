@@ -114,8 +114,8 @@ key("<" ">" "|" "¦")
 <altgr "o"> : "œ"
 <altgr "O"> : "Œ"
 
-<altgr letter p> : <void>
-<altgr shift letter p> : <void>
+<altgr "p"> : "π"
+<altgr "P"> : "Π"
 
 <altgr letter å> : <dead letter °>
 <altgr shift letter å> : <void>

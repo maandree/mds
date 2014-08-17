@@ -120,6 +120,9 @@ key("<" ">" "|" "¦")
 <altgr letter i> : "→"
 <altgr shift letter i> : "←"
 
+<altgr "p"> : "π"
+<altgr "P"> : "Π"
+
 
 <altgr "a"> : "à"
 <altgr "A"> : "À"
