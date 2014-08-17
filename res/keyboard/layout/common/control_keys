@@ -30,7 +30,8 @@
 <keycode 119> : <break>
 
 <keycode 14> : <backspace>
-<altgr shift keycode 14> : " "
+<altgr keycode 14> : " "
+<altgr shift keycode 14> : "\u202F" # Narrow no-break space
 <keycode 28> : <return>
 <keycode 54> : <right shift>
 <keycode 97> : <right ctrl>
