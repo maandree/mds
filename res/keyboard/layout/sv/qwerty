@@ -4,8 +4,8 @@ information
   variant "QWERTY"
 end information
 
-include "common/qwerty"
-include "common/base"
+include "../common/qwerty"
+include "../common/base"
 
 
 function comma/0

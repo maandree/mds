@@ -4,8 +4,8 @@ information
   variant "Dvorak"
 end information
 
-include "common/dvorak"
-include "common/base"
+include "../common/dvorak"
+include "../common/base"
 
 
 function comma/0
