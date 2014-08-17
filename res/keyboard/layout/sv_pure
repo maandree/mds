@@ -1,0 +1,194 @@
+information
+  language "Swedish"
+  country "Sweden"
+  variant "WERTY, pure"
+end information
+
+# This variant is intended to increase the
+# type speed when writing purely Swedish text.
+
+
+include "common/qwerty"
+include "common/base"
+
+
+function comma/0
+  ","
+end function
+function altcomma/0
+  "."
+end function
+
+macro mod_letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+mod_letter("å" "Å")
+mod_letter("ä" "Ä")
+mod_letter("ö" "Ö")
+
+<keycode 41> : <letter §>
+<keycode 12> : <letter +>
+<keycode 13> : <letter ´>
+<keycode 26> : <letter å>
+<keycode 27> : <letter ¨>
+<keycode 39> : <letter ö>
+<keycode 40> : <letter ä>
+<keycode 43> : <letter '>
+<keycode 86> : <letter <>
+<keycode 51> : <letter ,>
+<keycode 52> : <letter .>
+<keycode 53> : <letter ->
+
+
+macro key/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : <void>
+  <altgr shift letter \1> : <void>
+end macro
+
+macro key/3
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : <void>
+end macro
+
+macro key/4
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : "\4"
+end macro
+
+
+key("§" "½" "¶")
+key("1" "!" "‽")
+key("2" "\"" "@" "”")
+key("3" "#" "¾")
+key("4" "¤" "¼")
+key("5" "%" "‰")
+key("6" "&")
+key("7" "/" "{" "÷")
+key("8" "(" "[" "»")
+key("9" ")" "]" "»")
+key("0" "=" "}" "°")
+key("+" "?" "\\" "⸮")
+<letter ´> : "´"
+<shift letter ´> : "`"
+<altgr letter ´> : "±"
+<altgr shift letter ´> : "¬"
+
+<letter ¨> : "¨"
+<shift letter ¨> : "^"
+<altgr letter ¨> : "~"
+
+key("'" "*" "’" "×")
+key("<" ">" "|" "¦")
+
+<letter ,> : ","
+<shift letter ,> : ";"
+
+<letter .> : "."
+<shift letter .> : ":"
+<altgr letter .> : "»"
+
+<letter -> : "-"
+<shift letter -> : "_"
+<altgr letter -> : "–"
+<altgr shift letter -> : "—"
+
+
+<letter q> : "©"
+<caps letter q> : "©"
+<shift letter q> : "®"
+<caps shift letter q> : "®"
+
+<altgr "e"> : "é"
+<altgr "E"> : "É"
+
+<altgr "y"> : "ü"
+<altgr "Y"> : "Ü"
+
+<altgr letter u> : "↓"
+<altgr shift letter u> : "↑"
+
+<altgr letter i> : "→"
+<altgr shift letter i> : "←"
+
+
+<altgr "a"> : "à"
+<altgr "A"> : "À"
+
+<altgr "s"> : "z"
+<altgr "S"> : "Z"
+
+<altgr "g"> : "ng"
+<altgr "G"> : "gn"
+
+<altgr "k"> : "q"
+<altgr "K"> : "Q"
+
+
+<letter z> : "’"
+<caps letter z> : "’"
+<shift letter z> : "»"
+<caps shift letter z> : "»"
+<altgr letter z> : "”"
+<altgr shift letter z> : <void>
+
+<altgr "v"> : "w"
+<altgr "V"> : "W"
+
+<altgr letter m> : "µ"
+<shift altgr letter m> : "Ω"
+
+
+<hyper ":"> : "ː"
+<hyper altgr ":"> : "ˑ"
+<hyper altgr "."> : "˘"
+<hyper "."> : "."
+<hyper "'"> : "ˈ"
+<hyper ","> : "ˌ"
+<hyper "A"> : "ɑː"
+<hyper "a"> : "a"
+<hyper "E"> : "eː"
+<hyper "e"> : "e"
+<hyper "I"> : "iː"
+<hyper "i"> : "ɪ"
+<hyper "O"> : "uː"
+<hyper "o"> : "ʊ"
+<hyper "Y"> : "yː"
+<hyper "y"> : "ʏ"
+<hyper "U"> : "ʉ̟ː"
+<hyper "u"> : "ɵ"
+<hyper "Å"> : "oː"
+<hyper "å"> : "ɔ"
+<hyper "Ä"> : "æː"
+<hyper "ä"> : "æ"
+<hyper "Ä"> : "ɛː"
+<hyper "ä"> : "ɛ"
+<hyper "Ö"> : "œ̞ː"
+<hyper "ö"> : "œ̞"
+<hyper "Ö"> : "øː"
+<hyper "ö"> : "œ"
+<hyper "E"> : <void>
+<hyper "e"> : "ə"
+<hyper "g"> : "ŋ"
+<hyper "n"> : "ŋ"
+<hyper "h"> : "ɧ"
+<hyper "j"> : "ʝ"
+<hyper "c"> : "ɕ"
+<hyper "r"> : "ʀ"
+<hyper "s"> : "ʃ"
+<hyper "S"> : "ʂ"
+<hyper "D"> : "ɖ"
+<hyper "T"> : "ʈ"
+<hyper "N"> : "ɳ"
+<hyper "L"> : "ɭ"
+<hyper altgr "o"> : "̥"
+

@@ -1,0 +1,144 @@
+information
+  language "Swedish"
+  country "Sweden"
+  variant "Dvorak"
+end information
+
+include "common/dvorak"
+include "common/base"
+
+
+function comma/0
+  ","
+end function
+function altcomma/0
+  "."
+end function
+
+macro mod_letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+mod_letter("å" "Å")
+mod_letter("ä" "Ä")
+mod_letter("ö" "Ö")
+
+<keycode 41> : <letter §>
+<keycode 12> : <letter +>
+<keycode 13> : <dead letter ´>
+<keycode 16> : <letter å>
+<keycode 17> : <letter ä>
+<keycode 18> : <letter ö>
+<keycode 26> : <letter ,>
+<keycode 27> : <dead letter ¨>
+<keycode 40> : <letter ->
+<keycode 43> : <letter '>
+<keycode 86> : <letter <>
+<keycode 44> : <letter .>
+
+
+macro key/4
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : "\4"
+end macro
+
+
+key("§" "½" "¶" "¾")
+key("1" "!" "¡" "¹")
+key("2" "\"" "@" "²")
+key("3" "#" "£" "³")
+key("4" "¤" "$" "¼")
+key("5" "%" "€" "¢")
+key("6" "&" "¥" "⅝")
+key("7" "/" "{" "÷")
+key("8" "(" "[" "«")
+key("9" ")" "]" "»")
+key("0" "=" "}" "°")
+key("+" "?" "\\" "¿")
+<shift dead letter ´> : <dead letter `>
+<altgr dead letter ´> : "±"
+<altgr shift dead letter ´> : "¬"
+
+<letter ,> : ","
+<shift letter ,> : ";"
+<altgr letter ,> : <dead letter ¸> 
+<altgr shift letter ,> : <dead letter ˛>
+
+<shift dead letter ¨> : <dead letter ^>
+<altgr dead letter ¨> : <dead letter ~>
+<altgr shift dead letter ¨> : <dead letter ˇ>
+
+<letter -> : "-"
+<shift letter -> : "_"
+<altgr letter -> : <dead letter \u0323>
+<altgr shift letter -> : <dead letter ¯>
+
+<letter '> : "'"
+<shift letter '> : "*"
+<altgr letter '> : "`"
+<altgr shift letter '> : <dead letter ×>
+
+key("<" ">" "|" "¦")
+
+<letter .> : "."
+<shift letter .> : ":"
+<altgr letter .> : "·"
+<altgr shift letter .> : <dead letter ˙>
+
+
+macro nocaps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+end macro
+
+macro caps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+  <altgr caps letter \1> : "\3"
+  <altgr caps shift letter \1> : "\2"
+end macro
+
+
+nocaps("å" "\\" "Ω")
+nocaps("ä" "{" "[")
+nocaps("ö" "}" "]")
+caps("p" "þ" "Þ")
+nocaps("y" "←" "¥")
+caps("f" "đ" "ª")
+caps("g" "ŋ" "Ŋ")
+<altgr letter c> : "©"
+<altgr shift letter c> : <void>
+<altgr letter r> : "®"
+<altgr shift letter r> : <void>
+caps("l" "ł" "Ł")
+
+caps("a" "æ" "Æ")
+caps("o" "œ" "Œ")
+nocaps("e" "€" "¢")
+nocaps("u" "↓" "↑")
+nocaps("i" "→" "ı")
+caps("d" "ð" "Ð")
+caps("h" "ħ" "Ħ")
+caps("t" "ŧ" "Ŧ")
+caps("n" "ł" "Ł")
+<altgr letter s> : "ß"
+<altgr shift letter s> : <void>
+
+<altgr letter q> : <void>
+<altgr shift letter q> : "Ω"
+<altgr letter j> : "©"
+<altgr shift letter j> : <void>
+<altgr letter k> : "ĸ"
+<altgr shift letter k> : <void>
+nocaps("x" "»" ">")
+nocaps("b" "’" "”")
+caps("m" "µ" "º")
+caps("w" "ł" "Ł")
+nocaps("v" "\"" "`")
+nocaps("z" "«" "<")
+
