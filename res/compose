@@ -1160,8 +1160,8 @@ dead_ascii("▐")
 <shift compose> "s" "<" ">" : "◊"
 <shift compose> "s" "(" ")" : "○"
 <compose> "." "◯" : "○"
-<compose> ("○" ".") : "◌"
-<compose> ("○" "|") : "◍"
+<compose> "○" "." : "◌"
+<compose> "○" "|" : "◍"
 <compose> ("○" "o") : "◎"
 <compose> "○" "○" : "●"
 <compose> ("◖" "○") : "◐"
@@ -1197,9 +1197,7 @@ dead_ascii("▐")
 <compose> "◹" "◹" : "◥"
 <compose> "." "○" : "◦"
 <compose> (["□" "◻" "◽"] ["←" "⇐"]) : "◧"
-<compose> "◨" "◨" : "◧"
 <compose> (["□" "◻" "◽"] ["→" "⇒"]) : "◨"
-<compose> "◧" "◧" : "◨"
 <compose> ("◿" "◤") : "◩"
 <compose> (["□" "◻" "◽"] "◤") : "◩"
 <compose> ("◸" "◢") : "◪"
@@ -2007,7 +2005,7 @@ composite("∅" "°" "⦲")
 <compose> "." "⫿" : "⫾"
 <shift compose> "[" "]" "|" : "⫿"
 
-# Miscellaneous Symbols and Arrows:
+# Miscellaneous Symbols and Arrows: (TODO)
 <compose> ("⇧" "⇨") : "⬀"
 <compose> ("↗" "⇗") : "⬀"
 <compose> ("⇦" "⇧") : "⬁"
@@ -2037,19 +2035,56 @@ composite("∅" "°" "⦲")
 <compose> "→" "'" : "⬏"
 <compose> "," "←" : "⬐"
 <compose> "'" "←" : "⬑"
-
-# TODO ⬒ ⬓ ⬔ ⬕ ⬖ ⬗ ⬘ ⬙ ⬚ ⬛ ⬜ ⬝ ⬞ ⬟ ⬠ ⬡ ⬢ ⬣ ⬤ ⬥ ⬦ ⬧ ⬨ ⬩ ⬪ ⬫ ⬬ ⬭ ⬮ ⬯
-
+<compose> (["□" "◻" "◽"] ["↑" "⇑"]) : "⬒"
+<compose> "◧" "◧" : "⬒"
+<compose> (["□" "◻" "◽"] ["↓" "⇓"]) : "⬓"
+<compose> "◨" "◨" : "⬓"
+<compose> ("◺" "◥") : "⬔"
+<compose> ("◣" "◹") : "⬕"
+<shift compose> "s" "<" "<" "|" ">" : "⬖"
+<compose> "◀" "▷" : "⬖"
+<shift compose> "s" "<" "|" ">" ">" : "⬗"
+<compose> "◁" "▶" : "⬗"
+<compose> "▲" "▽" : "⬘"
+<compose> "⬖" "⬖" : "⬘"
+<compose> "△" "▼" : "⬙"
+<compose> "⬗" "⬗" : "⬙"
+<compose> "⬜" "." : "⬚"
+<compose> "⬜" "⬜" : "⬛"
+<compose> "+" "□" : "⬜"
+<compose> "⬞" "⬞" : "⬝"
+<compose> "." "⬜" : "⬞"
+<compose> "⬠" "⬠" : "⬟"
+<compose> ("5" "⬛") : "⬟"
+<compose> ("5" "⬜") : "⬠"
+<compose> ("6" "⬜") : "⬡"
+<compose> ("6" "⬛") : "⬢"
+<compose> "⬡" "⬡" : "⬢"
+<compose> "⬢" "⬢" : "⬣"
+<compose> "◯" "◯" : "⬤"
+<compose> "⬦" "⬦" : ""
+<compose> "." "◆" : "⬥"
+<compose> "." "◇" : "⬦"
+<compose> "|" "⬥" : "⬧"
+<compose> "⬨" "⬨" : "⬧"
+<compose> "|" "⬦" : "⬨"
+<compose> "⬥" "⬥" : "⬩"
+<compose> "." "⬥" : "⬩"
+<compose> "⬫" "⬫" : "⬪"
+<compose> "." "⬧" : "⬪"
+<compose> "." "⬨" : "⬫"
+<compose> "⬭" "⬭" : "⬬"
+<compose> "-" "○" : "⬭"
+<compose> "⬯" "⬯" : "⬮"
+<compose> "|" "○" : "⬯"
 <compose> ("o" "←") : "⬰"
 <compose> "3" "←" : "⬱"
 <compose> ("O" "←") : "⬲"
 <compose> "⬰" "⬰" : "⬲"
 <compose> ("|" "⬰") : "⬲"
-
 # TODO ⬳ ⬴ ⬵ ⬶ ⬷ ⬸ ⬹ ⬺ ⬻ ⬼ ⬽ ⬾ ⬿ ⭀ ⭁ ⭂ ⭃ ⭄ ⭅ ⭆ ⭇ ⭈ ⭉ ⭊ ⭋ ⭌
 # TODO \u2B4D through \u2B5F
 # TODO \u2B60 through \u2B63
-
 <compose> ("\u2B60" "\u2B62") : "\u2B64"
 <compose> ("\u2B61" "\u2B63") : "\u2B65"
 <compose> ("\u2B60" "\u2B61") : "\u2B66"
@@ -2092,9 +2127,12 @@ composite("∅" "°" "⦲")
 <compose> "U" "\u2B61" : "\u2B8D"
 <compose> "U" "\u2B62" : "\u2B8E"
 <compose> "U" "\u2B63" : "\u2B8F"
-
-# TODO \u2B90 through \u2B9F
-
+<compose> "\u2BA0" "/" : "\u2B90"
+<compose> "\\" "\u2BA1" : "\u2B91"
+<compose> "-" "\u2BA0" : "\u2B92"
+<compose> "-" "\u2BA1" : "\u2B93"
+<compose> ("\u2BA0" "\u2BA3") : "\u2B94"
+<compose> ("\u2BA1" "\u2BA2") : "\u2B94"
 <compose> "⇨" "⇨" : "\u2B95"
 <compose> ("⇦" "⬅") : "⮘"
 <compose> ("⇧" "⬆") : "⮙"
@@ -2128,9 +2166,30 @@ composite("∅" "°" "⦲")
 <shift compose> "⇨" "⇩" : "\u2BB5"
 <shift compose> "⇦" "⇩" : "\u2BB6"
 <shift compose> "⇨" "⇩" : "\u2BB7"
-
-# TODO \u2BB8 \u2BB9
-# TODO \u2BBD through \u2BD1 but not \u2BC9
+<compose> "!" "⇬" : "\u2BB8"
+# TODO \u2BB9
+# TODO \u2BBD
+# TODO \u2BBE
+<compose> "\u2BBE" "\u2BBE" : "\u2BBF"
+<compose> "▪" "▪" : "\u2BC0"
+<compose> "\u2BC0" "\u2BC0" : "\u2BC1"
+<compose> "◆" "◆" : "\u2BC1"
+<compose> "\u2BC1" "\u2BC1" : "\u2BC0"
+<compose> ("5" ["\u2BC0" "\u2BC1"]) : "\u2BC2"
+<compose> ("8" "\u2BC0") : "\u2BC3"
+<compose> "\u2BC4" "\u2BC4" : "\u2BC3"
+<compose> ("8" "\u2BC1") : "\u2BC4"
+<compose> "\u2BC3" "\u2BC3" : "\u2BC4"
+<compose> "⬆" "h" : "\u2BC5"
+<compose> "⬇" "h" : "\u2BC6"
+<compose> "⬅" "h" : "\u2BC7"
+<compose> "\u2B95" "h" : "\u2BC8"
+<compose> "◖" "◖" : "\u2BCA"
+<compose> "◗" "◗" : "\u2BCB"
+<compose> "\u2BCE" "\u2BCE" : "\u2BCC"
+<compose> "\u2BCF" "\u2BCF" : "\u2BCD"
+# TODO \u2BD0
+<compose> "<" "?" ">" : "\u2BD1"
 
 
 # TODO Glagolitic
