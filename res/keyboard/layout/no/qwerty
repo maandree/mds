@@ -1,0 +1,190 @@
+information
+  language "Norwegian"
+  country "Norway"
+  variant "QWERTY"
+end information
+
+include "../common/qwerty"
+include "../common/base"
+
+
+function comma/0
+  ","
+end function
+function altcomma/0
+  "."
+end function
+
+macro mod_letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+mod_letter("å" "Å")
+mod_letter("æ" "Æ")
+mod_letter("ø" "Ø")
+
+<keycode 41> : <letter |>
+<keycode 12> : <letter +>
+<keycode 13> : <dead letter \\>
+<keycode 26> : <letter å>
+<keycode 27> : <dead letter ¨>
+<keycode 39> : <letter ø>
+<keycode 40> : <letter æ>
+<keycode 43> : <letter '>
+<keycode 86> : <letter <>
+<keycode 51> : <letter ,>
+<keycode 52> : <letter .>
+<keycode 53> : <letter ->
+
+
+macro key/4
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : "\4"
+end macro
+
+macro nocaps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+end macro
+
+macro caps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+  <altgr caps letter \1> : "\3"
+  <altgr caps shift letter \1> : "\2"
+end macro
+
+
+key("|" "§" "¦" "¶")
+key("1" "!" "¡" "¹")
+key("2" "\"" "@" "²")
+key("3" "#" "£" "³")
+key("4" "¤" "$" "¼")
+key("5" "%" "½" "‰")
+key("6" "&" "¥" "⅝")
+key("7" "/" "{" "÷")
+key("8" "(" "[" "«")
+key("9" ")" "]" "»")
+key("0" "=" "}" "°")
+key("+" "?" "±" "¿")
+<shift dead letter \\> : <dead letter `>
+<altgr dead letter \\> : <dead letter ´>
+<altgr shift dead letter \\> : "¬"
+
+<shift dead letter ¨> : <dead letter ^>
+<altgr dead letter ¨> : <dead letter ~>
+<altgr shift dead letter ¨> : <dead letter ˇ>
+
+key("'" "*" "`" "×")
+key("<" ">" "½" "¾")
+
+<letter ,> : ","
+<shift letter ,> : ";"
+<altgr letter ,> : <dead letter ¸>
+<altgr shift letter ,> : <dead letter ˛>
+
+<letter .> : "."
+<shift letter .> : ":"
+<altgr letter .> : "·"
+<altgr shift letter .> : <dead letter ˙>
+
+<letter -> : "-"
+<shift letter -> : "_"
+<altgr letter -> : "–"
+<altgr shift letter -> : "—"
+
+
+<altgr letter q> : "Ω"
+<altgr shift letter q> : <void>
+
+<altgr "w"> : "ł"
+<altgr "W"> : "Ł"
+
+<altgr letter e> : "€"
+<altgr shift letter e> : "¢"
+
+<altgr letter r> : "®"
+<altgr shift letter r> : "™"
+
+<altgr "t"> : "þ"
+<altgr "T"> : "Þ"
+
+<altgr letter y> : "←"
+<altgr shift letter y> : <void>
+
+<altgr letter u> : "↓"
+<altgr shift letter u> : "↑"
+
+<altgr letter i> : "→"
+<altgr shift letter i> : "ı"
+
+<altgr "o"> : "œ"
+<altgr "O"> : "Œ"
+
+<altgr "p"> : "π"
+<altgr "P"> : "Π"
+
+<altgr letter å> : <dead letter °>
+<altgr shift letter å> : <void>
+
+
+<altgr "a"> : <void>
+<altgr "A"> : <void>
+
+<altgr "s"> : "ß"
+<altgr "S"> : <void>
+
+<altgr "d"> : "ð"
+<altgr "D"> : "Ð"
+
+<altgr "f"> : "đ"
+<altgr "F"> : "ª"
+
+<altgr "g"> : "ŋ"
+<altgr "G"> : "Ŋ"
+
+<altgr "h"> : "ħ"
+<altgr "H"> : "Ħ"
+
+<altgr letter j> : <void>
+<altgr shift letter j> : <void>
+
+<altgr letter k> : "ĸ"
+<altgr shift letter k> : <void>
+
+<altgr letter l> : <void>
+<altgr shift letter l> : <void>
+
+<altgr letter ø> : <dead letter ´>
+<altgr shift letter ø> : <dead letter ˝̋>
+
+<altgr letter æ> : <dead letter ^>
+<altgr shift letter æ> : <dead letter ˇ>
+
+
+<altgr letter z> : <void>
+<altgr shift letter z> : <void>
+
+<altgr letter x> : <void>
+<altgr shift letter x> : <void>
+
+<altgr letter c> : "©"
+<altgr shift letter c> : "℗"
+
+<altgr letter v> : "‘"
+<altgr shift letter v> : "“"
+
+<altgr letter b> : "’"
+<altgr shift letter b> : "”"
+
+<altgr letter n> : <void>
+<altgr shift letter N> : <void>
+
+<altgr "m"> : "µ"
+<altgr "M"> : "º"
+
