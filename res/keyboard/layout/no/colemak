@@ -28,7 +28,7 @@ mod_letter("ø" "Ø")
 
 <keycode 41> : <letter |>
 <keycode 12> : <letter +>
-<keycode 13> : <dead letter \\>
+<keycode 13> : <letter \\>
 <keycode 26> : <letter å>
 <keycode 27> : <dead letter ¨>
 <keycode 25> : <letter ø>
@@ -72,9 +72,9 @@ key("8" "(" "[" "«")
 key("9" ")" "]" "»")
 key("0" "=" "}" "°")
 key("+" "?" "±" "¿")
-<shift dead letter \\> : <dead letter `>
-<altgr dead letter \\> : <dead letter ´>
-<altgr shift dead letter \\> : "¬"
+<shift letter \\> : <dead letter `>
+<altgr letter \\> : <dead letter ´>
+<altgr shift letter \\> : "¬"
 
 <shift dead letter ¨> : <dead letter ^>
 <altgr dead letter ¨> : <dead letter ~>
