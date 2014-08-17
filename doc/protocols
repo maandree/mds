@@ -436,6 +436,7 @@ Optional header: Key
     down) Down Arrow
     right) Right Arrow
     shift) Shift (level 2)
+    begin) Begin (keypad 5 in nagivation mode)
     ctrl) Control
     alt) Alternative/Option
     altgr) Alternative Graphic (level 3)
@@ -461,9 +462,10 @@ Optional header: Key
   the compose key) should use `dead` instead. A position,
   either `left`, `right`, `keypad` or an index, followed by a
   blank space, should prefix any key that occurs on multiple
-  position on the keyboard. Keys without any meaning should
-  be identified as `unknown`. Modifiers and dead keys should
-  not affect the value.
+  position on the keyboard, unless it only appears on the
+  keypad once and once not on the keypad. Keys without any
+  meaning should be identified as `unknown`. Modifiers and
+  dead keys should not affect the value.
 
 Optional header: Characters
   UTF-8 encoded string that has been written

@@ -1,0 +1,2717 @@
+# mds — A micro-display server
+# Copyright © 2014  Mattias Andrée (maandree@member.fsf.org)
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+# Based on the Unicode Character Database 7.0
+
+
+
+macro dead_ascii/1
+  <dead letter \1> [" " <dead letter \1>] : "\1"
+  <dead compose> "\1" : <dead letter \1>
+end macro
+macro dead_ascii/2
+  <dead letter \1> [" " "\2" <dead letter \1>] : "\1"
+  <dead compose> ["\1" "\2"] : <dead letter \1>
+end macro
+
+macro composite/3
+  <dead letter \2> "\1" : "\3"
+  <dead compose> "\1" ["\2" <dead letter \2>] : "\3"
+end macro
+macro composite/4
+  <dead letter \2> "\1" : "\4"
+  <dead compose> "\1" ["\2" <dead letter \2> "\3"] : "\4"
+end macro
+
+
+<dead compose> "u" "+" : <dead hexdead compose>
+<dead compose> "U" "+" : <dead longhexdead compose>
+
+
+# TODO C0 Controls
+
+# Basic Latin:
+dead_ascii("^")
+dead_ascii("`")
+dead_ascii("~")
+
+# TODO C1 Controls
+
+# Latin-1 Supplement:
+<dead compose> "!" "!" : "¡"
+<dead compose> ("/" "c") : "¢"
+<dead compose> ("|" ["c" "L"]) : "¢"
+<dead compose> ("-" ["l" "L"]) : "£"
+<dead compose> (["o" "O"] ["x" "X"]) : "¤"
+<dead compose> (["-" "="] ["y" "Y"]) : "¥"
+<dead compose> ("!" "|") : "¦"
+<dead compose> (["o" "O"] ["s" "S"]) : "§"
+dead_ascii("¨" "\"")
+<dead compose> (["o" "O"] ["c" "C"]) : "©"
+(<dead compose> <dead letter ~>) "_" "a" : "ª"
+<dead compose> "<" "<" : "«"
+<dead compose> ("-" ",") : "¬"
+<dead compose> "-" "-" " " : "­"
+<dead compose> (["o" "O"] ["r" "R"]) : "®"
+<dead compose> "-" : <dead letter ¯>
+<dead compose> "o" : <dead letter °>
+dead_ascii("°")
+<dead compose> "+" "-" : "±"
+<dead letter ^> "2" : "²"
+<dead letter ^> "3" : "³"
+dead_ascii("´" "'")
+<dead compose> "m" "u" : "µ"
+<dead compose> ["p" "P"] ["p" "P" "!"] : "¶"
+<dead compose> "!" ["p" "P"] : "¶"
+<dead compose> "." "-" : "·"
+dead_ascii("," ",")
+<dead letter ^> "1" : "¹"
+(<dead compose> <dead letter ~>) "_" "o" : "º"
+<dead compose> ">" ">" : "»"
+<dead compose> "1" "4" : "¼"
+<dead compose> "1" "2" : "½"
+<dead compose> "3" "4" : "¾"
+<dead compose> "?" "?" : "¿"
+composite("`" "A" "À")
+composite("´" "'" "A" "Á")
+composite("~" "A" "Ã")
+composite("¨" "\"" "A" "Ä")
+<dead letter °> "A" : "Å"
+<dead compose> "A" "E" : "Æ"
+composite("¸" "," "C" "Ç")
+composite("`" "E" "È")
+composite("´" "'" "E" "É")
+composite("^" "E" "Ê")
+composite("¨" "\"" "E" "Ë")
+composite("`" "I" "Ì")
+composite("´" "'" "I" "Í")
+composite("^" "I" "Î")
+composite("¨" "\"" "I" "Ï")
+<dead compose> "-" : <dead letter ->
+composite("-" "D" "Đ")
+<dead compose> "/" : <dead letter />
+composite("/" "D" "Đ")
+composite("~" "N" "Ñ")
+composite("`" "O" "Ò")
+composite("´" "'" "O" "Ó")
+composite("^" "O" "Ô")
+composite("~" "O" "Õ")
+composite("¨" "\"" "O" "Ö")
+<dead compose> "x" "x" : "×"
+composite("/" "O" "Ø")
+composite("`" "U" "Ù")
+composite("´" "'" "U" "Ú")
+composite("^" "U" "Û")
+composite("¨" "\"" "U" "Ü")
+composite("´" "'" "Y" "Ý")
+<dead compose> "T" "H" : "Þ"
+<dead compose> "s" "s" : "ß"
+<dead compose> "ſ" "s" : "ß"
+composite("`" "a" "à")
+composite("´" "'" "a" "á")
+composite("~" "a" "ã")
+composite("¨" "\"" "a" "ä")
+<dead letter °> "a" : "å"
+<dead compose> "a" "e" : "æ"
+composite("¸" "," "c" "ç")
+composite("`" "e" "è")
+composite("´" "'" "e" "é")
+composite("^" "e" "ê")
+composite("¨" "\"" "e" "ë")
+composite("`" "i" "ì")
+composite("´" "'" "i" "í")
+composite("^" "i" "î")
+composite("¨" "\"" "i" "ï")
+composite("/" "d" "ð")
+composite("~" "n" "ñ")
+composite("`" "o" "ò")
+composite("´" "'" "o" "ó")
+composite("^" "o" "ô")
+composite("~" "o" "õ")
+composite("¨" "\"" "o" "ö")
+<dead compose> ":" "-" : "÷"
+composite("/" "o" "ø")
+composite("`" "u" "ù")
+composite("´" "'" "u" "ú")
+composite("^" "u" "û")
+composite("¨" "\"" "u" "ü")
+composite("´" "'" "y" "ý")
+<dead compose> "t" "h" : "þ"
+composite("¨" "\"" "y" "ÿ")
+
+# TODO Latin Extended-A
+# TODO Latin Extended-B
+# TODO IPA Extensions
+# TODO Spacing Modifier Letter
+# TODO Combining Diacritical Marks
+# TODO Greek and Coptic
+# TODO Cyrillic
+# TODO Cyrillic Supplement
+# TODO Armenian
+# TODO Hebrew
+# TODO Arabic
+# TODO Syriac
+# TODO Arabic Supplement
+# TODO Thaana
+# TODO NKo
+# TODO Samaritan
+# TODO Mandaic
+# TODO Arabic Extended-A
+# TODO Devanagari
+# TODO Bengali
+# TODO Gurmukhi
+# TODO Gujarati
+# TODO Oriya
+# TODO Tamil
+# TODO Telugu
+# TODO Kannada
+# TODO Malayalam
+# TODO Sinhala
+# TODO Thai
+# TODO Lao
+# TODO Tibetan
+# TODO Myanmar
+# TODO Georgian
+# TODO Hangul Jamo
+# TODO Ethiopic
+# TODO Ethiopic Supplement
+# TODO Cherokee
+# TODO Unified Canadian Aboriginal Syllabics
+# TODO Ogham
+# TODO Runic
+# TODO Tagalog
+# TODO Hanunoo
+# TODO Buhid
+# TODO Tagbanwa
+# TODO Khmer
+# TODO Mongolian
+# TODO Unified Canadian Aboriginal Syllabics Extended
+# TODO Limbu
+# TODO Tai Le
+# TODO New Tai Lue
+# TODO Khmer Symbols
+# TODO Buginese
+# TODO Tai Tham
+# TODO Combining Diacritical Marks Extended
+# TODO Balinese
+# TODO Sundanese
+# TODO Batak
+# TODO Lepcha
+# TODO Ol Chiki
+# TODO Sundanese Supplement
+# TODO Vedic Extensions
+# TODO Phonetic Extensions
+# TODO Phonetic Extensions Supplement
+# TODO Combining Diacritical Marks Supplement
+# TODO Latin Extended Additional
+# TODO Greek Extended
+
+# General Punctuation:
+<dead compose> <space> "_" "." : "\u2000" # en quad
+<dead compose> <space> "_" "_" : "\u2001" # em quad
+<dead compose> <space> "-" "." : "\u2002" # en space
+<dead compose> <space> "-" "-" : "\u2003" # em space
+<dead compose> <space> "3" : "\u2004" # three-per-em space
+<dead compose> <space> "4" : "\u2005" # four-per-em space
+<dead compose> <space> "6" : "\u2006" # six-per-em space
+<dead compose> <space> "f" : "\u2007" # figure space
+<dead compose> <space> "." : "\u2008" # punctuation space
+<dead compose> <space> "t" : "\u2009" # thin space
+<dead compose> <space> "h" : "\u200A" # hairspace
+<dead compose> <space> "0" : "\u200B" # zero width space
+<dead compose> <space> "J" : "\u200C" # zero width non-joiner
+<dead compose> <space> "j" : "\u200D" # zero width joiner
+<dead compose> <space> "l" : "\u200E" # left-to-right mark
+<dead compose> <space> "r" : "\u200F" # right-to-left mark
+<dead compose> "-" <space> : "\u2010" # hyphen
+<dead compose> "-" " " : "\u2011" # non-breaking hyphen
+<dead compose> "-" "-" "f" : "\u2012" # figure dash
+<dead compose> "-" "-" "." : "\u2013" # en dash
+<dead compose> "-" "-" "-" : "\u2014" # em dash
+<dead compose> "-" "-" "_" : "\u2015" # horizontal bar
+<dead compose> "|" "|" : "\u2016" # double verical line
+<dead compose> "-" "_" : "\u2017" # double low line
+<dead compose> ("(" "'") : "‘"
+<dead compose> (")" "'") : "’"
+<dead compose> ("(" ",") : "‚"
+<dead compose> (")" ",") : "‛"
+<dead compose> ("(" "\"") : "“"
+<dead compose> (")" "\"") : "”"
+<dead compose> ("(" ";") : "„"
+<dead compose> (")" ";") : "‟"
+<dead compose> "+" "T" : "†"
+<dead compose> "+" "+" "T" : "‡"
+<shift dead compose> "." "." : "•"
+<shift dead compose> "|" ">" : "‣"
+<dead compose> "." "," : "\u2024" # one dot leader
+<dead compose> "." ";" : "\u2025" # two dot leader
+<dead compose> "." "." : "…"
+<dead compose> "-" "." : "\u2027" # hyphenation point
+<dead compose> "l" <space> : "\u2028" # line separator
+<dead compose> "p" <space> : "\u2029" # paragraph separator
+<dead compose> <space> "e" "l" : "\u202A" # left-to-right embedding
+<dead compose> <space> "e" "r" : "\u202B" # right-to-left embedding
+<dead compose> <space> "e" "p" : "\u202C" # pop directional formatting
+<dead compose> <space> "o" "l" : "\u202D" # left-to-right override
+<dead compose> <space> "o" "r" : "\u202E" # right-to-left override
+<dead compose> "m" " " : "\u202F" # narrow no-break space
+<dead compose> "%" ["o" "."] : "‰"
+<dead compose> "%" ["O" ":"] : "‱"
+<dead compose> ("1" ["'" "´"]) : "′"
+<dead compose> ("2" ["'" "´"]) : "″"
+<dead compose> ("3" ["'" "´"]) : "‴"
+<dead compose> ("1" "`") : "‵"
+<dead compose> ("2" "`") : "‶"
+<dead compose> ("3" "`") : "‷"
+<shift dead compose> ("." "^") : "‸"
+<shift dead compose> ("." "<") : "‹"
+<shift dead compose> ("." ">") : "›"
+<dead compose> ("x" "+") : "※"
+<shift dead compose> "!" "!" : "‼"
+<dead compose> "!" "?" : "‽"
+<shift dead compose> "^" "_" : "‾"
+<shift dead compose> ("_" "u") : "‿"
+<shift dead compose> ("^" "u") : "⁀"
+<shift dead compose> "/" "/" "." : "⁁"
+<dead compose> "*" "*" : "⁂"
+<shift dead compose> "-" "-" : "⁃"
+<dead compose> "/" "/" : "⁄"
+<dead compose> ("[" "-") : "⁅"
+<dead compose> ("]" "-") : "⁆"
+<shift dead compose> "?" "?" : "⁇"
+<shift dead compose> "?" "!" : "⁈"
+<shift dead compose> "!" "?" : "⁉"
+<dead compose> ("/" "7"): "⁊"
+<dead compose> "¶" "¶" : "⁋"
+<dead compose> ("?" ["p" "P"]) : "⁋"
+<dead compose> "(" "|" : "⁌"
+<dead compose> "|" ")" : "⁍"
+<dead compose> ("*" ".") : "⁎"
+<dead compose> ";" ";" : "⁏"
+<shift dead compose> "(" ")": "⁐"
+<dead compose> ("*" ":") : "⁑"
+<dead compose> "%" "%" : "⁒"
+<shift dead compose> "~" ["-" "~"] : "⁓"
+<shift dead compose> "-" "~" : "⁓"
+<sjift dead compose> ("_" "U") : "⁔"
+<dead compose> ("x" "*") : "⁕"
+<dead compose> "." ":" <space>  : "⁖"
+<dead compose> ("4" ["'" "´"]) : "⁗"
+<dead compose> "." ":" "." : "⁘"
+<dead compose> ":" "." ":" : "⁙"
+<dead compose> "|" "." "." : "⁚"
+<shift dead compose> "." ":" "." : "⁛"
+<dead compose> ("x" ":") : "⁜"
+<dead compose> "|" ":" "." : "⁝"
+<dead compose> "|" ":" ":" : "⁞"
+<dead compose> <space> "m" : "\u205F" # medium mathematical space
+<dead compose> <space> "w" : "\u2060" # word joiner
+<shift dead compose> ("f" " ") : "\u2061" # function application
+<shift dead compose> (["x" "×" "*"] " ") : "\u2062" # invisible times
+<shift dead compose> (["," "."] " ") : "\u2063" # invisible separator
+<shift dead compose> ("+" " ") : "\u2064" # invisible plus
+<dead compose> <space> "i" "l" : "\u2066" # left-to-right isolate
+<dead compose> <space> "i" "r" : "\u2067" # right-to-left isolate
+<dead compose> <space> "i" "s" : "\u2068" # first strong isolate
+<dead compose> <space> "i" "p" : "\u2069" # pop directional isolate
+# U+206A through U+206C are deprecated
+
+# Superscripts and Subscripts:
+<dead letter ^> "0" : "⁰"
+<shift dead compose> ["^" <dead letter "^">] "i" : "ⁱ"
+<dead letter ^> "4" : "⁴"
+<dead letter ^> "5" : "⁵"
+<dead letter ^> "6" : "⁶"
+<dead letter ^> "7" : "⁷"
+<dead letter ^> "8" : "⁸"
+<dead letter ^> "9" : "⁹"
+<dead letter ^> "+" : "⁺"
+<dead letter ^> "-" : "⁻"
+<dead letter ^> "=" : "⁼"
+<dead letter ^> "(" : "⁽"
+<dead letter ^> ")" : "⁾"
+<shift dead compose> ["^" <dead letter "^">] "n" : "ⁿ"
+dead_ascii("ˇ")
+<dead letter ˇ> "0" : "₀"
+<dead letter ˇ> "1" : "₁"
+<dead letter ˇ> "2" : "₂"
+<dead letter ˇ> "3" : "₃"
+<dead letter ˇ> "4" : "₄"
+<dead letter ˇ> "5" : "₅"
+<dead letter ˇ> "6" : "₆"
+<dead letter ˇ> "7" : "₇"
+<dead letter ˇ> "8" : "₈"
+<dead letter ˇ> "9" : "₉"
+<dead letter ˇ> "+" : "₊"
+<dead letter ˇ> "-" : "₋"
+<dead letter ˇ> "=" : "₌"
+<dead letter ˇ> "(" : "₍"
+<dead letter ˇ> ")" : "₎"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "a" : "ₐ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "e" : "ₑ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "o" : "ₒ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "x" : "ₓ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "ə" : "ₔ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "h" : "ₕ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "k" : "ₖ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "l" : "ₗ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "m" : "ₘ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "n" : "ₙ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "p" : "ₚ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "s" : "ₛ"
+<shift dead compose> ["ˇ" <dead letter "ˇ">] "t" : "ₜ"
+
+# TODO Currency Symbols
+# TODO Combining Diacritical Marks for Symbols
+# TODO Letterlike Symbols
+# TODO Number Forms
+
+# Arrows:
+<shift dead compose> "<" "-" "-" : "←"
+<shift dead compose> "^" "|" <space> : "↑"
+<shift dead compose> "|" ["v" "V"] <space> : "→"
+<shift dead compose> "-" "-" ">" : "↓"
+<dead compose> ("←" "→") : "↔"
+<dead compose> ("↑" "↓") : "↕"
+<shift dead compose> ("←" "↑") : "↖"
+<shift dead compose> ("→" "↑") : "↗"
+<shift dead compose> ("→" "↓") : "↘"
+<shift dead compose> ("←" "↓") : "↙"
+<dead compose> ("/" "←") : "↚"
+<dead compose> ("/" "→") : "↛"
+composite("←" "~" "↜")
+composite("→" "~" "↝")
+<dead compose> "←" "←" : "↞"
+<dead compose> "↑" "↑" : "↟"
+<dead compose> "→" "→" : "↠"
+<dead compose> "↓" "↓" : "↡"
+<dead compose> "←" "<" : "↢"
+<dead compose> ">" "→" : "↣"
+<dead compose> "←" "|" : "↤"
+<dead compose> ("-" "↑") : "↥"
+<dead compose> "|" "→" : "↦"
+<dead compose> ("-" "↓") : "↧"
+<dead compose> "_" "↕" : "↨"
+<dead compose> "←" ")" : "↩"
+<dead compose> "(" "→" : "↪"
+<dead compose> "↩" "↩" : "↫"
+<dead compose> "↪" "↪" : "↬"
+<dead compose> ("↜" "↝") : "↭"
+<dead compose> ("/" "↔") : "↮"
+<dead compose> ("↚" "↛") : "↮"
+<dead compose> (["z" "Z"] "↓") : "↯"
+<shift dead compose> "←" "|" : "↰"
+<dead compose> "↲" "↲" : "↰"
+<shift dead compose> "|" "→" : "↱"
+<dead compose> "↳" "↳" : "↱"
+<shift dead compose> "←" "_" "|" : "↲"
+<dead compose> "↰" "↰" : "↲"
+<shift dead compose> "|" "_" "→" : "↳"
+<dead compose> "↱" ↱" : "↳"
+<dead compose> "-" "↘" : "↴"
+<dead compose> "." "↲" : "↵"
+<shift dead compose> ("n" "↙") : "↶"
+<shift dead compose> ("n" "↘") : "↷"
+<dead letter ^> "_" "↖" : "↸"
+<dead letter ¯> "↖" : "↸"
+<dead compose> "¯" "↖" : "↸"
+<dead compose> "⇤" "⇥" : "↹"
+<dead compose> "↶" "↶" : "↺"
+<dead compose> "↷" "↷" : "↻"
+<dead compose> "←" "↑" : "↼"
+<dead compose> "↽" "↽" : "↼"
+<dead compose> "←" "↓" : "↽"
+<dead compose> "↼" "↼" : "↽"
+<dead compose> "↑" "→" : "↾"
+<dead compose> "↿" "↿" : "↾"
+<dead compose> "↑" "←" : "↿"
+<dead compose> "↾" "↾" : "↿"
+<dead compose> "→" "↑" : "⇀"
+<dead compose> "⇁" "⇁" : "⇀"
+<dead compose> "→" "↓" : "⇁"
+<dead compose> "⇀" "⇀" : "⇁"
+<dead compose> "↓" "→" : "⇂"
+<dead compose> "⇃" "⇃" : "⇂"
+<dead compose> "↓" "←" : "⇃"
+<dead compose> "⇂" "⇂" : "⇃"
+<shift dead compose> "→" "←" : "⇄"
+<dead compose> "⇆" "⇆" : "⇄"
+<shift dead compose> "↑" "↓" : "⇅"
+<dead compose> "⇵" "⇅" : "⇅"
+<shift dead compose> "←" "→" : "⇆"
+<dead compose> "⇄" "⇄" : "⇆"
+<shift dead compose> "←" "←" : "⇇"
+<shift dead compose> "↑" "↑" : "⇈"
+<shift dead compose> "→" "→" : "⇉"
+<shift dead compose> "↓" "↓" : "⇊"
+<shift dead compose> ("↼" "⇁") : "⇋"
+<shift dead compose> ("↽" "⇀") : "⇌"
+<dead compose> ("/" "⇐") : "⇍"
+<dead compose> ("/" "⇔") : "⇎"
+<dead compose> ("/" "⇒") : "⇏"
+<shift dead compose> "<" "=" "=" : "⇐"
+<shift dead compose> ("=" "←") : "⇐"
+<shift dead compose> "^" "|" "|" : "⇑"
+<shift dead compose> ("=" "↑") : "⇑"
+<shift dead compose> "=" "=" ">" : "⇒"
+<shift dead compose> ("=" "→") : "⇒"
+<shift dead compose> "|" "|" ["v" "V"] : "⇓"
+<shift dead compose> ("=" "↓") : "⇓"
+<dead compose> ("⇐" "⇒") : "⇔"
+<shift dead compose> ("=" "↔") : "⇔"
+<dead compose> ("⇑" "⇓") : "⇕"
+<shift dead compose> ("=" "↕") : "⇕"
+<dead compose> ("⇐" "⇑") : "⇖"
+<shift dead compose> ("=" "↖") : "⇖"
+<dead compose> ("⇑" "⇒") : "⇗"
+<shift dead compose> ("=" "↗") : "⇗"
+<dead compose> ("⇒" "⇓") : "⇘"
+<shift dead compose> ("=" "↘") : "⇘"
+<dead compose> ("⇓" "⇐") : "⇙"
+<shift dead compose> ("=" "↙") : "⇙"
+<dead compose> "⇐" "⇐" : "⇚"
+<dead compose> "⇒" "⇒" : "⇛"
+<shift dead compose> "<" ["~" <dead letter ~>] ["~" <dead letter ~>] : "⇜"
+<shift dead compose> ["~" <dead letter ~>] ["~" <dead letter ~>] ">" : "⇝"
+<dead compose> ("=" "↑") : "⇞"
+<dead compose> ("=" "↓") : "⇟"
+<dead compose> (":" "←") : "⇠"
+<dead compose> (":" "↑") : "⇡"
+<dead compose> (":" "→") : "⇢"
+<dead compose> (":" "↓") : "⇣"
+<dead compose> "|" "←" : "⇤"
+<dead compose> "→" "|" : "⇥"
+<dead compose> ("←" "⇐") : "⇦"
+<dead compose> ("↑" "⇑") : "⇧"
+<dead compose> ("→" "⇒") : "⇨"
+<dead compose> ("↓" "⇓") : "⇩"
+<dead compose> "!" "⇧" : "⇪"
+<dead compose> ("_" "⇧") : "⇫"
+<dead compose> "⇫" "⇫" : "⇬"
+composite("⇫" "^" "⇬")
+<dead compose> ("|" ["⇧" "⇫"]) : "⇭"
+<dead compose> "⇧" "⇧" : "⇮"
+composite("⇧" "^" "⇮")
+<dead compose> ("_" "⇮") : "⇯"
+<dead compose> "|" "⇨" : "⇰"
+<dead compose> "↖" "↖" : "⇱"
+<dead compose> "↘" "↘" : "⇲"
+<dead compose> ("⇧" "⇩") : "⇳"
+<dead compose> ("↕" "⇕") : "⇳"
+<dead compose> ("o" "→") : "⇴"
+<dead compose> "↓" "↑" : "⇵"
+<dead compose> "⇅" "⇅" : "⇵"
+<dead compose> "3" "→" : "⇶"
+<dead compose> ("|" "←") : "⇷"
+<dead compose> ("|" "→") : "⇸"
+<dead compose> ("|" "↔") : "⇹"
+<dead compose> ("|" "⇷") : "⇺"
+<dead compose> ("|" "⇸") : "⇻"
+<dead compose> ("|" "⇹") : "⇼"
+<shift dead compose> "<" "|" "-" "-" : "⇽"
+<shift dead compose> "-" "-" "|" ">" : "⇾"
+<shift dead compose> "<" "|" "-" "|" ">" : "⇿"
+<dead compose> ("⇽" "⇾") : "⇿"
+
+# Mathematical Operators:
+<dead compose> "A" "A" : "∀"
+<dead compose> "m" "C" : "∁"
+<dead compose> "d" "d" : "∂"
+<dead compose> "E" "E" : "∃"
+<dead compose> ("/" "∃") : "∄"
+<dead compose> ("/" "0") : "∅"
+<dead compose> "Δ" "Δ" : "∆"
+<dead compose> "/" "\\" : "∆"
+<dead compose> "\\" "/" : "∇"
+<dead compose> "∆" "∆" : "∇"
+<dead compose> "∇" "∇" : "∆"
+<dead compose> "i" "n" : "∈"
+<dead compose> ("/" "∈") : "∉"
+<dead compose> ("." "∈") : "∊"
+<dead compose> "I" "N" : "∋"
+<dead compose> "∈" "∈" : "∋"
+<dead compose> "∉" "∉" : "∌"
+<dead compose> ("/" "∋") : "∌"
+<dead compose> "∊" "∊" : "∍"
+<dead compose> ("." "∋") : "∍"
+<dead compose> "q" "e" "d" : "∎"
+<dead compose> "m" "p" : "∏"
+<dead compose> "Π" "Π" : "∏"
+<dead compose> "m" "P" : "∐"
+<dead compose> "∏" "∏" : "∐"
+<dead compose> "m" "s" : "∑"
+<dead compose> "Σ" "Σ" : "∑"
+<dead compose> "m" "-" : "−"
+<dead compose> "-" "+" : "∓"
+<dead compose> "." "+" : "∔"
+<dead compose> "m" "/" : "∕"
+<dead compose> "m" "\\" : "∖"
+<dead compose> "m" "*" : "∗"
+<dead compose> "m" "o" : "∘"
+<dead compose> "m" "O" : "∙"
+<dead compose> "m" ["2" .] "r" : "√"
+<dead compose> ["m" "2"] "r" : "√"
+<dead compose> ["m" .] "3" "r" : "∛"
+<dead compose> ["m" .] "4" "r" : "∜"
+<dead compose> "0" ["c" "C"] : "∝"
+<dead compose> "0" "0" : "∞"
+<dead compose> ("m" "L") : "∟"
+<dead compose> ("/" "_") : "∠"
+<dead compose> ("∠" ")") : "∡"
+<dead compose> "∡" "∡" : "∢"
+<shift dead compose> ("<" ")") : "∢"
+<dead compose> "⦠" "⦠" ; "∢"
+<dead compose> "1" "|" : "∣"
+<dead compose> "/" "1" "|" : "∤"
+<dead compose> ("/" "∣") : "∤"
+<dead compose> "2" "|" : "∥"
+<dead compose> "∣" "∣" : "∥"
+<dead compose> "/" "2" "|" : "∦"
+<dead compose> ("/" "∥") : "∦"
+<dead compose> "m" "&" : "∧"
+<dead compose> "∨" "∨" : "∧"
+<dead compose> "∧" "∧" : "∨"
+<dead compose> "m" "V" : "∨"
+<dead compose> "m" "N" : "∩"
+<dead compose> "∪" "∪" : "∩"
+<dead compose> "∩" "∩" : "∪"
+<dead compose> "m" "U" : "∪"
+<dead compose> 1 ["s" "ſ"] : "∫"
+<dead compose> 2 ["s" "ſ"] : "∬"
+<dead compose> "∫" "∫" : "∬"
+<shift dead compose> "∫" "∫" : "∭"
+<dead compose> ("∫" "∬") : "∭"
+<dead compose> "3" ["s" "ſ" "∫"] : "∭"
+<dead compose> 1 "o" ["s" "ſ"] : "∮"
+<dead compose> 2 "o" ["s" "ſ"] : "∯"
+<dead compose> "∮" "∮" : "∯"
+<shift dead compose> "∮" "∮" : "∰"
+<dead compose> ("∮" "∯") : "∰"
+<dead compose> "3" "∮" : "∰"
+<dead compose> "3" "o" ["s" "ſ"] : "∰"
+<dead compose> ("o" "∫") : "∮"
+<dead compose> ("o" "∬") : "∯"
+<dead compose> ("o" "∭") : "∰"
+<dead compose> (["→" "-"] "∫") : "∱"
+<dead compose> ("<" "∮" : "∲")
+<dead compose> (">" "∮" : "∳")
+<dead compose> ("/" ":") : "∴"
+<dead compose> ("\\" ":") : "∵"
+<dead compose> ":" <space> : "∶"
+<dead compose> ":" ":" : "∷"
+<dead compose> "." "-" : "∸"
+<dead compose> "-" ":" : "∹"
+<shift dead compose> ":" "-" ":" : "∺"
+<dead compose> ":" ["~" <dead letter ~>] : "∻"
+<dead letter ~> ":" : "∻"
+<shift dead compose> ["~" <dead letter ~>] <space> : "∼"
+<shift dead compose> <space> ["~" <dead letter ~>] : "∽"
+<dead compose> <space> ["~" <dead letter ~>] : "∾"
+<shift dead compose> ["~" <dead letter ~>] ["~" <dead letter ~>] : "∿"
+<dead letter ~> "|" : "≀"
+<dead compose> "|" ["~" <dead letter ~>] : "≀"
+<dead letter ~> "/" : "≁"
+<dead compose> "/" ["~" <dead letter ~>] : "≁"
+<dead compose> "_" ["~" <dead letter ~>] : "≂"
+<dead compose> ["~" <dead letter ~>] "_" : "≃"
+<dead compose> ("/" "≃") : "≄"
+<shift dead compose> "=" ["~" <dead letter ~>] : "≅"
+<dead letter ~> "≠" : "≆"
+<shift dead compose> "=" ["~" <dead letter ~>] : "≇"
+<dead compose> "/" "≅" : "≇"
+<dead letter ~> "=" : "≈"
+<dead letter ~> "/" "=" : "≉"
+<dead compose> ("/" "≈") : "≉"
+<dead compose> ["≈" "≊"]
+<dead letter ~> "_" "=" : "≊"
+<dead compose> "≈" ["~" <dead letter ~>] : "≋"
+<dead compose> "=" ["~" <dead letter ~>] : "≌"
+<shift dead compose> (")" "(") : "≍"
+<dead compose> "≍" "≍" : "≎"
+<dead compose> ("_" "≎") : "≏"
+<shift dead compose> ("." "=") : "≐"
+<shift dead compose> (":" "=") : "≑"
+<shift dead compose> (":" "\\") "=" : "≒"
+<shift dead compose> (":" "/") "=" : "≓"
+<dead compose> ":" "=" : "≔"
+<dead compose> "=" ":" : "≕"
+<dead compose> "=" "o" : "≖"
+<dead compose> "o" "=" : "≗"
+<dead compose> ("°" "=") : "≗"
+<dead compose> ("(" "=") : "≘"
+<dead compose> ("∧" "=") : "≙"
+<dead compose> ("∨" "=") : "≚"
+<dead compose> (["*" "⋆"] "=") : "≛"
+<dead compose> ("Δ" "=") : "≜"
+<dead compose> ("∆" "=") : "≜"
+<dead compose> ("d" "=") : "≝"
+<dead compose> ("m" "=") : "≞"
+<dead compose> ("?" "=") : "≟"
+<dead compose> ("/" "=") : "≠"
+<dead compose> "=" "_" : "≡"
+<dead compose> ("/" "≡") : "≢"
+<dead compose> "=" "=" : "≣"
+<dead compose> ("_" "<") : "≤"
+<dead compose> ("_" ">") : "≥"
+<dead compose> ("=" "<") : "≦"
+<dead compose> ("=" ">") : "≧"
+<dead compose> ("≠" "<") : "≨"
+<dead compose> ("≠" ">") : "≩"
+<shift dead compose> "<" "<" <space> : "≪"
+<shift dead compose> ">" ">" <space> : "≫"
+<dead compose> ("(" ")") : "≬"
+<shift dead compose> "/" (")" "(") : "≭"
+<dead compose> ("/" "≍") : "≭"
+<dead compose> ("/" "<") : "≮"
+<dead compose> ("/" ">") : "≯"
+<dead compose> ("/" "≤") : "≰"
+<dead compose> ("/" "≥") : "≱"
+<dead compose> "<" ["~" <dead letter ~>] : "≲"
+<dead compose> ">" ["~" <dead letter ~>] : "≳"
+<dead compose> ("/" "≲") : "≴"
+<dead compose> ("/" "≳") : "≵"
+<dead compose> "<" ">" : "≶"
+<dead compose> ">" "<" : "≷"
+<dead compose> ("/" "≶") : "≸"
+<dead compose> ("/" "≷") : "≹"
+<shift dead compose> (["(" ")"] "<") : "≺"
+<shift dead compose> (["(" ")"] ">") : "≻"
+<dead compose> ("_" "≺") : "≼"
+<shift dead compose> (["(" ")"] "_") "<" : "≼"
+<dead compose> ("_" "≻") : "≽"
+<shift dead compose> (["(" ")"] "_") ">" : "≽"
+<dead letter ~> "≺" : "≾"
+<dead compose> "≺" ["~" <dead letter ~>] : "≾"
+<dead letter ~> "≻" : "≿"
+<dead compose> "≻" ["~" <dead letter ~>] : "≿"
+<dead compose> ("/" "≺") : "⊀"
+<shift dead compose> (["(" ")"] "/") "<" : "⊀"
+<dead compose> ("/" "≻") : "⊁"
+<shift dead compose> (["(" ")"] "/") ">" : "⊁"
+<shift dead compose> ("U" "<") : "⊂"
+<shift dead compose> ("U" ">") : "⊃"
+<dead compose> ("/" "⊂") : "⊄"
+<shift dead compose> ("U" "/") "<" : "⊄"
+<dead compose> ("/" "⊃") : "⊅"
+<shift dead compose> ("U" "/") ">" : "⊅"
+<dead compose> ("_" "⊂") : "⊆"
+<shift dead compose> ("U" "_") "<" : "⊆"
+<dead compose> ("_" "⊃") : "⊇"
+<shift dead compose> ("U" "_") ">" : "⊇"
+<dead compose> ("_" "/") "⊂" : "⊈"
+<dead compose> ("/" "⊆") : "⊈"
+<dead compose> ("_" "/") "⊃" : "⊉"
+<dead compose> ("/" "⊇") : "⊉"
+<shift dead compose> ("/" "_" "⊂") : "⊊"
+<shift dead compose> ("/" "_" "⊃") : "⊋"
+<dead compose> ("←" "∪") : "⊌"
+<dead compose> (["." "⋅"] "∪") : "⊍"
+<dead compose> ("+" "∪") : "⊎"
+<dead compose> (["[" "]"] "<") : "⊏"
+<dead compose> (["[" "]"] ">") : "⊐"
+<dead compose> ("_" "⊏") : "⊑"
+<dead compose> "_" (["[" "]"] "<") : "⊑"
+<dead compose> ("_" "⊐") : "⊒"
+<dead compose> "_" (["[" "]"] ">") : "⊒"
+<dead compose> ["[" "]"] ["∧" "∩"] : "⊓"
+<dead compose> ["[" "]"] ["∨" "∪"] : "⊔"
+<shift dead compose> "(" "+" ")" : "⊕"
+<shift dead compose> (["o" "O"] "+") : "⊕"
+<shift dead compose> "(" ["-" "−"] ["-" "−"] ")" : "⊖"
+<shift dead compose> ["o" "O"] ["-" "−"] ["-" "−"] : "⊖"
+<shift dead compose> ["-" "−"] ["-" "−"] ["o" "O"] : "⊖"
+<shift dead compose> "(" ["x" "X" "×"] ")" : "⊗"
+<shift dead compose> (["o" "O"] ["x" "X" "×"]) : "⊗"
+<shift dead compose> "(" "/" ")" : "⊘"
+<shift dead compose> (["o" "O"] "/") : "⊘"
+<shift dead compose> "(" ["." "⋅"] ")" : "⊙"
+<shift dead compose> (["o" "O"] ["." "⋅"]) : "⊙"
+<shift dead compose> "(" "o" ")" : "⊚"
+<shift dead compose> (["o" "O"] "o") : "⊚"
+<shift dead compose> "(" "*" ")" : "⊛"
+<shift dead compose> (["o" "O"] "*") : "⊛"
+<shift dead compose> "(" "=" ")" : "⊜"
+<shift dead compose> (["o" "O"] "=") : "⊜"
+<shift dead compose> "(" ["-" "−"] ")" : "⊝"
+<shift dead compose> (["o" "O"] ["-" "−"]) : "⊝"
+<shift dead compose> "[" "+" "]" : "⊞"
+<shift dead compose> "[" ["-" "−"] "]" : "⊟"
+<shift dead compose> "[" ["x" "X" "×"] "]" : "⊠"
+<shift dead compose> "[" ["." "⋅"] "]" : "⊡"
+<shift dead compose> "|" "-" "-" <space> : "⊢"
+<shift dead compose> "-" "-" "|" <space> : "⊣"
+<dead compose> "_" "|" : "⊤"
+<dead compose> "⊥" "⊥" : "⊤"
+<dead compose> "|" "_" : "⊥"
+<dead compose> "⊤" "⊤" : "⊥"
+<shift dead compose> "|" "-" <space> : "⊦"
+<shift dead compose> "|" "=" <space> : "⊧"
+<shift dead compose> "|" "=" "=" <space> : "⊨"
+<shift dead compose> "|" "|" "-" <space> : "⊩"
+<shift dead compose> "|" "|" "|" "-" <space> : "⊪"
+<shift dead compose> "|" "|" "=" <space> : "⊫"
+<shift dead compose> "/" "|" "-" "-" <space> : "⊬"
+<shift dead compose> "|" "-" "-" "/" : "⊬"
+<dead compose> ("/" "⊢") : "⊬"
+<shift dead compose> "/" "|" "=" "=" <space> : "⊭"
+<shift dead compose> "|" "=" "=" "/" : "⊭"
+<dead compose> ("/" "⊨") : "⊭"
+<shift dead compose> "/" "|" "|" "-" <space> : "⊮"
+<shift dead compose> "|" "|" "-" "/" : "⊮"
+<dead compose> ("/" "⊩") : "⊮"
+<shift dead compose> "/" "|" "|" "=" <space> : "⊯"
+<shift dead compose> "|" "|" "=" "/" : "⊯"
+<dead compose> ("/" "⊫") : "⊯"
+<dead compose> ("≺" ["(" ")"]) : "⊰"
+<dead compose> ("≻" ["(" ")"]) : "⊱"
+<dead compose> "<" "|" : "⊲"
+<dead compose> "|" ">" : "⊳"
+<dead compose> "_" "<" "|" : "⊴"
+<dead compose> "_" "|" ">" : "⊵"
+<dead compose> ("_" "⊲") : "⊴"
+<dead compose> ("_" "⊳") : "⊵"
+<shift dead compose> "o" "-" "." : "⊶"
+<dead compose> "⊷" "⊷" : "⊶"
+<shift dead compose> "." "-" "o" : "⊷"
+<dead compose> "⊶" "⊶" : "⊷"
+<shift dead compose> "-" "o" : "⊸"
+<dead compose> "⟜" "⟜" : "⊸"
+<dead compose> ("⊶" "⊷") : "⊸"
+<shift dead compose> "-" ["|" "¦"] "-" : "⊹"
+<dead compose> <m> <T> : "⊺"
+<dead compose> ("_" "∨") : "⊻"
+<dead compose> ("/" ["∧" "&"]) : "⊼"
+<dead compose> ("/" "∨") : "⊽"
+<dead compose> (["L" "∟"] ")") : "⊾"
+<dead compose> "∠" "|" : "⊿"
+<dead compose> "M" "&" : "⋀"
+<dead compose> "⋁" "⋁" : "⋀"
+<dead compose> "⋀" "⋀" : "⋁"
+<dead compose> "M" "V" : "⋁"
+<dead compose> "M" "N" : "⋂"
+<dead compose> "⋃" "⋃" : "⋂"
+<dead compose> "⋂" "⋂" : "⋃"
+<dead compose> "M" "U" : "⋃"
+<shift dead compose> "M" "." : "⋄"
+<shift dead compose> "m" "." : "⋅"
+<dead compose> "m" "*" : "⋆"
+<dead compose> ("÷" "×") : "⋇"
+<dead compose> ("⋉" "⋊") : "⋈"
+<shift dead compose> "|" ["X" "x"] "|" : "⋈"
+<dead compose> "|" ["X" "x"] : "⋉"
+<dead compose> ["X" "x"] "|" : "⋊"
+<shift dead compose> (">" "\\") : "⋋"
+<shift dead compose> (">" "/") : "⋌"
+<dead compose> ("_" "∽") : "⋍"
+<shift dead compose> (["(" ")"] "∧") : "⋎"
+<shift dead compose> (["(" ")"] "∨") : "⋏"
+<dead compose> "⊂" "⊂" : "⋐"
+<dead compose> "⊃" "⊃" : "⋑"
+<shift dead compose> "∩" "∩" : "⋒"
+<shift dead compose> "∪" "∪" : "⋓"
+<dead compose> ("∩" "|") : "⋔"
+<dead compose> "#" "#" : "⋕"
+<shift dead compose> ("|" "=") : "⋕"
+<dead compose> "<" "." : "⋖"
+<dead compose> "." ">" : "⋗"
+<dead compose> "<" "<" "<" : "⋘"
+<dead compose> ">" ">" ">" : "⋙"
+<dead compose> "≤" "≥" : "⋚"
+<dead compose> ("≶" ["-" "_"]) : "⋚"
+<dead compose> "≥" "≤" : "⋛"
+<dead compose> ("≷" ["-" "_"]) : "⋛"
+<shift dead compose> ("_" "<") : "⋜"
+<shift dead compose> ("_" ">") : "⋝"
+<shift dead compose> ("_" "≺") : "⋞"
+<shift dead compose> ("_" "≻") : "⋟"
+<shift dead compose> (["(" ")"] "/" "_") "<" : "⋠"
+<dead compose> ("/" "≼") : "⋠"
+<shift dead compose> (["(" ")"] "/" "_") ">" : "⋡"
+<dead compose> ("/" "≽") : "⋡"
+<dead compose> ("/" "⊑") : "⋢"
+<dead compose> ("/" "⊒") : "⋣"
+<dead compose> ("/" "⊏") : "⋤"
+<dead compose> ("/" "⊐") : "⋥"
+<dead compose> ("≁" "<") : "⋦"
+<dead compose> ("≁" ">") : "⋧"
+<dead compose> ("≁" "≺") : "⋨"
+<dead compose> ("≁" "≻") : "⋩"
+<dead compose> ("/" "⊲") : "⋪"
+<dead compose> ("/" "⊳") : "⋫"
+<dead compose> ("/" "⊴") : "⋬"
+<dead compose> ("/" "⊵") : "⋭"
+<shift dead compose> "." "|" : "⋮"
+<shift dead compose> "." "-" : "⋯"
+<shift dead compose> "." "/" : "⋰"
+<shift dead compose> "." "\\" : "⋱"
+<shift dead compose> ("C" "-") : "⋲"
+<dead compose> "⋲" "|" : "⋳"
+<dead compose> "." "⋳" : "⋴"
+<dead compose> "." "⋲" : "⋵"
+<shift dead compose> ("_" ["⋲" "⋳"]) : "⋶"
+[<dead compose> <shift dead compose>] ("_" "⋴") : "⋷"
+<shift dead compose> ("." ["⋶" "⋶"]) : "⋷"
+<dead compose> ("_" ["⋲" "⋳"]) : "⋸"
+<dead compose> "⋽" "⋽" : "⋸"
+<shift dead compose> ("C" "=") : "⋹"
+<dead compose> "€" "€" : "⋹"
+<dead compose> (["-" "="] ["⋲" "⋳"]) : "⋹"
+<dead compose> "⋲" "⋲" : "⋺"
+<dead compose> "⋳" "⋳" : "⋻"
+<dead compose> "⋴" "⋴" : "⋼"
+<dead compose> ("." ["⋺" "⋻"]) : "⋼"
+<dead compose> "⋸" "⋸" : "⋽"
+[<dead compose> <shift dead compose>] ("_" ["⋺" "⋻"]) : "⋽"
+<dead compose> ("." "⋽") : "⋾"
+<dead compose> "⋷" "⋷" : "⋾"
+[<dead compose> <shift dead compose>] ("_" "⋼") : "⋾"
+<dead compose> "∃" "∃" : "⋿"
+
+# TODO Miscellaneous Technical
+# TODO Control Pictures
+# TODO Optical Character Recognition
+
+# Enclosed Alphanumerics:
+for "1" to "9" as \1
+  <dead compose> "(" "\1" ")"             : "\add(\u2460 \sub(\1 "1"))"
+  <dead compose> "(" " " "\1" [" " .] ")" : "\add(\u2474 \sub(\1 "1"))"
+  <dead compose> "(" "\1" " " ")"         : "\add(\u2474 \sub(\1 "1"))"
+  <dead compose> "\1" "."                 : "\add(\u2488 \sub(\1 "1"))"
+end for
+for "0" to "9" as \1
+  <dead compose> "(" "1" "\1" ")"             : "\add(\u2469 \sub(\1 "0"))"
+  <dead compose> "(" " " "1" "\1" [" " .] ")" : "\add(\u247D \sub(\1 "0"))"
+  <dead compose> "(" "1" "\1" " " ")"         : "\add(\u247D \sub(\1 "0"))"
+  <dead compose> "1" "\1" "."                 : "\add(\u2491 \sub(\1 "0"))"
+end for
+<dead compose> "(" "2" "0" ")"             : "\u2473"
+<dead compose> "(" " " "2" "0" [" " .] ")" : "\u2487"
+<dead compose> "(" "2" "0" " " ")"         : "\u2473"
+<dead compose> "2" "0" "."                 : "\u2498"
+for "a" to "z" as \1
+  <dead compose> "(" " " "\1" [" " .] ")" : "\add(\u249C \sub(\1 "a"))"
+  <dead compose> "(" "\1" " " ")"         : "\add(\u249C \sub(\1 "a"))"
+end for
+for "A" to "Z" as \1
+  <dead compose> "(" "\1" ")" : "\add(\u24B6 \sub(\1 "A"))"
+end for
+for "a" to "z" as \1
+  <dead compose> "(" "\1" ")" : "\add(\u24D0 \sub(\1 "a"))"
+end for
+<dead compose> "(" "0" ")" : "\u24EA"
+for "1" to "9" as \1
+  <dead compose> "(" "(" "(" "1" "\1" ")" ")" ")" : "\add(\u24EB \sub(\1 "1"))"
+end for
+<dead compose> "(" "(" "(" "2" "0" ")" ")" ")" : "\u24F4"
+for "1" to "9" as \1
+  <dead compose> "(" "(" "\1" ")" ")" : "\add(\u24F5 \sub(\1 "1"))"
+end for
+<dead compose> "(" "(" "1" "0" ")" ")" : "\u24FE"
+<dead compose> "(" "(" "(" "0" ")" ")" ")" : "\u24FF"
+
+# Box Drawing:
+<dead compose> ("╴" "╶") : "─"
+<dead compose> ("╸" "╺") : "━"
+<shift dead compose> "b" "-" : "─"
+<shift dead compose> "B" "-" : "━"
+<shift dead compose> "b" "|" : "│"
+<shift dead compose> "B" "|" : "┃"
+<shift dead compose> "b" "." "-" : "┄"
+<shift dead compose> "B" "." "-" : "┅"
+<dead compose> "┄" "┄" : "┅"
+<shift dead compose> "b" "." "|" : "┆"
+<shift dead compose> "B" "." "|" : "┇"
+<dead compose> "┆" "┆" : "┇"
+<shift dead compose> "b" ":" "-" : "┈"
+<shift dead compose> "B" ":" "-" : "┉"
+<dead compose> "┈" "┈" : "┉"
+<shift dead compose> "b" ":" "|" : "┊"
+<shift dead compose> "B" ":" "|" : "┋"
+<dead compose> "┊" "┊" : "┋"
+macro boxes/2
+  let \3 : {
+    3 48 12 192      999 999 999 999  999 999 999 999  10 40 130 160
+    9 24 129 144     6 36 66 96       5 20 65 80       14 44 74 132
+    194 104 164 224  13 28 73 133     193 88 146 208   11 26 41 56
+    131 146 161 176  7 22 37 52       67 82 97 112     15 30 45 60
+    75 135 195 90    105 150 165 120  180 210 225 240  999 999 999 999
+    999 999 999 999  999 999 999 999  999 999 999 999  999 999 999 999
+    999 999 999 999  999 999 999 999  999 999 999 999  999 999 999 999
+    999 999 999 999  1 4 2 8          16 64 32 128     33 132 18 40
+  }
+  let \4 : \get(\3 \1)
+  let \5 : \get(\3 \2)
+  if \or(\equals(\4 999) \equals(\5 999))
+    return
+  endif
+  let \6 : { \and(\4 16) \and(\4 32) \and(\4 64) \and(\4 128) }
+  let \7 : { \and(\5 16) \and(\5 32) \and(\5 64) \and(\5 128) }
+  let \4 : { \and(\4 1) \and(\4 2) \and(\4 4) \and(\4 8) }
+  let \5 : { \and(\5 1) \and(\5 2) \and(\5 4) \and(\5 8) }
+  for 0 to 3 as \8
+    \set(\4 \8 \add(\rsh(\get(\4 \8) \8) \mul(2 \rsh(\get(\6 \8)))))
+    \set(\5 \8 \add(\rsh(\get(\5 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
+    \set(\4 \8 \add(\get(\4 \8) \get(\4 \8)))
+    if \greater(\get(\4 \8), 2)
+      \set(\4, \8, 2)
+    endif
+  end for
+  for 0 to 127 as \5
+    let \6 : \get(\3 \5)
+    if \equals(\4 999)
+      continue
+    endif
+    let \7 : { \and(\6 16) \and(\6 32) \and(\6 64) \and(\6 128) }
+    let \6 : { \and(\6 1) \and(\6 2) \and(\6 4) \and(\6 8) }
+    for 0 to 3 as \8
+      \set(\6 \8 \add(\rsh(\get(\6 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
+    end for
+    if \equals(\get(\6 0) \get(\4 0))
+      if \equals(\get(\6 1) \get(\4 1))
+        if \equals(\get(\6 2) \get(\4 2))
+          if \equals(\get(\6 3) \get(\4 3))
+            <dead compose> ("\add(\u2500 \1)" "\add(\u2500 \2)") : "\add(\u2500 \5)"
+          end if
+        end if
+      end if
+    end if
+  end for
+end macro
+for 0 to 127 as \1
+  for \1 to 127 as \2
+    boxes(\1 \2)
+  end for
+end for
+<shift dead compose> "b" "+" : "┼"
+<shift dead compose> "B" "+" : "╋"
+<dead compose> (["-" "─"] ["|" "│"]) : "┼"
+<shift dead compose> "b" "." "." : "╌"
+<shift dead compose> "B" "." "." : "╍"
+<dead compose> "╌" "╌" : "╍"
+<shift dead compose> "b" "¦" : "╎"
+<shift dead compose> "b" "." ":" : "╎"
+<shift dead compose> "B" "¦" : "╏"
+<shift dead compose> "B" "." ":" : "╏"
+<dead compose> "╎" "╎" : "╏"
+<shift dead compose> "b" "=" "-" : "═"
+<dead compose> ("=" "─") : "═"
+<shift dead compose> "b" "=" "|" : "║"
+<dead compose> ("=" "│") : "║"
+<dead compose> ("+" "┍") : "╒"
+<dead compose> ("+" "┎") : "╓"
+<dead compose> ("+" ["┌" "┏"]) : "╔"
+<dead compose> ("+" "┑") : "╕"
+<dead compose> ("+" "┒") : "╖"
+<dead compose> ("+" ["┐" "┓"]) : "╗"
+<dead compose> ("+" "┕") : "╘"
+<dead compose> ("+" "┖") : "╙"
+<dead compose> ("+" ["└" "┗"]) : "╚"
+<dead compose> ("+" "┙") : "╛"
+<dead compose> ("+" "┚") : "╜"
+<dead compose> ("+" ["┘" "┛"]) : "╝"
+<dead compose> ("+" "┝") : "╞"
+<dead compose> ("+" "┠") : "╟"
+<dead compose> ("+" ["├" "┣"]) : "╠"
+<dead compose> ("+" "┥") : "╡"
+<dead compose> ("+" "┨") : "╢"
+<dead compose> ("+" ["┤" "┫"]) : "╣"
+<dead compose> ("+" "┯") : "╤"
+<dead compose> ("+" "┰") : "╥"
+<dead compose> ("+" ["┬" "┳"]) : "╦"
+<dead compose> ("+" "┷") : "╧"
+<dead compose> ("+" "┸") : "╨"
+<dead compose> ("+" ["┴" "┻"]) : "╩"
+<dead compose> ("+" "┿") : "╪"
+<dead compose> ("+" "╂") : "╫"
+<dead compose> ("+" ["┼" "╋"]) : "╬"
+<shift dead compose> "b" "=" "+" : "╬"
+<dead compose> ("=" "┼") : "╬"
+<dead compose> (["o" "O"] "┌") : "╭"
+<dead compose> (["o" "O"] "┐") : "╮"
+<dead compose> (["o" "O"] "┘") : "╯"
+<dead compose> (["o" "O"] "└") : "╰"
+<shift dead compose> "b" "/" : "╱"
+<shift dead compose> "b" "\\" : "╲"
+<dead compose> ("╱" "╲") : "╳"
+<shift dead compose> "b" "X" : "╳"
+<shift dead compose> "b" ["<" "←"] : "╴"
+<shift dead compose> "b" [<dead letter ^> "^" "↑"] : "╵"
+<shift dead compose> "b" [">" "→"] : "╶"
+<shift dead compose> "b" ["v" "," "↓"] : "╷"
+<shift dead compose> "B" ["<" "←"] : "╸"
+<shift dead compose> "B" [<dead letter ^> "^" "↑"] : "╹"
+<shift dead compose> "B" [">" "→"] : "╺"
+<shift dead compose> "B" ["v" "," "↓"] : "╻"
+
+# Block Elements:
+<shift dead compose> "B" <dead compose> : <dead letter █>
+dead_ascii("█")
+<dead letter █> "|" : <dead letter ▀>
+dead_ascii("▀")
+<dead letter ▀> "0" : "▀"
+<dead letter ▀> "1" : "▁"
+<dead letter ▀> "2" : "▂"
+<dead letter ▀> "3" : "▃"
+<dead letter ▀> "4" : "▄"
+<dead letter ▀> "5" : "▅"
+<dead letter ▀> "6" : "▆"
+<dead letter ▀> "7" : "▇"
+<dead letter █> "-" : <dead letter ▐>
+dead_ascii("▐")
+<dead letter ▐> "7" : "▉"
+<dead letter ▐> "6" : "▊"
+<dead letter ▐> "5" : "▋"
+<dead letter ▐> "4" : "▌"
+<dead letter ▐> "3" : "▍"
+<dead letter ▐> "2" : "▎"
+<dead letter ▐> "1" : "▏"
+<dead letter ▐> "0" : "▐"
+<dead letter █> "1" : "░"
+<dead letter █> "2" : "▒"
+<dead letter █> "3" : "▓"
+<dead letter ▀> "-" : "▔"
+<dead letter ▐> "|" : "▕"
+<dead letter █> "," : "▖"
+<dead letter █> "." : "▗"
+<dead letter █> ";" : "▘"
+<dead letter █> "▝" : "▙"
+<dead compose> "▗" "▘" : "▚"
+<dead letter █> "▗" : "▛"
+<dead letter █> "▖" : "▜"
+<dead letter █> ":" : "▝"
+<dead compose> "▖" "▝" : "▞"
+<dead letter █> "▘" : "▟"
+
+# Geometric Shapes:
+<dead compose> "□" "□" : "■"
+<shift dead compose> "s" "[" "]" :"□"
+<dead compose> "(" "□" ")" : "▢"
+<dead compose> ("■" "□") : "▣"
+<dead compose> ("-" "□") : "▤"
+<dead compose> ("|" "□") : "▥"
+<dead compose> ("+" "□") : "▦"
+<dead compose> ("\\" "□") : "▧"
+<dead compose> ("/" "□") : "▨"
+<dead compose> (["x" "X"] "") : "▩"
+<dead compose> "." "◾" : "▪"
+<dead compose> "." "◽" : "▫"
+<dead compose> "▭" "▭" : "▬"
+<dead compose> "-" "■" : "▬"
+<dead compose> "-" "□" : "▭"
+<shift dead compose> "-" "[" "]" : "▭"
+<dead compose> "▯" "▯" : "▮"
+<dead compose> "|" "■" : "▮"
+<dead compose> "|" "□" : "▯"
+<shift dead compose> "|" "[" "]" : "▯"
+<dead compose> "▱" "▱" : "▰"
+<dead compose> "/" "■" : "▰"
+<dead compose> "/" "□" : "▱"
+<shift dead compose> "/" "[" "]" : "▱"
+<dead compose> "△" "△" : "▲"
+<shift dead compose> "s" "⇑" : "▲"
+<shift dead compose> "s" "↑" : "△"
+<dead compose> "▵" "▵" : "▴"
+<dead compose> "." "▲" : "▴"
+<dead compose> "." "△" : "▵"
+<dead compose> "▷" "▷" : "▶"
+<shift dead compose> "s" "⇒" : "▶"
+<shift dead compose> "s" "→" : "▷"
+<dead compose> "▹" "▹" : "▸"
+<dead compose> "." "▶" : "▸"
+<dead compose> "." "▷" : "▹"
+<dead compose> "▻" "▻" : "►"
+<dead compose> "-" "▶" : "►"
+<dead compose> "-" "▷" : "▻"
+<dead compose> "▽" "▽" : "▼"
+<shift dead compose> "s" "⇓" : "▼"
+<shift dead compose> "s" "↓" : "▽"
+<dead compose> "▿" "▿" : "▾"
+<dead compose> "." "▼" : "▾"
+<dead compose> "." "▽" : "▿"
+<dead compose> "◁" "◁" : "◀"
+<shift dead compose> "s" "⇐" : "◀"
+<shift dead compose> "s" "←" : "◁"
+<dead compose> "◃" "◃" : "◂"
+<dead compose> "." "◀" : "◂"
+<dead compose> "." "◁" : "◃"
+<dead compose> "◅" "◅" : "◄"
+<dead compose> "-" "◀" : "◄"
+<dead compose> "-" "◁" : "◅"
+<dead compose> "◇" "◇" : "◆"
+<dead compose> "◀" "▶" : "◆"
+<dead compose> "◁" "▷" : "◇"
+<dead compose> ("◆" "◇") : "◈"
+<dead compose> ("●" "○") : "◉"
+<shift dead compose> "s" "<" ">" : "◊"
+<shift dead compose> "s" "(" ")" : "○"
+<dead compose> "." "◯" : "○"
+<dead compose> "○" "." : "◌"
+<dead compose> "○" "|" : "◍"
+<dead compose> ("○" "o") : "◎"
+<dead compose> "○" "○" : "●"
+<dead compose> ("◖" "○") : "◐"
+<dead compose> ("◗" "○") : "◑"
+<dead compose> "◑" "◑" : "◒"
+<dead compose> "◓" "◓" : "◒"
+<dead compose> "◐" "◐" : "◓"
+<dead compose> "◒" "◒" : "◓"
+<dead compose> "◷" "◷" : "◔"
+<dead compose> "◴" "◴" : "◕"
+<shift dead compose> "s" "(" "|" : "◖"
+<shift dead compose> "s" "|" ")" : "◗"
+<dead compose> ("■" "◦") : "◘"
+<dead compose> ("■" ["◯" "○"]) : "◙"
+<dead compose> ("◚" "◛") : "◙"
+<dead compose> ("■" ["◠" "◜" "◝"]) : "◚"
+<dead compose> ("■" ["◡" "◟" "◞"]) : "◛"
+<dead compose> (["◯" "○"] "↖") : "◜"
+<dead compose> (["◯" "○"] "↗") : "◝"
+<dead compose> (["◯" "○"] "↘") : "◞"
+<dead compose> (["◯" "○"] "↙") : "◟"
+<dead compose> (["◯" "○"] "↑") : "◠"
+<dead compose> ("◜" "◝") : "◠"
+<dead compose> (["◯" "○"] "↓") : "◡"
+<dead compose> ("◟" "◞") : "◡"
+<shift dead compose> "s" "⇘" : "◢"
+<dead compose> "◿" "◿" : "◢"
+<shift dead compose> "s" "⇙" : "◣"
+<dead compose> "◺" "◺" : "◣"
+<shift dead compose> "s" "⇖" : "◤"
+<dead compose> "◸" "◸" : "◤"
+<shift dead compose> "s" "⇗" : "◥"
+<dead compose> "◹" "◹" : "◥"
+<dead compose> "." "○" : "◦"
+<dead compose> (["□" "◻" "◽"] ["←" "⇐"]) : "◧"
+<dead compose> (["□" "◻" "◽"] ["→" "⇒"]) : "◨"
+<dead compose> ("◿" "◤") : "◩"
+<dead compose> (["□" "◻" "◽"] "◤") : "◩"
+<dead compose> ("◸" "◢") : "◪"
+<dead compose> (["□" "◻" "◽"] "◢") : "◪"
+<dead compose> "[" "|" "]" : ◫
+<dead compose> "◿" ["." .] "◺" : "◬"
+<dead compose> "" "◺" : "◭"
+<dead compose> "⧨" "⧨" : "◭"
+<dead compose> "◿" "" : "◮"
+<dead compose> "⧩" "⧩" : "◮"
+<dead compose> "+" "○" : "◯"
+<dead compose> ("◜" "◟") : "◯"
+<dead compose> ("◝" "◞") : "◯"
+<dead compose> ("◠" "◡") : "◯"
+<dead compose> ("◴" ["□" "◻"]) : "◰"
+<dead compose> ("◵" ["□" "◻"]) : "◱"
+<dead compose> ("◶" ["□" "◻"]) : "◲"
+<dead compose> ("◷" ["□" "◻"]) : "◳"
+<dead compose> ("○" "◜") : "◴"
+<dead compose> ("○" "◟") : "◵"
+<dead compose> ("○" "◞") : "◶"
+<dead compose> ("○" "◝") : "◷"
+<shift dead compose> "s" "↖" : "◸"
+<shift dead compose> "s" "↗" : "◹"
+<shift dead compose> "s" "↙" : "◺"
+<dead compose> "." "□" : "◻"
+<dead compose> "." "■" : "◼"
+<dead compose> "◻" "◻" : "◼"
+<dead compose> "." "◻" : "◽"
+<dead compose> "◽" "◽" : "◾"
+<dead compose> "." "◼" : "◾"
+<shift dead compose> "s" "↘" : "◿"
+
+# TODO Miscellaneous Symbols
+# TODO Dingbats
+
+# Miscellaneous Mathematical Symbols-A:
+<shift dead compose> "L" "/" : "⟀"
+<shift dead compose> ["Δ" "∆"] ["Δ" "∆"] : "⟁"
+<shift dead compose> "!" "|" : "⟂"
+<dead compose> ("⊂" "o") : "⟃"
+<dead compose> ("⊃" "o") : "⟄"
+<dead compose> "⟆" "⟆" : "⟅"
+<shift dead compose> (["~" <dead letter ~>] ["L" "l"]) : "⟅"
+<shift dead compose> (["~" <dead letter ~>] ["J" "j"]) : "⟆"
+<dead compose> "⟅" "⟅" : "⟆"
+<dead compose> ("∨" ".") : "⟇"
+<dead compose> "⟑" "⟑" : "⟇"
+<dead compose> "\\" "⊂" : "⟈"
+<dead compose> "⊃" "/" : "⟉"
+<dead compose> ("-" "|") : "⟊"
+<shift dead compose> "/" "/" : "⟋"
+<shift dead compose> (")" "7") : "⟌"
+<shift dead compose> "\\" "\\" : "⟍"
+<dead compose> "[" "∧" "]" : "⟎"
+<dead compose> "[" "∨" "]" : "⟏"
+<shift dead compose> "<" "." ">" : "⟐"
+<dead compose> ("∧" ".") : "⟑"
+<dead compose> "⟇" "⟇" : "⟑"
+<dead compose> "⫙" "⫙" : "⟒"
+<dead compose> ("∪" "|") : "⟒"
+<dead compose> "⟔" "⟔" : "⟓"
+<shift dead compose> "_" "." "|" : "⟓"
+<shift dead compose> "|" "." "_" : "⟔"
+<dead compose> "⟓" "⟓" : "⟔"
+<dead compose> "=" "⨝" : "⟕"
+<dead compose> "=" "⊳" : "⟕"
+<dead compose> "⟖" "⟖" : "⟕"
+<dead compose> "⊲" "=" : "⟖"
+<dead compose> "⨝" "=" : "⟖"
+<dead compose> "⟕" "⟕" : "⟖"
+<dead compose> "⨝" "⨝" : "⟗"
+<dead compose> "⟕" "⟖" : "⟗"
+<shift dead compose> "=" "⨝" "=" : "⟗"
+<dead letter ^> "⟘" : "⟘"
+<dead compose> "⟙" "⟙" : "⟘"
+<dead letter ^> "⟙" : "⟙"
+<dead compose> "⟘" "⟘" : "⟙"
+<dead compose> "⫤" "⊨" : "⟚"
+<dead compose> "⊣" "⊢" : "⟛"
+<shift dead compose> "o" "-" <space> : "⟜"
+<dead compose> "⊸" "⊸" : "⟜"
+<shift dead compose> "|" "-" "-" "-" : "⟝"
+<dead compose> "⊢" "-" : "⟝"
+<shift dead compose> "-" "-" "-" "|" : "⟞"
+<dead compose> "-" "⊣" : "⟞"
+<dead compose> "⫱" "⫱" : "⟟"
+<shift dead compose> "o" "|" "-" : "⟟"
+<dead compose> ("-" "⫯") : "⟟"
+<shift dead compose> "<" "-" ">" : "⟠"
+<shift dead compose> "." "<" ">" : "⟡"
+<shift dead compose> "-" "<" ">" : "⟢"
+<dead compose> "-" "⟡" : "⟢"
+<dead compose> "⟣" "⟣" : "⟢"
+<shift dead compose> "<" ">" "-" : "⟣"
+<dead compose> "⟡" "-" : "⟣"
+<dead compose> "⟢" "⟢" : "⟣"
+<shift dead compose> "-" "[" "]" : "⟤"
+<dead compose> "⟥" "⟥" : "⟤"
+<shift dead compose> "[" "]" "-" : "⟥"
+<dead compose> "⟤" "⟤" : "⟥"
+<dead compose> "[" "[" : "⟦"
+<dead compose> "]" "]" : "⟧"
+<dead compose> "<" "⟨" : "⟨"
+<dead compose> ")" ">" : "⟩"
+<dead compose> "⟨" "⟨" : "⟪"
+<dead compose> "⟩" "⟩" : "⟫"
+<dead compose> "(" "|" : "⟬"
+<dead compose> "|" ")" : "⟭"
+<dead compose> "|" "(" : "⟮"
+<dead compose> ")" "|" : "⟯"
+
+# Supplemental Arrows-A:
+<dead compose> "⤊" "⤊" : "⟰"
+<dead compose> "⤋" "⤋" : "⟱"
+<dead compose> ("↶" ["O" "o"]) : "⟲"
+<dead compose> "↺" "↺" : "⟲"
+<dead compose> ("↷" ["O" "o"]) : "⟳"
+<dead compose> "↻" "↻" : "⟳"
+<dead compose> ("O" "→") : "⟴"
+<dead compose> "⇴" "⇴" : "⟴"
+<dead compose> ("|" "⇴") : "⟴"
+<dead compose> "←" "-" : "⟵"
+<dead compose> "-" "→" : "⟶"
+<dead compose> "⟵" "⟶" : "⟷"
+<dead compose> "⇐" "=" : "⟸"
+<dead compose> "=" "⇒" : "⟹"
+<dead compose> "⟸" "⟹" : "⟺"
+<dead compose> "↤" "↤" : "⟻"
+<dead compose> "⟵" "|" : "⟻"
+<dead compose> "↦" "↦" : "⟼"
+<dead compose> "|" "⟶" : "⟼"
+<dead compose> "⟸" "|" : "⟽"
+<dead compose> "|" "⟹" : "⟾"
+<dead compose> "⇝" "⇝" : "⟿"
+<dead compose> "←" "|" : "↤"
+<dead compose> ("-" "↑") : "↥"
+<dead compose> "|" "→" : "↦"
+
+# Braille Patterns:
+function braille/1
+  \or(\lsh(1 \sub("\1" "0")) "\u2800")
+end function
+macro braille_double/1
+  let \2 : "\u2800"
+  if \and(\1 1) = 1
+    let \2 : \or(\2 8)
+  endif
+  if \and(\1 2) = 2
+    let \2 : \or(\2 16)
+  endif
+  if \and(\1 4) = 4
+    let \2 : \or(\2 32)
+  endif
+  if \and(\1 8) = 8
+    let \2 : \or(\2 1)
+  endif
+  if \and(\1 16) = 16
+    let \2 : \or(\2 2)
+  endif
+  if \and(\1 32) = 32
+    let \2 : \or(\2 4)
+  endif
+  if \and(\1 64) = 64
+    let \2 : \or(\2 128)
+  endif
+  if \and(\1 128) = 128
+    let \2 : \or(\2 64)
+  endif
+  <dead compose> "\1" "\1" : "\or(\1 \2)"
+end macro
+<shift dead compose> "b" <space> : "\u2800"
+for "1" to "8" as \1
+  <shift dead compose> "b" "\1" : "\braille(\1)"
+  for \add(\1 1) to "8" as \2
+    <shift dead compose> "B" ("\1" "\2") : "\or(\braille(\1) \braille(\2))"
+  end for
+end for
+for "\u2800" to "\u28FF" as \1
+  braille_double(\1)
+  for \add(\1 1) to "\u28FF" as \2
+    <dead compose> ("\1" "\2") : "\or(\1 \2)"
+  end for
+end for
+
+# Supplemental Arrows-B:
+<shift dead compose> "|" "↠" : "⤀"
+<shift dead compose> "|" "⤀" : "⤁"
+<shift dead compose> "|" "⇐" : "⤂"
+<shift dead compose> "|" "⇒" : "⤃"
+<shift dead compose> "|" "⇔" : "⤄"
+<dead compose> "⤂" "⤃" : "⤄"
+<dead compose> "|" "↠" : "⤅"
+<dead compose> "⇐" "|" : "⤆"
+<dead compose> "|" "⇒" : "⤇"
+<shift dead compose> "-" "↓" : "⤈"
+<shift dead compose> "-" "↑" : "⤉"
+<dead compose> "⇑" "⇑" : "⤊"
+<dead compose> "⇓" "⇓" : "⤋"
+<dead compose> ("¦" "←") : "⤌"
+<dead compose> ("¦" "→") : "⤍"
+<dead compose> ("." "←") : "⤎"
+<dead compose> ("." "→") : "⤏"
+<dead compose> "." "⤖" : "⤐"
+<dead compose> ("…" "→") : "⤑"
+<dead compose> "_" "↑" : "⤒"
+<dead compose> "↓" "_" : "⤓"
+<dead compose> ("|" "↣") : "⤔"
+<dead compose> ("|" "⤔") : "⤕"
+<dead compose> ">" "↠" : "⤖"
+<dead compose> ("|" "⤖") : "⤗"
+<dead compose> ("|" "⤗") : "⤘"
+<shift dead compose> "-" "-" "<" : "⤙"
+<shift dead compose> ">" "-" "-" : "⤚"
+<shift dead compose> "⤙" ["<" "⤙"] : "⤛"
+<shift dead compose> [">" "⤚"] "⤚" : "⤜"
+<shift dead compose> "." "←" "⤝"
+<shift dead compose> "→" "." "⤞"
+<dead compose> "⤝" "|" : "⤟"
+<dead compose> "|" "⤞" : "⤠"
+<shift dead compose> "↖" "↘" : "⤡"
+<shift dead compose> "↙" "↗" : "⤢"
+<dead compose> ")" "↖" : "⤣"
+<dead compose> "↗" "(" : "⤤"
+<dead compose> "↘" "(" : "⤥"
+<dead compose> ")" "↙" : "⤦"
+<dead compose> "↖" "↗" "⤧"
+<dead compose> "↗" "↘" "⤨"
+<dead compose> "↘" "↙" "⤩"
+<dead compose> "↙" "↖" "⤪"
+<shift dead compose> "X" "\\" "/" : "⤫"
+<shift dead compose> "X" "/" "\\" : "⤬"
+<dead compose> "⤬" "⤨" : "⤭"
+<dead compose> "⤬" ("↗" "↘") : "⤭"
+<shift dead compose> "↗" "↘" : "⤭"
+<dead compose> "⤫" "⤨" : "⤮"
+<dead compose> "⤫" ("↗" "↘") : "⤮"
+<shift dead compose> "↘" "↗" : "⤮"
+<dead compose> "⤬" "↗" : "⤯"
+<shift dead compose> "↗" "\\" : "⤯"
+<dead compose> "⤫" "↘" : "⤰"
+<shift dead compose> "↘" "/" : "⤰"
+<dead compose> "⤫" "⤧" : "⤱"
+<dead compose> "⤫" "(↖" "↗") : "⤱"
+<shift dead compose> "↖" "↗" : "⤱"
+<dead compose> "⤬" "⤧" : "⤲"
+<dead compose> "⤬" "(↖" "↗") : "⤱"
+<shift dead compose> "↗" "↖" : "⤱"
+<shift dead compose> (["~" <dead letter ~>] "→") : "⤳"
+<shift dead compose> ["O" "o"] "→" "↑" : "⤴"
+<shift dead compose> ["O" "o"] "→" "↓" : "⤵"
+<shift dead compose> ["O" "o"] "↓" "←" : "⤶"
+<shift dead compose> ["O" "o"] "↓" "→" : "⤷"
+<dead compose> (")" "↓") : "⤸"
+<dead compose> ("(" "↓") : "⤹"
+<shift dead compose> ("n" "←") : "⤺"
+<shift dead compose> ("u" "→") : "⤻"
+<dead compose> "⤽" "⤽" : "⤼"
+<shift dead compose> "n" "-" "→" : "⤼"
+<shift dead compose> "n" "+" "←" : "⤽"
+<dead compose> "⤺" "+" : "⤽"
+<dead compose> "⤼" "⤼" : "⤽"
+<shift dead compose> "←" "." <space> : "⤾"
+<dead compose> "⥁" "⥁" : "⤾"
+<shift dead compose> "→" "." <space> : "⤿"
+<dead compose> "⥀" "⥀" : "⤿"
+<shift dead compose> "←" "O" : "⥀"
+<shift dead compose> "→" "O" : "⥁"
+<shift dead compose> "→" "." "←" : "⥂"
+<shift dead compose> "←" "." "→" : "⥃"
+<shift dead compose> "." "→" "←" : "⥄"
+<shift dead compose> "→" "+" : "⥅"
+<shift dead compose> "←" "+" : "⥆"
+<dead compose> "x" "→" : "⥇"
+<dead compose> ("↔" "o") : "⥈"
+<dead compose> "↟" "o" : "⥉"
+<shift dead compose> "↼" "⇁" : "⥊"
+<shift dead compose> "↽" "⇀" : "⥋"
+<shift dead compose> "↾" "⇃" : "⥌"
+<shift dead compose> "↿" "⇂" : "⥍"
+<shift dead compose> "↼" "⇀" : "⥎"
+<shift dead compose> "↾" "⇂" : "⥏"
+<shift dead compose> "↽" "⇁" : "⥐"
+<shift dead compose> "↿" "⇃" : "⥑"
+<dead compose> "|" "↼" : "⥒"
+<dead compose> "⇀" "|" : "⥓"
+<dead compose> "-" "↾" : "⥔"
+<dead compose> "⇂" "-" : "⥕"
+<dead compose> "|" "↽" : "⥖"
+<dead compose> "⇁" "|" : "⥗"
+<dead compose> "-" "↿" : "⥘"
+<dead compose> "⇃" "-" : "⥙"
+<dead compose> "↼" "|" : "⥚"
+<dead compose> "|" "⇀" : "⥛"
+<dead compose> "↾" "-" : "⥜"
+<dead compose> "-" "⇂" : "⥝"
+<dead compose> "↽" "|" : "⥞"
+<dead compose> "|" "⇁" : "⥟"
+<dead compose> "↿" "-" : "⥠"
+<dead compose> "-" "⇃" : "⥡"
+<dead compose> "↼" "↽" : "⥢"
+<dead compose> "↿" "↾" : "⥣"
+<dead compose> "⇀" "⇁" : "⥤"
+<dead compose> "⇃" "⇂" : "⥥"
+<dead compose> "↼" "⇀" : "⥦"
+<dead compose> "↽" "⇁" : "⥧"
+<dead compose> "⇀" "↼" : "⥨"
+<dead compose> "⇁" "↽" : "⥩"
+<dead compose> "↼" "-" : "⥪"
+<dead compose> "↽" "-" : "⥫"
+<dead compose> "-" "⇀" : "⥬"
+<dead compose> "-" "⇁" : "⥭"
+<dead compose> "↿" "⇂" : "⥮"
+<dead compose> "⇃" "↾" : "⥯"
+<dead compose> ("⊃" "]") : "⥰"
+<shift dead compose> "=" "→" "⥱"
+<shift dead compose> ["~" <dead letter ~>] "→" "⥲"
+<shift dead compose> "←" ["~" <dead letter ~>] "⥳"
+<shift dead compose> "→" ["~" <dead letter ~>] "⥴"
+<shift dead compose> "→" "≈" "⥵"
+<shift dead compose> "<" "←" "⥶"
+<shift dead compose> "←" "<" "⥷"
+<shift dead compose> ">" "→" "⥸"
+<shift dead compose> "⊂" "→" "⥹"
+<shift dead compose> "←" "⊂" "⥺"
+<shift dead compose> "⊃" "←" "⥻"
+<dead compose> "{" "←" : "⥼"
+<dead compose> "→" "}" : "⥽"
+<dead compose> ["{" "}"] "↑" : "⥾"
+<dead compose> ["{" "}"] "↓" : "⥿"
+
+# Miscellaneous Mathematical Symbols-B:
+<shift dead compose> ":" "3" "|" : "⦀"
+<shift dead compose> "z" "." : "⦁"
+<shift dead compose> "z" ":" : "⦂"
+<dead compose> "{" "|" : "⦃"
+<dead compose> "|" "}" : "⦄"
+<shift dead compose> "|" "(" : "⦅"
+<shift dead compose> ")" "|" : "⦆"
+<shift dead compose> "(" "|" : "⦇"
+<shift dead compose> "|" ")" : "⦈"
+<dead compose> "⟨" "|" : "⦉"
+<dead compose> "|" "⟩" : "⦊"
+<dead compose> ("_" "[") : "⦋"
+<dead compose> ("_" "]") : "⦌"
+<dead compose> ("[" "\\") : "⦍"
+<dead compose> ("]" "\\") : "⦎"
+<dead compose> ("[" "/") : "⦏"
+<dead compose> ("]" "/") : "⦐"
+<dead compose> ("⟨" ["." "⋅"]) : "⦑"
+<dead compose> ("⟩" ["." "⋅"]) : "⦒"
+<dead compose> ("(" "<") : "⦓"
+<dead compose> (")" ">") : "⦔"
+<dead compose> (">" "⸨") : "⦕"
+<dead compose> ("<" "⸩") : "⦖"
+<dead compose> "⟬" "⟬" : "⦗"
+<dead compose> "⟭" "⟭" : "⦘"
+<shift dead compose> ":" ":" "|" : "⦙"
+<dead compose> ("⧘" "⧙") : "⦚"
+<dead compose> "}" "{" : "⦚"
+<dead compose> ("(" "⦣") : "⦛"
+<dead compose> ("∟" "]") : "⦜"
+<dead compose> ("∟" ".") : "⦝"
+<dead compose> (["∠" "⦟"] "s") : "⦞"
+<dead compose> ["∠" "."] "∠" : "⦟"
+<dead compose> "∢" "∢" : "⦠"
+<shift dead compose> ("(" ">") : "⦠"
+<shift dead compose> (["(" ")" ] ["v" "V"]) : "⦡"
+<shift dead compose> "¯" "/" : "⦢"
+<dead compose> "⦣" "⦣" : "⦢"
+<shift dead compose> "_" "\\" : "⦣"
+<dead compose> "⦢" "⦢" : "⦣"
+<dead compose> ("_" "⦣") : "⦤"
+<dead compose> ("_" ["∠" "⦟"]) : "⦥"
+<shift dead compose> "\\" "_" : "⦦"
+<shift dead compose> "/" ["^" <dead letter ~>] "_" : "⦧"
+<shift dead compose> "/" "¯" : "⦧"
+<dead compose> (["∠" "⦟" "∡"] "↗") : "⦨"
+<shift dead compose> ("-" "↗") : "⦨"
+<dead compose> (["⦛" "⦣"] "↖") : "⦩"
+<shift dead compose> ("-" "↖") : "⦩"
+<dead compose> ("⦢" "↘") : "⦪"
+<shift dead compose> ("-" "↘") : "⦩"
+<dead compose> ("⦢" "↙") : "⦫"
+<shift dead compose> ("-" "↙") : "⦩"
+<dead compose> ("⩗" "↗") : "⦬"
+<shift dead compose> ("|" "↗") : "⦬"
+<dead compose> ("⩗" "↖") : "⦭"
+<shift dead compose> ("|" "↖") : "⦭"
+<dead compose> ("⩘" "↘") : "⦮"
+<shift dead compose> ("|" "↘") : "⦮"
+<dead compose> ("⩘" "↙") : "⦯"
+<shift dead compose> ("|" "↙") : "⦯"
+<dead compose> "∅" "∅" : "⦰"
+<dead compose> ("∅" "_") : "⦱"
+composite("∅" "°" "⦲")
+<dead compose> ("∅" "→") : "⦳"
+<dead compose> ("∅" "←") : "⦴"
+<shift dead compose> "(" "-" "-" ")" : "⦵"
+<shift dead compose> "(" "|" ")" : "⦶"
+<shift dead compose> "(" "|" "|" ")" : "⦷"
+<shift dead compose> "(" "\\" ")" : "⦸"
+<shift dead compose> "(" ["⟂" "⊥"] ")" : "⦹"
+<dead compose> "⦺" "⦺" : "⦹"
+<shift dead compose> "(" "⫠" ")" : "⦺"
+<dead compose> "⦹" "⦹" : "⦺"
+<shift dead compose> "(" "X" )" : "⦻"
+<shift dead compose> "(" "%" )" : "⦼"
+<shift dead compose> ("O" "↑") : "⦽"
+<shift dead compose> "(" "o" )" : "⦾"
+<shift dead compose> "(" "(" ")" )" : "⦾"
+<shift dead compose> "(" "(" "o" ")" )" : "⦿"
+<shift dead compose> "(" "(" "(" ")" ")" )" : "⦿"
+<shift dead compose> "(" "<" ")" : "⧀"
+<shift dead compose> "(" ">" ")" : "⧁"
+<shift dead compose> "O" "o" : "⧂"
+<shift dead compose> "O" "=" : "⧃"
+<shift dead compose> "[" "/" "]" : "⧄"
+<shift dead compose> "[" "\\" "]" : "⧅"
+<shift dead compose> "[" "*" "]" : "⧆"
+<shift dead compose> "[" "o" "]" : "⧇"
+<shift dead compose> "[" "[" "]" "]" : "⧈"
+<shift dead compose> "[" "]" "[" "]" : "⧉"
+<dead compose> (["Δ" "∆"] ".") : "⧊"
+<dead compose> (["Δ" "∆"] "_") : "⧋"
+<dead compose> (["Δ" "∆"] "s") : "⧌"
+<shift dead compose> (["Δ" "∆"] "_") : "⧍"
+<shift dead compose> "⊳" "/" "⊲" : "⧎"
+<shift dead compose> "⊲" "|" : "⧏"
+<shift dead compose> "|" "⊳" : "⧐"
+<dead compose> "⧑" "⧑" : "⧒"
+<dead compose> "|" "⧕" : "⧒"
+<dead compose> "⧔" "|" : "⧑"
+<dead compose> "⧒" "⧒" : "⧑"
+<dead compose> ("⧑" "⧒") : "⧓"
+<dead compose> "⧕" "⧕" : "⧔"
+<shift dead compose> "|" ">" "<" : "⧔"
+<shift dead compose> ">" "<" "|" : "⧕"
+<dead compose> "⧔" "⧔" : "⧕"
+<dead compose> "⧖" "⧖" : "⧗"
+<dead compose> "}" "|" : "⧘"
+<dead compose> "|" "{" : "⧙"
+<dead compose> "⧘" "⧘" : "⧚"
+<dead compose> "⧙" "⧙" : "⧛"
+<shift dead compose> "o" "-" "u" : "⧜"
+<shift dead compose> "o" "°" "o" : "⧝"
+<shift dead compose> "o" "|" "o" : "⧞"
+<shift dead compose> "0" "|" "0" : "⧞"
+<dead compose> ("|" "∞") : "⧞"
+<shift dead compose> "o" "-" "o" : "⧟"
+<dead compose> "⧉" "⧉" : "⧠"
+<shift dead compose> "[" "[" "]" <space> : "⧠"
+<dead compose> "⦤" "|" : "⧡"
+<shift dead compose> "w" "w" : "⧢"
+<shift dead compose> "W" "W" : "⧢"
+<dead compose> ("/" "#") : "⧣"
+<dead letter ~> "⧣" : "⧤"
+<dead compose> "⧣" "⧣" : "⧥"
+<shift dead compose> "|" "=" "|" : "⧦"
+<shift dead compose> "=" "|" : "⧧"
+<dead compose> "+" "\\" "\\" "|" "/" : "⧨"
+<dead compose> "◭" "◭" : "⧨"
+<dead compose> "+" "\\" "|" "/" "/" : "⧩"
+<dead compose> "◮" "◮" : "⧩"
+<dead compose> ("⧫" "↓") : "⧪"
+<shift dead compose> "<" "<" "<" ">" ">" ">" : "⧫"
+<dead compose> "◊" "◊" : "⧫"
+<shift dead compose> (["o" "O"] "↓") : "⧬"
+<dead compose> "⧬" "⧬" : "⧭"
+<shift dead compose> "]" "[" "[" "]" : "⧮"
+<shift dead compose> "[" "]" "]" "[" : "⧮"
+<dead compose> "⧮" "⧮" : "⧯"
+<shift dead compose> "]" "[" "<" ">" : "⧰"
+<shift dead compose> "<" ">" "]" "[" : "⧰"
+<dead compose> "⧰" "⧰" : "⧱"
+<shift dead compose> "]" "[" "(" ")" : "⧲"
+<shift dead compose> "(" ")" "]" "[" : "⧲"
+<shift dead compose> "]" "[" ["O" "o"] : "⧲"
+<shift dead compose> ["O" "o"] "]" "[" : "⧲"
+<dead compose> "⧲" "⧲" : "⧳"
+<dead compose> ":" "→" : "⧴"
+<dead compose> "\\" "\\" : "⧵"
+<dead compose> ("_" "∕") : "⧶"
+<shift dead compose> ("-" "\\") : "⧷"
+<dead compose> "⟋" "⟋" : "⧸"
+<dead compose> "∕" "∕" : "⧸"
+<dead compose> "⟍" "⟍" : "⧹"
+<dead compose> "⧵" "⧵" : "⧸"
+<shift dead compose> "-" "|" "-" "|" "-" : "⧺"
+<shift dead compose> "-" "|" "|" "|" "-" : "⧻"
+<dead compose> "⧺" "⧺" : "⧻"
+<shift dead compose> ")" "<" : "⧼"
+<shift dead compose> ">" "(" : "⧽"
+<shift dead compose> "+" "+" : "⧾"
+<dead compose> "⧿" "⧿" : "⧾"
+<shift dead compose> "−" "−" : "⧿"
+<dead compose> "⧾" "⧾" : "⧿"
+
+# Supplemental Mathematical Operators:
+<dead compose> "⊙" "⊙" : "⨀"
+<dead compose> "⊕" "⊕" : "⨁"
+<dead compose> "⊗" "⊗" : "⨂"
+<dead compose> "⊍" "⊍" : "⨃"
+<dead compose> "⊎" "⊎" : "⨄"
+<dead compose> "⊓" "⊓" : "⨅"
+<dead compose> "⊔" "⊔" : "⨆"
+<dead compose> "⋀" "⋀" : "⨇"
+<dead compose> "⋁" "⋁" : "⨈"
+<shift dead compose> ("/" "\\") : "⨉"
+<dead compose> ("o" "∑") : "⨊"
+<dead compose> ("∑" "∫") : "⨋"
+<dead compose> "∬" "∬" : "⨌"
+<dead compose> ("∫" "∭") : "⨌"
+<dead compose> "4" ["s" "ſ" "∫"] : "⨌"
+<dead compose> ("-" "∫") : "⨍"
+<dead compose> ("=" "∫") : "⨎"
+<dead compose> ("/" "∫") : "⨏"
+<dead compose> (["c" "C"] "∫") : "⨐"
+<dead compose> (["u" "U"] "∫") : "⨑"
+<dead compose> "]" "∫" : "⨒"
+<dead compose> ")" "∫" : "⨓"
+<dead compose> ")" ")" "∫" : "⨔"
+<dead compose> "∫" ")" ")" : "⨔"
+<dead compose> "(" ")" "∫" : "⨕"
+<dead compose> "∫" "(" ")" : "⨕"
+<dead compose> "[" "]" "∫" : "⨖"
+<dead compose> "∫" "[" "]" : "⨖"
+<dead compose> ("←" "∫") : "⨗"
+<dead compose> (["x" "X" "×"] "∫") : "⨘"
+<dead compose> ("∩" "∫") : "⨙"
+<dead compose> ("∪" "∫") : "⨚"
+<shift dead compose> ("_" "∫") : "⨛"
+<dead compose> "⨜" "⨜" : "⨛"
+<dead compose> ("_" "∫") : "⨜"
+<dead compose> "⨛" "⨛" : "⨜"
+<dead compose> "⊳" "⊲" : "⨝"
+<dead compose> "⊲" "⊲" : "⨞"
+<shift dead compose> "z" ";" : "⨟"
+<dead compose> "⨾" "⨾" : "⨟"
+<shift dead compose> "z" ">" : "⨠"
+<shift dead compose> "z" ["|" "↑"] : "⨡"
+<dead letter °> "+" : "⨢"
+<dead letter ^> "+" : "⨣"
+<dead letter ~> "+" : "⨤"
+<dead compose> "+" "." : "⨥"
+<dead compose> "+" ["~" <dead letter ~>] : "⨦"
+<dead compose> "+" ["2" "₂"] : "⨧"
+<dead compose> "+" ["^" <dead letter ^>] : "⨨"
+<dead compose> "," "-" : "⨩"
+<shift dead compose> "-" "." : "⨪"
+<shift dead compose> ":" "\\" "-" : "⨫"
+<shift dead compose> ":" "/" "-" : "⨬"
+<shift dead compose> "(" "+" : "⨭"
+<shift dead compose> "+" ")" : "⨮"
+<dead compose> "." "×" : "⨯"
+<shift dead compose> "." "×" : "⨰"
+<dead compose> ("." "⨯") : "⨰"
+<dead compose> ("_" "×") : "⨱"
+<dead compose> "⨱" "⨱" : "⨲"
+<dead compose> "×" "×" : "⨳"
+<shift dead compose> "(" ["x" "×"] : "⨴"
+<shift dead compose> ["x" "×"] ")" : "⨵"
+<shift dead compose> ("^" <dead letter ^>) "(" ["x" "X" "×"] ")" : "⨶"
+<dead letter ^> "⊗" : "⨶"
+<shift dead compose> "(" "(" ["x" "X" "×"] ")" ")" : "⨷"
+[<dead compose> <shift dead compose>] "(" "⊗" ")" : "⨷"
+<shift dead compose> "(" "÷" ")" : "⨸"
+<dead compose> (["Δ" "∆"] "+") : "⨹"
+<shift dead compose> "/" "+" "\\" : "⨹"
+<dead compose> (["Δ" "∆"] ["-" "−"]) : "⨺"
+<shift dead compose> "/" ["-" "−"] "\\" : "⨺"
+<dead compose> (["Δ" "∆"] ["x" "×"]) : "⨻"
+<shift dead compose> "/" ["x" "×"] "\\" : "⨻"
+<dead compose> ("-" "¬") : "⨼"
+<dead compose> ("+" "¬") : "⨽"
+<dead compose> "⨟" "⨟" : "⨾"
+<dead compose> "." "⨟" : "⨾"
+<shift dead compose> "∐" "∐" : "⨿"
+<dead compose> (∩ ["." "⋅"]) : "⩀"
+<dead compose> (∪ ["." "−"]) : "⩁"
+<dead compose> ("_" "∪") : "⩂"
+<dead compose> "⩌" "⩌" : "⩂"
+<dead compose> ("_" "∩") : "⩃" # the font "fixed" places the bar beneath instead of above in ⩃
+<dead compose> "⩍" "⩍" : "⩃" # the font "fixed" places the bar beneath instead of above in ⩃
+<dead compose> "∩" ["^" <dead letter ^>] : "⩄"
+<dead letter ^> "∩" : "⩄"
+<dead compose> "⩅" "⩅" : "⩄"
+<dead compose> ("v" "∪") : "⩅"
+<dead compose> "⩄" "⩄" : "⩅"
+<dead compose> "∪" "∩" : "⩆"
+<dead compose> "∩" "∪" : "⩇"
+<shift dead compose> "∪" "∩" : "⩈"
+<shift dead compose> "∩" "∪" : "⩉"
+<dead compose> ("∪" "w") : "⩊"
+<dead compose> ("∩" "m") : "⩋"
+<shift dead compose> ("_" "∪") : "⩌"
+<dead compose> "⩂" "⩂" : "⩌"
+<shift dead compose> ("_" "∩") : "⩍"
+<dead compose> "⩃" "⩃" : "⩍" # the font "fixed" places the bar beneath instead of above in ⩃
+<dead compose> "⊓" "⊓" : "⩎"
+<dead compose> "⊔" "⊔" : "⩏"
+<dead compose> ("*" "∪") : "⩐"
+<dead compose> ("." "∧") : "⩑"
+<dead compose> ("." "∨") : "⩒"
+<shift dead compose> "∨" "∨" : "⩓"
+<shift dead compose> "∧" "∧" : "⩔"
+<dead compose> "." "⨇" : "⩕"
+<dead compose> "." "⨈" : "⩖"
+<dead compose> "|" "/" : "⩗"
+<dead compose> "/" "|" : "⩘"
+<shift dead compose> ("∨" "∧") : "⩙"
+<dead compose> ("|" "∧") : "⩚"
+<dead compose> ("|" "∨") : "⩛"
+<dead compose> ("-" "∧") : "⩜"
+<dead compose> ("-" "∨") : "⩝"
+<shift dead compose> "=" "∧" : "⩞"
+<dead compose> ("_" "∧") : "⩟"
+<shift dead compose> "∧" "=": "⩠"
+<dead compose> "." "⊻" : "⩡"
+<shift dead compose> "=" "∨" : "⩢"
+<shift dead compose> "∨" "=": "⩣"
+<dead compose> ("⊲" "-") : "⩤"
+<dead compose> ("⊳" "-") : "⩥"
+<dead compose> ("." "⩦") : "⩦"
+<shift dead compose> ("." "≡") : "⩧"
+<dead compose> "3" "#" : "⩨"
+<dead compose> "4" "#" : "⩩"
+<dead compose> "." ["~" <dead letter ~>] : "⩪"
+<dead letter ~> "/" ":" : "⩫"
+<shift dead compose> ["~" <dead letter ~>] "-" ["~" <dead letter ~>] : "⩬"
+<dead compose> "." "≅" : "⩭"
+<shift dead compose> ("*" "=") : "⩮"
+<dead letter ^> "≈" : "⩯"
+<dead compose> "≈" ("~" <dead letter ~>) : "⩯"
+<dead compose> "≈" "=" : "⩰"
+<dead compose> "=" "+" : "⩱"
+<dead compose> "+" "=" : "⩲"
+<dead compose> "=" ("~" <dead letter ~>) : "⩳"
+<shift dead compose> ":" ":" "=" : "⩴"
+<shift dead compose> "=" "=" <space> : "⩵"
+<shift dead compose> "=" "=" "=" : "⩶"
+<shift dead compose> ":" "=" ":" : "⩷"
+<shift dead compose> ("…" ["=" "≡"]) : "⩸"
+<dead compose> ("<" "o") : "⩹"
+<dead compose> (">" "o") : "⩺"
+<dead compose> ("<" "?") : "⩻"
+<dead compose> (">" "?") : "⩼"
+<dead compose> "≤" "≤" : "⩽"
+<dead compose> "≥" "≥" : "⩾"
+<dead compose> ("." "⩽") : "⩿"
+<dead compose> ("." "⩾") : "⪀"
+<shift dead compose> "." "⩽" : "⪁"
+<shift dead compose> "." "⩾" : "⪂"
+<shift dead compose> "⩽" "." : "⪃"
+<shift dead compose> "⩾" "." : "⪄"
+<dead compose> ("<" "≈") : "⪅"
+<dead compose> (">" "≈") : "⪆"
+<shift dead compose> ("/" "≤") : "⪇"
+<shift dead compose> ("/" "≥") : "⪈"
+<dead compose> ("<" "≉") : "⪉"
+<dead compose> (">" "≉") : "⪊"
+<shift dead compose> "<" "=" ">" : "⪋"
+<shift dead compose> ">" "=" "<" : "⪌"
+<shift dead compose> "<" ["~" <dead letter ~>] ["_" "-"] : "⪍"
+<dead compose> "<" "≃" : "⪍"
+<dead compose> ("_" "≲") : "⪍"
+<shift dead compose> ">" ["~" <dead letter ~>] ["_" "-"] : "⪎"
+<dead compose> ">" "≃" : "⪎"
+<dead compose> ("_" "≳") : "⪎"
+<dead compose> ("/" "≃") : "≄"
+<shift dead compose> "<" ["~" <dead letter ~>] ">" : "⪏"
+<shift dead compose> ">" ["~" <dead letter ~>] "<" : "⪐"
+<shift dead compose> "<" ">" "=" : "⪑"
+<shift dead compose> ">" "<" "=" : "⪒"
+<dead compose> "⩽" "⩾" : "⪓"
+<dead compose> "⩾" "⩽" : "⪔"
+<dead compose> "⋜" "⋜" : "⪕"
+<dead compose> "⋝" "⋝" : "⪖"
+<dead compose> "⩿" "⩿" : "⪗"
+<dead compose> "⪀" "⪀" : "⪘"
+<dead compose> "≦" "≦" : "⪙" # ⪙ is mirrored by mistake in the font "fixed"
+<dead compose> "≧" "≧" : "⪚"
+<dead compose> "⪙" "⪙" : "⪛" # ⪙ is mirrored by mistake in the font "fixed"
+<dead compose> "⪚" "⪚" : "⪜"
+<dead letter ~> "<" : "⪝"
+<dead letter ~> ">" : "⪞"
+<dead compose> ("⪝" "=") : "⪟"
+<dead compose> ("⪞" "=") : "⪠"
+<shift dead compose> "." "<" "<" <space> : "⪡"
+<shift dead compose> "." ">" ">" <space> : "⪢"
+<dead compose> ("_" ["«" "≪"]) : "⪣"
+<dead compose> "⪥" "⪥" : "⪤"
+<shift dead compose> ">" "<" : "⪥"
+<dead compose> "<" ")" : "⪦"
+<dead compose> "(" ">" : "⪧"
+<dead compose> ("_" "⪦") : "⪨"
+<dead compose> ("_" "⪧") : "⪩"
+<dead compose> ("-" "<") : "⪪"
+<dead compose> ("-" ">") : "⪫"
+<dead compose> ("_" "⪪") : "⪬"
+<dead compose> ("_" "⪫") : "⪭"
+<dead compose> ("=" "≏") : "⪮"
+<dead compose> "≼" "≼" : "⪯"
+<dead compose> "≽" "≽ : "⪰"
+<dead compose> ("/" "⪯") : "⪱"
+<dead compose> ("/" "⪰") : "⪲"
+<dead compose> ("=" "≺") : "⪳"
+<dead compose> ("=" "≻") : "⪴"
+<dead compose> ("≠" "≺") : "⪵"
+<dead compose> ("≠" "≻") : "⪶"
+<dead compose> ("≈" "≺") : "⪷"
+<dead compose> ("≈" "≻") : "⪸"
+<dead compose> ("≉" "≺") : "⪹"
+<dead compose> ("≉" "≻") : "⪺"
+<dead compose> ("_" "≻") : "≽"
+<dead compose> "≺" "≺" : "⪻"
+<dead compose> "≻" "≻" : "⪼"
+<dead compose> ("⊂" ".") : "⪽"
+<dead compose> ("⊃" ".") : "⪾"
+<dead compose> ("⊂" "+") : "⪿"
+<dead compose> ("⊃" "+") : "⫀"
+<dead compose> ("⊂" ["x" "×"]) : "⫁"
+<dead compose> ("⊃" ["x" "×"]) : "⫂"
+<dead compose> ("⊆" ".") : "⫃"
+<dead compose> ("⊇" ".") : "⫄"
+<dead compose> ("⊂" "=") : "⫅"
+<dead compose> ("⊃" "=") : "⫆"
+<dead compose> ("⊂" ["~" <dead letter ~>]) : "⫇"
+<dead letter ~> "⊂" : "⫇"
+<dead compose> ("⊃" ["~" <dead letter ~>]) : "⫈"
+<dead letter ~> "⊃" : "⫈"
+<dead compose> ("⊂" "≈") : "⫉"
+<dead compose> ("⊃" "≈") : "⫊"
+<dead compose> ("⊂" "≠") : "⫋"
+<dead compose> ("⊃" "≠") : "⫌"
+<dead compose> ("-" "⊏") : "⫍"
+<dead compose> "-" (["[" "]"] "<") : "⫍"
+<dead compose> ("-" "⊐") : "⫎"
+<dead compose> "-" (["[" "]"] ">") : "⫎"
+<dead compose> "⊂" "|" : "⫏"
+<dead compose> "|" "⊃" : "⫐"
+<dead compose> ("_" "⫏") : "⫑"
+<dead compose> ("_" "⫐") : "⫒"
+<dead compose> "⊂" "⊃" : "⫓"
+<dead compose> "⊃" "⊂" : "⫔"
+<shift dead compose> "⊂" "⊂" : "⫕"
+<shift dead compose> "⊃" "⊃" : "⫖"
+<shift dead compose> "⊃" "⊂" : "⫗"
+<dead compose> ("-" "⫗") : "⫘"
+<dead compose> "⋔" "." : "⫙"
+<dead compose> "⟒" "⟒" : "⫙"
+<dead compose> ("∩" "Y") : "⫚"
+<dead compose> "⋔" "⋔" : "⫛"
+<dead compose> ("/" "⫝") : "⫝̸"
+<dead compose> ("|" "u") : "⫝"
+<dead compose> "." "⊣" : "⫞"
+<dead compose> "." "⊤" : "⫟"
+<dead compose> "⫠" "⫠" : "⫟"
+<dead compose> "." "⊥" : "⫠"
+<dead compose> "⫟" "⫟" : "⫠"
+<dead compose> (["⊥" "⟂"] "s") : "⫡"
+<dead compose> ("⊨" "=") : "⫢"
+<dead compose> "⊩" "⊩" : "⫣"
+<dead compose> "⊨" "⊨" : "⫤"
+<dead compose> "⫤" "|" : "⫥"
+<dead compose> ("-" "⊩") : "⫦"
+<dead compose> ("_" ["⫟" "⊤"]) : "⫧"
+<dead compose> "⫨" "⫨" : "⫧"
+<dead compose> ("_" ["⫠" "⊥"]) : "⫨"
+<dead compose> "⫧" "⫧" : "⫨"
+<dead compose> ["⫨" "⫠" "⊥"] ["⫧" "⫟" "⊤"] : "⫩"
+<dead compose> ("⊤" "|") : "⫪"
+<dead compose> "⫫" "⫫" : "⫪"
+<dead compose> ("⊥" "|") : "⫫"
+<dead compose> "⫪" "⫪" : "⫫"
+<dead compose> "⫤" "." : "⫬"
+<dead compose> "⫭" "⫭" : "⫬"
+<dead compose> "⊨" "." : "⫭"
+<dead compose> "⫬" "⫬" : "⫭"
+<shift dead compose> "\\" "|" : "⫮"
+<shift dead compose> "o" "|" : "⫯"
+<dead compose> "⫰" "⫰" : "⫯"
+<shift dead compose> "|" "o" : "⫰"
+<dead compose> "⫯" "⫯" : "⫰"
+<shift dead compose> "-" "|" "o" : "⫱"
+<dead compose> ("-" "⫰") : "⫱"
+<dead compose> "⟟" "⟟" : "⫱"
+<dead compose> ("-" "∥") : "⫲"
+<dead compose> "-" "2" "|" : "⫲"
+<dead letter ~> "∥" : "⫳"
+<dead compose> "∥" ["~" <dead letter ~>] : "⫳"
+<dead letter ~> "2" "|" : "⫳"
+<dead compose> "3" "|" : "⫴"
+<dead compose> ("-" "⫴") : "⫵"
+<dead compose> "-" "3" "|" : "⫵"
+<shift dead compose> ("." ":") "|" : "⫶"
+<shift dead compose> "." "<" "<" "<" : "⫷"
+<shift dead compose> "." ">" ">" ">" : "⫸"
+<dead compose> "<" "=" : "⫹"
+<dead compose> ">" "=" : "⫺"
+<shift dead compose> "/" "/" "/" <space> : "⫻"
+<shift dead compose> "|" "|" "|" <space> : "⫼"
+<shift dead compose> "/" "/" <space> : "⫽"
+<shift dead compose> "." "[" "]" : "⫾"
+<dead compose> "." "⫿" : "⫾"
+<shift dead compose> "[" "]" "|" : "⫿"
+
+# Miscellaneous Symbols and Arrows: (TODO)
+<dead compose> ("⇧" "⇨") : "⬀"
+<dead compose> ("↗" "⇗") : "⬀"
+<dead compose> ("⇦" "⇧") : "⬁"
+<dead compose> ("↖" "⇖") : "⬁"
+<dead compose> ("⇨" "⇩") : "⬂"
+<dead compose> ("↘" "⇘") : "⬂"
+<dead compose> ("⇩" "⇦") : "⬃"
+<dead compose> ("↙" "⇙") : "⬃"
+<dead compose> ("⇦" "⇨") : "⬄"
+<dead compose> ("↔" "⇔") : "⬄"
+<dead compose> "⇦" "⇦" : "⬅"
+<dead compose> "⇧" "⇧" : "⬆"
+<dead compose> "⇩" "⇩" : "⬇"
+<dead compose> "⬀" "⬀" : "⬈"
+<dead compose> ("⬆" "\u2B95") : "⬉"
+<dead compose> "⬁" "⬁" : "⬉"
+<dead compose> ("⬅" "⬆") : "⬉"
+<dead compose> "⬂" "⬂" : "⬊"
+<dead compose> ("\u2B95" "⬇") : "⬊"
+<dead compose> "⬃" "⬃" : "⬋"
+<dead compose> ("⬇" "⬅") : "⬋"
+<dead compose> "⬄" "⬄" : "⬌"
+<dead compose> ("⬅" "\u2B95") : "⬌"
+<dead compose> "⇳" "⇳" : "⬍"
+<dead compose> ("⬆" "⬇") : "⬍"
+<dead compose> "→" "," : "⬎"
+<dead compose> "→" "'" : "⬏"
+<dead compose> "," "←" : "⬐"
+<dead compose> "'" "←" : "⬑"
+<dead compose> (["□" "◻" "◽"] ["↑" "⇑"]) : "⬒"
+<dead compose> "◧" "◧" : "⬒"
+<dead compose> (["□" "◻" "◽"] ["↓" "⇓"]) : "⬓"
+<dead compose> "◨" "◨" : "⬓"
+<dead compose> ("◺" "◥") : "⬔"
+<dead compose> ("◣" "◹") : "⬕"
+<shift dead compose> "s" "<" "<" "|" ">" : "⬖"
+<dead compose> "◀" "▷" : "⬖"
+<shift dead compose> "s" "<" "|" ">" ">" : "⬗"
+<dead compose> "◁" "▶" : "⬗"
+<dead compose> "▲" "▽" : "⬘"
+<dead compose> "⬖" "⬖" : "⬘"
+<dead compose> "△" "▼" : "⬙"
+<dead compose> "⬗" "⬗" : "⬙"
+<dead compose> "⬜" "." : "⬚"
+<dead compose> "⬜" "⬜" : "⬛"
+<dead compose> "+" "□" : "⬜"
+<dead compose> "⬞" "⬞" : "⬝"
+<dead compose> "." "⬜" : "⬞"
+<dead compose> "⬠" "⬠" : "⬟"
+<dead compose> ("5" "⬛") : "⬟"
+<dead compose> ("5" "⬜") : "⬠"
+<dead compose> ("6" "⬜") : "⬡"
+<dead compose> ("6" "⬛") : "⬢"
+<dead compose> "⬡" "⬡" : "⬢"
+<dead compose> "⬢" "⬢" : "⬣"
+<dead compose> "◯" "◯" : "⬤"
+<dead compose> "⬦" "⬦" : ""
+<dead compose> "." "◆" : "⬥"
+<dead compose> "." "◇" : "⬦"
+<dead compose> "|" "⬥" : "⬧"
+<dead compose> "⬨" "⬨" : "⬧"
+<dead compose> "|" "⬦" : "⬨"
+<dead compose> "⬥" "⬥" : "⬩"
+<dead compose> "." "⬥" : "⬩"
+<dead compose> "⬫" "⬫" : "⬪"
+<dead compose> "." "⬧" : "⬪"
+<dead compose> "." "⬨" : "⬫"
+<dead compose> "⬭" "⬭" : "⬬"
+<dead compose> "-" "○" : "⬭"
+<dead compose> "⬯" "⬯" : "⬮"
+<dead compose> "|" "○" : "⬯"
+<dead compose> ("o" "←") : "⬰"
+<dead compose> "3" "←" : "⬱"
+<dead compose> ("O" "←") : "⬲"
+<dead compose> "⬰" "⬰" : "⬲"
+<dead compose> ("|" "⬰") : "⬲"
+# TODO ⬳ ⬴ ⬵ ⬶ ⬷ ⬸ ⬹ ⬺ ⬻ ⬼ ⬽ ⬾ ⬿ ⭀ ⭁ ⭂ ⭃ ⭄ ⭅ ⭆ ⭇ ⭈ ⭉ ⭊ ⭋ ⭌
+# TODO \u2B4D through \u2B5F
+# TODO \u2B60 through \u2B63
+<dead compose> ("\u2B60" "\u2B62") : "\u2B64"
+<dead compose> ("\u2B61" "\u2B63") : "\u2B65"
+<dead compose> ("\u2B60" "\u2B61") : "\u2B66"
+<dead compose> ("\u2B61" "\u2B62") : "\u2B67"
+<dead compose> ("\u2B62" "\u2B63") : "\u2B68"
+<dead compose> ("\u2B60" "\u2B63") : "\u2B69"
+<dead compose> ("." "\u2B60") : "\u2B6A"
+<dead compose> ("." "\u2B61") : "\u2B6B"
+<dead compose> ("." "\u2B62") : "\u2B6C"
+<dead compose> ("." "\u2B63") : "\u2B6D"
+<shift dead compose> "\u2B63" "\u2B60" "\u2B61" : "\u2B6E"
+<shift dead compose> "\u2B63" "\u2B62" "\u2B61" : "\u2B6F"
+<dead compose> "|" "\u2B60" : "\u2B70"
+<dead compose> "_" "\u2B61" : "\u2B71"
+<dead compose> "\u2B62" "|" : "\u2B72"
+<dead compose> "\u2B63" "_" : "\u2B73"
+<dead compose> "_" "\u2B66" : "\u2B76"
+<dead compose> "_" "\u2B67" : "\u2B77"
+<dead compose> "\u2B68" "_" : "\u2B78"
+<dead compose> "\u2B69" "_" : "\u2B79"
+<dead compose> ("=" "\u2B60") : "\u2B7A"
+<dead compose> ("=" "\u2B61") : "\u2B7B"
+<dead compose> ("=" "\u2B62") : "\u2B7C"
+<dead compose> ("=" "\u2B63") : "\u2B7D"
+<dead compose> "\u2B70" "\u2B72" : "\u2B7E"
+<dead compose> "\u2B73" "\u2B71" : "\u2B7F"
+<shift dead compose> "\u2B60" "\u2B62" : "\u2B80"
+<shift dead compose> "\u2B61" "\u2B63" : "\u2B81"
+<shift dead compose> "\u2B62" "\u2B60" : "\u2B82"
+<shift dead compose> "\u2B63" "\u2B61" : "\u2B83"
+<shift dead compose> "\u2B60" "\u2B60" : "\u2B84"
+<shift dead compose> "\u2B61" "\u2B61" : "\u2B85"
+<shift dead compose> "\u2B62" "\u2B62" : "\u2B86"
+<shift dead compose> "\u2B63" "\u2B63" : "\u2B87"
+<dead compose> "⬅" "⬅" : "\u2B87"
+<dead compose> "⬆" "⬆" : "\u2B88"
+<dead compose> "\u2B95" "\u2B95" : "\u2B89"
+<dead compose> "⬇" "⬇" : "\u2B8A"
+<dead compose> "U" "\u2B60" : "\u2B8C"
+<dead compose> "U" "\u2B61" : "\u2B8D"
+<dead compose> "U" "\u2B62" : "\u2B8E"
+<dead compose> "U" "\u2B63" : "\u2B8F"
+<dead compose> "\u2BA0" "/" : "\u2B90"
+<dead compose> "\\" "\u2BA1" : "\u2B91"
+<dead compose> "-" "\u2BA0" : "\u2B92"
+<dead compose> "-" "\u2BA1" : "\u2B93"
+<dead compose> ("\u2BA0" "\u2BA3") : "\u2B94"
+<dead compose> ("\u2BA1" "\u2BA2") : "\u2B94"
+<dead compose> "⇨" "⇨" : "\u2B95"
+<dead compose> ("⇦" "⬅") : "⮘"
+<dead compose> ("⇧" "⬆") : "⮙"
+<dead compose> ("⇨" : "\u2B95") : "⮚"
+<dead compose> ("⇩" "⬇") : "⮛"
+<dead compose> "⮘" "⮘" : "⮜"
+<dead compose> "⮙" "⮙" : "⮝"
+<dead compose> "⮚" "⮚" : "⮞"
+<dead compose> "⮛" "⮛" : "⮟"
+<shift dead compose> "\u2B63" "\u2B60" : "\u2BA0"
+<shift dead compose> "\u2B63" "\u2B62" : "\u2BA1"
+<shift dead compose> "\u2B61" "\u2B60" : "\u2BA2"
+<shift dead compose> "\u2B61" "\u2B62" : "\u2BA3"
+<shift dead compose> "\u2B60" "\u2B61" : "\u2BA4"
+<shift dead compose> "\u2B62" "\u2B61" : "\u2BA5"
+<shift dead compose> "\u2B60" "\u2B63" : "\u2BA6"
+<shift dead compose> "\u2B62" "\u2B63" : "\u2BA7"
+<shift dead compose> "⬇" "⬅" : "\u2BA8"
+<shift dead compose> "⬇" "\u2B95" : "\u2BA9"
+<shift dead compose> "⬆" "⬅" : "\u2BAA"
+<shift dead compose> "⬆" "\u2B95" : "\u2BAB"
+<shift dead compose> "⬅" "⬆" : "\u2BAC"
+<shift dead compose> "\u2B95" "⬇" : "\u2BAD"
+<shift dead compose> "⬅" "⬆" : "\u2BAE"
+<shift dead compose> "\u2B95" "⬇" : "\u2BAF"
+<shift dead compose> "⇩" "⇦" : "\u2BB0"
+<shift dead compose> "⇩" "⇨" : "\u2BB1"
+<shift dead compose> "⇧" "⇦" : "\u2BB2"
+<shift dead compose> "⇧" "⇨" : "\u2BB3"
+<shift dead compose> "⇦" "⇩" : "\u2BB4"
+<shift dead compose> "⇨" "⇩" : "\u2BB5"
+<shift dead compose> "⇦" "⇩" : "\u2BB6"
+<shift dead compose> "⇨" "⇩" : "\u2BB7"
+<dead compose> "!" "⇬" : "\u2BB8"
+# TODO \u2BB9
+# TODO \u2BBD
+# TODO \u2BBE
+<dead compose> "\u2BBE" "\u2BBE" : "\u2BBF"
+<dead compose> "▪" "▪" : "\u2BC0"
+<dead compose> "\u2BC0" "\u2BC0" : "\u2BC1"
+<dead compose> "◆" "◆" : "\u2BC1"
+<dead compose> "\u2BC1" "\u2BC1" : "\u2BC0"
+<dead compose> ("5" ["\u2BC0" "\u2BC1"]) : "\u2BC2"
+<dead compose> ("8" "\u2BC0") : "\u2BC3"
+<dead compose> "\u2BC4" "\u2BC4" : "\u2BC3"
+<dead compose> ("8" "\u2BC1") : "\u2BC4"
+<dead compose> "\u2BC3" "\u2BC3" : "\u2BC4"
+<dead compose> "⬆" "h" : "\u2BC5"
+<dead compose> "⬇" "h" : "\u2BC6"
+<dead compose> "⬅" "h" : "\u2BC7"
+<dead compose> "\u2B95" "h" : "\u2BC8"
+<dead compose> "◖" "◖" : "\u2BCA"
+<dead compose> "◗" "◗" : "\u2BCB"
+<dead compose> "\u2BCE" "\u2BCE" : "\u2BCC"
+<dead compose> "\u2BCF" "\u2BCF" : "\u2BCD"
+# TODO \u2BD0
+<dead compose> "<" "?" ">" : "\u2BD1"
+
+
+# TODO Glagolitic
+# TODO Latin Extended-C
+# TODO Coptic
+# TODO Georgian Supplement
+# TODO Tifinagh
+# TODO Ethiopic Extended
+# TODO Cyrillic Extended-A
+# TODO Supplemental Punctuation
+# TODO CJK Radicals Supplement
+# TODO Kangxi Radicals
+# TODO Ideographic Description Characters
+# TODO CJK Symbols and Punctuation
+# TODO Hiragana
+# TODO Katakana
+# TODO Bopomofo
+# TODO Hangul Compatibility Jamo
+# TODO Kanbun
+# TODO Bopomofo Extended
+# TODO CJK Strokes
+# TODO Katakana Phonetic Extensions
+# TODO Enclosed CJK Letters and Months
+# TODO CJK Compatibility
+# TODO CJK Unified Ideographs Extension A
+# TODO Yijing Hexagram Symbols
+# TODO CJK Unified Ideographs
+# TODO Yi Syllables
+# TODO Yi Radicals
+# TODO Lisu
+# TODO Vai
+# TODO Cyrillic Extended-B
+# TODO Bamum
+# TODO Modifier Tone Letters
+# TODO Latin Extended-D
+# TODO Syloti Nagri
+# TODO Common Indic Number Forms
+# TODO Phags-pa
+# TODO Saurashtra
+# TODO Devanagari Extended
+# TODO Kayah Li
+# TODO Rejang
+# TODO Hangul Jamo Extended-A
+# TODO Javanese
+# TODO Myanmar Extended-B
+# TODO Cham
+# TODO Myanmar Extended-A
+# TODO Tai Viet
+# TODO Meetei Mayek Extensions
+# TODO Ethiopic Extended-A
+# TODO Latin Extended-E
+# TODO Meetei Mayek
+# TODO Hangul Syllables
+# TODO Hangul Jamo Extended-B
+# TODO CJK Compatibility Ideographs
+# TODO Alphabetic Presentation Forms
+# TODO Arabic Presentation Forms-A
+# TODO Variation Selectors
+# TODO Vertical Forms
+# TODO Combining Half Marks
+# TODO CJK Compatibility Forms
+# TODO Small Form Variants
+# TODO Arabic Presentation Forms-B
+# TODO Halfwidth and Fullwidth Forms
+# TODO Specials
+# TODO Linear B Syllabary
+# TODO Linear B Ideograms
+# TODO Aegean Numbers
+# TODO Ancient Greek Numbers
+# TODO Ancient Symbols
+# TODO Phaistos Disc
+# TODO Lycian
+# TODO Carian
+# TODO Coptic Epact Numbers
+# TODO Old Italic
+# TODO Gothic
+# TODO Old Permic
+# TODO Ugaritic
+# TODO Old Persian
+# TODO Deseret
+# TODO Shavian
+# TODO Osmanya
+# TODO Elbasan
+# TODO Caucasian Albanian
+# TODO Linear A
+# TODO Cypriot Syllabary
+# TODO Imperial Aramaic
+# TODO Palmyrene
+# TODO Nabataean
+# TODO Phoenician
+# TODO Lydian
+# TODO Meroitic Hieroglyphs
+# TODO Meroitic Cursive
+# TODO Kharoshthi
+# TODO Old South Arabian
+# TODO Old North Arabian
+# TODO Manichaean
+# TODO Avestan
+# TODO Inscriptional Parthian
+# TODO Psalter Pahlavi
+# TODO Old Turkic
+# TODO Rumi Numeral Symbols
+# TODO Brahmi
+# TODO Kaithi
+# TODO Sora Sompeng
+# TODO Chakma
+# TODO Mahajani
+# TODO Sharada
+# TODO Sinhala Archaic Numbers
+# TODO Khojki
+# TODO Khudawadi
+# TODO Grantha
+# TODO Tirhuta
+# TODO Siddham
+# TODO Modi
+# TODO Takri
+# TODO Warang Citi
+# TODO Pau Cin Hau
+# TODO Cuneiform
+# TODO Cuneiform Numbers and Punctuation
+# TODO Egyptian Hieroglyphs
+# TODO Bamum Supplement
+# TODO Mro
+# TODO Bassa Vah
+# TODO Pahawh Hmong
+# TODO Miao
+# TODO Kana Supplement
+# TODO Duployan
+# TODO Shorthand Format Controls
+# TODO Byzantine Musical Symbols
+# TODO Musical Symbols
+# TODO Ancient Greek Musical Notation
+# TODO Tai Xuan Jing Symbols
+# TODO Counting Rod Numerals
+# TODO Mathematical Alphanumeric Symbols
+# TODO Mende Kikakui
+# TODO Arabic Mathematical Alphabetic Symbols
+
+# Mahjong Tiles:
+<shift dead compose> "m" "t" ">" : "\u1F000"
+<shift dead compose> "m" "t" "v" : "\u1F001"
+<shift dead compose> "m" "t" "<" : "\u1F002"
+<shift dead compose> "m" "t" [<dead letter ^> "^"] : "\u1F003"
+<shift dead compose> "m" "t" "r" : "\u1F004"
+<shift dead compose> "m" "t" "g" : "\u1F005"
+<shift dead compose> "m" "t" "w" : "\u1F006"
+for "1" to "9" as \1
+  <shift dead compose> "m" "t" "w" "\1" : "\add(\u1F007 \sub(\1 "1"))"
+  <shift dead compose> "m" "t" "t" "\1" : "\add(\u1F010 \sub(\1 "1"))"
+  <shift dead compose> "m" "t" "b" "\1" : "\add(\u1F019 \sub(\1 "1"))"
+end for
+<shift dead compose> "m" "t" "m" : "\u1F022"
+<shift dead compose> "m" "t" "l" : "\u1F023"
+<shift dead compose> "m" "t" "z" : "\u1F024"
+<shift dead compose> "m" "t" "j" : "\u1F025"
+<shift dead compose> "m" "t" "1" : "\u1F026"
+<shift dead compose> "m" "t" "2" : "\u1F027"
+<shift dead compose> "m" "t" "3" : "\u1F028"
+<shift dead compose> "m" "t" "4" : "\u1F029"
+<shift dead compose> "m" "t" "*" : "\u1F02A"
+<shift dead compose> "m" "t" "/" : "\u1F02B"
+
+# Domino Tiles:
+<shift dead compose> "d" "t" "-" ["-" <space>] : "\u1F030"
+<shift dead compose> "d" "t" "|" ["|" <space>] : "\u1F062"
+for "0" to "6" as \1
+  for "0" to "6" as \2
+    <shift dead compose> "d" "t" "-" "\1" "\2" : "\add(\u1F031 \add(\mul(\sub(\1 "0") 7) \sub(\2 "0")))"
+    <shift dead compose> "d" "t" "|" "\1" "\2" : "\add(\u1F063 \add(\mul(\sub(\1 "0") 7) \sub(\2 "0")))"
+  end for
+end for
+
+# Playing Cards:
+<shift dead compose> "p" "c" : "🂠"
+dead_ascii(🂠)
+macro playing_card/2
+  <dead compose> (["♠" "♤"] "\1") : "\add(\u1F0A0 \2)"
+  <dead compose> (["♥" "♡"] "\1") : "\add(\u1F0B0 \2)"
+  <dead compose> (["♦" "♢"] "\1") : "\add(\u1F0C0 \2)"
+  <dead compose> (["♣" "♧"] "\1") : "\add(\u1F0D0 \2)"
+end macro
+for "1" to "9" as \1
+  playing_card("\1" \sub(\1 "0") 1)
+endfor
+playing_card(["a" "A"] 1)
+playing_card("0" 10)
+playing_card(["j" "J"] 11)
+playing_card(["c" "C"] 12)
+playing_card(["q" "Q"] 13)
+playing_card(["k" "K"] 14)
+<dead compose> "🂠" "j" "r" : "\u1F0BF"
+<dead compose> "🂠" "j" "b" : "\u1F0CF"
+<dead compose> "🂠" "j" "w" : "\u1F0DF"
+<dead compose> "🂠" "0" <space> : "\u1F0E0"
+<dead compose> "🂠" "1" <space> : "\u1F0E1"
+<dead compose> "🂠" "2" <space> : "\u1F0E2"
+<dead compose> "🂠" "3" <space> : "\u1F0E3"
+<dead compose> "🂠" "4" <space> : "\u1F0E4"
+<dead compose> "🂠" "5" <space> : "\u1F0E5"
+<dead compose> "🂠" "6" <space> : "\u1F0E6"
+<dead compose> "🂠" "7" <space> : "\u1F0E7"
+<dead compose> "🂠" "8" <space> : "\u1F0E8"
+<dead compose> "🂠" "9" <space> : "\u1F0E9"
+<dead compose> "🂠" "1" "0" : "\u1F0EA"
+<dead compose> "🂠" "1" "1" : "\u1F0EB"
+<dead compose> "🂠" "1" "2" : "\u1F0EC"
+<dead compose> "🂠" "1" "3" : "\u1F0ED"
+<dead compose> "🂠" "1" "4" : "\u1F0EE"
+<dead compose> "🂠" "1" "5" : "\u1F0EF"
+<dead compose> "🂠" "1" "6" : "\u1F0F0"
+<dead compose> "🂠" "1" "7" : "\u1F0F1"
+<dead compose> "🂠" "1" "8" : "\u1F0F2"
+<dead compose> "🂠" "1" "9" : "\u1F0F3"
+<dead compose> "🂠" "2" "0" : "\u1F0F4"
+<dead compose> "🂠" "2" "1" : "\u1F0F5"
+
+# Enclosed Alphanumeric Supplement:
+<dead compose> "0" "." : "\u1F100"
+for "0" to "9" as \1
+  <dead compose> "\1" "," : "\add(\u1F101 \sub(\1 "0")"
+end for
+<dead compose> "(" "0" "." ")" : "\u1F10B"
+<dead compose> "(" "(" "(" "0" "." ")" ")" ")" : "\u1F10C"
+for "A" to "Z" as \1
+  <dead compose> "(" " " "\1" [" " .] ")" : "\add(\u1F110 \sub(\1 "A"))"
+  <dead compose> "(" "\1" " " ")"         : "\add(\u1F110 \sub(\1 "A"))"
+end for
+<dead compose> "[" " " "S" [" " .] "]" : "\u1F12A"
+<dead compose> "[" "S" " " "]"         : "\u1F12A"
+<dead compose> "(" "/" "C" ["/" .] ")" : "\u1F12B"
+<dead compose> "(" "C" "/" ")"         : "\u1F12B"
+<dead compose> "(" "/" "R" ["/" .] ")" : "\u1F12C"
+<dead compose> "(" "R" "/" ")"         : "\u1F12C"
+<dead compose> "(" "C" "D" ")"         : "\u1F12D"
+<dead compose> "(" "W" "z" ")"         : "\u1F12E"
+for "A" to "Z" as \1
+  <dead compose> "[" "\1" "]"                 : "\add(\u1F130 \sub(\1 "A"))"
+  <dead compose> "(" "(" "(" "\1" ")" ")" ")" : "\add(\u1F160 \sub(\1 "A"))"
+  <dead compose> "[" "[" "[" "\1" "]" "]" "]" : "\add(\u1F170 \sub(\1 "A"))"
+end for
+<dead compose> "[" "H" "V" "]" : "\u1F14A"
+<dead compose> "[" "M" "V" "]" : "\u1F14B"
+<dead compose> "[" "S" "D" "]" : "\u1F14C"
+<dead compose> "[" "S" "S" "]" : "\u1F14D"
+<dead compose> "[" "P" "P" "V" "]" : "\u1F14E"
+<dead compose> "[" "W" "C" "]" : "\u1F14F"
+<dead compose> "(" "M" "C" ")" : "\u1F16A"
+<dead compose> "(" "M" "D" ")" : "\u1F16B"
+<dead compose> "[" "[" "[" "X" "P" "]" "]" "]" : "\u1F18A"
+<dead compose> "[" "[" "[" "I" "C" "]" "]" "]" : "\u1F18B"
+<dead compose> "[" "[" "[" "P" "A" "]" "]" "]" : "\u1F18C"
+<dead compose> "[" "[" "[" "S" "A" "]" "]" "]" : "\u1F18D"
+<dead compose> "[" "[" "[" "A" "B" "]" "]" "]" : "\u1F18E"
+<dead compose> "[" "[" "[" "W" "C" "]" "]" "]" : "\u1F18F"
+<dead compose> "[" "D" "J" "]" : "\u1F190"
+<dead compose> "[" "C" "L" "]" : "\u1F191"
+<dead compose> "[" "C" "O" "O" "L" "]" : "\u1F192"
+<dead compose> "[" "F" "R" "E" "E" "]" : "\u1F193"
+<dead compose> "[" "I" "D" "]" : "\u1F194"
+<dead compose> "[" "N" "E" "W" "]" : "\u1F195"
+<dead compose> "[" "N" "G" "]" : "\u1F196"
+<dead compose> "[" "O" "K" "]" : "\u1F197"
+<dead compose> "[" "S" "O" "S" "]" : "\u1F198"
+<dead compose> "[" "U" "P" "]" : "\u1F199
+<dead compose> "[" "U" "P" "!" "]" : "\u1F199
+<dead compose> "[" "V" "S" "]" : "\u1F19A
+for "a" to "z" as \1
+  <dead compose> "[" "r" "\1" "]" : "\add(\u1F1E6 \sub(\1 "a"))"
+end for
+
+# TODO Enclosed Ideographic Supplement
+# TODO Miscellaneous Symbols and Pictographs
+# TODO Emoticons
+# TODO Ornamental Dingbats
+# TODO Transport and Map Symbols
+# TODO Alchemical Symbols
+
+# Geometric Shapes Extended:
+<shift dead compose> "s" "<" "|" : "\u1F780"
+<shift dead compose> "s" ["^" <dead letter ^>] "-" : "\u1F781"
+<dead compose> "\u1F780" "\u1F780" : "\u1F781"
+<shift dead compose> "s" "|" ">" : "\u1F782"
+<shift dead compose> "s" ["v" "V"] "-" :"\u1F783"
+<dead compose> "\u1F782" "\u1F782" : "\u1F783"
+<shift dead compose> "s" "." "(" ")" : "\1F784"
+<shift dead compose> "s" "1" "(" ")" : "\u1F785"
+<shift dead compose> "s" "2" "(" ")" : "\u1F786"
+<shift dead compose> "s" "3" "(" ")" : "\u1F787"
+<shift dead compose> "s" "4" "(" ")" : "\u1F788"
+<shift dead compose> "s" "5" "(" ")" : "\u1F789"
+<shift dead compose> "s" "0" "(" ")" : "\u1F78A"
+<shift dead compose> "s" "(" "(" "(" ")" ")" ")" : "\u1F78B"
+<shift dead compose> "s" "." "[" "]" : "\u1F78C"
+<shift dead compose> "s" "." "." "[" "]" : "\u1F78D"
+<shift dead compose> "s" "1" "[" "]" : "\u1F78E"
+<shift dead compose> "s" "2" "[" "]" : "\u1F78F"
+<shift dead compose> "s" "3" "[" "]" : "\u1F790"
+<shift dead compose> "s" "4" "[" "]" : "\u1F791"
+<shift dead compose> "s" "5" "[" "]" : "\u1F792"
+<shift dead compose> "s" "6" "[" "]" : "\u1F793"
+<shift dead compose> "s" "0" "[" "]" : "\u1F794"
+<shift dead compose> "s" "[" "[" "]" "]" : "\u1F795"
+<shift dead compose> "s" "[" "[" "[" "]" "]" "]" : "\u1F796"
+<shift dead compose> "s" "1" "<" ">" : "\u1F797"
+<shift dead compose> "s" "2" "<" ">" : "\u1F798"
+<shift dead compose> "s" "3" "<" ">" : "\u1F799"
+<shift dead compose> "s" "0" "<" ">" : "\u1F79A"
+<shift dead compose> "s" "<" "<" "<" ">" ">" ">" : "\u1F79B"
+<shift dead compose> "s" "<" "<" ">" ">" : "\u1F79C"
+<shift dead compose> "s" "1" "|" "<" ">" : "\u1F79D"
+<shift dead compose> "s" "2" "|" "<" ">" : "\u1F79E"
+<shift dead compose> "s" "3" "|" "<" ">" : "\u1F79F"
+<shift dead compose> "s" "0" "|" "<" ">" : "\u1F7A0"
+<shift dead compose> "s" "1" "+" : "\u1F7A1"
+<shift dead compose> "s" "2" "+" : "\u1F7A2"
+<shift dead compose> "s" "3" "+" : "\u1F7A3"
+<shift dead compose> "s" "4" "+" : "\u1F7A4"
+<shift dead compose> "s" "5" "+" : "\u1F7A5"
+<shift dead compose> "s" "6" "+" : "\u1F7A6"
+<shift dead compose> "s" "7" "+" : "\u1F7A7"
+<shift dead compose> "s" "1" ["x" "X" "×"] : "\u1F7A8"
+<shift dead compose> "s" "2" ["x" "X" "×"] : "\u1F7A9"
+<shift dead compose> "s" "3" ["x" "X" "×"] : "\u1F7AA"
+<shift dead compose> "s" "4" ["x" "X" "×"] : "\u1F7AB"
+<shift dead compose> "s" "5" ["x" "X" "×"] : "\u1F7AC"
+<shift dead compose> "s" "6" ["x" "X" "×"] : "\u1F7AD"
+<shift dead compose> "s" "7" ["x" "X" "×"] : "\u1F7AE"
+<shift dead compose> "s" "1" "5" "*" : "\u1F7AF"
+<shift dead compose> "s" "2" "5" "*" : "\u1F7B0"
+<shift dead compose> "s" "3" "5" "*" : "\u1F7B1"
+<shift dead compose> "s" "4" "5" "*" : "\u1F7B2"
+<shift dead compose> "s" "5" "5" "*" : "\u1F7B3"
+<shift dead compose> "s" "6" "5" "*" : "\u1F7B4"
+<shift dead compose> "s" "1" "6" "*" : "\u1F7B5"
+<shift dead compose> "s" "2" "6" "*" : "\u1F7B6"
+<shift dead compose> "s" "3" "6" "*" : "\u1F7B7"
+<shift dead compose> "s" "4" "6" "*" : "\u1F7B8"
+<shift dead compose> "s" "5" "6" "*" : "\u1F7B9"
+<shift dead compose> "s" "6" "6" "*" : "\u1F7BA"
+<shift dead compose> "s" "1" "8" "*" : "\u1F7BB"
+<shift dead compose> "s" "2" "8" "*" : "\u1F7BC"
+<shift dead compose> "s" "3" "8" "*" : "\u1F7BD"
+<shift dead compose> "s" "4" "8" "*" : "\u1F7BE"
+<shift dead compose> "s" "5" "8" "*" : "\u1F7BF"
+<shift dead compose> "s" "1" "*" "3" : "\u1F7C0"
+<shift dead compose> "s" "2" "*" "3" : "\u1F7C1"
+<shift dead compose> "s" "3" "*" "3" : "\u1F7C2"
+<shift dead compose> "s" "0" "*" "3" : "\u1F7C3"
+<shift dead compose> "s" "1" "*" "4" : "\u1F7C4"
+<shift dead compose> "s" "2" "*" "4" : "\u1F7C5"
+<shift dead compose> "s" "3" "*" "4" : "\u1F7C6"
+<shift dead compose> "s" "0" "*" "4" : "\u1F7C7"
+<dead compose> "\u1F7C7" "\u1F7C7" : "\u1F7C8"
+<shift dead compose> "s" "1" "*" "5" : "\u1F7C9"
+<shift dead compose> "s" "2" "*" "5" : "\u1F7CA"
+<shift dead compose> "s" "1" "*" "6" : "\u1F7CB"
+<shift dead compose> "s" "2" "*" "6" : "\u1F7CC"
+<shift dead compose> "s" "0" "*" "6" : "\u1F7CD"
+<shift dead compose> "s" "1" "*" "8" : "\u1F7CE"
+<shift dead compose> "s" "2" "*" "8" : "\u1F7CF"
+<shift dead compose> "s" "3" "*" "8" : "\u1F7D0"
+<shift dead compose> "s" "0" "*" "8" : "\u1F7D1"
+<shift dead compose> "s" "1" "*" "*" : "\u1F7D2"
+<shift dead compose> "s" "2" "*" "*" : "\u1F7D3"
+<shift dead compose> "s" "0" "*" "*" : "\u1F7D4"
+
+# Supplemental Arrows-C:
+<shift dead compose> "1" "←" : "\u1F800" #  leftwards arrow with small triangle arrowhead
+<shift dead compose> "1" "↑" : "\u1F801" #    upwards arrow with small triangle arrowhead
+<shift dead compose> "1" "→" : "\u1F802" # rightwards arrow with small triangle arrowhead
+<shift dead compose> "1" "↓" : "\u1F803" #  downwards arrow with small triangle arrowhead
+<shift dead compose> "2" "←" : "\u1F804" #  leftwards arrow with medium triangle arrowhead
+<shift dead compose> "2" "↑" : "\u1F805" #    upwards arrow with medium triangle arrowhead
+<shift dead compose> "2" "→" : "\u1F806" # rightwards arrow with medium triangle arrowhead
+<shift dead compose> "2" "↓" : "\u1F807" #  downwards arrow with medium triangle arrowhead
+<shift dead compose> "3" "←" : "\u1F808" #  leftwards arrow with large triangle arrowhead
+<shift dead compose> "3" "↑" : "\u1F809" #    upwards arrow with large triangle arrowhead
+<shift dead compose> "3" "→" : "\u1F80A" # rightwards arrow with large triangle arrowhead
+<shift dead compose> "3" "↓" : "\u1F80B" #  downwards arrow with large triangle arrowhead
+<shift dead compose> "1" "=" "←" : "\u1F810" #  leftwards arrow with small equilateral arrowhead
+<shift dead compose> "1" "=" "↑" : "\u1F811" #    upwards arrow with small equilateral arrowhead
+<shift dead compose> "1" "=" "→" : "\u1F812" # rightwards arrow with small equilateral arrowhead
+<shift dead compose> "1" "=" "↓" : "\u1F813" #  downwards arrow with small equilateral arrowhead
+<shift dead compose> "2" "=" "←" : "\u1F814" #  leftwards arrow with equilateral arrowhead
+<shift dead compose> "2" "=" "↑" : "\u1F815" #    upwards arrow with equilateral arrowhead
+<shift dead compose> "2" "=" "→" : "\u1F816" # rightwards arrow with equilateral arrowhead
+<shift dead compose> "2" "=" "↓" : "\u1F817" #  downwards arrow with equilateral arrowhead
+<shift dead compose> "4" "=" "←" : "\u1F818" # heavy  leftwards arrow with equilateral arrowhead
+<shift dead compose> "4" "=" "↑" : "\u1F819" # heavy    upwards arrow with equilateral arrowhead
+<shift dead compose> "4" "=" "→" : "\u1F81A" # heavy rightwards arrow with equilateral arrowhead
+<shift dead compose> "4" "=" "↓" : "\u1F81B" # heavy  downwards arrow with equilateral arrowhead
+<shift dead compose> "5" "=" "←" : "\u1F81C" # heavy  leftwards arrow with large equilateral arrowhead
+<shift dead compose> "5" "=" "↑" : "\u1F81D" # heavy    upwards arrow with large equilateral arrowhead
+<shift dead compose> "5" "=" "→" : "\u1F81E" # heavy rightwards arrow with large equilateral arrowhead
+<shift dead compose> "5" "=" "↓" : "\u1F81F" # heavy  downwards arrow with large equilateral arrowhead
+<shift dead compose> "1" "-" "←" : "\u1F820" #  leftwards triangle-headed arrow with narrow shaft
+<shift dead compose> "1" "-" "↑" : "\u1F821" #    upwards triangle-headed arrow with narrow shaft
+<shift dead compose> "1" "-" "→" : "\u1F822" # rightwards triangle-headed arrow with narrow shaft
+<shift dead compose> "1" "-" "↓" : "\u1F823" #  downwards triangle-headed arrow with narrow shaft
+<shift dead compose> "2" "-" "←" : "\u1F824" #  leftwards triangle-headed arrow with medium shaft
+<shift dead compose> "2" "-" "↑" : "\u1F825" #    upwards triangle-headed arrow with medium shaft
+<shift dead compose> "2" "-" "→" : "\u1F826" # rightwards triangle-headed arrow with medium shaft
+<shift dead compose> "2" "-" "↓" : "\u1F827" #  downwards triangle-headed arrow with medium shaft
+<shift dead compose> "3" "-" "←" : "\u1F828" #  leftwards triangle-headed arrow with bold shaft
+<shift dead compose> "3" "-" "↑" : "\u1F829" #    upwards triangle-headed arrow with bold shaft
+<shift dead compose> "3" "-" "→" : "\u1F82A" # rightwards triangle-headed arrow with bold shaft
+<shift dead compose> "3" "-" "↓" : "\u1F82B" #  downwards triangle-headed arrow with bold shaft
+<shift dead compose> "4" "-" "←" : "\u1F82C" #  leftwards triangle-headed arrow with heavy shaft
+<shift dead compose> "4" "-" "↑" : "\u1F82D" #    upwards triangle-headed arrow with heavy shaft
+<shift dead compose> "4" "-" "→" : "\u1F82E" # rightwards triangle-headed arrow with heavy shaft
+<shift dead compose> "4" "-" "↓" : "\u1F82F" #  downwards triangle-headed arrow with heavy shaft
+<shift dead compose> "5" "-" "←" : "\u1F830" #  leftwards triangle-headed arrow with very heavy shaft
+<shift dead compose> "5" "-" "↑" : "\u1F831" #    upwards triangle-headed arrow with very heavy shaft
+<shift dead compose> "5" "-" "→" : "\u1F832" # rightwards triangle-headed arrow with very heavy shaft
+<shift dead compose> "5" "-" "↓" : "\u1F833" #  downwards triangle-headed arrow with very heavy shaft
+<shift dead compose> "←" "f" : "\u1F834" #  leftwards finger-post arrow
+<shift dead compose> "↑" "f" : "\u1F835" #    upwards finger-post arrow
+<shift dead compose> "→" "f" : "\u1F836" # rightwards finger-post arrow
+<shift dead compose> "↓" "f" : "\u1F837" #  downwards finger-post arrow
+<shift dead compose> "←" "s" : "\u1F838" #  leftwards squared arrow
+<shift dead compose> "↑" "s" : "\u1F839" #    upwards squared arrow
+<shift dead compose> "→" "s" : "\u1F83A" # rightwards squared arrow
+<shift dead compose> "↓" "s" : "\u1F83B" #  downwards squared arrow
+<shift dead compose> "2" "|" "←" : "\u1F83C" #  leftwards compressed arrow
+<shift dead compose> "2" "|" "↑" : "\u1F83D" #    upwards compressed arrow
+<shift dead compose> "2" "|" "→" : "\u1F83E" # rightwards compressed arrow
+<shift dead compose> "2" "|" "↓" : "\u1F83F" #  downwards compressed arrow
+<shift dead compose> "4" "|" "←" : "\u1F840" #  leftwards heavy compressed arrow
+<shift dead compose> "4" "|" "↑" : "\u1F841" #    upwards heavy compressed arrow
+<shift dead compose> "4" "|" "→" : "\u1F842" # rightwards heavy compressed arrow
+<shift dead compose> "4" "|" "↓" : "\u1F843" #  downwards heavy compressed arrow
+<shift dead compose> "4" "←" : "\u1F844" #  leftwards heavy arrow
+<shift dead compose> "4" "↑" : "\u1F845" #    upwards heavy arrow
+<shift dead compose> "4" "→" : "\u1F846" # rightwards heavy arrow
+<shift dead compose> "4" "↓" : "\u1F847" #  downwards heavy arrow
+<shift dead compose> "s" "s" "←" : "\u1F850" #  leftwards sans-serif arrow
+<shift dead compose> "s" "s" "↑" : "\u1F851" #    upwards sans-serif arrow
+<shift dead compose> "s" "s" "→" : "\u1F852" # rightwards sans-serif arrow
+<shift dead compose> "s" "s" "↓" : "\u1F853" #  downwards sans-serif arrow
+<shift dead compose> "s" "s" "↗" : "\u1F854" # north west sans-serif arrow
+<shift dead compose> "s" "s" "↖" : "\u1F855" # north east sans-serif arrow
+<shift dead compose> "s" "s" "↙" : "\u1F856" # south east sans-serif arrow
+<shift dead compose> "s" "s" "↘" : "\u1F857" # south west sans-serif arrow
+<shift dead compose> "s" "s" "↔" : "\u1F858" # left right sans-serif arrow
+<shift dead compose> "s" "s" "↕" : "\u1F859" #    up down sans-serif arrow
+<shift dead compose> "1" "b" "←" : "\u1F860" # wide-headed  leftwards light barb arrow
+<shift dead compose> "1" "b" "↑" : "\u1F861" # wide-headed    upwards light barb arrow
+<shift dead compose> "1" "b" "→" : "\u1F862" # wide-headed rightwards light barb arrow
+<shift dead compose> "1" "b" "↓" : "\u1F863" # wide-headed  downwards light barb arrow
+<shift dead compose> "1" "b" "↗" : "\u1F864" # wide-headed north west light barb arrow
+<shift dead compose> "1" "b" "↖" : "\u1F865" # wide-headed north east light barb arrow
+<shift dead compose> "1" "b" "↙" : "\u1F866" # wide-headed south east light barb arrow
+<shift dead compose> "1" "b" "↘" : "\u1F867" # wide-headed south west light barb arrow
+<shift dead compose> "2" "b" "←" : "\u1F868" # wide-headed  leftwards barb arrow
+<shift dead compose> "2" "b" "↑" : "\u1F869" # wide-headed    upwards barb arrow
+<shift dead compose> "2" "b" "→" : "\u1F86A" # wide-headed rightwards barb arrow
+<shift dead compose> "2" "b" "↓" : "\u1F86B" # wide-headed  downwards barb arrow
+<shift dead compose> "2" "b" "↗" : "\u1F86C" # wide-headed north west barb arrow
+<shift dead compose> "2" "b" "↖" : "\u1F86D" # wide-headed north east barb arrow
+<shift dead compose> "2" "b" "↙" : "\u1F86E" # wide-headed south east barb arrow
+<shift dead compose> "2" "b" "↘" : "\u1F86F" # wide-headed south west barb arrow
+<shift dead compose> "3" "b" "←" : "\u1F870" # wide-headed  leftwards medium barb arrow
+<shift dead compose> "3" "b" "↑" : "\u1F871" # wide-headed    upwards medium barb arrow
+<shift dead compose> "3" "b" "→" : "\u1F872" # wide-headed rightwards medium barb arrow
+<shift dead compose> "3" "b" "↓" : "\u1F873" # wide-headed  downwards medium barb arrow
+<shift dead compose> "3" "b" "↗" : "\u1F874" # wide-headed north west medium barb arrow
+<shift dead compose> "3" "b" "↖" : "\u1F875" # wide-headed north east medium barb arrow
+<shift dead compose> "3" "b" "↙" : "\u1F876" # wide-headed south east medium barb arrow
+<shift dead compose> "3" "b" "↘" : "\u1F877" # wide-headed south west medium barb arrow
+<shift dead compose> "4" "b" "←" : "\u1F878" # wide-headed  leftwards heavy barb arrow
+<shift dead compose> "4" "b" "↑" : "\u1F879" # wide-headed    upwards heavy barb arrow
+<shift dead compose> "4" "b" "→" : "\u1F87A" # wide-headed rightwards heavy barb arrow
+<shift dead compose> "4" "b" "↓" : "\u1F87B" # wide-headed  downwards heavy barb arrow
+<shift dead compose> "4" "b" "↗" : "\u1F87C" # wide-headed north west heavy barb arrow
+<shift dead compose> "4" "b" "↖" : "\u1F87D" # wide-headed north east heavy barb arrow
+<shift dead compose> "4" "b" "↙" : "\u1F87E" # wide-headed south east heavy barb arrow
+<shift dead compose> "4" "b" "↘" : "\u1F87F" # wide-headed south west heavy barb arrow
+<shift dead compose> "5" "b" "←" : "\u1F880" # wide-headed  leftwards very heavy barb arrow
+<shift dead compose> "5" "b" "↑" : "\u1F881" # wide-headed    upwards very heavy barb arrow
+<shift dead compose> "5" "b" "→" : "\u1F882" # wide-headed rightwards very heavy barb arrow
+<shift dead compose> "5" "b" "↓" : "\u1F883" # wide-headed  downwards very heavy barb arrow
+<shift dead compose> "5" "b" "↗" : "\u1F884" # wide-headed north west very heavy barb arrow
+<shift dead compose> "5" "b" "↖" : "\u1F885" # wide-headed north east very heavy barb arrow
+<shift dead compose> "5" "b" "↙" : "\u1F886" # wide-headed south east very heavy barb arrow
+<shift dead compose> "5" "b" "↘" : "\u1F887" # wide-headed south west very heavy barb arrow
+<shift dead compose> "←" "h" : "\u1F890" #  leftwards triangle arrowhead
+<shift dead compose> "↑" "h" : "\u1F891" #    upwards triangle arrowhead
+<shift dead compose> "→" "h" : "\u1F892" # rightwards triangle arrowhead
+<shift dead compose> "↓" "h" : "\u1F893" #  downwards triangle arrowhead
+<shift dead compose> "←" "H" : "\u1F894" #  leftwards white arrow within triangle arrowhead
+<shift dead compose> "↑" "H" : "\u1F895" #    upwards white arrow within triangle arrowhead
+<shift dead compose> "→" "H" : "\u1F896" # rightwards white arrow within triangle arrowhead
+<shift dead compose> "↓" "H" : "\u1F897" #  downwards white arrow within triangle arrowhead
+<shift dead compose> "←" "N" : "\u1F898" #  leftwards arrow with notched tail
+<shift dead compose> "↑" "N" : "\u1F899" #    upwards arrow with notched tail
+<shift dead compose> "→" "N" : "\u1F89A" # rightwards arrow with notched tail
+<shift dead compose> "↓" "N" : "\u1F89B" #  downwards arrow with notched tail
+<shift dead compose> ["←" "↔" "→"] "-" "4" : "\u1F89C" # heavy arrow shaft width one
+<shift dead compose> ["←" "↔" "→"] "-" "3" : "\u1F89D" # heavy arrow shaft width two thirds
+<shift dead compose> ["←" "↔" "→"] "-" "2" : "\u1F89E" # heavy arrow shaft width one half
+<shift dead compose> ["←" "↔" "→"] "-" "1" : "\u1F89F" # heavy arrow shaft width one third
+<shift dead compose> "←" "s" "↓" : "\u1F8A0" #  leftwards bottom-shaded white arrow
+<shift dead compose> "→" "s" "↓" : "\u1F8A1" # rightwards bottom-shaded white arrow
+<shift dead compose> "←" "s" "↑" : "\u1F8A2" #  leftwards    top-shaded white arrow
+<shift dead compose> "→" "s" "↑" : "\u1F8A3" # rightwards    top-shaded white arrow
+<shift dead compose> "←" "s" "←" : "\u1F8A4" #  leftwards   left-shaded white arrow
+<shift dead compose> "→" "s" "→" : "\u1F8A5" # rightwards  right-shaded white arrow
+<shift dead compose> "←" "s" "→" : "\u1F8A6" #  leftwards  right-shaded white arrow
+<shift dead compose> "→" "s" "←" : "\u1F8A7" # rightwards   left-shaded white arrow
+<shift dead compose> "←" "s" ["↙" "↘"] : "\u1F8A8" #  leftwards   back-tilted shadowed white arrow
+<shift dead compose> "→" "s" ["↙" "↘"] : "\u1F8A9" # rightwards   back-tilted shadowed white arrow
+<shift dead compose> "←" "s" ["↖" "↗"] : "\u1F8AA" #  leftwards  front-tilted shadowed white arrow
+<shift dead compose> "→" "s" ["↖" "↗"] : "\u1F8AB" # rightwards  front-tilted shadowed white arrow
+<shift dead compose> ["←" "↔" "→"] "=" "4" : "\u1F8AC" # white arrow shaft width one
+<shift dead compose> ["←" "↔" "→"] "=" "3" : "\u1F8AD" # white arrow shaft width two thirds
+
+# TODO CJK Unified Ideographs Extension B
+# TODO CJK Unified Ideographs Extension C
+# TODO CJK Unified Ideographs Extension D
+# TODO CJK Compatibility Ideographs Supplement
+
+# Tags: These are deprecated
+
+# TODO Variation Selectors Supplement
+
