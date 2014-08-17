@@ -111,7 +111,7 @@ caps("p" "þ" "Þ")
 nocaps("y" "←" "¥")
 caps("f" "đ" "ª")
 caps("g" "ŋ" "Ŋ")
-nocaps("c" "©" "®")
+nocaps("c" "©" "℗")
 caps("r" "π" "Π")
 caps("l" "ł" "Ł")
 
@@ -129,8 +129,8 @@ caps("n" "ł" "Ł")
 
 <altgr letter q> : <void>
 <altgr shift letter q> : "Ω"
-<altgr letter j> : "©"
-<altgr shift letter j> : <void>
+<altgr letter j> : "®"
+<altgr shift letter j> : "™"
 <altgr letter k> : "ĸ"
 <altgr shift letter k> : <void>
 nocaps("x" "»" ">")

@@ -97,7 +97,7 @@ key("<" ">" "|" "¦")
 <altgr shift letter e> : <void>
 
 <altgr letter r> : "®"
-<altgr shift letter r> : <void>
+<altgr shift letter r> : "™"
 
 <altgr "t"> : "þ"
 <altgr "T"> : "Þ"
@@ -162,7 +162,7 @@ key("<" ">" "|" "¦")
 <altgr shift letter x> : <void>
 
 <altgr letter c> : "©"
-<altgr shift letter c> : <void>
+<altgr shift letter c> : "℗"
 
 <altgr letter v> : "‘"
 <altgr shift letter v> : "“"

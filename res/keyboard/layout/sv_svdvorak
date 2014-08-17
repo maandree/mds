@@ -106,7 +106,7 @@ caps("h" "ħ" "Ħ")
 caps("t" "ŧ" "Ŧ")
 caps("n" "ł" "Ł")
 <altgr letter s> : "ß"
-<altgr shift letter s> : <void>
+<altgr shift letter s> : "™"
 <shift letter -> : "_"
 caps("-" "ø" "Ø")
 

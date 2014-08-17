@@ -107,6 +107,10 @@ key("<" ">" "|" "¦")
 <caps letter q> : "©"
 <shift letter q> : "®"
 <caps shift letter q> : "®"
+<altgr letter q> : "℗"
+<altgr caps letter q> : "℗"
+<altgr shift letter q> : "™"
+<altgr caps shift letter q> : "™"
 
 <altgr "e"> : "é"
 <altgr "E"> : "É"
