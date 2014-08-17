@@ -1,0 +1,72 @@
+<num keypad home> : "7"
+<num keypad up> : "8"
+<num keypad pgup> : "9"
+<num keypad left> : "4"
+<num keypad begin> : "5"
+<num keypad right> : "6"
+<num keypad end> : "1"
+<num keypad down> : "2"
+<num keypad pgdown> : "3"
+<num keypad ins> : "0"
+<num keypad del> : "\comma()"
+
+<num shift keypad home> : <keypad home>
+<num shift keypad up> : <keypad up>
+<num shift keypad pgup> : <keypad pgup>
+<num shift keypad left> : <keypad left>
+<num shift keypad begin> : <keypad begin>
+<num shift keypad right> : <keypad right>
+<num shift keypad end> : <keypad end>
+<num shift keypad down> : <keypad down>
+<num shift keypad pgdown> : <keypad pgdown>
+<num shift keypad ins> : <keypad ins>
+<num shift keypad del> : <keypad del>
+
+<shift keypad home> : "7"
+<shift keypad up> : "8"
+<shift keypad pgup> : "9"
+<shift keypad left> : "4"
+<shift keypad begin> : "5"
+<shift keypad right> : "6"
+<shift keypad end> : "1"
+<shift keypad down> : "2"
+<shift keypad pgdown> : "3"
+<shift keypad ins> : "0"
+<shift keypad del> : "\comma()"
+
+<altgr keypad home> : "↖"
+<altgr keypad up> : "↑"
+<altgr keypad pgup> : "↗"
+<altgr keypad left> : "←"
+<altgr keypad begin> : "↔"
+<altgr keypad right> : "→"
+<altgr keypad end> : "↙"
+<altgr keypad down> : "↓"
+<altgr keypad pgdown> : "↘"
+<altgr keypad ins> : "↕"
+<altgr keypad del> : "\altcomma()"
+
+<altgr shift keypad home> : "⇖"
+<altgr shift keypad up> : "⇑"
+<altgr shift keypad pgup> : "⇗"
+<altgr shift keypad left> : "⇐"
+<altgr shift keypad begin> : "⇔"
+<altgr shift keypad right> : "⇒"
+<altgr shift keypad end> : "⇙"
+<altgr shift keypad down> : "⇓"
+<altgr shift keypad pgdown> : "⇘"
+<altgr shift keypad ins> : "⇕"
+<altgr shift keypad del> : " "
+
+macro mod_keycode/5
+  <keycode \1> : "\2"
+  <shift keycode \1> : "\3"
+  <altgr keycode \1> : "\4"
+  <altgr shift keycode \1> : "\5"
+end macro
+
+mod_keycode(98 "∕" "⋅" "−" "+")
+mod_keycode(55 "∕" "⋅" "−" "+")
+mod_keycode(74 "/" "*" "-" "+")
+mod_keycode(78 "÷" "×" "−" "+")
+

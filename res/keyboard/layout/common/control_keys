@@ -1,0 +1,84 @@
+<keycode 1> : <esc>
+
+<keycode 59> : <f1>
+<keycode 60> : <f2>
+<keycode 61> : <f3>
+<keycode 62> : <f4>
+<keycode 63> : <f5>
+<keycode 64> : <f6>
+<keycode 65> : <f7>
+<keycode 66> : <f8>
+<keycode 67> : <f9>
+<keycode 68> : <f10>
+<keycode 87> : <f11>
+<keycode 88> : <f12>
+<altgr keycode 59> : <f13>
+<altgr keycode 60> : <f14>
+<altgr keycode 61> : <f15>
+<altgr keycode 62> : <f16>
+<altgr keycode 63> : <f17>
+<altgr keycode 64> : <f18>
+<altgr keycode 65> : <f19>
+<altgr keycode 66> : <f20>
+<altgr keycode 67> : <f21>
+<altgr keycode 68> : <f22>
+<altgr keycode 87> : <f23>
+<altgr keycode 88> : <f24>
+
+<keycode 99> : <sysrq>
+<keycode 70> : <scrl lock>
+<keycode 119> : <break>
+
+<keycode 14> : <backspace>
+<altgr shift keycode 14> : " "
+<keycode 28> : <return>
+<keycode 54> : <right shift>
+<keycode 97> : <right ctrl>
+<keycode 127> : <menu>
+<altgr menu> : <-altgr ultra>
+<keycode 126> : <super>
+<keycode 100> : <altgr>
+<keycode 57> : <space>
+<keycode 56> : <alt>
+<keycode 125> : <dead compose>
+<keycode 29> : <left ctrl>
+<keycode 42> : <left shift>
+<keycode 58> : <caps lock>
+<keycode 15> : <tab>
+
+<keycode 110> : <ins>
+<keycode 102> : <home>
+<keycode 104> : <pgup>
+<keycode 111> : <del>
+<keycode 107> : <end>
+<keycode 109> : <pgdown>
+
+<keycode 103> : <up>
+<keycode 105> : <left>
+<keycode 106> : <right>
+<keycode 108> : <down>
+<altgr up> : "↑"
+<altgr left> : "←"
+<altgr right> : "→"
+<altgr down> : "↓"
+<altgr shift up> : "⇑"
+<altgr shift left> : "⇐"
+<altgr shift right> : "⇒"
+<altgr shift down> : "⇓"
+
+<keycode 69> : <num lock>
+<keycode 96> : <keypad return>
+
+<keycode 71> : <keypad home>
+<keycode 72> : <keypad up>
+<keycode 73> : <keypad pgup>
+<keycode 75> : <keypad left>
+<keycode 76> : <keypad begin>
+<keycode 77> : <keypad right>
+<keycode 79> : <keypad end>
+<keycode 80> : <keypad down>
+<keycode 81> : <keypad pgdown>
+<keycode 82> : <keypad ins>
+<keycode 83> : <keypad del>
+<keycode 96> : <keypad return>
+

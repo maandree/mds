@@ -1,0 +1,12 @@
+for "0" to "9" as \1
+  <letter \1> : "\1"
+end for
+
+for "a" to "z" as \1
+  let \2 : "\sub(\1 \sub("a" "A"))"
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end for
+
