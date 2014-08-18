@@ -130,18 +130,18 @@ key("<" ">" "|" "¦")
 <altgr "o"> : "œ"
 <altgr "O"> : "Œ"
 
-<altgr "p"> : "π"
-<altgr "P"> : "Π"
+<altgr letter p> : <dead letter ˀ>
+<altgr shift letter p> : <dead letter \u031B> # horn
 
-<altgr letter å> : <dead letter ˝̋>
+<altgr letter å> : <dead letter ˝>
 <altgr shift letter å> : <dead letter °>
 
 
 <altgr "a"> : "ə"
 <altgr "A"> : "Ə"
 
-<altgr "s"> : "ß"
-<altgr "S"> : <void>
+<altgr letter s> : "ß"
+<altgr shift letter s> : <dead letter ->
 
 <altgr "d"> : "ð"
 <altgr "D"> : "Ð"
@@ -149,8 +149,8 @@ key("<" ">" "|" "¦")
 <altgr "f"> : "đ"
 <altgr "F"> : "Ð"
 
-<altgr letter g> : <void>
-<altgr shift letter g> : <void>
+<altgr "g"> : "π"
+<altgr "G"> : "Π"
 
 <altgr letter h> : <void>
 <altgr shift letter h> : <void>

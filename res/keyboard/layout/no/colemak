@@ -161,7 +161,7 @@ key("<" ">" "½" "¾")
 <altgr shift letter l> : <void>
 
 <altgr letter ø> : <dead letter ´>
-<altgr shift letter ø> : <dead letter ˝̋>
+<altgr shift letter ø> : <dead letter ˝>
 
 <altgr letter æ> : <dead letter ^>
 <altgr shift letter æ> : <dead letter ˇ>

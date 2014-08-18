@@ -90,13 +90,14 @@ key("," ";" "’" "‘")
 <altgr letter .> : "·"
 <altgr shift letter .> : <dead letter ˙>
 
-caps("p" "π" "Π")
+<altgr letter p> : <dead letter ˀ>
+<altgr shift letter p> : <dead letter \u031B> # horn
 nocaps("y" "¥")
 caps("f" "đ" "Ð")
-# caps("g" "" "")
+caps("g" "π" "Π")
 nocaps("c" "©" "℗")
 nocaps("r" "®" "™")
-<altgr letter l> : <dead letter ˝̋>
+<altgr letter l> : <dead letter ˝>
 <altgr shift letter l> : <dead letter °>
 
 <letter '> : "'"
@@ -118,7 +119,8 @@ caps("d" "ð" "Ð")
 caps("h" "ə" "Ə")
 caps("t" "þ" "Þ")
 caps("n" "ŋ" "Ŋ")
-nocaps("s" "ß")
+<altgr letter s> : "ß"
+<altgr shift letter s> : <dead letter ->
 
 <letter -> : "-"
 <shift letter -> : "_"
