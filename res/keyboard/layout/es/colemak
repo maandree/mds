@@ -119,7 +119,7 @@ caps("o" "ø" "Ø")
 
 <shift dead letter ´> : <dead letter ¨>
 <altgr dead letter ´> : "{"
-<altgr shift dead letter ´> : <void>
+<altgr shift dead letter ´> : <dead letter ˇ>
 
 <altgr letter ç> : "}"
 <altgr shift letter ç> : <dead letter ˘>

@@ -139,7 +139,7 @@ caps("o" "ø" "Ø")
 <letter {> : "{"
 <shift letter {> : "["
 <altgr letter {> : <dead letter ^>
-<altgr shift letter {> : <void>
+<altgr shift letter {> : <dead letter ˇ>
 
 <letter }> : "}"
 <shift letter }> : "]"
