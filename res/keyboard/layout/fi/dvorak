@@ -1,0 +1,141 @@
+information
+  language "Finnish"
+  country "Finland"
+  variant "Dvorak"
+end information
+
+include "../common/dvorak"
+include "../common/base"
+
+
+function comma/0
+  ","
+end function
+function altcomma/0
+  "."
+end function
+
+macro mod_letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+mod_letter("å" "Å")
+mod_letter("ä" "Ä")
+mod_letter("ö" "Ö")
+
+<keycode 41> : <letter §>
+<keycode 12> : <letter +>
+<keycode 13> : <dead letter ´>
+<keycode 16> : <letter å>
+<keycode 17> : <letter ,>
+<keycode 18> : <letter .>
+<keycode 26> : <letter '>
+<keycode 27> : <dead letter ¨>
+<keycode 86> : <letter ö>
+<keycode 44> : <letter ä>
+<keycode 40> : <letter ->
+<keycode 43> : <letter <>
+
+
+macro key/4
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : "\4"
+end macro
+
+macro nocaps/2
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : <void>
+end macro
+
+macro nocaps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+end macro
+
+macro caps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+  <altgr caps letter \1> : "\3"
+  <altgr caps shift letter \1> : "\2"
+end macro
+
+
+key("|" "§" "¬" "¶")
+key("1" "!" "’" "¡")
+key("2" "\"" "@" "”")
+key("3" "#" "£" "»")
+key("4" "¤" "$" "«")
+key("5" "%" "‘" "“")
+key("6" "&" "‚" "„")
+key("7" "/" "{" "÷")
+key("8" "(" "[" "‹")
+key("9" ")" "]" "›")
+key("0" "=" "}" "°")
+key("+" "?" "\\" "¿")
+<shift dead letter ´> : <dead letter `>
+<altgr dead letter ´> : <dead letter ¸>
+<altgr shift dead letter ´> : <dead letter˛>
+
+
+nocaps("å" "}" "]")
+key("," ";" "’" "‘")
+
+<letter .> : "."
+<shift letter .> : ":"
+<altgr letter .> : "·"
+<altgr shift letter .> : <dead letter ˙>
+
+caps("p" "π" "Π")
+nocaps("y" "¥")
+caps("f" "đ" "Ð")
+# caps("g" "" "")
+nocaps("c" "©" "℗")
+nocaps("r" "®" "™")
+<altgr letter l> : <dead letter ˝̋>
+<altgr shift letter l> : <dead letter °>
+
+<letter '> : "'"
+<shift letter '> : "*"
+<altgr letter '> : <dead letter ˇ>
+<altgr shift letter '> : <dead letter ˘>
+
+<shift dead letter ¨> : <dead letter ^>
+<altgr dead letter ¨> : <dead letter ~>
+<altgr shift dead letter ¨> : <dead letter ¯>
+
+
+caps("a" "æ" "Æ")
+caps("o" "œ" "Œ")
+nocaps("e" "€" "¢")
+caps("u" "ø" "Ø")
+nocaps("i" "ı" "|")
+caps("d" "ð" "Ð")
+caps("h" "ə" "Ə")
+caps("t" "þ" "Þ")
+caps("n" "ŋ" "Ŋ")
+nocaps("s" "ß")
+
+<letter -> : "-"
+<shift letter -> : "_"
+<altgr letter -> : <dead letter \u0323>
+<altgr shift letter -> : <dead letter ¯>
+
+key("<" ">" "|" "¦")
+
+
+caps("ö" "|" "\\")
+nocaps("ä" "←")
+nocaps("q" "↓" "↑")
+nocaps("j" "→")
+nocaps("k" "ĸ" "—")
+nocaps("x" "×" "⋅")
+# caps("b" "" "")
+nocaps("m" "µ" "Ω")
+caps("w" "ł" "Ł")
+# caps("v" "" "")
+caps("z" "ʒ" "Ʒ")
