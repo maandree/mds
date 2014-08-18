@@ -532,7 +532,7 @@ composite("⇧" "^" "⇮")
 <dead compose> "A" "A" : "∀"
 <dead compose> "m" "C" : "∁"
 <dead compose> "d" "d" : "∂"
-<dead compose> "E" "E" : "∃"
+<shift dead compose> "E" "E" : "∃"
 <dead compose> ("/" "∃") : "∄"
 <dead compose> ("/" "0") : "∅"
 <dead compose> "Δ" "Δ" : "∆"
