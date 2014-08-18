@@ -90,6 +90,7 @@ caps("t" "ŧ" "Ŧ")
 nocaps("y" "←" "¥")
 nocaps("u" "↓" "↑")
 nocaps("i" "→" "ı")
+caps("o" "ø" "Ø")
 caps("p" "þ" "Þ")
 
 <shift dead letter `> : <dead letter ^>
