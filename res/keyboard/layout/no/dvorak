@@ -36,8 +36,8 @@ mod_letter("ø" "Ø")
 <keycode 27> : <dead letter ¨>
 <keycode 40> : <letter ->
 <keycode 43> : <letter <>
-<keycode 86> : <letter ö>
-<keycode 44> : <letter ä>
+<keycode 86> : <letter ø>
+<keycode 44> : <letter æ>
 
 
 macro key/4
