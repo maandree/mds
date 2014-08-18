@@ -125,14 +125,14 @@ caps("h" "ħ" "Ħ")
 caps("t" "ŧ" "Ŧ")
 caps("n" "ł" "Ł")
 <altgr letter s> : "ß"
-<altgr shift letter s> : <void>
+<altgr shift letter s> : <dead letter ˀ>
 
 <altgr letter q> : <void>
 <altgr shift letter q> : "Ω"
 <altgr letter j> : "®"
 <altgr shift letter j> : "™"
 <altgr letter k> : "ĸ"
-<altgr shift letter k> : <void>
+<altgr shift letter k> : <dead letter \u031B> # horn
 nocaps("x" "»" ">")
 nocaps("b" "’" "”")
 caps("m" "µ" "º")

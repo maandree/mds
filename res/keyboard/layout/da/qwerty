@@ -151,8 +151,8 @@ key("<" ">" "\\" "¬")
 <altgr "h"> : "ħ"
 <altgr "H"> : "Ħ"
 
-<altgr letter j> : <void>
-<altgr shift letter j> : <void>
+<altgr letter j> : <dead letter ˀ>
+<altgr shift letter j> : <dead letter \u031B> # horn
 
 <altgr letter k> : "ĸ"
 <altgr shift letter k> : <void>

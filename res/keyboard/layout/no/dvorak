@@ -111,7 +111,8 @@ nocaps("f" "ª" "º")
 caps("g" "ŋ" "Ŋ")
 nocaps("c" "ç" "©")
 nocaps("r" "®" "℗")
-# caps("l" "" "")
+<altgr letter l> : <dead letter ˀ>
+<altgr shift letter l> : <dead letter \u031B> # horn
 
 # caps("a" "" "")
 caps("o" "œ" "Œ")
