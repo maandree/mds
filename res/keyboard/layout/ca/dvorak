@@ -1,0 +1,146 @@
+information
+  language "Catalan"
+  country "Spain"
+  variant "Dvorak"
+end information
+
+include "../common/dvorak"
+include "../common/base"
+
+
+function comma/0
+  ","
+end function
+function altcomma/0
+  "."
+end function
+
+macro mod_letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+mod_letter("ñ" "Ñ")
+mod_letter("ç" "Ç")
+
+<keycode 41> : <letter º>
+<keycode 12> : <letter '>
+<keycode 13> : <letter ¡>
+<keycode 16> : <letter .>
+<keycode 17> : <letter ,>
+<keycode 18> : <letter ñ>
+<keycode 26> : <dead letter `>
+<keycode 27> : <letter +>
+<keycode 40> : <dead letter ´>
+<keycode 43> : <letter ç>
+<keycode 86> : <letter <>
+<keycode 44> : <letter ->
+
+
+macro key/4
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : "\4"
+end macro
+
+macro nocaps/2
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : <void>
+end macro
+
+macro nocaps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+end macro
+
+macro caps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+  <altgr caps letter \1> : "\3"
+  <altgr caps shift letter \1> : "\2"
+end macro
+
+
+<letter º> : "º"
+<shift letter º> : "ª"
+<altgr letter º> : "\\"
+<altgr shift letter º> : <dead letter °>
+key("1" "!" "|" "¹")
+key("2" "\"" "@" "²")
+key("3" "·" "#" "³")
+key("4" "$" "~" "¼")
+key("5" "%" "¦" "⅝")
+key("6" "&" "¬" "¾")
+key("7" "/" "½" "⅞")
+key("8" "(" "⅛" "⅜")
+<shift letter 9> : ")"
+<altgr letter 9> : "^"
+<altgr shift letter 9> : <void>
+<shift letter 0> : "="
+<altgr letter 0> : "`"
+<altgr shift letter 0> : <dead letter ˝>
+<letter '> : "'"
+<shift letter '> : "?"
+<altgr letter '> : <dead letter ¯>
+<altgr shift letter '> : <dead letter ˛>
+<letter ¡> : "¡"
+<shift letter ¡> : "¿"
+<altgr letter ¡> : <dead letter ˘>
+<altgr shift letter ¡> : <dead letter ˙>
+
+
+key("." ":" "<" "«")
+key("," ";" ">" "»")
+caps("ñ" "ł" "Ł")
+nocaps("p" "¶" "º")
+nocaps("y" "¥" "ª")
+caps("f" "ŧ" "Ŧ")
+caps("g" "đ" "Ð")
+nocaps("c" "¢" "©")
+caps("h" "ħ" "Ħ")
+caps("l" "ŀ" "Ŀ")
+<shift dead letter `> : <dead letter ^>
+<altgr dead letter `> : "["
+<altgr shift dead letter `> : <dead letter ˇ>
+<letter +> : "+"
+<shift letter +> : "*"
+<altgr letter +> : "]"
+<altgr shift letter +> : "±"
+
+
+caps("a" "æ" "Æ")
+caps("o" "ø" "Ø")
+nocaps("e" "€" "¢")
+caps("u" "å" "Å)
+caps("i" "œ" "Œ")
+caps("d" "ð" "Ð")
+nocaps("r" "®" "™")
+caps("t" "þ" "Þ")
+caps("n" "ŋ" "Ŋ")
+nocaps("s" "ß" "§")
+<shift dead letter ´> : <dead letter ¨>
+<altgr dead letter ´> : "{"
+<altgr shift dead letter ´> : <dead letter ~>
+<altgr letter ç> : "}"
+<altgr shift letter ç> : <dead letter ¸>
+
+
+key("<" ">" "‽" "⸘")
+<letter -> : "-"
+<shift letter -> : "_"
+<altgr letter -> : <dead letter \u0323>
+<altgr shift letter -> : <dead letter ¯>
+nocaps("q" "¤" "Ω")
+<altgr letter j> : <dead letter ˀ>
+<altgr shift letter j> : <dead letter \u031B> # horn
+nocaps("k" "ĸ" "ı")
+nocaps("x" "×" "÷")
+nocaps("b" "←" "→")
+nocaps("m" "µ" "£")
+nocaps("w" "↓" "↑")
+nocaps("v" "“" "‘")
+nocaps("z" "”" "’")
+
