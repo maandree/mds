@@ -1,0 +1,151 @@
+information
+  language "Asturian"
+  country "Spain"
+  variant "Colemak"
+end information
+
+include "../common/colemak"
+include "../common/base"
+
+
+function comma/0
+  ","
+end function
+function altcomma/0
+  "."
+end function
+
+macro mod_letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+mod_letter("ñ" "Ñ")
+mod_letter("ç" "Ç")
+
+<keycode 41> : <letter º>
+<keycode 12> : <letter '>
+<keycode 13> : <letter ¡>
+<keycode 26> : <dead letter `>
+<keycode 27> : <letter +>
+<keycode 39> : <letter ñ>
+<keycode 40> : <dead letter ´>
+<keycode 43> : <letter ç>
+<keycode 86> : <letter <>
+<keycode 51> : <letter ,>
+<keycode 52> : <letter .>
+<keycode 53> : <letter ->
+
+
+macro key/4
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <altgr letter \1> : "\3"
+  <altgr shift letter \1> : "\4"
+end macro
+
+macro nocaps/2
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : <void>
+end macro
+
+macro nocaps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+end macro
+
+macro caps/3
+  <altgr letter \1> : "\2"
+  <altgr shift letter \1> : "\3"
+  <altgr caps letter \1> : "\3"
+  <altgr caps shift letter \1> : "\2"
+end macro
+
+
+key("º" "ª" "\\" "¾")
+key("1" "!" "|" "¡")
+key("2" "\"" "@" "⅛")
+key("3" "·" "#" "£")
+key("4" "$" "~" "¼")
+key("5" "%" "½" "⅜")
+key("6" "&" "¬" "⅝")
+key("7" "/" "{" "⅞")
+key("8" "(" "[" "™")
+key("9" ")" "]" "±")
+key("0" "=" "}" "°")
+key("'" "?" "\\" "¿")
+<letter ¡> : "¡"
+<shift letter ¡> : "¿"
+<altgr letter ¡> : <dead letter ~>
+<altgr shift letter ¡> : "~"
+
+
+nocaps("q" "Ω" "¥")
+caps("w" "ł" "Ł")
+nocaps("f" "đ" "ª")
+caps("p" "þ" "Þ")
+caps("g" "ŋ" "Ŋ")
+<altgr letter j> : <dead letter ˀ>
+<altgr shift letter j> : <dead letter \u031B> # horn
+nocaps("l" "ḷ" "Ḷ")
+nocaps("u" "↓" "↑")
+nocaps("y" "←" "→")
+<altgr letter ñ> : <dead letter ~>
+<altgr shift letter ñ> : <dead letter ˝>
+
+<shift dead letter `> : <dead letter ^>
+<altgr dead letter `> : "["
+<altgr shift dead letter `> : <dead letter °>
+
+<letter +> : "+"
+<shift letter +> : "*"
+<altgr letter +> : "]"
+<altgr shift letter +> : <dead letter ¯>
+
+
+caps("a" "æ" "Æ")
+nocaps("r" "¶" "®")
+nocaps("s" "ß" "§")
+caps("t" "ŧ" "Ŧ")
+caps("d" "ð" "Ð")
+caps("h" "ḥ" "Ḥ")
+<altgr letter n> : <dead letter ˛>
+<altgr shift letter n> : <dead letter ˙>
+nocaps("e" "€" "¢")
+caps("i" "œ" "Œ")
+caps("o" "ø" "Ø")
+
+<shift dead letter ´> : <dead letter ¨>
+<altgr dead letter ´> : "{"
+<altgr shift dead letter ´> : <dead letter ˇ>
+
+<altgr letter ç> : "}"
+<altgr shift letter ç> : <dead letter ˘>
+
+
+key("<" ">" "|" "¦")
+nocaps("z" "«" "⸘")
+nocaps("x" "»" "‽")
+nocaps("c" "¢" "©")
+nocaps("v" "“" "‘")
+nocaps("b" "”" "’")
+nocaps("k" "ĸ" "ı")
+nocaps("m" "µ" "º")
+
+<letter ,> : ","
+<shift letter ,> : ";"
+<altgr letter ,> : <dead letter ¸>
+<altgr shift letter ,> : "×"
+
+<letter .> : "."
+<shift letter .> : ":"
+<altgr letter .> : "·"
+<altgr shift letter .> : "÷"
+
+<letter -> : "-"
+<shift letter -> : "_"
+<altgr letter -> : <dead letter \u0323>
+<altgr shift letter -> : <dead letter ¯>
+
