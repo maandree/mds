@@ -1,5 +1,4 @@
 include "control_keys"
 include "keypad"
-include "control"
 include "../../compose/dead"
 

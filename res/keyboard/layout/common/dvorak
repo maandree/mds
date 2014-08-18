@@ -1,39 +1,39 @@
 include "latin"
 
-<-ctrl keycode 2> : <letter 1>
-<-ctrl keycode 3> : <letter 2>
-<-ctrl keycode 4> : <letter 3>
-<-ctrl keycode 5> : <letter 4>
-<-ctrl keycode 6> : <letter 5>
-<-ctrl keycode 7> : <letter 6>
-<-ctrl keycode 8> : <letter 7>
-<-ctrl keycode 9> : <letter 8>
-<-ctrl keycode 10> : <letter 9>
-<-ctrl keycode 11> : <letter 0>
-<-ctrl keycode 19> : <letter p>
-<-ctrl keycode 20> : <letter y>
-<-ctrl keycode 21> : <letter f>
-<-ctrl keycode 22> : <letter g>
-<-ctrl keycode 23> : <letter c>
-<-ctrl keycode 24> : <letter r>
-<-ctrl keycode 25> : <letter l>
-<-ctrl keycode 30> : <letter a>
-<-ctrl keycode 31> : <letter o>
-<-ctrl keycode 32> : <letter e>
-<-ctrl keycode 33> : <letter u>
-<-ctrl keycode 34> : <letter i>
-<-ctrl keycode 35> : <letter d>
-<-ctrl keycode 36> : <letter h>
-<-ctrl keycode 37> : <letter t>
-<-ctrl keycode 38> : <letter n>
-<-ctrl keycode 39> : <letter s>
-<-ctrl keycode 45> : <letter q>
-<-ctrl keycode 46> : <letter j>
-<-ctrl keycode 47> : <letter k>
-<-ctrl keycode 48> : <letter x>
-<-ctrl keycode 49> : <letter b>
-<-ctrl keycode 50> : <letter m>
-<-ctrl keycode 51> : <letter w>
-<-ctrl keycode 52> : <letter v>
-<-ctrl keycode 53> : <letter z>
+<keycode 2> : <letter 1>
+<keycode 3> : <letter 2>
+<keycode 4> : <letter 3>
+<keycode 5> : <letter 4>
+<keycode 6> : <letter 5>
+<keycode 7> : <letter 6>
+<keycode 8> : <letter 7>
+<keycode 9> : <letter 8>
+<keycode 10> : <letter 9>
+<keycode 11> : <letter 0>
+<keycode 19> : <letter p>
+<keycode 20> : <letter y>
+<keycode 21> : <letter f>
+<keycode 22> : <letter g>
+<keycode 23> : <letter c>
+<keycode 24> : <letter r>
+<keycode 25> : <letter l>
+<keycode 30> : <letter a>
+<keycode 31> : <letter o>
+<keycode 32> : <letter e>
+<keycode 33> : <letter u>
+<keycode 34> : <letter i>
+<keycode 35> : <letter d>
+<keycode 36> : <letter h>
+<keycode 37> : <letter t>
+<keycode 38> : <letter n>
+<keycode 39> : <letter s>
+<keycode 45> : <letter q>
+<keycode 46> : <letter j>
+<keycode 47> : <letter k>
+<keycode 48> : <letter x>
+<keycode 49> : <letter b>
+<keycode 50> : <letter m>
+<keycode 51> : <letter w>
+<keycode 52> : <letter v>
+<keycode 53> : <letter z>
 
