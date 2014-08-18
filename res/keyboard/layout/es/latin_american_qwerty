@@ -136,7 +136,7 @@ nocaps("k" "ĸ")
 caps("l" "œ" "Œ")
 
 <altgr letter ñ> : <dead letter ~>
-<altgr shiftletter ñ> : <dead letter ˝>
+<altgr shift letter ñ> : <dead letter ˝>
 
 <letter {> : "{"
 <shift letter {> : "["

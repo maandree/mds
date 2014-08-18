@@ -93,7 +93,7 @@ nocaps("l" "←" "ı")
 nocaps("u" "↓" "↑")
 nocaps("y" "→" "¥")
 <altgr letter ñ> : <dead letter ~>
-<altgr shiftletter ñ> : <dead letter ˝>
+<altgr shift letter ñ> : <dead letter ˝>
 
 <shift dead letter `> : <dead letter ^>
 <altgr dead letter `> : "["
