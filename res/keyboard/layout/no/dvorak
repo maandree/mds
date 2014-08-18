@@ -1,5 +1,7 @@
 information
   language "Norwegian"
+  language "Bokmål"
+  language "Nynorsk"
   country "Norway"
   variant "Dvorak"
 end information
