@@ -28,7 +28,7 @@ mod_letter("ø" "Ø")
 
 <keycode 41> : <letter |>
 <keycode 12> : <letter +>
-<keycode 13> : <dead letter \\>
+<keycode 13> : <letter \\>
 <keycode 16> : <letter å>
 <keycode 17> : <letter ,>
 <keycode 18> : <letter .>
