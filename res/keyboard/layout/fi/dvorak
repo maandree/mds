@@ -79,7 +79,7 @@ key("0" "=" "}" "°")
 key("+" "?" "\\" "¿")
 <shift dead letter ´> : <dead letter `>
 <altgr dead letter ´> : <dead letter ¸>
-<altgr shift dead letter ´> : <dead letter˛>
+<altgr shift dead letter ´> : <dead letter ˛>
 
 
 nocaps("å" "}" "]")
