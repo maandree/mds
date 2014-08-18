@@ -84,7 +84,7 @@ key("'" "?" "\\" "¿")
 
 nocaps("q" "Ω")
 caps("w" "ł" "Ł")
-nocaps("f" "đ" "º")
+nocaps("f" "đ" "ª")
 caps("p" "þ" "Þ")
 caps("g" "ŋ" "Ŋ")
 <altgr letter j> : <dead letter ˀ>

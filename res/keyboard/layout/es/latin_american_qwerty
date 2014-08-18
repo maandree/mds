@@ -125,7 +125,7 @@ caps("p" "þ" "Þ")
 caps("a" "æ" "Æ")
 nocaps("s" "ß" "§")
 caps("d" "ð" "Ð")
-nocaps("f" "đ" "º")
+nocaps("f" "đ" "ª")
 caps("g" "ŋ" "Ŋ")
 caps("h" "ħ" "Ħ")
 
