@@ -62,6 +62,12 @@ int is_respawn = -1;
 int is_reexec = 0;
 
 /**
+ * Whether the server should do its
+ * best to resist event triggered death
+ */
+int is_immortal = 0;
+
+/**
  * Whether to fork the process when the
  * server has been properly initialised
  */
@@ -133,6 +139,8 @@ int __attribute__((weak)) parse_cmdline(void)
 	on_init_fork = 1;
       else if (startswith(arg, "--on-init-sh=")) /* Run a command when initialised. */
 	on_init_sh = arg + strlen("--on-init-sh=");
+      else if (strequals(arg, "--immortal")) /* I return to serve. */
+	is_immortal = 1;
     }
   if (is_reexec)
     {
@@ -598,8 +606,8 @@ int trap_signals(void)
   /* Implement silent interruption on SIGRTMIN. */
   fail_if (xsigaction(SIGRTMIN, received_noop) < 0);
   
-  /* Implement silent interruption on SIGDANGER. */
-  if (server_characteristics.danger_is_deadly)
+  /* Implement death on SIGDANGER or ignoral of SIGDANGER. */
+  if (server_characteristics.danger_is_deadly && !is_immortal)
     { fail_if (xsigaction(SIGDANGER, commit_suicide) < 0); }
   else
     { fail_if (xsigaction(SIGDANGER, SIG_IGN) < 0); }

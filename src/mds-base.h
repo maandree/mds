@@ -65,7 +65,7 @@ typedef struct server_characteristics
   unsigned fork_for_safety : 1;
   
   /**
-   * Seting this to non-zero without setting a signal action
+   * Setting this to non-zero without setting a signal action
    * for `SIGDANGER` will cause the server to die if `SIGDANGER`
    * is received. It is safe to set both `danger_is_deadly` and
    * `fork_for_safety` to non-zero, during the call of
@@ -73,6 +73,9 @@ typedef struct server_characteristics
    * in the parent process will be set to `SIG_IGN` independently
    * of the value of `danger_is_deadly` if `fork_for_safety`
    * is set to non-zero.
+   * 
+   * This setting will be treated as set to zero if
+   * --immortal is used.
    */
   unsigned danger_is_deadly : 1;
   
@@ -111,6 +114,12 @@ extern int is_respawn;
  * from a self-reexecution
  */
 extern int is_reexec;
+
+/**
+ * Whether the server should do its
+ * best to resist event triggered death
+ */
+extern int is_immortal;
 
 /**
  * Whether to fork the process when the
