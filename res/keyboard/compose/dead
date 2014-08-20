@@ -448,6 +448,7 @@ dead_ascii("ˇ")
 <shift dead compose> "r" "(" "," : "ↅ"
 <dead compose> "Ⅽ" "," : "ↅ"
 <dead compose> "Ⅴ" "Ⅴ" : "ↆ"
+<shift dead compose> "r" "↓" : "ↆ"
 <shift dead compose> "r" "Ⅾ" [")" "Ↄ"] [")" "Ↄ"] : "ↇ"
 <shift dead compose> "r" "ↁ" [")" "Ↄ"] : "ↇ"
 <shift dead compose> "r" "|" [")" "Ↄ"] [")" "Ↄ"] [")" "Ↄ"] : "ↇ"
