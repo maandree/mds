@@ -39,8 +39,8 @@ macro composite/4
 end macro
 
 
-<dead compose> "u" "+" : <dead hexdead compose>
-<dead compose> "U" "+" : <dead longhexdead compose>
+<shift dead compose> "u" "+" : <dead hexcompose>
+<shift dead compose> "U" "+" : <dead longhexcompose>
 
 
 # TODO C0 Controls
