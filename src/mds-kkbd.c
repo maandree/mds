@@ -157,7 +157,7 @@ static char key_send_buffer[111];
 /**
  * Message buffer for the main thread
  */
-static char* send_buffer = NULL;
+static char* send_buffer = NULL; /* TODO free on danger */
 
 /**
  * The size of `send_buffer`
