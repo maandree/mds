@@ -59,6 +59,7 @@ Missing commands:
 	conf		Command line interface for reconfiguring servers
 	clip		Command line interface for the clipboard
 	screenshot	Take a screenshot
+	switch-vt	Command line interface for switching VT
 
 Need testing:
 
