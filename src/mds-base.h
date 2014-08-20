@@ -64,6 +64,18 @@ typedef struct server_characteristics
    */
   unsigned fork_for_safety : 1;
   
+  /**
+   * Seting this to non-zero without setting a signal action
+   * for `SIGDANGER` will cause the server to die if `SIGDANGER`
+   * is received. It is safe to set both `danger_is_deadly` and
+   * `fork_for_safety` to non-zero, during the call of
+   * `server_initialised` the signal handler for `SIGDANGER`
+   * in the parent process will be set to `SIG_IGN` independently
+   * of the value of `danger_is_deadly` if `fork_for_safety`
+   * is set to non-zero.
+   */
+  unsigned danger_is_deadly : 1;
+  
 } __attribute__((packed)) server_characteristics_t;
 
 

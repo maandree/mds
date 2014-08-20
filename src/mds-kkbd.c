@@ -88,7 +88,8 @@ server_characteristics_t server_characteristics =
     .require_display = 1,
     .require_respawn_info = 0,
     .sanity_check_argc = 1,
-    .fork_for_safety = 1
+    .fork_for_safety = 1,
+    .danger_is_deadly = 0
   };
 
 

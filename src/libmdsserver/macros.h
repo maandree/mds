@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <signal.h>
 
 /*
 #include <unistd.h>
@@ -361,6 +362,15 @@
  * @param  INSTRUCTIONS  The instruction (semicolon-terminated)
  */
 #define exit_if(CONDITION, INSTRUCTIONS)  if (CONDITION)  { INSTRUCTIONS return 1; }
+
+
+/**
+ * The system is running out of memory.
+ * Quick, free up all your unused memory or kill yourself!
+ */
+#ifndef SIGDANGER
+# define SIGDANGER  SIGRTMAX
+#endif
 
 
 #endif

@@ -192,8 +192,9 @@ int __attribute__((weak)) connect_to_display(void)
  */
 static int server_initialised_fork_for_safety(void)
 {
-  unsigned pending_alarm = alarm(0);
+  unsigned pending_alarm = alarm(0); /* Disable the alarm. */
   pid_t pid = fork();
+  int status;
   
   if (pid == (pid_t)-1)
     {
@@ -202,17 +203,29 @@ static int server_initialised_fork_for_safety(void)
       return -1;
     }
   else if (pid == 0)
+    /* Reinstate the alarm for the child. */
     alarm(pending_alarm);
   else
     {
-      int status;
+      /* SIGDANGER cannot hurt the parent process. */
+      if (xsigaction(SIGDANGER, SIG_IGN) < 0)
+	{
+	  xperror(*argv);
+	  eprint("WARNING! parent process failed to sig up ignoring of SIGDANGER.");
+	}
+      
+      /* Wait for the child process to die. */
       if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
 	{
 	  xperror(*argv);
 	  kill(pid, SIGABRT);
 	  sleep(5);
 	}
+      
+      /* Clean up after us. */
       fork_cleanup(status);
+      
+      /* Die like the child. */
       if      (WIFEXITED(status))    exit(WEXITSTATUS(status));
       else if (WIFSIGNALED(status))  raise(WTERMSIG(status));
       exit(1);
@@ -541,6 +554,32 @@ int main(int argc_, char** argv_)
 
 
 /**
+ * This function is called when `SIGDANGER` is received
+ * of `server_characteristics.danger_is_deadly` is non-zero
+ * unless the signal handler for `SIGDANGER` has been
+ * modified by the server implementation.
+ * 
+ * This function will abruptly kill the process
+ * 
+ * @param  signo  The signal that has been received
+ */
+static void commit_suicide(int signo)
+{
+  (void) signo;
+  
+  eprint("SIGDANGER received, process is killing itself to free memory.");
+  
+  /* abort(), but on the process rather than the thread. */
+  xsigaction(SIGABRT, SIG_DFL);
+  kill(getpid(), SIGABRT);
+  
+  /* Just in case. */
+  xperror(*argv);
+  _exit(1);
+}
+
+
+/**
  * Set up signal traps for all especially handled signals
  * 
  * @return  Non-zero on error
@@ -556,8 +595,14 @@ int trap_signals(void)
   /* Implement clean exit on SIGINT. */
   fail_if (xsigaction(SIGINT, received_terminate) < 0);
   
-  /* Implement clean exit on SIGRTMIN. */
+  /* Implement silent interruption on SIGRTMIN. */
   fail_if (xsigaction(SIGRTMIN, received_noop) < 0);
+  
+  /* Implement silent interruption on SIGDANGER. */
+  if (server_characteristics.danger_is_deadly)
+    { fail_if (xsigaction(SIGDANGER, commit_suicide) < 0); }
+  else
+    { fail_if (xsigaction(SIGDANGER, SIG_IGN) < 0); }
   
   return 0;
  pfail:
