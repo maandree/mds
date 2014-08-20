@@ -103,6 +103,10 @@ int main(int argc_, char** argv_)
   if (xsigaction(SIGUSR1, SIG_IGN) < 0)
     perror(*argv);
   
+  /* Set up to ignore SIGDANGER. */
+  if (xsigaction(SIGDANGER, SIG_IGN) < 0)
+    perror(*argv);
+  
   /* Create directory for socket files, PID files and such. */
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
     return 1;
@@ -513,7 +517,6 @@ int unlink_recursive(const char* pathname)
 	if (errno != EISDIR)
 	  goto pfail;
 	unlink_recursive(file->d_name);
-	eprint("pop");
       }
   
   /* Remove the drectory. */
