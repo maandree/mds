@@ -66,7 +66,7 @@ dead_ascii("¨" "\"")
 (<dead compose> <dead letter ~>) "_" "a" : "ª"
 <dead compose> "<" "<" : "«"
 <dead compose> ("-" ",") : "¬"
-<dead compose> "-" "-" " " : "­"
+<dead compose> "-" "-" <space> : "­"
 <dead compose> (["o" "O"] ["r" "R"]) : "®"
 <dead compose> "-" : <dead letter ¯>
 <dead compose> "o" : <dead letter °>
@@ -302,7 +302,7 @@ composite("¨" "\"" "y" "ÿ")
 <dead compose> "(" "|" : "⁌"
 <dead compose> "|" ")" : "⁍"
 <dead compose> ("*" ".") : "⁎"
-<dead compose> ";" ";" : "⁏"
+<dead compose> "|" ";" : "⁏"
 <shift dead compose> "(" ")": "⁐"
 <dead compose> ("*" ":") : "⁑"
 <dead compose> "%" "%" : "⁒"
@@ -916,14 +916,14 @@ for "a" to "z" as \1
 end for
 <dead compose> "(" "0" ")" : "\u24EA"
 for "1" to "9" as \1
-  <dead compose> "(" "(" "(" "1" "\1" ")" ")" ")" : "\add(\u24EB \sub(\1 "1"))"
+  <shift dead compose> "(" "(" "(" "1" "\1" ")" ")" ")" : "\add(\u24EB \sub(\1 "1"))"
 end for
-<dead compose> "(" "(" "(" "2" "0" ")" ")" ")" : "\u24F4"
+<shift dead compose> "(" "(" "(" "2" "0" ")" ")" ")" : "\u24F4"
 for "1" to "9" as \1
-  <dead compose> "(" "(" "\1" ")" ")" : "\add(\u24F5 \sub(\1 "1"))"
+  <shift dead compose> "(" "(" "\1" ")" ")" : "\add(\u24F5 \sub(\1 "1"))"
 end for
-<dead compose> "(" "(" "1" "0" ")" ")" : "\u24FE"
-<dead compose> "(" "(" "(" "0" ")" ")" ")" : "\u24FF"
+<shift dead compose> "(" "(" "1" "0" ")" ")" : "\u24FE"
+<shift dead compose> "(" "(" "(" "0" ")" ")" ")" : "\u24FF"
 
 # Box Drawing:
 <dead compose> ("╴" "╶") : "─"
@@ -1249,7 +1249,7 @@ dead_ascii("▐")
 <dead compose> "⟑" "⟑" : "⟇"
 <dead compose> "\\" "⊂" : "⟈"
 <dead compose> "⊃" "/" : "⟉"
-<dead compose> ("-" "|") : "⟊"
+<dead compose> ("⸠" "⸡") : "⟊"
 <shift dead compose> "/" "/" : "⟋"
 <shift dead compose> (")" "7") : "⟌"
 <shift dead compose> "\\" "\\" : "⟍"
@@ -1720,7 +1720,6 @@ composite("∅" "°" "⦲")
 <dead compose> (["u" "U"] "∫") : "⨑"
 <dead compose> "]" "∫" : "⨒"
 <dead compose> ")" "∫" : "⨓"
-<dead compose> ")" ")" "∫" : "⨔"
 <dead compose> "∫" ")" ")" : "⨔"
 <dead compose> "(" ")" "∫" : "⨕"
 <dead compose> "∫" "(" ")" : "⨕"
@@ -2244,7 +2243,6 @@ composite("∅" "°" "⦲")
 <shift dead compose> "[" "-" "¦" "-" "]" : "\u2BD0"
 <dead compose> "<" "?" ">" : "\u2BD1"
 
-
 # TODO Glagolitic
 # TODO Latin Extended-C
 # TODO Coptic
@@ -2252,7 +2250,85 @@ composite("∅" "°" "⦲")
 # TODO Tifinagh
 # TODO Ethiopic Extended
 # TODO Cyrillic Extended-A
-# TODO Supplemental Punctuation
+
+# Supplemental Punctuation:
+<dead compose> "⸢" "⸢" : "⸀"
+<dead compose> ("." "⸀") : "⸁"
+<dead compose> ("⸀" "(") : "⸂"
+<dead compose> ("⸀" ")") : "⸃"
+<dead compose> ("⸁" "(") : "⸄"
+<dead compose> ("." "⸂") : "⸄"
+<dead compose> ("⸁" ")") : "⸅"
+<dead compose> ("." "⸃") : "⸅"
+<dead compose> ("T" "⸀") : "⸆"
+<dead compose> ("T" "⸁") : "⸆"
+<dead compose> ("." "⸆") : "⸇"
+<dead compose> ("S" "⸁") : "⸈"
+<dead compose> ("." "⸉") : "⸈"
+<dead compose> ("S" "⸀") : "⸉"
+<dead compose> ("Z" "⸀") : "⸊"
+<dead compose> ["|" "⸉"] "⸉" : "⸊"
+<dead letter ^> "[" "]" : "⸋"
+<dead compose> "'" "\\" : "⸌"
+<dead compose> "'" "/" : "⸍"
+<dead compose> "<" "$" ">" : "⸎"
+<shift dead compose> "_" "_" : "⸏"
+<dead compose> ">" "⸏" : "⸐"
+<dead compose> "⸏" "<" : "⸑"
+<dead compose> "," "," : "⸒"
+<dead compose> "/" "%" : "⸓"
+<dead compose> "(" "%" : "⸔"
+<dead compose> "%" ")" : "⸕"
+<dead compose> (">" ":") : "⸖"
+<shift dead compose> "/" "=" : "⸗"
+<dead compose> "‽" "‽" : "⸘"
+<dead compose> "?" "!" : "⸘"
+<dead compose> ("¡" "¿") : "⸘"
+<dead compose> "/" "$" : "⸙"
+<dead letter ¨> "-" : "⸚"
+<dead compose> "o" ["~" <dead letter ~>] ["~" <dead letter ~>] : "⸛"
+<dead compose> "," "\\" : "⸜"
+<dead compose> "," "/" : "⸝"
+<dead compose> "." ["~" <dead letter ~>] ["~" <dead letter ~>] : "⸞" # some fonts misplaces the dot
+<dead compose> "⸞" "⸞" : "⸟"
+<dead compose> "|" "-" : "⸠"
+<dead compose> "-" "|" : "⸡"
+<dead compose> "'" "[" : "⸢"
+<dead compose> "'" "]" : "⸣"
+<dead compose> "," "[" : "⸤"
+<dead compose> "," "]" : "⸥"
+<dead compose> "." "(" : "⸦"
+<dead compose> "." ")" : "⸧"
+<dead compose> "(" "(" : "⸨"
+<dead compose> ")" ")" : "⸩"
+<dead compose> "∵" "∵" : "⸪"
+<dead compose> "∴" "∴" : "⸫"
+<dead compose> "∷" "∷" : "⸬"
+<dead compose> (["∵" "⸪"] ":") : "⸭"
+<dead compose> (["∴" "⸫"] ":") : "⸭"
+<dead compose> "|" "?" : "⸮"
+<shift dead compose> ("'" ["~" <dead letter ~>]) : "ⸯ"
+<shift dead compose> "o" "o" : "⸰"
+<shift dead compose> "·" "·" : "⸱"
+<shift dead compose> "," "," : "⸲"
+<shift dead compose> ["^" <dead letter ^>] "." : "⸳"
+<shift dead compose> ["^" <dead letter ^>] "," : "⸴"
+<dead compose> ";" ";" : "⸵" # the font fixed misses the dot in this turned semicolon
+<dead compose> "-" "†" : "⸶"
+<dead compose> "†" "-" : "⸷"
+<dead compose> "†" "†" : "⸸"
+<dead compose> "'" "§" : "⸹"
+<dead compose> "2" "-" : "⸺"
+<dead compose> "3" "-" : "⸻"
+<shift dead compose> "." "x" : "\u2E3C"
+<shift dead compose> ":" ":" ":" : "\u2E3D"
+<dead compose> "≀" "≀" : "\u2E3E"
+<dead compose> (["c" "C"] "¶") : "\u2E3F"
+<shift dead compose> "¶" "¶" : "\u2E3F"
+<dead compose> "⁃" "⁃" : "\u2E40"
+<dead compose> "|" "," : "\u2E41"
+<dead compose> "|" "„" : "\u2E42"
+
 # TODO CJK Radicals Supplement
 # TODO Kangxi Radicals
 # TODO Ideographic Description Characters
