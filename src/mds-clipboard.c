@@ -47,7 +47,7 @@ server_characteristics_t server_characteristics =
     .require_respawn_info = 1,
     .sanity_check_argc = 1,
     .fork_for_safety = 0,
-    .danger_is_deadly = 0
+    .danger_is_deadly = 1
   };
 
 
