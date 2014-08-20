@@ -11,7 +11,7 @@ lets you make clients that can listen on messages between
 the servers and perhaps modify them. This enables you to
 do some much more with your display server. Moreover,
 if a single part of the system crashses it does not bring
-down everything, and the crahsed server can be respawned
+down everything, and the crashed server can be respawned
 with minor side effects. mds is architectured in three
 layers: a microkernel, a master server and a collection
 of servers. And clients are actually located on the same
