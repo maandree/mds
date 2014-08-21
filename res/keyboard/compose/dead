@@ -970,23 +970,23 @@ composite("⇧" "^" "⇮")
 # Enclosed Alphanumerics:
 for "1" to "9" as \1
   <dead compose> "(" "\1" ")"             : "\add(\u2460 \sub(\1 "1"))"
-  <dead compose> "(" " " "\1" [" " .] ")" : "\add(\u2474 \sub(\1 "1"))"
-  <dead compose> "(" "\1" " " ")"         : "\add(\u2474 \sub(\1 "1"))"
+  <dead compose> "(" <space> "\1" [" " .] ")" : "\add(\u2474 \sub(\1 "1"))"
+  <dead compose> "(" "\1" <space> ")"         : "\add(\u2474 \sub(\1 "1"))"
   <dead compose> "\1" "."                 : "\add(\u2488 \sub(\1 "1"))"
 end for
 for "0" to "9" as \1
   <dead compose> "(" "1" "\1" ")"             : "\add(\u2469 \sub(\1 "0"))"
-  <dead compose> "(" " " "1" "\1" [" " .] ")" : "\add(\u247D \sub(\1 "0"))"
-  <dead compose> "(" "1" "\1" " " ")"         : "\add(\u247D \sub(\1 "0"))"
+  <dead compose> "(" <space> "1" "\1" [" " .] ")" : "\add(\u247D \sub(\1 "0"))"
+  <dead compose> "(" "1" "\1" <space> ")"         : "\add(\u247D \sub(\1 "0"))"
   <dead compose> "1" "\1" "."                 : "\add(\u2491 \sub(\1 "0"))"
 end for
 <dead compose> "(" "2" "0" ")"             : "\u2473"
-<dead compose> "(" " " "2" "0" [" " .] ")" : "\u2487"
-<dead compose> "(" "2" "0" " " ")"         : "\u2473"
+<dead compose> "(" <space> "2" "0" [" " .] ")" : "\u2487"
+<dead compose> "(" "2" "0" <space> ")"         : "\u2473"
 <dead compose> "2" "0" "."                 : "\u2498"
 for "a" to "z" as \1
-  <dead compose> "(" " " "\1" [" " .] ")" : "\add(\u249C \sub(\1 "a"))"
-  <dead compose> "(" "\1" " " ")"         : "\add(\u249C \sub(\1 "a"))"
+  <dead compose> "(" <space> "\1" [" " .] ")" : "\add(\u249C \sub(\1 "a"))"
+  <dead compose> "(" "\1" <space> ")"         : "\add(\u249C \sub(\1 "a"))"
 end for
 for "A" to "Z" as \1
   <dead compose> "(" "\1" ")" : "\add(\u24B6 \sub(\1 "A"))"
@@ -2623,11 +2623,11 @@ end for
 <dead compose> "(" "0" "." ")" : "\u1F10B"
 <dead compose> "(" "(" "(" "0" "." ")" ")" ")" : "\u1F10C"
 for "A" to "Z" as \1
-  <dead compose> "(" " " "\1" [" " .] ")" : "\add(\u1F110 \sub(\1 "A"))"
-  <dead compose> "(" "\1" " " ")"         : "\add(\u1F110 \sub(\1 "A"))"
+  <dead compose> "(" <space> "\1" [" " .] ")" : "\add(\u1F110 \sub(\1 "A"))"
+  <dead compose> "(" "\1" <space> ")"         : "\add(\u1F110 \sub(\1 "A"))"
 end for
-<dead compose> "[" " " "S" [" " .] "]" : "\u1F12A"
-<dead compose> "[" "S" " " "]"         : "\u1F12A"
+<dead compose> "[" <space> "S" [" " .] "]" : "\u1F12A"
+<dead compose> "[" "S" <space> "]"         : "\u1F12A"
 <dead compose> "(" "/" "C" ["/" .] ")" : "\u1F12B"
 <dead compose> "(" "C" "/" ")"         : "\u1F12B"
 <dead compose> "(" "/" "R" ["/" .] ")" : "\u1F12C"
