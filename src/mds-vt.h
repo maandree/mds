@@ -21,7 +21,17 @@
 
 #include "mds-base.h"
 
+#include <sys/stat.h>
 #include <linux/vt.h>
+
+
+/**
+ * This function is called when the kernel wants
+ * to switch foreground virtual terminal
+ * 
+ * @param  signo  The received signal number
+ */
+void received_switch_vt(int signo);
 
 
 /**

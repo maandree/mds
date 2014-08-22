@@ -17,6 +17,7 @@
  */
 #include "mds-vt.h"
 
+#include <libmdsserver/config.h>
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
 #include <libmdsserver/mds-message.h>
@@ -28,7 +29,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <linux/kd.h>
-#include <sys/stat.h>
+#include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
@@ -73,6 +74,36 @@ static mds_message_t received;
  */
 static int connected = 1;
 
+/**
+ * The index of the VT used for the display
+ */
+static int display_vt;
+
+/**
+ * The file descriptor the display's TTY is opened on
+ */
+static int display_tty_fd = -1;
+
+/**
+ * Whether the display's TTY is in the foreground
+ */
+static int vt_is_active = 1;
+
+/**
+ * The stat for the TTY of the display's VT before we toke it
+ */
+static struct stat old_vt_stat;
+
+/**
+ * -1 if switching to our VT, 1 if switching to another VT, 0 otherwise
+ */
+static volatile int switching_vt = 0;
+
+/**
+ * The pathname for the file containing VT information
+ */
+static char vtfile_path[PATH_MAX];
+
 
 
 /**
@@ -95,22 +126,67 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
+  struct vt_mode mode;
+  char* display_env;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
     "Length: 38\n"
     "\n"
-    "Command: get-vt\n";
+    "Command: get-vt\n"
     "Command: configure-vt\n";
+  
+  display_env = getenv("MDS_DISPLAY");
+  display_env = display_env ? strchr(display_env, ':') : NULL;
+  if ((display_env == NULL) || (strlen(display_env) < 2))
+    goto no_display;
+  
+  memset(vtfile_path, 0, sizeof(vtfile_path));
+  xsnprintf(vtfile_path, "%s/%s.vt", MDS_RUNTIME_ROOT_DIRECTORY, display_env + 1);
+  
+  if (is_respawn == 0)
+    {
+      display_vt = vt_get_next_available();
+      if (display_vt == 0)
+	{
+	  eprint("out of available virtual terminals, I am stymied.");
+	  goto fail;
+	}
+      else if (display_vt < 0)
+	goto pfail;
+      display_tty_fd = vt_open(display_vt, &old_vt_stat);
+      /* TODO write display_vt and old_vt_stat to vtfile_path */
+      fail_if (vt_set_active(display_vt) < 0);
+    }
+  else
+    {
+      /* TODO read display_vt and old_vt_stat from vtfile_path */
+      vt_is_active = (display_vt == vt_get_active());
+      fail_if (vt_is_active < 0);
+    }
   
   if (full_send(message, strlen(message)))
     return 1;
   fail_if (server_initialised() < 0);
   fail_if (mds_message_initialise(&received));
   
+  fail_if (xsigaction(SIGRTMIN + 1, received_switch_vt) < 0);
+  fail_if (xsigaction(SIGRTMIN + 2, received_switch_vt) < 0);
+  vt_construct_mode(1, SIGRTMIN + 1, SIGRTMIN + 2, &mode);
+  fail_if (vt_get_set_mode(display_tty_fd, 1, &mode) < 0);
+  if (vt_set_exclusive(display_tty_fd, 1) < 0)
+    xperror(*argv);
+  
   return 0;
+ no_display:
+  eprint("no display has been set, how did this happen.");
+  return 1;
  pfail:
   xperror(*argv);
+ fail:
+  unlink(vtfile_path);
+  if (display_tty_fd >= 0)
+    vt_close(display_tty_fd, &old_vt_stat);
   mds_message_destroy(&received);
   return 1;
 }
@@ -147,7 +223,11 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  size_t rc = 5 * sizeof(int) + sizeof(int32_t);
+  rc += sizeof(struct stat);
+  rc += sizeof(vtfile_path);
+  rc += mds_message_marshal_size(&received);
+  return rc;
 }
 
 
@@ -162,6 +242,12 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, int, MDS_VT_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, int, display_vt);
+  buf_set_next(state_buf, int, display_tty_fd);
+  buf_set_next(state_buf, int, vt_is_active);
+  buf_set_next(state_buf, struct stat, old_vt_stat);
+  memcpy(state_buf, vtfile_path, PATH_MAX * sizeof(char));
+  state_buf += PATH_MAX;
   mds_message_marshal(&received, state_buf);
   
   mds_message_destroy(&received);
@@ -186,6 +272,12 @@ int unmarshal_server(char* state_buf)
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, int32_t, message_id);
+  buf_get_next(state_buf, int, display_vt);
+  buf_get_next(state_buf, int, display_tty_fd);
+  buf_get_next(state_buf, int, vt_is_active);
+  buf_get_next(state_buf, struct stat, old_vt_stat);
+  memcpy(vtfile_path, state_buf, PATH_MAX * sizeof(char));
+  state_buf += PATH_MAX;
   r = mds_message_unmarshal(&received, state_buf);
   if (r)
     {
@@ -215,11 +307,16 @@ int __attribute__((const)) reexec_failure_recover(void)
  */
 int master_loop(void)
 {
-  int rc = 1;
+  int rc = 1, r;
   
   while (!reexecing && !terminating)
     {
-      int r = mds_message_read(&received, socket_fd);
+      if (switching_vt)
+	{
+	  /* FIXME */
+	}
+      
+      r = mds_message_read(&received, socket_fd);
       if (r == 0)
 	{
 	  r = 0; /* FIXME */
@@ -247,6 +344,11 @@ int master_loop(void)
     }
   
   rc = 0;
+  if (vt_set_exclusive(display_tty_fd, 0) < 0)  xperror(*argv);
+  if (vt_set_graphical(display_tty_fd, 0) < 0)  xperror(*argv);
+  if (unlink(vtfile_path) < 0)
+    xperror(*argv);
+  vt_close(display_tty_fd, &old_vt_stat);
   goto fail;
  pfail:
   xperror(*argv);
@@ -254,6 +356,19 @@ int master_loop(void)
   if (rc || !reexecing)
     mds_message_destroy(&received);
   return rc;
+}
+
+
+/**
+ * This function is called when the kernel wants
+ * to switch foreground virtual terminal
+ * 
+ * @param  signo  The received signal number
+ */
+void received_switch_vt(int signo)
+{
+  int leaving = signo == (SIGRTMIN + 1);
+  switching_vt = leaving ? 1 : -1;
 }
 
 
