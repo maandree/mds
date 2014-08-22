@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mds-kkbd.h"
+/* TODO: This server should wait for `Command: get-vt` to be available,
+         query the active VT and connect to that TTY instead of stdin. */
+/* TODO: Release control on `Command: switching-vt`. */
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>

@@ -62,10 +62,20 @@ int vt_set_active(int vt);
 /**
  * Open a virtual terminal
  * 
- * @param   vt  The index of the terminal
- * @return      The file descriptor for the terminal, -1 on error
+ * @param   vt        The index of the terminal
+ * @param   old_stat  Output parameter for the old file stat for the terminal
+ * @return            The file descriptor for the terminal, -1 on error
  */
-int vt_open(int vt);
+int vt_open(int vt, struct stat* restrict old_stat);
+
+
+/**
+ * Close a virtual terminal
+ * 
+ * @param  vt        The index of the terminal
+ * @param  old_stat  The old file stat for the terminal
+ */
+void vt_close(int fd, struct stat* restrict old_stat);
 
 
 

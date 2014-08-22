@@ -15,6 +15,9 @@ LIBOBJ = linked-list client-list hash-table fd-table mds-message util
 SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \
           mds-kkbd mds-vt
 
+# Servers that need setuid and root owner.
+SETUID_SERVERS = mds mds-vt
+
 
 
 OBJ_mds-server_ = mds-server interception-condition client multicast  \
@@ -40,8 +43,8 @@ include mk/build.mk
 
 .PHONY: perms
 perms: all
-	sudo chown 'root:root' bin/mds
-	sudo chmod 4755 bin/mds
+	sudo chown 'root:root' $(foreach S,$(SETUID_SERVERS),bin/$(S))
+	sudo chmod 4755 $(foreach S,$(SETUID_SERVERS),bin/$(S))
 
 # Clean rules.
 

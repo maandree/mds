@@ -50,7 +50,7 @@ server_characteristics_t server_characteristics =
   {
     .require_privileges = 1, /* we want to open the new tty (the rest is fine without root for some reason) */
     .require_display = 1,
-    .require_respawn_info = 0,
+    .require_respawn_info = 1,
     .sanity_check_argc = 1,
     .fork_for_safety = 0,
     .danger_is_deadly = 0
@@ -98,9 +98,10 @@ int initialise_server(void)
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 14\n"
+    "Length: 38\n"
     "\n"
-    "Command: echo\n";
+    "Command: get-vt\n";
+    "Command: configure-vt\n";
   
   if (full_send(message, strlen(message)))
     return 1;
@@ -337,16 +338,44 @@ int vt_set_active(int vt)
 /**
  * Open a virtual terminal
  * 
- * @param   vt  The index of the terminal
- * @return      The file descriptor for the terminal, -1 on error
+ * @param   vt        The index of the terminal
+ * @param   old_stat  Output parameter for the old file stat for the terminal
+ * @return            The file descriptor for the terminal, -1 on error
  */
-int vt_open(int vt)
+int vt_open(int vt, struct stat* restrict old_stat)
 {
   char vtpath[64]; /* Should be small enought and large enought for any
 		      lunatic alternative to /dev/ttyNNN, if not you
 		      will need to apply a patch (or fix your system.) */
+  int fd;
   sprintf(vtpath, VT_PATH_PATTERN, vt);
-  return open(vtpath, O_RDWR);
+  fd = open(vtpath, O_RDWR);
+  if (fd < 0)
+    return -1;
+  if ((fstat(fd, old_stat) < 0) ||
+      (fchown(fd, getuid(), getgid()) < 0))
+    {
+      close(fd);
+      return -1;
+    }
+  return fd;
+}
+
+
+/**
+ * Close a virtual terminal
+ * 
+ * @param  vt        The index of the terminal
+ * @param  old_stat  The old file stat for the terminal
+ */
+void vt_close(int fd, struct stat* restrict old_stat)
+{
+  if (fchown(fd, old_stat->st_uid, old_stat->st_gid) < 0)
+    {
+      xperror(*argv);
+      eprint("while resetting TTY ownership.");
+    }
+  close(fd);
 }
 
 

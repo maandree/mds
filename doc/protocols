@@ -736,3 +736,103 @@ Compulsivity: optional
 
 ---------------------------------------------------------------------
 
+Command: get-vt
+  Get the index of the virtual terminal the server is display on
+  and the servers file descriptor for that tty
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+
+Response: The server will response with the header `VT index`
+	  and the index of the virtual terminal the server is
+	  display on in decimal format. Additionally the server
+	  will respond with the header `Active` with the value
+	  `yes` if the VT is in the foreground or the value
+	  `no` if the VT is in the background.
+
+Purpose: Allow programs to be aware of whether the display
+	 is in the foreground or the background
+Purpose: Allow programs to be aware of which VT the
+	 server is running on
+Purpose: Allow programs to gain access of the TTY associated
+	 with the VT such that they can use ioctl and similar
+	 calls on that TTY
+
+Compulsivity: required
+
+Reference implementation: vt
+
+---------------------------------------------------------------------
+
+Command: configure-vt
+  Reconfigure the virtual terminal the server is display on
+
+Required header: Client ID
+  Your ID, provided by `ID assignment`
+  in response to `Command: assign-id`
+
+Optional header: graphical
+  yes) Set the TTY graphical mode
+  no)  Set the TTY text mode
+  The server implementing this protocol should not set the
+  TTY to  text mode temporarily when switching TTY. It is
+  up the the server that set the request for graphical mode
+  to temporarily switch to text mode when switching TTY.
+
+Optional header: exclusive
+  yes) The server may block other process from opening the TTY.
+  no)  The server may not block other process from opening the TTY.
+
+Response: The server will response with a `Command: error`
+
+Purpose: Allow presentation servers to enter and leave graphical mode
+Purpose: Allow programs to gain access of the TTY associated
+	 with the VT such that they can use ioctl and similar
+	 calls on that TTY
+
+Compulsivity: required
+
+Reference implementation: vt
+
+---------------------------------------------------------------------
+
+Command: switching-vt
+  Notify servers about an ongoing virtual terminal switch
+
+Required header: Status
+  deactivating)  The kernel wants to place the display in the background
+  activating)    The kernel wants to place the display in the foreground
+
+Instructions: When a virtual terminal switch is requested the
+	      server implementing control VT switching involving
+	      the display's virtual terminal will get signaled by
+	      the kernel. Upon this signal the server should
+	      roadcast this command. All servers that need to
+	      release or acquire resouces should intercept this
+	      message with the possibility of modifying it.
+	      Once a server is ready for the VT to switch it should
+	      let the message pass to the next server by telling
+	      the master server that it is no modification to do.
+	      Once all servers are read for the switch the server
+	      that emitted this message should signal the kernel
+	      that it may switch VT. The server should detect
+	      this by setting up secondary contection to the
+	      display that intercepts this message. This connection
+	      should intercept this message with priority −2³²,
+	      all servers that need to perform actions before the
+	      switch takes place must have a priority higher than
+	      −2³², preferably 0.
+
+Purpose: Allow servers to release resources when the user switch
+	 virtual terminal before the terminal actually changes and
+	 to reacquire resources when the virtual terminal become
+	 active again
+
+Compulsivity: required
+
+Reference implementation: vt
+Reference implementation: kkbd
+
+---------------------------------------------------------------------
+
