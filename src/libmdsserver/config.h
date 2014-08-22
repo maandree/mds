@@ -60,6 +60,22 @@
 
 
 /**
+ * The system's directory for pseudo-devices
+ */
+#ifndef DEVDIR
+#define DEVDIR  "/dev"
+#endif
+
+
+/**
+ * Pathname pattern for virtual terminals
+ */
+#ifndef VT_PATH_PATTERN
+#define VT_PATH_PATTERN  DEVDIR "/tty%i"
+#endif
+
+
+/**
  * The root directory of all runtime data stored by MDS
  */
 #ifndef MDS_RUNTIME_ROOT_DIRECTORY

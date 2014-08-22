@@ -29,7 +29,6 @@ Missing servers:
 	focus		Focuses the selected window
 	colour		Mapping of colour by name (system colours) and value
 	state		Keeps track of windows' states
-	vt		VT switcher
 	screensaver	Launch screensaver when the computer is idle
 
 Missing protocols:
@@ -59,7 +58,6 @@ Missing commands:
 	conf		Command line interface for reconfiguring servers
 	clip		Command line interface for the clipboard
 	screenshot	Take a screenshot
-	switch-vt	Command line interface for switching VT
 
 Need testing:
 
