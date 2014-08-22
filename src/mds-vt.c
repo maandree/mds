@@ -225,7 +225,7 @@ size_t marshal_server_size(void)
 {
   size_t rc = 5 * sizeof(int) + sizeof(int32_t);
   rc += sizeof(struct stat);
-  rc += sizeof(vtfile_path);
+  rc += PATH_MAX * sizeof(char);
   rc += mds_message_marshal_size(&received);
   return rc;
 }
