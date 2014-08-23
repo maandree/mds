@@ -72,3 +72,7 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
           -fstrict-overflow -funsafe-loop-optimizations -fno-builtin        \
 	  -D'_GNU_SOURCE' -D'PKGNAME="$(PKGNAME)"' $(DEBUG_FLAGS)
 
+
+# Flags to pass into the manual compilers.
+TEXIFLAGS = #--force
+

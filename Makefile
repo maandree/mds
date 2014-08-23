@@ -35,9 +35,10 @@ OBJ_mds-registry = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
 # Build rules.
 
 .PHONY: all
-all: servers libraries
+all: doc servers libraries
 
 include mk/build.mk
+include mk/build-doc.mk
 
 # Set permissions on built files.
 
