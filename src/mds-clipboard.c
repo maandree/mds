@@ -568,9 +568,9 @@ static int clipboard_notify_pop(int level, size_t index)
 	      "Event: crash\n"
 	      "Message ID: %" PRIi32 "\n"
 	      "Level: %i\n"
-	      "Popped: %lu\n"
-	      "Size: %lu\n"
-	      "Used: %lu\n"
+	      "Popped: %zu\n"
+	      "Size: %zu\n"
+	      "Used: %zu\n"
 	      "\n");
   
   if (xmalloc(message, n, char))
@@ -581,9 +581,9 @@ static int clipboard_notify_pop(int level, size_t index)
 	  "Event: crash\n"
 	  "Message ID: %" PRIi32 "\n"
 	  "Level: %i\n"
-	  "Popped: %lu\n"
-	  "Size: %lu\n"
-	  "Used: %lu\n"
+	  "Popped: %zu\n"
+	  "Size: %zu\n"
+	  "Used: %zu\n"
 	  "\n",
 	  message_id, level, index, size, used);
   
@@ -762,7 +762,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   n = strlen("To: %s\n"
 	     "In response to: %s\n"
 	     "Message ID: %" PRIi32 "\n"
-	     "Length: %lu\n"
+	     "Length: %zu\n"
 	     "\n");
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 3 * sizeof(size_t);
   
@@ -772,7 +772,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIi32 "\n"
-	  "Length: %lu\n"
+	  "Length: %zu\n"
 	  "\n",
 	  recv_client_id, recv_message_id, message_id, clip->length);
   
@@ -866,8 +866,8 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   n = strlen("To: %s\n"
 	     "In response to: %s\n"
 	     "Message ID: %" PRIi32 "\n"
-	     "Size: %lu\n"
-	     "Used: %lu\n"
+	     "Size: %zu\n"
+	     "Used: %zu\n"
 	     "\n");
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 2 * 3 * sizeof(size_t);
   
@@ -876,8 +876,8 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIi32 "\n"
-	  "Size: %lu\n"
-	  "Used: %lu\n"
+	  "Size: %zu\n"
+	  "Used: %zu\n"
 	  "\n",
 	  recv_client_id, recv_message_id, message_id, clipboard_size[level], clipboard_used[level]);
   

@@ -282,7 +282,7 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
  * @param  this    The list
  * @param  output  Output file
  */
-void linked_list_dump(linked_list_t* restrict this, FILE* output);
+void linked_list_dump(linked_list_t* restrict this, FILE* restrict output);
 
 
 #endif

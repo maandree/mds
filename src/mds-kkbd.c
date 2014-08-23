@@ -646,7 +646,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 	  "Command: keyboard-enumeration\n"
 	  "To: %s\n"
 	  "In response to: %s\n"
-	  "Length: %lu\n"
+	  "Length: %zu\n"
 	  "Message ID: %" PRIi32 "\n"
 	  "\n"
 	  KEYBOARD_ID "\n",
@@ -702,7 +702,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
 	{
 	  have_len = 1;
 	  sprintf(send_buffer + n,
-		  "Length: %lu\n",
+		  "Length: %zu\n",
 		  strlen(KEYBOARD_ID "\n") + received.payload_size);
 	  n += strlen(send_buffer + n);
 	}
@@ -721,7 +721,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   sprintf(send_buffer,
 	  "Modify ID: %s\n"
 	  "Message ID: %" PRIi32 "\n"
-	  "Length: %lu\n",
+	  "Length: %zu\n",
 	  recv_modify_id, msgid, n);
   top = strlen(send_buffer) + 1;
   send_buffer[top - 1] = '\n';
@@ -1058,7 +1058,7 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIi32 "\n"
-	  "Length: %lu\n"
+	  "Length: %zu\n"
 	  "\n",
 	  recv_client_id, recv_message_id, msgid, n);
   

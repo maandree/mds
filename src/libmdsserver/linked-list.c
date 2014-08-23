@@ -476,31 +476,31 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
  * @param  this    The list
  * @param  output  Output file
  */
-void linked_list_dump(linked_list_t* restrict this, FILE* output)
+void linked_list_dump(linked_list_t* restrict this, FILE* restrict output)
 {
   ssize_t i;
   size_t j;
   fprintf(output, "======= LINKED LIST DUMP =======\n");
-  fprintf(output, "Capacity:    %lu\n", this->capacity);
-  fprintf(output, "End:         %lu\n", this->end);
-  fprintf(output, "Reuse head:  %lu\n", this->reuse_head);
-  fprintf(output, "Edge:        %li\n", this->edge);
+  fprintf(output, "Capacity:    %zu\n", this->capacity);
+  fprintf(output, "End:         %zu\n", this->end);
+  fprintf(output, "Reuse head:  %zu\n", this->reuse_head);
+  fprintf(output, "Edge:        %zi\n", this->edge);
   fprintf(output, "--------------------------------\n");
   fprintf(output, "Node table (Next, Prev, Value):\n");
   i = this->edge;
-  fprintf(output, "    %li: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+  fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
   foreach_linked_list_node((*this), i)
-    fprintf(output, "    %li: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+    fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
   i = this->edge;
-  fprintf(output, "    %li: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+  fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
   fprintf(output, "--------------------------------\n");
   fprintf(output, "Raw node table:\n");
   for (j = 0; j < this->end; j++)
-    fprintf(output, "    %lu: %li, %li, %lu\n", i, this->next[i], this->previous[i], this->values[i]);
+    fprintf(output, "    %zu: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
   fprintf(output, "--------------------------------\n");
   fprintf(output, "Reuse stack:\n");
   for (j = 0; j < this->reuse_head; j++)
-    fprintf(output, "    %lu: %li\n", j, this->reusable[j]);
+    fprintf(output, "    %zu: %zi\n", j, this->reusable[j]);
   fprintf(output, "================================\n");
 }
 

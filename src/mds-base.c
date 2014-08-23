@@ -21,6 +21,7 @@
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -358,7 +359,7 @@ static int base_unmarshal(void)
   char* state_buf_;
   
   /* Acquire access to marshalled data. */
-  xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
+  xsnprintf(shm_path, SHM_PATH_PATTERN, (intmax_t)pid);
   reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
   fail_if (reexec_fd < 0); /* Critical. */
   

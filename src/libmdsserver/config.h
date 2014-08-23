@@ -153,7 +153,7 @@
  * Pattern for the names of shared object to which states are marshalled
  */
 #ifndef SHM_PATH_PATTERN
-#define SHM_PATH_PATTERN  "/.proc-pid-%lu"
+#define SHM_PATH_PATTERN  "/.proc-pid-%ji"
 #endif
 
 
