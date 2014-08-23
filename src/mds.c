@@ -164,7 +164,7 @@ int main(int argc_, char** argv_)
   /* Save MDS_DISPLAY environment variable. */
   xsnprintf(pathname, /* Excuse the reuse without renaming. */
 	    ":%u", display);
-  setenv(DISPLAY_ENV, pathname, 1);
+  fail_if (setenv(DISPLAY_ENV, pathname, 1) < 0);
   
   /* Create display socket. */
   xsnprintf(pathname, "%s/%u.socket", MDS_RUNTIME_ROOT_DIRECTORY, display);
