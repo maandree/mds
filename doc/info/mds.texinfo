@@ -12,7 +12,7 @@
 
 @dircategory Graphics environment
 @direntry
-* mds: (mds).                        XXX
+* mds: (mds).                        The micro-display server
 @end direntry
 
 
@@ -31,17 +31,17 @@ Texts. A copy of the license is included in the section entitled
 
 @ifnottex
 @node Top
-@top mds -- XXX
+@top mds -- The micro-display server
 @insertcopying
 @end ifnottex
 
 @titlepage
 @title mds
-@c @subtitle XXX
+@subtitle The micro-display server
 @author by Mattias Andrée (maandree)
 
 @page
-@c @center `The possibilities are... like endless.' -- Scootaloo @c@c cannot really reuse this quote
+@c @center `'
 @vskip 0pt plus 1filll
 @insertcopying
 @end titlepage
@@ -52,6 +52,7 @@ Texts. A copy of the license is included in the section entitled
 
 @menu
 * Overview::                        Brief overview of @command{mds}.
+* Architecture::                    Architectural overview of @command{mds}.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -60,8 +61,182 @@ Texts. A copy of the license is included in the section entitled
 @node Overview
 @chapter Overview
 
-Lorem ipsum
+@command{mds}@footnote{mds stands for micro-display server}
+is a display server protocol and an implementation of said
+protocol. What makes @command{mds} stand out is its core
+design choice: it is desigend just like a microkernel.
+Rather than one, possibly modular, process --- a monolithic
+process --- mds is comprised of many small servers, each
+exchangable and responsible for one thing.
 
+@command{mds} goal is neither security, performance nor
+a perfect graphical experience. @command{mds} is all
+about flexibility and freedom 0@footnote{The freedom to run
+the program as you wish, for any purpose}.
+
+
+
+@node Architecture
+@chapter Architecture
+
+@menu
+* Layers::                          The layers of the display server.
+* Interprocess Communication::      How servers and clients communicate.
+@end menu
+
+@node Layers
+@section Layers
+
+The @command{mds} display server in architectured in
+three layers. The first layer is called the kernel.
+The kernel is responsible for acquiring a display
+server index@footnote{As with any display server,
+the system can have multiple instances of
+@command{mds} running at the same time.}, set up
+environment variables to indicate which display
+server and display server instance is being used,
+create a domain socket for the display server and
+start the master server and restart it if it crashes,
+and then clean up the system when the display server
+closes. The kernel only responsible for creating
+the domain socket for communication with the display
+server, it is not responsible for using it, that
+mission falls to the master server.
+
+The second layer is the master server. The master
+server has two responsibilities: coordinating
+message passing between other servers and clients
+@footnote{In @command{mds} their is no functional
+distinction between servers and clients, the
+distinction is purely semantic.} and starting
+other servers.
+
+The third layer is the other servers and clients.
+protocolwise there is no specification on how
+they are started. But in the reference
+implementation of the master server, this is
+done by starting a shell script with the
+pathname @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}
+and the user is responsible for providing the
+logic in that shell script.@footnote{Moonstruck
+users are allowed to implement this in C
+or any other language of their choosing.}
+@c Which is better: cray-cray users, lunatic users,
+@c moonstruck users, insane users, ballers, madmen,
+@c loony tunes?
+These servers implements the actual functionality
+of the display server.
+
+
+
+@node Interprocess Communication
+@section Interprocess Communication
+
+Intrinsic to @command{mds} is a powerful
+interprocess communication mechanism. Servers
+and clients connect to the display server by
+connecting to a domain socket served by the
+master server. A server or client that has
+connected to the display server can do three
+things:
+
+@itemize
+@item
+Request assignment of a unique ID.
+
+@item
+Multicast a message.
+
+@item
+Join or leave a multicast groups.
+@end itemize
+
+Upon assignment of an ID the master server
+will automatically place the client in a
+multicast group for that specific client.
+This automatically multicast group assignment
+is done by the master server simply so you
+as a debugger do not forget to do so. When
+a client is disconnected it will and out a
+message to a specific multicast group that
+the client, refered to by it's ID, have closed.
+
+A message in the @command{mds} protocol is
+comprised of two parts: headers and a payload.
+When a client joins a multicast group it is
+actually say that it is interested and receiving
+broadcasts containing a specific header or a
+specific header--value pair, or that it is
+interesting in all messages@footnote{This
+could be used for logging, possibly spying and
+networking.}. Thus a message is automatically
+multicasted to groups indicated by its headers.
+
+The multicast groups and receiving of groups
+is called interceptions. The interesting
+property of interceptions is that they may
+be modifying. When a server registers for
+message interception it can say that it wants
+to be able to modify messages. If this is done
+and the server receives a message for which it
+has said it want to be able to modify it,
+the master server will wait for that server
+to respond before it send the message to
+the next server in the interception list.
+The server can choose to do three things
+with a message that it has opted in for
+modification of: leave the message as-is,
+modify the message, or consume the message.
+A message consumption is done by modify
+the message to make it empty. A consumed
+message will not be send to any further
+clients or servers in the interception list.
+
+To make this mechanism sensible, a server or
+client can set a priority when it registers
+for interception (does not need to be
+modifying.) When a message is broadcasted it
+will be received by all servers in the
+interception except the original sender,
+unless it gets consumes. The order in which
+the master server sends the message to the
+recipients is determined by priority the
+servers registed with. The message first sent
+to the recipients with highest priority and
+last to the recipients with lowestr priority,
+and orderd by the priority between those
+priorities. Of two or more servers have the
+same priority the order in which they will
+receive the message, of those recipients,
+is arbitrary.
+
+An interesting property of this machanism
+is demonstrated in the @command{mds-vt}
+server. Unlike most servers @command{mds-vt}
+maintains two concurrent connections to
+the display. Once @command{mds-vt} receives
+a signal from the OS kernel requesting to
+switch virtual terminal, @command{mds-vt}
+will from one of its connections send
+out a message and wait for it to be
+received in its other connection and the
+let the OS kernel switch virtual terminal.
+The secondary connection to the display
+has registered interception with lower
+priority of the message that the primary
+connection broadcasts. This message will
+be received by other servers that will
+let the message continue to the next
+server in the interception list once that
+server is ready for the OS kernel to switch
+virtual terminal. All of these server has
+registered modifying interception of the
+message but none will actually modify or
+consume the message; it is only used a
+mechanism for letting @command{mds-vt} know
+when all servers are ready for the switch
+without having to know how many they are
+and wait for a reply from all of them.
 
 
 @node GNU Free Documentation License
