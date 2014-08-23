@@ -595,8 +595,8 @@ static void commit_suicide(int signo)
  */
 int trap_signals(void)
 {
-  /* Make the server update without all slaves dying on SIGUSR1. */
-  fail_if (xsigaction(SIGUSR1, received_reexec) < 0);
+  /* Make the server update without all slaves dying on SIGUPDATE. */
+  fail_if (xsigaction(SIGUPDATE, received_reexec) < 0);
   
   /* Implement clean exit on SIGTERM. */
   fail_if (xsigaction(SIGTERM, received_terminate) < 0);

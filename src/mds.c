@@ -99,8 +99,8 @@ int main(int argc_, char** argv_)
   exit_if (geteuid() != ROOT_USER_UID,
 	   eprint("the effective user is not root, cannot continue."););
   
-  /* Set up to ignore SIGUSR1, used in mds for re-exec, but we cannot re-exec. */
-  if (xsigaction(SIGUSR1, SIG_IGN) < 0)
+  /* Set up to ignore SIGUPDATE, used in mds for re-exec, but we cannot re-exec. */
+  if (xsigaction(SIGUPDATE, SIG_IGN) < 0)
     perror(*argv);
   
   /* Set up to ignore SIGDANGER. */

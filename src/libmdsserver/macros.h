@@ -373,5 +373,14 @@
 #endif
 
 
+/**
+ * The user wants the program to re-exec.
+ * into an updated binary
+ */
+#ifndef SIGUPDATE
+# define SIGUPDATE  SIGUSR1
+#endif
+
+
 #endif
 
