@@ -6,19 +6,19 @@ microkernel.
 The reason for having a display server architectured as a
 microkernel is so that components can be added, remove
 and replaced online. Additionally, the message passing
-between the servers makes it easy to design a system lets
+between the servers makes it easy to design a system that
 lets you make clients that can listen on messages between
 the servers and perhaps modify them. This enables you to
-do some much more with your display server. Moreover,
-if a single part of the system crashses it does not bring
-down everything, and the crashed server can be respawned
-with minor side effects. mds is architectured in three
-layers: a microkernel, a master server and a collection
-of servers. And clients are actually located on the same
-layer as the servers, because there is no actual
-difference, the only thing that separates a server from
-a client is for what purpose you run it. mds's kernel
-is a minimal program that do initialisation of the
+do so much more with your display server. Moreover, if
+a single part of the system crashes it does not bring
+down the whole system, and the crashed server can be
+respawned with minor side effects. mds is architectured
+in three layers: a microkernel, a master server and a
+collection of servers. And clients are actually located
+on the same layer as the servers, because there is no
+actual difference, the only thing that separates a server
+from a client is for what purpose you run it. mds's
+kernel is a minimal program that do initialisation of the
 display, such as giving it an index and create runtime
 files and directories for servers and other programs
 to use. Then the kernel creates a domain socket for the
@@ -37,16 +37,17 @@ require any privileges.
 
 All mds's servers, that is all running parts of mds
 except the kernel, are designed so that they can re-exec
-themself so that they can be replace online without any
-side effects. Servers serialises their state saves it
+themself so that they can be updated online without any
+side effects. Servers serialises their state, saves it
 to RAM (in a directory created by the kernel), re-exec
 themself and loads their serialised state. The kernel
-cannot do this because when has spawn the master server
-it has no reason to re-exec, its only mission is to
-respawn the master server it if would happen to crash.
-It would (probably) technically be possible to enable
-the kernel to re-exec but it is not worth it as it as
-no reason to rexec, and doing so raises some challenges.
+cannot do this because when it has spawned the master
+server it has no reason to re-exec, its only mission is
+to respawn the master server it if would happen to crash.
+It would technically be possible to enable the kernel to
+re-exec but it is not worth it as it as no reason to
+re-exec, and doing so puts the display server at risk
+of crashing.
 
 Is this vaporware? Probably I often get bored with
 graphical projects. Graphics sucks.
