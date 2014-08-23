@@ -263,28 +263,31 @@ int full_write(int fd, const char* buffer, size_t length)
 /**
  * Read a file completly and ignore interruptions
  * 
- * @param   fd  The file descriptor
- * @return      The content of the file, you will need to free it. `NULL` on error.
+ * @param   fd      The file descriptor
+ * @param   length  Output parameter for the length of the file, may be `NULL`
+ * @return          The content of the file, you will need to free it. `NULL` on error.
  */
-char* full_read(int fd)
+char* full_read(int fd, size_t* length)
 {
-  size_t state_buf_size = 8 << 10;
-  size_t state_buf_ptr = 0;
-  char* state_buf;
+  size_t buffer_size = 8 << 10;
+  size_t buffer_ptr = 0;
+  char* buffer;
   ssize_t got;
+  if (length != NULL)
+    *length = 0;
   
   /* Allocate buffer for data. */
-  if (xmalloc(state_buf, state_buf_size, char))
+  if (xmalloc(buffer, buffer_size, char))
     return NULL;
   
   /* Read the file. */
   for (;;)
     {
       /* Grow buffer if it is too small. */
-      if (state_buf_size == state_buf_ptr)
+      if (buffer_size == buffer_ptr)
 	{
-	  char* old_buf = state_buf;
-	  if (xrealloc(state_buf, state_buf_size <<= 1, char))
+	  char* old_buf = buffer;
+	  if (xrealloc(buffer, buffer_size <<= 1, char))
 	    {
 	      free(old_buf);
 	      return NULL;
@@ -292,18 +295,20 @@ char* full_read(int fd)
 	}
       
       /* Read from the file into the buffer. */
-      got = read(fd, state_buf + state_buf_ptr, state_buf_size - state_buf_ptr);
+      got = read(fd, buffer + buffer_ptr, buffer_size - buffer_ptr);
       if ((got < 0) && (errno != EINTR))
 	{
-	  free(state_buf);
+	  free(buffer);
 	  return NULL;
 	}
       if (got == 0)
 	break;
-      state_buf_ptr += (size_t)got;
+      buffer_ptr += (size_t)got;
     }
   
-  return state_buf;
+  if (length != NULL)
+    *length = buffer_ptr;
+  return buffer;
 }
 
 

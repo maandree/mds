@@ -121,10 +121,11 @@ int full_write(int fd, const char* buffer, size_t length);
 /**
  * Read a file completly and ignore interruptions
  * 
- * @param   fd  The file descriptor
- * @return      The content of the file, you will need to free it. `NULL` on error.
+ * @param   fd      The file descriptor
+ * @param   length  Output parameter for the length of the file, may be `NULL`
+ * @return          The content of the file, you will need to free it. `NULL` on error.
  */
-char* full_read(int fd);
+char* full_read(int fd, size_t* length);
 
 /**
  * Check whether a string begins with a specific string,

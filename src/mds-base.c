@@ -363,7 +363,7 @@ static int base_unmarshal(void)
   fail_if (reexec_fd < 0); /* Critical. */
   
   /* Read the state file. */
-  fail_if ((state_buf = state_buf_ = full_read(reexec_fd)) == NULL);
+  fail_if ((state_buf = state_buf_ = full_read(reexec_fd, NULL)) == NULL);
   
   /* Release resources. */
   close(reexec_fd);
