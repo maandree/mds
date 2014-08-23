@@ -119,6 +119,64 @@ int __attribute__((const)) preinitialise_server(void)
 
 
 /**
+ * Write persistent data about the VT and TTY to a file
+ * 
+ * @return  Zero on success, -1 on error
+ */
+static int write_vt_file(void)
+{
+  char buf[(sizeof(int) + sizeof(struct stat)) / sizeof(char)];
+  int fd, r, old_errno;
+  int* intbuf = (int*)buf;
+  
+  *intbuf = display_vt;
+  *(struct stat*)(buf + sizeof(int) / sizeof(char)) = old_vt_stat;
+  
+  fd = open(vtfile_path, O_WRONLY | O_CREAT);
+  if (fd < 0)
+    return -1;
+  
+  r = full_write(fd, buf, sizeof(buf));
+  old_errno = errno;
+  close(fd);
+  errno = old_errno;
+  return r;
+}
+
+
+/**
+ * Read persistent data about the VT and TTY from a file
+ * 
+ * @return  Zero on success, -1 on error
+ */
+static int read_vt_file(void)
+{
+  char* buf;
+  size_t len;
+  int fd;
+  
+  fd = open(vtfile_path, O_RDONLY);
+  if (fd < 0)
+    return -1;
+  
+  buf = full_read(fd, &len);
+  if (buf == NULL)
+    return -1;
+  
+  if (len != sizeof(int) + sizeof(struct stat))
+    {
+      eprint("VT file is of wrong size.");
+      errno = 0;
+      return -1;
+    }
+  
+  display_vt = *(int*)buf;
+  old_vt_stat = *(struct stat*)(buf + sizeof(int) / sizeof(char));
+  return 0;
+}
+
+
+/**
  * This function should initialise the server,
  * and it not invoked after a re-exec.
  * 
@@ -155,12 +213,12 @@ int initialise_server(void)
       else if (display_vt < 0)
 	goto pfail;
       display_tty_fd = vt_open(display_vt, &old_vt_stat);
-      /* TODO write display_vt and old_vt_stat to vtfile_path */
+      fail_if (write_vt_file() < 0);
       fail_if (vt_set_active(display_vt) < 0);
     }
   else
     {
-      /* TODO read display_vt and old_vt_stat from vtfile_path */
+      fail_if (read_vt_file() < 0);
       vt_is_active = (display_vt == vt_get_active());
       fail_if (vt_is_active < 0);
     }
