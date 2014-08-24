@@ -311,7 +311,7 @@ int echo_message(void)
   /* Construct echo message headers. */
   
   n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
-  n += strlen(recv_client_id) + strlen(recv_message_id) + 2 * sizeof(int32_t) + sizeof(uint32);
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 2 * sizeof(int32_t) + sizeof(uint32_t);
   if (recv_length != NULL)
     n += strlen(recv_length) + 1;
   

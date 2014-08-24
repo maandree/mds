@@ -592,7 +592,7 @@ static int ensure_send_buffer_size(size_t size)
 int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_message_id,
 			       const char* recv_modify_id)
 {
-  int32_t msgid;
+  uint32_t msgid;
   size_t n;
   int r;
   
@@ -670,7 +670,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 int handle_keyboard_enumeration(const char* recv_modify_id)
 {
   size_t i, off, top, n = 1 + strlen(KEYBOARD_ID "\n") + 3 * sizeof(size_t);
-  int32_t msgid;
+  uint32_t msgid;
   int r, have_len = 0;
   
   if (recv_modify_id == NULL)
@@ -828,7 +828,7 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
 int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
 			     const char* recv_keyboard)
 {
-  int32_t msgid;
+  uint32_t msgid;
   size_t n;
   int r, leds;
   
@@ -1025,7 +1025,7 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
 {
   size_t top = 64 + 3 * sizeof(size_t), n = 0, off, i;
   int greatest = (int)mapping_size, r;
-  int32_t msgid;
+  uint32_t msgid;
   
   for (i = 0; i < mapping_size; i++)
     if (mapping[i] != (int)i)
@@ -1291,7 +1291,7 @@ void close_input(void)
 int send_key(int* restrict scancode, int trio)
 {
   int r, keycode, released = (scancode[0] & 0x80) == 0x80;
-  int32_t msgid;
+  uint32_t msgid;
   scancode[0] &= 0x7F;
   if (trio)
     {
