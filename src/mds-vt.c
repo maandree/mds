@@ -62,7 +62,7 @@ server_characteristics_t server_characteristics =
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-static int32_t message_id = 1;
+static uint32_t message_id = 1;
 
 /**
  * Buffer for received messages
@@ -281,7 +281,7 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 5 * sizeof(int) + sizeof(int32_t);
+  size_t rc = 5 * sizeof(int) + sizeof(uint32_t);
   rc += sizeof(struct stat);
   rc += PATH_MAX * sizeof(char);
   rc += mds_message_marshal_size(&received);
@@ -299,7 +299,7 @@ int marshal_server(char* state_buf)
 {
   buf_set_next(state_buf, int, MDS_VT_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
-  buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, uint32_t, message_id);
   buf_set_next(state_buf, int, display_vt);
   buf_set_next(state_buf, int, display_tty_fd);
   buf_set_next(state_buf, int, vt_is_active);
@@ -329,7 +329,7 @@ int unmarshal_server(char* state_buf)
   /* buf_get_next(state_buf, int, MDS_VT_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
-  buf_get_next(state_buf, int32_t, message_id);
+  buf_get_next(state_buf, uint32_t, message_id);
   buf_get_next(state_buf, int, display_vt);
   buf_get_next(state_buf, int, display_tty_fd);
   buf_get_next(state_buf, int, vt_is_active);

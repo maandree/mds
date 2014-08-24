@@ -377,7 +377,7 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   /* Make sure the message headers can fit the send buffer. */
   
   i = strlen(recv_message_id) + strlen(recv_client_id) + 10 + 19;
-  i += strlen("To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\nLength: %" PRIu64 "\n\n");
+  i += strlen("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nLength: %" PRIu64 "\n\n");
   
   while (ptr + i >= send_buffer_size)
     if (growalloc(old, send_buffer, send_buffer_size, char))
@@ -385,11 +385,11 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   
   
   /* Construct message headers. */
-  sprintf(send_buffer + ptr, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\nLength: %" PRIu64 "\n\n",
+  sprintf(send_buffer + ptr, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nLength: %" PRIu64 "\n\n",
 	  recv_client_id, recv_message_id, message_id, ptr);
   
   /* Increase message ID. */
-  with_mutex (slave_mutex, message_id = message_id == INT32_MAX ? 0 : (message_id + 1););
+  with_mutex (slave_mutex, message_id = message_id == UINT32_MAX ? 0 : (message_id + 1););
   
   /* Send message. */
   if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)))

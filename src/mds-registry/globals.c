@@ -22,7 +22,7 @@
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-int32_t message_id = 2;
+uint32_t message_id = 2;
 
 /**
  * Buffer for received messages

@@ -55,7 +55,7 @@ server_characteristics_t server_characteristics =
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-static int32_t message_id = 1;
+static uint32_t message_id = 1;
 
 /**
  * Buffer for received messages
@@ -150,7 +150,7 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  return 2 * sizeof(int) + sizeof(uint32_t) + mds_message_marshal_size(&received);
 }
 
 
@@ -164,7 +164,7 @@ int marshal_server(char* state_buf)
 {
   buf_set_next(state_buf, int, MDS_ECHO_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
-  buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, uint32_t, message_id);
   mds_message_marshal(&received, state_buf);
   
   mds_message_destroy(&received);
@@ -188,7 +188,7 @@ int unmarshal_server(char* state_buf)
   /* buf_get_next(state_buf, int, MDS_ECHO_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
-  buf_get_next(state_buf, int32_t, message_id);
+  buf_get_next(state_buf, uint32_t, message_id);
   r = mds_message_unmarshal(&received, state_buf);
   if (r)
     {
@@ -311,7 +311,7 @@ int echo_message(void)
   /* Construct echo message headers. */
   
   n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
-  n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int32_t);
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 2 * sizeof(int32_t) + sizeof(uint32);
   if (recv_length != NULL)
     n += strlen(recv_length) + 1;
   
@@ -325,13 +325,13 @@ int echo_message(void)
 	}
     }
   
-  sprintf(echo_buffer, "To: %s\nIn response to: %s\nMessage ID: %" PRIi32 "\n%s%s\n",
+  sprintf(echo_buffer, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n%s%s\n",
 	  recv_client_id, recv_message_id, message_id,
 	  recv_length == NULL ? "" : recv_length,
 	  recv_length == NULL ? "" : "\n");
   
   /* Increase message ID. */
-  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
   /* Send echo. */
   if (full_send(echo_buffer, strlen(echo_buffer)))

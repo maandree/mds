@@ -100,7 +100,7 @@ server_characteristics_t server_characteristics =
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-static int32_t message_id = 3;
+static uint32_t message_id = 3;
 
 /**
  * Buffer for received messages
@@ -313,7 +313,7 @@ void fork_cleanup(int status)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 9 * sizeof(int) + sizeof(int32_t) + sizeof(struct termios);
+  size_t rc = 9 * sizeof(int) + sizeof(uint32_t) + sizeof(struct termios);
   rc += sizeof(size_t) + mapping_size * sizeof(int);
   rc += mds_message_marshal_size(&received);
   return rc;
@@ -330,7 +330,7 @@ int marshal_server(char* state_buf)
 {
   buf_set_next(state_buf, int, MDS_KKBD_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
-  buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, uint32_t, message_id);
   buf_set_next(state_buf, int, ledfd);
   buf_set_next(state_buf, int, saved_leds);
   buf_set_next(state_buf, struct termios, saved_stty);
@@ -368,7 +368,7 @@ int unmarshal_server(char* state_buf)
   /* buf_get_next(state_buf, int, MDS_KKBDOARD_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
-  buf_get_next(state_buf, int32_t, message_id);
+  buf_get_next(state_buf, uint32_t, message_id);
   buf_get_next(state_buf, int, ledfd);
   buf_get_next(state_buf, int, saved_leds);
   buf_get_next(state_buf, struct termios, saved_stty);
@@ -609,7 +609,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
       
       with_mutex (send_mutex,
 		  msgid = message_id;
-		  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+		  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
 		  );
       
       if (ensure_send_buffer_size(48 + strlen(recv_modify_id) + 1) < 0)
@@ -617,7 +617,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
       sprintf(send_buffer,
 	      "Modify: no\n"
 	      "Modify ID: %s\n"
-	      "Message ID: %" PRIi32 "\n"
+	      "Message ID: %" PRIu32 "\n"
 	      "\n",
 	      recv_modify_id, msgid);
       
@@ -640,14 +640,14 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   sprintf(send_buffer,
 	  "Modify: yes\n"
 	  "Modify ID: %s\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "\n"
 	  /* NEXT MESSAGE */
 	  "Command: keyboard-enumeration\n"
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Length: %zu\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "\n"
 	  KEYBOARD_ID "\n",
 	  recv_modify_id, msgid,
@@ -720,7 +720,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   
   sprintf(send_buffer,
 	  "Modify ID: %s\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "Length: %zu\n",
 	  recv_modify_id, msgid, n);
   top = strlen(send_buffer) + 1;
@@ -868,7 +868,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
   sprintf(send_buffer,
 	  "To: %s\n"
 	  "In response to: %s\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "Active:%s%s%s%s%s\n"
 	  "Present: " PRESENT_LEDS "\n"
 	  "\n",
@@ -1057,7 +1057,7 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
   sprintf(send_buffer,
 	  "To: %s\n"
 	  "In response to: %s\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "Length: %zu\n"
 	  "\n",
 	  recv_client_id, recv_message_id, msgid, n);
@@ -1318,7 +1318,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Keycode: %i\n"
 	    "Released: %s\n"
 	    "Keyboard: " KEYBOARD_ID "\n"
-	    "Message ID: %" PRIi32 "\n"
+	    "Message ID: %" PRIu32 "\n"
 	    "\n",
 	    scancode[0], scancode[1], scancode[2], keycode,
 	    released ? "yes" : "no", msgid);
@@ -1329,7 +1329,7 @@ int send_key(int* restrict scancode, int trio)
 	    "Keycode: %i\n"
 	    "Released: %s\n"
 	    "Keyboard: " KEYBOARD_ID "\n"
-	    "Message ID: %" PRIi32 "\n"
+	    "Message ID: %" PRIu32 "\n"
 	    "\n",
 	    scancode[0], keycode,
 	    released ? "yes" : "no", msgid);
@@ -1436,7 +1436,7 @@ int send_errno(int error, const char* recv_client_id, const char* recv_message_i
 		      "Command: error\n"
 		      "To: %s\n"
 		      "In response to: %s\n"
-		      "Message ID: %" PRIi32 "\n"
+		      "Message ID: %" PRIu32 "\n"
 		      "Error: %i\n"
 		      "\n",
 		      recv_client_id, recv_message_id, message_id, error);

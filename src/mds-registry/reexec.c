@@ -42,7 +42,7 @@
  */
 size_t marshal_server_size(void)
 {
-  size_t i, rc = 2 * sizeof(int) + sizeof(int32_t) + 4 * sizeof(size_t);
+  size_t i, rc = 2 * sizeof(int) + sizeof(uint32_t) + 4 * sizeof(size_t);
   hash_entry_t* entry;
   ssize_t node;
   
@@ -82,7 +82,7 @@ int marshal_server(char* state_buf)
   
   buf_set_next(state_buf, int, MDS_REGISTRY_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
-  buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, uint32_t, message_id);
   buf_set_next(state_buf, size_t, n);
   mds_message_marshal(&received, state_buf);
   state_buf += n / sizeof(char);
@@ -145,7 +145,7 @@ int unmarshal_server(char* state_buf)
   /* buf_get_next(state_buf, int, MDS_REGISTRY_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
-  buf_get_next(state_buf, int32_t, message_id);
+  buf_get_next(state_buf, uint32_t, message_id);
   buf_get_next(state_buf, size_t, n);
   fail_if (mds_message_unmarshal(&received, state_buf));
   state_buf += n / sizeof(char);

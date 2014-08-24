@@ -35,7 +35,7 @@
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-extern int32_t message_id;
+extern uint32_t message_id;
 
 /**
  * Buffer for received messages

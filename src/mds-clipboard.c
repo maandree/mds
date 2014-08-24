@@ -55,7 +55,7 @@ server_characteristics_t server_characteristics =
 /**
  * Value of the ‘Message ID’ header for the next message
  */
-static int32_t message_id = 1;
+static uint32_t message_id = 1;
 
 /**
  * Buffer for received messages
@@ -178,7 +178,7 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  size_t i, j, rc =  2 * sizeof(int) + sizeof(int32_t) + mds_message_marshal_size(&received);
+  size_t i, j, rc =  2 * sizeof(int) + sizeof(uint32_t) + mds_message_marshal_size(&received);
   rc += 2 * CLIPBOARD_LEVELS * sizeof(size_t);
   for (i = 0; i < CLIPBOARD_LEVELS; i++)
     for (j = 0; j < clipboard_used[i]; j++)
@@ -216,7 +216,7 @@ int marshal_server(char* state_buf)
   
   buf_set_next(state_buf, int, MDS_CLIPBOARD_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
-  buf_set_next(state_buf, int32_t, message_id);
+  buf_set_next(state_buf, uint32_t, message_id);
   mds_message_marshal(&received, state_buf);
   
   /* Removed entires from the clipboard that may not be marshalled. */
@@ -281,7 +281,7 @@ int unmarshal_server(char* state_buf)
   /* buf_get_next(state_buf, int, MDS_CLIPBOARD_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
-  buf_get_next(state_buf, int32_t, message_id);
+  buf_get_next(state_buf, uint32_t, message_id);
   fail_if (mds_message_unmarshal(&received, state_buf));
   
   for (i = 0; i < CLIPBOARD_LEVELS; i++)
@@ -566,7 +566,7 @@ static int clipboard_notify_pop(int level, size_t index)
   
   n += strlen("Command: clipboard-info\n"
 	      "Event: crash\n"
-	      "Message ID: %" PRIi32 "\n"
+	      "Message ID: %" PRIu32 "\n"
 	      "Level: %i\n"
 	      "Popped: %zu\n"
 	      "Size: %zu\n"
@@ -579,7 +579,7 @@ static int clipboard_notify_pop(int level, size_t index)
   sprintf(message,
 	  "Command: clipboard-info\n"
 	  "Event: crash\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "Level: %i\n"
 	  "Popped: %zu\n"
 	  "Size: %zu\n"
@@ -587,7 +587,7 @@ static int clipboard_notify_pop(int level, size_t index)
 	  "\n",
 	  message_id, level, index, size, used);
   
-  message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
+  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   return full_send(message, strlen(message)) ? -1 : 0;
 }
 
@@ -738,7 +738,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
     {
       n = strlen("To: %s\n"
 		 "In response to: %s\n"
-		 "Message ID: %" PRIi32 "\n"
+		 "Message ID: %" PRIu32 "\n"
 		 "\n");
       n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
       
@@ -747,7 +747,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
       sprintf(message,
 	      "To: %s\n"
 	      "In response to: %s\n"
-	      "Message ID: %" PRIi32 "\n"
+	      "Message ID: %" PRIu32 "\n"
 	      "\n",
 	      recv_client_id, recv_message_id, message_id);
       
@@ -761,7 +761,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   
   n = strlen("To: %s\n"
 	     "In response to: %s\n"
-	     "Message ID: %" PRIi32 "\n"
+	     "Message ID: %" PRIu32 "\n"
 	     "Length: %zu\n"
 	     "\n");
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 3 * sizeof(size_t);
@@ -771,7 +771,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   sprintf(message,
 	  "To: %s\n"
 	  "In response to: %s\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "Length: %zu\n"
 	  "\n",
 	  recv_client_id, recv_message_id, message_id, clip->length);
@@ -865,7 +865,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   
   n = strlen("To: %s\n"
 	     "In response to: %s\n"
-	     "Message ID: %" PRIi32 "\n"
+	     "Message ID: %" PRIu32 "\n"
 	     "Size: %zu\n"
 	     "Used: %zu\n"
 	     "\n");
@@ -875,7 +875,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   sprintf(message,
 	  "To: %s\n"
 	  "In response to: %s\n"
-	  "Message ID: %" PRIi32 "\n"
+	  "Message ID: %" PRIu32 "\n"
 	  "Size: %zu\n"
 	  "Used: %zu\n"
 	  "\n",
