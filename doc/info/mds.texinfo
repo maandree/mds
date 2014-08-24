@@ -295,6 +295,7 @@ and wait for a reply from all of them.
 * Signals::                         Signalling individual servers
 * Filesystem::                      The display server's footprint on the filesystem
 * Message Passing::                 Sending messages between servers and clients
+* Interception::                    Implementing protocols and writing unanticipated clients
 @end menu
 
 @node Environment Variables
@@ -513,6 +514,247 @@ for receive of such message, any messages
 or message contain any other header or
 header--value pair that may also be
 included in the header.
+
+
+
+@node Interception
+@section Interception
+
+As discussed in @ref{Interprocess Communication},
+interception in the primary feature of
+@command{mds}'s message passing system.
+Not only does it enable servers to select
+which message it wants to receive in order
+to provide it's service. It also enables
+clients to do anything, things that was
+never anticipated. As an exaple of its
+power, @command{mds} does not provide any
+protocol for taking screenshots or recording
+a session. Instead, a screenshot application
+signs up for messages pass between the
+compositor and presentation servers, and
+simply requests that the compositor resends
+the screen, a feature intended for the
+presentation servers. A screen recoding
+application would do the same and just
+hang on and record all message passed
+between the servers.
+
+If you want your server or client to
+receive all messages passed around in
+the display server, simply sign up for
+all messages:
+
+@example
+Command: intercept\n
+Message ID: 0\n
+\n
+@end example
+
+But if you only want messages contain
+the header @code{Command}, include
+that header in the payload of the message:
+
+@example
+Command: intercept\n
+Message ID: 0\n
+Length: 8\n
+\n
+Command\n
+@end example
+
+It is allowed to include multiple headers.
+You can also be more strict, and require
+a specific value for a header, for example:
+
+@example
+Command: intercept\n
+Message ID: 0\n
+Length: 16\n
+\n
+Command: get-vt\n
+@end example
+
+You may mix these two types of requirements
+freely. Your client will receive any message
+that satisfies at least one of the requirements,
+these requirements may be split into multiple
+message or coalesced into one message; but
+you cannot request to include receive a message
+if multiple requirements are satisfied.
+
+Alternatively you can choose to stop receiving
+message that satisfies requirements. For example:
+
+@example
+Command: intercept\n
+Stop: yes\n
+Message ID: 1\n
+Length: 16\n
+\n
+Command: get-vt\n
+@end example
+
+Or stop receiving all messages:
+
+@example
+Command: intercept\n
+Stop: yes\n
+Message ID: 1\n
+\n
+@end example
+
+Note that this will stop you from receiving
+messages contain the @code{To} header addressed
+to you until you request to receiving such
+messages again.
+
+When you sign up for message you may request
+to be able to modify them before that are
+send to the next client in the list of client
+that should receive them. To do this include
+the header--value pair @code{Modifying: yes}:
+
+@example
+Command: intercept\n
+Modifying: yes\n
+Message ID: 0\n
+Length: 30\n
+\n
+Command: keyboard-enumeration\n
+@end example
+
+It is up to the client to keep track of
+which message that it may modify. When
+you receive a message that you can modify
+you must respond when you are done with
+the message.
+
+For example, if you have signed up
+for @code{Command: keyboard-enumeration}
+with the ability to modify such messages
+and the message
+
+@example
+Command: keyboard-enumeration\n
+To: 0:1\n
+In response to: 2\n
+Message ID: 1\n
+Length: 7\n
+\n
+kernel\n
+@end example
+
+is send from a server, you may receive
+it as
+
+@example
+Command: keyboard-enumeration\n
+To: 0:1\n
+In response to: 2\n
+Message ID: 1\n
+Length: 7\n
+Modify ID: 4\n
+\n
+kernel\n
+@end example
+
+Be aware that the @code{Modify ID} may
+be included even if you have not signed
+up to be able to modify the message,
+it is enough that one client before you
+has or it was originally included
+@footnote{You may however not include
+this header when you send out an
+orginal message}.
+
+If you receive the message as such
+and want to add the line
+@code{on-screen-keyboard-20376} to
+the payload should send out:
+@footnote{The first line containing
+starting with @code{Message ID} is an
+example, it should be whatever is
+appropriate for your client.}
+
+@example
+Modify ID: 4\n
+Message ID: 2\n
+Modify: yes\n
+Length: 127\n
+\n
+Command: keyboard-enumeration\n
+To: 0:1\n
+In response to: 2\n
+Message ID: 1\n
+Length: 32\n
+Modify ID: 4\n
+\n
+kernel\n
+on-screen-keyboard-20376\n
+@end example
+
+If you however decide not to modify
+the message send out
+
+@example
+Modify ID: 4\n
+Message ID: 2\n
+Modify: no\n
+\n
+@end example
+
+There is also a third option:
+to consume to the message. This
+stops any further clients from
+receiving the message. This is
+done by modifying the message
+into an empty message:
+
+@example
+Modify ID: 4\n
+Message ID: 2\n
+Modify: yes\n
+\n
+@end example
+
+You may choose to include the
+header--value pair @code{Length: 0},
+it is however redundant and
+discouraged.
+
+This mechanism of being able to
+modify message does not make much
+sense unless you can control in
+the order the clients receive
+messages. This is done with what
+is called priority. The higher
+priority you have, the earlier
+you will receive the message. The
+default priority is zero, and the
+priority is bound to a signed
+64-bit integer. If you want to
+be able to list yourself in
+@code{Command: keyboard-enumeration}
+message, you should sign up
+with a positive priority since
+the final recipient or requested
+the enumeration will receive it
+with priority zero. Therefore
+you should sign up for such message
+with a message like:
+@footnote{4611686018427387904, is
+halfway to the maximium value.}
+
+@example
+Command: intercept\n
+Modifying: yes\n
+Priority: 4611686018427387904\n
+Message ID: 0\n
+Length: 30\n
+\n
+Command: keyboard-enumeration\n
+@end example
 
 
 
