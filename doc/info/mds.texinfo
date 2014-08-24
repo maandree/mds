@@ -53,6 +53,7 @@ Texts. A copy of the license is included in the section entitled
 @menu
 * Overview::                        Brief overview of @command{mds}.
 * Architecture::                    Architectural overview of @command{mds}.
+* Protocol::                        The @command{mds} procotol.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -283,6 +284,116 @@ mechanism for letting @command{mds-vt} know
 when all servers are ready for the switch
 without having to know how many they are
 and wait for a reply from all of them.
+
+
+
+@node Protocol
+@chapter Protocol
+
+@menu
+* Environment Variables::           Identifying the active display server
+* Signals::                         Signalling individual servers
+* Filesystem::                      The display server's footprint on the filesystem
+* Message Passing::                 Sending messages between servers and clients
+@end menu
+
+@node Environment Variables
+@section Environment Variables
+
+A crucial of any display server is letting child
+processes know which display server they should
+connect to. @command{X.org} does by setting the
+environment variable @env{DISPLAY} to
+@code{<host>:<display index>}, where @code{<host>}
+is empty if the display is one the local machine.
+In this tradition @command{mds} does the same thing
+with the environment variable @env{MDS_DISPLAY}.
+
+@command{mds} also creates a new process group and
+export the new process group ID to the environment
+variable @command{MDS_PGROUP}. This process group
+can be used to send signals to all @command{mds}
+servers collectively.
+
+
+
+@node Signals
+@section Signals
+
+@command{mds} servers can re-execute into an
+updated version of their binary. This can be
+used to update display server online after
+a new version has been installed. To do this
+send the signal @command{SIGUSR1} to the server
+you want update. If a server does not support
+online updating it will ignore this signal.
+If the operating system defines a signal named
+@command{SIGUPDATE}, this signal is used
+instead of @command{SIGUSR1}.
+
+If you need servers to free up allocated
+memory that they do not use, send the signal
+@command{SIGDANGER}, or if not defined
+@command{SIGRTMAX}. Unimportant servers may
+choose to die on @command{SIGDANGER}.
+
+
+
+@node Filesystem
+@section Filesystem
+
+The @command{mds} kernel creates two directories
+for the @command{mds} servers to use: one for
+runtime data and one for temporary data.
+These directories are named by
+@code{MDS_RUNTIME_ROOT_DIRECTORY} and
+@code{MDS_STORAGE_ROOT_DIRECTORY}, respectively,
+by the header file @file{<libmdsserver/config.h>}.
+If the systems runtime data directory is @file{/run}
+and transient temporary data directory is @file{/tmp},
+and the package name of @command{mds} is @command{mds},
+these directories will be @file{/run/mds} and
+@file{/tmp/.@{system-directory@}.mds}, respectively.
+In @file{/tmp/.@{system-directory@}.mds} the kernel
+will create a directory for the display server instance
+named @file{.data} prefixed by the display server index.
+For example if the display server index is zero,
+temporary data may be stored in
+@file{/tmp/.@{system-directory@}.mds/0.data}
+
+As defined by @code{SHM_PATH_PATTERN} by
+@file{<libmdsserver/config.h>}, when a server
+re-executes itself it will marshal its state to
+the POSIX shared memory unit named
+@file{/.proc-pid-%ji}, where @file{%ji}
+@footnote{@code{%ji} is the pattern in @code{*printf}
+functions for the data type @code{intmax_t}.} is
+replaced with the process ID of the server. This
+file will be bound to the pathname
+@file{/dev/shm/.proc-pid-%ji} if POSIX shared
+memory is stored in @file{/dev/shm} by the
+operating system.
+
+In @code{MDS_RUNTIME_ROOT_DIRECTORY} the kernel
+will create two files. @file{.pid} and @file{.socket},
+both prefixed with the display server index
+@footnote{@file{0.pid} and @file{0.socket} if
+the display server index is 0.}. The @file{.pid}
+file contains the process ID of the display server
+and is used by the kernel to figure out whether
+an display server index is still in use or just
+not properly cleaned up. Of course it can be used
+by any program to find the process ID of the
+kernel process of a display server instance.
+The @file{.socket} is the domain socket used
+for communication with the display server and
+its servers and clients.
+
+
+
+@node Message Passing
+@section Message Passing
+
 
 
 @node GNU Free Documentation License
