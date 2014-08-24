@@ -743,7 +743,7 @@ the enumeration will receive it
 with priority zero. Therefore
 you should sign up for such message
 with a message like:
-@footnote{4611686018427387904, is
+@footnote{4611686018427387904 is
 halfway to the maximium value.}
 
 @example
