@@ -394,6 +394,126 @@ its servers and clients.
 @node Message Passing
 @section Message Passing
 
+Message passing over domain sockets is the
+underlaying technique for communicating with
+the display server. To communicate with the
+display server in the local machine a process
+must connect to the domain socket created by
+the display server kernel as named in
+@ref{Filesystem}.
+
+Clients should request a unique ID when it
+connects to the display server.@footnote{There
+is seldom a reason for servers to do this.}
+To do this the client sends
+
+@example
+Command: assign-id\n
+Message ID: 0\n
+\n
+@end example
+
+where @code{\n} is an LF-line break.
+The value on the @code{Message ID} line
+does not need to be 0, but servers and
+clients often start with 0 and count
+upwards. The value is however bound to
+an unsigned 32-bit integer. All message
+must contain this @code{Message ID} header,
+otherwise the message is considered corrupt
+and is ignored.
+
+The empty line signifies the end of the
+header list, and in this case the end of
+the message. But a message may contain
+payload beneath this empty line. To
+include a payload, add the header
+@code{Length} that says how many bytes
+the payload is comprised of.
+
+A header must contain a header name and
+header value without any trailing or
+leading spaces, and `: ' (colon, one
+regular blank space) exactly delimits
+the name and the value.
+
+When the master server receives this
+@code{Command: assign-id} message it
+will assign the client a unique ID
+and send it to the client.@footnote{The
+master server is the only server than
+can address the client uniquely before
+it has an ID, so this part can only
+be implement in the master server.}
+If the client already has an ID, it
+will send back that ID to the client.
+This response consists of two headers
+@code{ID assignment} and @code{In
+response to}, containing the client's
+new (or possibly already assigned) ID
+and the value that was in the
+@code{Message ID} header, respectively.
+For example:
+
+@example
+ID assignment: 0:1\n
+In response to: 0\n
+\n
+@end example
+
+Notice that the master server never
+includes @code{Message ID} in message
+originating from it.
+
+As seen in this example, the client ID
+consists of two integers delimited by
+a colon (`:'). Both of these integers
+are unsigned 32-bit integers. This is
+done this way because unsigned 64-bit
+integers are forbidden because it is
+not supportable natively be some
+programming languages.
+
+Before a has gotten a unique client ID
+assigned to it, it will be `0:0'.
+
+If a client gets disconnected from the
+master server, the master server will
+sends out a signal header message.
+This header will be @code{Client closed}
+and contain ID of the client that closed.
+For example:
+
+@example
+Client closed: 0:1\n
+\n
+@end example
+
+Be aware that if a server or client
+closes and does not have a unique client
+ID, this message will be:
+
+@example
+Client closed: 0:0\n
+\n
+@end example
+
+Once a client has an unique client ID
+assigned to it, it should always include
+the header @code{Client ID} in its
+messages. The value of @code{Client ID}
+should be the client's ID. If a server
+wants to address this client, it should
+include the header @code{To} with the
+value set to the recipient's client ID.
+Be aware that such message may not be
+sent to that recipient uniquely, any
+server or client is free to sign up
+for receive of such message, any messages
+or message contain any other header or
+header--value pair that may also be
+included in the header.
+
 
 
 @node GNU Free Documentation License
