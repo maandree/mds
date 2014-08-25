@@ -54,6 +54,7 @@ Texts. A copy of the license is included in the section entitled
 * Overview::                        Brief overview of @command{mds}.
 * Architecture::                    Architectural overview of @command{mds}.
 * Protocol::                        The @command{mds} procotol.
+* libmdsserver::                    Overview of @command{libmdsserver}.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -755,6 +756,143 @@ Length: 30\n
 \n
 Command: keyboard-enumeration\n
 @end example
+
+
+
+@node libmdsserver
+@chapter libmdsserver
+
+libmdsserver is library written for the reference
+implementation of the @command{mds} servers.
+libmdsserver does not contain support or any
+protocols, rather it contains auxiliary functions,
+macros, data structures such as linked lists and
+hash tables, and support the basics of the message
+passing protocol: receiving message and decode it
+into headers and payloads.
+
+The header file @file{<libmdsserver/macros.h>}
+contains macros for readability and code reduction,
+it also contains macros and definitions for portability;
+they may either provide portability by nature, or
+provide one place to do modifications to port the
+system.
+
+@table @asis
+@item @code{xsnprintf} [(@code{char[] buffer, char* format, ...}) @arrow{} @code{int}]
+This is a wrapper for @code{snprintf} that allows you
+to forget about the buffer size. When you know how long
+a string can be, you should use @code{sprintf}. But when
+you cannot know for sure you should use @code{xsnprintf}.
+@code{xsnprintf} works exactly as @code{sprintf}, but
+it will require that the first argument is defined
+using @code{[]} rather than @code{*} because it will use
+this to find out how large the buffer is so it can call
+@code{snprintf} with that size.
+
+@item @code{eprint} [(@code{const char* format}) @arrow{} @code{int}]
+A wrapper for @code{fprintf} that prints a string prefixed
+with the value value of @code{*argv} to @code{stderr}.
+Because @code{eprintf} naïvely wraps @code{fprintf}, all
+`%':s in the string must be duplicated.
+
+@item @code{eprintf} [(@code{const char* format, ...}) @arrow{} @code{int}]
+@code{eprint} extends @code{eprint} with variadic arguments
+that can be used to insert values into the format string
+just like you can do in @code{fprintf}.
+
+@item @code{with_mutex} [(@code{pthread_mutex_t mutex, instructions})]
+Wraps @code{instructions} with @code{errno = pthread_mutex_lock(mutex);}
+and @code{errno = pthread_mutex_unlock(mutex);}, so a set of
+instructions can be invoked inside mutex protection.
+
+@item @code{with_mutex_if} [(@code{pthread_mutex_t mutex, condition, instructions})]
+An alternative to @code{with_mutex} where @code{instructions}
+is wrapped around @code{if (condition)} which in turn is
+wrapped inside the mutex protection.
+
+@item @code{max} [(@code{a, b})]
+Returns the higher value of @code{a} and @code{b}.
+
+@item @code{min} [(@code{a, b})]
+Returns the lower value of @code{a} and @code{b}.
+
+@item @code{buf_cast} [(@code{char* buffer, type, size_t index})]
+Casts @code{buffer} to a @code{type} buffer and
+subscripts to the @code{index}:th element. You
+can either use this function as a getter or a
+setter.
+
+@item @code{buf_set} [(@code{char* buffer, type, size_t index, type variable}) @arrow{} @code{type}]
+Wrapper for @code{buf_cast} that sets the addressed
+element to the value of @code{variable}.
+
+@item @code{buf_get} [(@code{const char* buffer, type, size_t index, type variable}) @arrow{} @code{type}]
+Wrapper for @code{buf_cast} that sets the value of
+@code{variable} to the value of the addressed element.
+
+@item @code{buf_next} [(@code{char* buffer, type, size_t count}) @arrow{} @code{char*}]
+Increases the pointer @code{buffer} by the size of
+@code{type} @code{count} types.
+
+@item @code{buf_prev} [(@code{char* buffer, type, size_t count}) @arrow{} @code{char*}]
+Decreases the pointer @code{buffer} by the size of
+@code{type} @code{count} types.
+
+@item @code{buf_set_next} [(@code{char* buffer, type, type variable}) @arrow{} @code{type}]
+@example
+buf_set(buffer, type, 0, variable),
+buf_next(buffer, type, 1);
+@end example
+
+@item @code{buf_get_next} [(@code{char* buffer, type, type variable}) @arrow{} @code{type}]
+@example
+buf_get(buffer, type, 0, variable),
+buf_next(buffer, type, 1);
+@end example
+
+@item @code{strequals} [(@code{const char* a, const char* b}) @arrow{} @code{int}]
+Evaluates whether the strings @code{a} and @code{b}
+are equals, neither may be @code{NULL}.
+
+@item @code{startswith} [(@code{const char* haystack, const char* needle}) @arrow{} @code{int}]
+Evaluates whether the string @code{haystack}
+starts with the string @code{needle}, neither
+may be @code{NULL}.
+
+@item @code{drop_privileges} [() @arrow{} @code{int}]
+Sets the effective user to the real user and the
+effective group to the real group. This is used
+by most servers and ensure that they are not
+running with unnecessary privileges. Returns zero
+on and only on success.
+
+@item @code{monotone} [(@code{struct timespec* time_slot}) @arrow{} @code{int}]
+Stores the time of an unspecified monotonic clock
+into @code{time_slot}. Returns zero on and only on
+success.
+
+@item @code{close_files} [(@code{condition}) @arrow{} @code{void}]
+Closes all file descriptors named by a variable
+@code{fd} for which @code{condition} evalutes
+to non-zero.
+
+@item @code{xfree} [(@code{void** array, size_t elements}) @arrow{} @code{void}]
+Calls @code{free} on the first @code{elements}
+elements in @code{array}, and than calls
+@code{free} on @code{array}. This macro
+requires @code{size_t i} is declared.
+
+@item @code{xmalloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
+@item @code{xcalloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
+@item @code{xrealloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
+@item @code{growalloc} [(@code{type* old, type* var, size_t elements, type}) @arrow{} @code{int}]
+@item @code{xperror} [(@code{const char* str}) @arrow{} @code{void}]
+@item @code{fail_if} [(@code{condition}) @arrow{} @code{void}]
+@item @code{exit_if} [(@code{condition, instructions}) @arrow{} @code{void}]
+@end table
+
+@c SIGDANGER SIGUPDATE macro-bits.h
 
 
 
