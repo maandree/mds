@@ -860,7 +860,7 @@ Evaluates whether the string @code{haystack}
 starts with the string @code{needle}, neither
 may be @code{NULL}.
 
-@item @code{drop_privileges} [() @arrow{} @code{int}]
+@item @code{drop_privileges} [(void) @arrow{} @code{int}]
 Sets the effective user to the real user and the
 effective group to the real group. This is used
 by most servers and ensure that they are not
