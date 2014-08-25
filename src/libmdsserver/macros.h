@@ -297,10 +297,10 @@
 /**
  * `malloc` wrapper that returns whether the allocation was not successful
  *  
- * @param   var       The variable to which to assign the allocation
- * @param   elements  The number of elements to allocate
- * @param   type      The data type of the elements for which to create an allocation
- * @return  :int      Evaluates to true if an only if the allocation failed
+ * @param   var:type*        The variable to which to assign the allocation
+ * @param   elements:size_t  The number of elements to allocate
+ * @param   type             The data type of the elements for which to create an allocation
+ * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define xmalloc(var, elements, type)  \
   ((var = malloc((elements) * sizeof(type))) == NULL)
@@ -309,10 +309,10 @@
 /**
  * `calloc` wrapper that returns whether the allocation was not successful
  *  
- * @param   var       The variable to which to assign the allocation
- * @param   elements  The number of elements to allocate
- * @param   type      The data type of the elements for which to create an allocation
- * @return  :int      Evaluates to true if an only if the allocation failed
+ * @param   var:type*        The variable to which to assign the allocation
+ * @param   elements:size_t  The number of elements to allocate
+ * @param   type             The data type of the elements for which to create an allocation
+ * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define xcalloc(var, elements, type)  \
   ((var = calloc(elements, sizeof(type))) == NULL)
@@ -321,10 +321,10 @@
 /**
  * `remalloc` wrapper that returns whether the allocation was not successful
  *  
- * @param   var       The variable to which to assign the reallocation
- * @param   elements  The number of elements to allocate
- * @param   type      The data type of the elements for which to create an allocation
- * @return  :int      Evaluates to true if an only if the allocation failed
+ * @param   var:type*        The variable to which to assign the reallocation
+ * @param   elements:size_t  The number of elements to allocate
+ * @param   type             The data type of the elements for which to create an allocation
+ * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define xrealloc(var, elements, type)  \
   ((var = realloc(var, (elements) * sizeof(type))) == NULL)
@@ -333,11 +333,11 @@
 /**
  * Double to the size of an allocation on the heap
  * 
- * @param   old       Variable in which to store the old value temporarily
- * @param   var       The variable to which to assign the reallocation
- * @param   elements  The number of elements to allocate
- * @param   type      The data type of the elements for which to create an allocation
- * @return  :int      Evaluates to true if an only if the allocation failed
+ * @param   old:type*        Variable in which to store the old value temporarily
+ * @param   var:type*        The variable to which to assign the reallocation
+ * @param   elements:size_t  The number of elements to allocate
+ * @param   type             The data type of the elements for which to create an allocation
+ * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define growalloc(old, var, elements, type)  \
   (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, perror(*argv), 1) : 0)
