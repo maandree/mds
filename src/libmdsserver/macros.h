@@ -193,7 +193,7 @@
  * @return  variable:      The new value of the element
  */
 #define buf_set_next(buffer, type, variable)  \
-  buf_set(buffer, type, 0, variable);         \
+  buf_set(buffer, type, 0, variable),         \
   buf_next(buffer, type, 1)
 
 
@@ -207,7 +207,7 @@
  * @return  variable:      The value of the element
  */
 #define buf_get_next(buffer, type, variable)  \
-  buf_get(buffer, type, 0, variable);         \
+  buf_get(buffer, type, 0, variable),         \
   buf_next(buffer, type, 1)
 
 
