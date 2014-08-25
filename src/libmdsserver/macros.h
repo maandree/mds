@@ -214,9 +214,9 @@
 /**
  * Check whether two strings are equal
  * 
- * @param   a:char*  One of the strings
- * @param   b:char*  The other of the strings
- * @return  :int     Whether the strings are equal
+ * @param   a:const char*  One of the strings
+ * @param   b:const char*  The other of the strings
+ * @return  :int           Whether the strings are equal
  */
 #define strequals(a, b)  \
   (strcmp(a, b) == 0)
@@ -225,9 +225,9 @@
 /**
  * Check whether a string starts with another string
  * 
- * @param   haystack:char*  The string to inspect
- * @param   needle:char*    The string `haystack` should start with
- * @return  :int            Whether `haystack` starts with `needle`
+ * @param   haystack:const char*  The string to inspect
+ * @param   needle:const char*    The string `haystack` should start with
+ * @return  :int                  Whether `haystack` starts with `needle`
  */
 #define startswith(haystack, needle)  \
   (strstr(haystack, needle) == haystack)
