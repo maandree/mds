@@ -284,7 +284,7 @@
 /**
  * Free an array and all elements in an array
  * 
- * @param  array:¿V?*       The array to free
+ * @param  array:void**       The array to free
  * @param  elements:size_t  The number of elements, in the array, to free
  * @scope  i:size_t         The variable `i` must be declared as `size_t` and avaiable for use
  */
