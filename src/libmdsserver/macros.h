@@ -40,9 +40,10 @@
 /**
  * Wrapper for `snprintf` that allows you to forget about the buffer size
  * 
- * @param  buffer:char[]  The buffer, must be of the type `char[]` and not `char*`
- * @param  format:char*   The format
- * @param  ...            The arguments
+ * @param   buffer:char[]  The buffer, must be of the type `char[]` and not `char*`
+ * @param   format:char*   The format
+ * @param   ...            The arguments
+ * @return  :int           The number of bytes written, including the NUL-termination, negative on error
  */
 #define xsnprintf(buffer, format, ...)  \
   snprintf(buffer, sizeof(buffer) / sizeof(char), format, __VA_ARGS__)
@@ -52,7 +53,8 @@
  * Wrapper for `fprintf` that prints to `stderr` with
  * the program name prefixed and new line suffixed
  * 
- * @param  format:char*  The format
+ * @param   format:char*  The format
+ * @return  :int          The number of bytes written, including the NUL-termination, negative on error
  */
 #define eprint(format)  \
   fprintf(stderr, "%s: " format "\n", *argv)
@@ -62,8 +64,9 @@
  * Wrapper for `fprintf` that prints to `stderr` with
  * the program name prefixed and new line suffixed
  * 
- * @param  format:char*   The format
- * @param  ...            The arguments
+ * @param   format:char*   The format
+ * @param   ...            The arguments
+ * @return  :int           The number of bytes written, including the NUL-termination, negative on error
  */
 #define eprintf(format, ...)  \
   fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__)
@@ -137,7 +140,7 @@
  * @param   type           The data type of the elements for the data type to cast the buffer to
  * @param   index:size_t   The index of the element to address
  * @param   variable:type  The new value of the element
- * @return  :variable      The new value of the element
+ * @return  variable:      The new value of the element
  */
 #define buf_set(buffer, type, index, variable)	\
   ((type*)(buffer))[index] = (variable)
@@ -150,7 +153,7 @@
  * @param   type           The data type of the elements for the data type to cast the buffer to
  * @param   index:size_t   The index of the element to address
  * @param   variable:type  Slot to set with the value of the element
- * @return  :variable      The value of the element
+ * @return  variable:      The value of the element
  */
 #define buf_get(buffer, type, index, variable)	\
   variable = ((type*)(buffer))[index]
@@ -159,9 +162,10 @@
 /**
  * Increase the pointer of a buffer
  * 
- * @param  buffer:char*  The buffer
- * @param  type          A data type
- * @param  count         The number elements of the data type `type` to increase the pointer with
+ * @param   buffer:char*  The buffer
+ * @param   type          A data type
+ * @param   count         The number elements of the data type `type` to increase the pointer with
+ * @retrun  buffer:       The buffer
  */
 #define buf_next(buffer, type, count)  \
   buffer += (count) * sizeof(type) / sizeof(char)
@@ -170,9 +174,10 @@
 /**
  * Decrease the pointer of a buffer
  * 
- * @param  buffer:char*  The buffer
- * @param  type          A data type
- * @param  count         The number elements of the data type `type` to decrease the pointer with
+ * @param   buffer:char*  The buffer
+ * @param   type          A data type
+ * @param   count         The number elements of the data type `type` to decrease the pointer with
+ * @retrun  buffer:       The buffer
  */
 #define buf_prev(buffer, type, count)  \
   buffer -= (count) * sizeof(type) / sizeof(char)
@@ -185,7 +190,7 @@
  * @param   buffer:char*   The buffer
  * @param   type           The data type of the elements for the data type to cast the buffer to
  * @param   variable:type  The new value of the element
- * @return  :variable      The new value of the element
+ * @return  variable:      The new value of the element
  */
 #define buf_set_next(buffer, type, variable)  \
   buf_set(buffer, type, 0, variable);         \
@@ -199,7 +204,7 @@
  * @param   buffer:char*   The buffer
  * @param   type           The data type of the elements for the data type to cast the buffer to
  * @param   variable:type  Slot to set with the value of the element
- * @return  :variable      The value of the element
+ * @return  variable:      The value of the element
  */
 #define buf_get_next(buffer, type, variable)  \
   buf_get(buffer, type, 0, variable);         \
@@ -350,18 +355,18 @@
 /**
  * Go to the label `pfail` if a condition is met
  * 
- * @param  CONDITION  The condition
+ * @param  condition  The condition
  */
-#define fail_if(CONDITION)  if (CONDITION)  goto pfail
+#define fail_if(condition)  if (condition)  goto pfail
 
 
 /**
  * Run a set of instructions and return 1 if a condition is met
  * 
- * @param  CONDITION     The condition
- * @param  INSTRUCTIONS  The instruction (semicolon-terminated)
+ * @param  condition     The condition
+ * @param  instructions  The instruction (semicolon-terminated)
  */
-#define exit_if(CONDITION, INSTRUCTIONS)  if (CONDITION)  { INSTRUCTIONS return 1; }
+#define exit_if(condition, instructions)  if (condition)  { instructions return 1; }
 
 
 /**
