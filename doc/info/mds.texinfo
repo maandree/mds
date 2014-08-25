@@ -949,15 +949,15 @@ convenience:
 @table @code
 @item atoz
 Parse a human readable @code{const char*}
-10-radix integer to an @code{size_t}.
+10-radix integer to a @code{size_t}.
 
 @item atosz
 Parse a human readable @code{const char*}
-10-radix integer to an @code{ssize_t}.
+10-radix integer to a @code{ssize_t}.
 
 @item atoh
 Parse a human readable @code{const char*}
-10-radix integer to an @code{short int}.
+10-radix integer to a @code{short int}.
 
 @item atouh
 Parse a human readable @code{const char*}
