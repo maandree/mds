@@ -149,14 +149,14 @@
 /**
  * Get the value of an element a buffer that is being cast
  * 
- * @param   buffer:char*   The buffer
- * @param   type           The data type of the elements for the data type to cast the buffer to
- * @param   index:size_t   The index of the element to address
- * @param   variable:type  Slot to set with the value of the element
- * @return  variable:      The value of the element
+ * @param   buffer:const char*  The buffer
+ * @param   type                The data type of the elements for the data type to cast the buffer to
+ * @param   index:size_t        The index of the element to address
+ * @param   variable:type       Slot to set with the value of the element
+ * @return  variable:           The value of the element
  */
 #define buf_get(buffer, type, index, variable)	\
-  variable = ((type*)(buffer))[index]
+  variable = ((const type*)(buffer))[index]
 
 
 /**
