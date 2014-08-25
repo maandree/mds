@@ -53,8 +53,8 @@
  * Wrapper for `fprintf` that prints to `stderr` with
  * the program name prefixed and new line suffixed
  * 
- * @param   format:char*  The format
- * @return  :int          The number of bytes written, including the NUL-termination, negative on error
+ * @param   format:const char*  The format
+ * @return  :int                The number of bytes written, including the NUL-termination, negative on error
  */
 #define eprint(format)  \
   fprintf(stderr, "%s: " format "\n", *argv)
@@ -64,9 +64,9 @@
  * Wrapper for `fprintf` that prints to `stderr` with
  * the program name prefixed and new line suffixed
  * 
- * @param   format:char*   The format
- * @param   ...            The arguments
- * @return  :int           The number of bytes written, including the NUL-termination, negative on error
+ * @param   format:const char*  The format
+ * @param   ...                 The arguments
+ * @return  :int                The number of bytes written, including the NUL-termination, negative on error
  */
 #define eprintf(format, ...)  \
   fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__)
