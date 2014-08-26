@@ -77,7 +77,8 @@ void reexec_server(int argc, char** argv, int reexeced);
 /**
  * Set up a signal trap.
  * This function should only be used for common mds
- * signals, and this function may choose to add
+ * signals and signals that does not require and
+ * special settings. This function may choose to add
  * additional behaviour depending on the signal, such
  * as blocking other signals.
  * 
