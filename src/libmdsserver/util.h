@@ -120,7 +120,7 @@ int strict_atoi(const char* str, int* value, int min, int max);
 int full_write(int fd, const char* buffer, size_t length);
 
 /**
- * Read a file completly and ignore interruptions
+ * Read a file completely and ignore interruptions
  * 
  * @param   fd      The file descriptor
  * @param   length  Output parameter for the length of the file, may be `NULL`
