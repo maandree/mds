@@ -771,6 +771,14 @@ hash tables, and support the basics of the message
 passing protocol: receiving message and decode it
 into headers and payloads.
 
+@menu
+* Macros::                          Writing macroscopic systems.
+* Auxiliary Functions::             Auxiliary functions for servers.
+@end menu
+
+@node Macros
+@section Macros
+
 The header file @file{<libmdsserver/macros.h>}
 contains macros for readability and code reduction,
 it also contains macros and definitions for portability;
@@ -779,7 +787,7 @@ provide one place to do modifications to port the
 system.
 
 @table @asis
-@item @code{xsnprintf} [(@code{char[] buffer, char* format, ...}) @arrow{} @code{int}]
+@item @code{xsnprintf} [(@code{char buffer[], char* format, ...}) @arrow{} @code{int}]
 This is a wrapper for @code{snprintf} that allows you
 to forget about the buffer size. When you know how long
 a string can be, you should use @code{sprintf}. But when
@@ -1014,6 +1022,118 @@ Parse a human readable @code{const char*}
 @item atouj
 Parse a human readable @code{const char*}
 10-radix integer to an @code{uintmax_t}.
+@end table
+
+
+
+@node Auxiliary Functions
+@section Auxiliary Functions
+
+In the header file @file{<libmdsserver/util.h>},
+libmdsserver defines common functions to help
+write servers more concisely.
+
+@table @asis
+@item @code{parse_client_id} [(@code{const char* str}) @arrow{} @code{uint64_t}]
+Convert a client ID string into a client ID integer.
+
+@item @code{getenv_nonempty} [(@code{const char* var}) @arrow{} @code{char*}]
+Read an environment variable, return @code{NULL} if
+the variable's value is an empty string.
+
+@item @code{prepare_reexec} [(@code{void}) @arrow{} @code{int}]
+Prepare the server so that it can re-execute into
+a newer version of the executed file.
+
+This is required for two reasons:
+
+@enumerate 1
+@item
+We cannot use @code{argv[0]} as @env{PATH}-resolution
+may cause it to reexec into another pathname, and
+maybe to wrong program. Additionally @code{argv[0]}
+may not even refer to the program, and @code{chdir}
+could also hinter its use.
+
+@item
+The kernel appends ` (deleted)' to
+@file{/proc/self/exe} once it has been removed,
+so it cannot be replaced.
+@end enumerate
+
+The function will should be called immediately, it
+will store the content of @file{/proc/self/exe}.
+Return zero on success and @code{-1} on error.
+
+@item @code{reexec_server} [(@code{int argc, char** argv, int reexeced}) @arrow{} @code{void}]
+Re-exec the server.
+This function only returns on failure.
+
+If `prepare_reexec` failed or has not been called,
+`argv[0]` will be used as a fallback.
+
+param  argc      The number of elements in `argv`
+param  argv      The command line arguments
+param  reexeced  Whether the server has previously been re-exec:ed
+
+@item @code{xsigaction} [(@code{int signo, void (*function)(int signo)}) @arrow{} @code{int}]
+@code{sigaction} with the same parameters as @code{signal}.
+This function should only be used for common @command{mds}
+signals and signals that does not require any special settings.
+This function may choose to add additional behaviour depending
+on the signal, such as blocking other signals. Returns zero
+on success and @code{-1} on error.
+
+@item @code{send_message} [(@code{int socket, const char* message, size_t length}) @arrow{} @code{size_t}]
+Send the message @code{messsage}, of length @code{length}
+over the socket that is access with the file descriptor
+@code{socket}. Returns the number of bytes that have been
+sent, even on error.
+
+@item @code{strict_atoi} [(@code{const char* str, int* value, int min, int max}) @arrow{} @code{int}]
+A version of @code{atoi} that is strict about the syntax
+and bounds. Parses the string @code{str} into an @code{int}
+and stores it in @code{*value}. If the string is not a
+10-radix integer or has a value outside [@code{min},
+@code{max}], @code{-1} is returned, otherwise zero is
+returned.
+
+@item @code{full_write} [(@code{int fd, const char* buffer, size_t length}) @arrow{} @code{int}]
+Send the buffer @code{buffer}, with the length @code{length},
+into the file whose file descriptor is @code{fd} and ignores
+interruptions. Returns zero on success and @code{-1} on error.
+
+@item @code{full_read} [(@code{int fd, size_t* length}) @arrow{} @code{char*}]
+Read the file whose file descriptor is @code{fd} completely
+and ignore interruptions. If @code{length} if not @code{NULL},
+the length of the read file is stored in @code{*length}.
+On success, the read content is retured, on error @code{NULL}
+is returned.
+
+@item @code{startswith_n} [(@code{const char*, const char*, size_t, size_t}) @arrow{} @code{int}]
+Check whether a string begins with a specific string,
+where neither of the strings are necessarily NUL-terminated.
+The parameters are:
+
+@table @code
+@item const char* haystack
+The string that should start with the other string.
+@item const char* needle
+The string the first string should start with.
+@item size_t haystack_n
+The length of @code{haystack}.
+@item size_t needle_n
+The length of @code{needle}.
+@end table
+
+Returns 1 if @code{haystack} beings with @code{needle},
+otherwise zero is returned.
+
+@item @code{uninterruptable_waitpid} [(@code{pid_t pid, int* restrict status, int options}) @arrow{} @code{pid_t}]
+Wrapper around @code{waitpid} that never returns on an
+interruption unless it is interrupted one hundred times
+within the same clock second. The parameters and return
+value are exactly those of @code{waitpid}.
 @end table
 
 
