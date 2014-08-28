@@ -132,6 +132,8 @@ of crashing.
 * Interprocess Communication::      How servers and clients communicate.
 @end menu
 
+
+
 @node Layers
 @section Layers
 
@@ -298,6 +300,8 @@ and wait for a reply from all of them.
 * Message Passing::                 Sending messages between servers and clients
 * Interception::                    Implementing protocols and writing unanticipated clients
 @end menu
+
+
 
 @node Environment Variables
 @section Environment Variables
@@ -774,7 +778,10 @@ into headers and payloads.
 @menu
 * Macros::                          Writing macroscopic systems.
 * Auxiliary Functions::             Auxiliary functions for servers.
+* Data Structures::                 Data structures available in libmdsserver.
 @end menu
+
+
 
 @node Macros
 @section Macros
@@ -1138,9 +1145,781 @@ value are exactly those of @code{waitpid}.
 
 
 
+@node Data Structures
+@section Data Structures
+
+libmdsserver provides a small set of datastructures
+that are used by the @command{mds} servers. All of
+these are written with marshal-functionallity.
+
+@table @asis
+@item @code{client_list_t} @{also known as @code{struct client_list}@}
+In the header file @file{<libmdsserver/client-list.h>},
+libmdsserver defines a dynamic list for storing
+client ID:s.
+
+@item @code{linked_list_t} @{also known as @code{struct linked_list}@}
+In the header file @file{<libmdsserver/linked-list.h>},
+libmdsserver defines a double linked linear
+sentinel-array-linked list.
+
+@item @code{hash_table_t} @{also known as @code{struct hash_table}@}
+In the header file @file{<libmdsserver/hash-table.h>},
+libmdsserver defines a hash table.
+
+@item @code{fd_table_t} @{also known as @code{struct fd_table}@}
+In the header file @file{<libmdsserver/fd-table.h>},
+libmdsserver defines a lookup table for small
+positive integer keys, intended as an alternative
+to hash tables for file descriptors as keys.
+
+@item @code{mds_message_t} @{also known as @code{struct mds_message}@}
+In the header file @file{<libmdsserver/mds-message.h>},
+libmdsserver defines a data structure for message
+between the server or client and the master server,
+with the capability of reading for a socket.
+@end table
+
+These data structures share a common set of associated
+function. However, they do not use the same functions;
+they are identical except they are are named with the
+associated data structure. We will use @code{X_t}
+as an example.
+
+@table @asis
+@item @code{X_destroy} [(@code{X_t* restrict this}) @arrow{} @code{void}]
+Releases all resouces in @code{*this},
+@code{this} itself is however not @code{free}:d.
+
+However, @code{hash_table_destory} and
+@code{fd_table_destory} have another signature.
+
+@item @code{X_clone} [(@code{const X_t* restrict this, X_t* restrict out}) @arrow{} @code{int}]
+Create a deep duplicate of @code{*this} and store
+it in @code{*out}.
+
+@item @code{X_marshal_size} [(@code{const X_t* restrict this}) @arrow{} @code{size_t}]
+Calculates the exact allocate size needed for
+the parameter @code{data} in the function
+@code{X_marshal} if called with the same
+@code{this} parameter.
+
+@item @code{X_marshal} [(@code{const X_t* restrict this, char* restrict data}) @arrow{} @code{void}]
+Marshal the state of @code{*this} into
+@code{data}. The number of bytes that
+will be stored (contiguously) in @code{data}
+can be calculated with @code{X_marshal_size}.
+
+@item @code{X_unmarshal} [(@code{X_t* restrict this, char* restrict data)}) @arrow{} @code{int}]
+Unmarshal a @code{X_t} from
+@code{data} into @code{*this}. Returns
+zero on success and @code{-1} on error.
+The number of bytes read from @code{data}
+should, if required, have been precalculated
+with @code{X_marshal_size} and stored in an
+earlier location of @code{data}.
+
+However, @code{hash_table_unmarshal} and
+@code{fd_table_unmarshal} have another signature.
+@end table
+
+@menu
+* Client List::                     The @code{client_list_t} data structure..
+@end menu
+
+
+
+@node Client List
+@subsection Client List
+
+To create a client list, allocate a
+@code{client_list_t*} or otherwise obtain
+a @code{client_list_t*}, and call
+@code{client_list_create} with that
+pointer as the first argument, and
+the @code{0} as the second argument,
+unless you want to tune the initialisation.
+@code{client_list_create} will return
+zero on and only on successful initialisation.
+@code{client_list_create}'s second parameter
+--- @code{size_t capacity} --- can be used
+to specify how many element the list should
+initially fit. It will grow when needed, but
+it is a good idea to tell it how many elements
+you are planning to populate it with.
+
+@code{client_list_t} has two associated
+functions for manipulating its content:
+
+@table @asis
+@item @code{client_list_add} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{int}]
+This function will add the element @code{client}
+to the list @code{*this}, and return zero on
+and only on success.
+
+@item @code{client_list_remove} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{void}]
+This function will remove exactly one occurrence,
+provided that there is at least on occurrence,
+of the element @code{client} for the list @code{*this}.
+@end table
+
+The retrieve the number elements stored in
+a list, reads its variable @code{size_t size}.
+The variable @code{uint64_t* clients} is
+used to retrieve stored elements.
+
+@example
+void print_elements(client_list_t* this)
+@{
+  size_t i;
+  for (i = 0; i < this->size; i++)
+    printf("Element #%zu: %" PRIu64 "\n", i, this->elements[i]);
+@}
+@end example
+
+
+
+
+
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
 @include fdl.texinfo
 
 @bye
+
+
+  /**
+   * The size of the arrays
+   */
+  size_t capacity;
+  
+  /**
+   * The index after the last used index in
+   * `values` and `next`
+   */
+  size_t end;
+  
+  /**
+   * Head of the stack of reusable positions
+   */
+  size_t reuse_head;
+  
+  /**
+   * Stack of indices than are no longer in use
+   */
+  ssize_t* reusable;
+  
+  /**
+   * The value stored in each node
+   */
+  size_t* values;
+  
+  /**
+   * The next node for each node, `edge` if the current
+   * node is the last node, and `LINKED_LIST_UNUSED`
+   * if there is no node on this position
+   */
+  ssize_t* next;
+  
+  /**
+   * The previous node for each node, `edge` if
+   * the current node is the first node, and
+   * `LINKED_LIST_UNUSED` if there is no node
+   * on this position
+   */
+  ssize_t* previous;
+  
+  /**
+   * The sentinel node in the list
+   */
+  ssize_t edge;
+  
+/**
+ * Create a linked list
+ * 
+ * @param   this      Memory slot in which to store the new linked list
+ * @param   capacity  The minimum initial capacity of the linked list, 0 for default
+ * @return            Non-zero on error, `errno` will have been set accordingly
+ */
+int linked_list_create(linked_list_t* restrict this, size_t capacity);
+
+/**
+ * Pack the list so that there are no reusable
+ * positions, and reduce the capacity to the
+ * smallest capacity that can be used. Not that
+ * values (nodes) returned by the list's methods
+ * will become invalid. Additionally (to reduce
+ * the complexity) the list will be defragment
+ * so that the nodes' indices are continuous.
+ * This method has linear time complexity and
+ * linear memory complexity.
+ * 
+ * @param   this  The list
+ * @return        Non-zero on error, `errno` will have been set accordingly
+ */
+int linked_list_pack(linked_list_t* restrict this);
+    
+/**
+ * Insert a value in the beginning of the list
+ * 
+ * @param   this:linked_list_t*  The list
+ * @param   value:size_t         The value to insert
+ * @return  :ssize_t             The node that has been created and inserted,
+ *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
+ */
+#define linked_list_insert_beginning(this, value)  \
+  (linked_list_insert_after(this, value, this->edge))
+
+/**
+ * Remove the node at the beginning of the list
+ * 
+ * @param   this:linked_list_t*  The list
+ * @return  :ssize_t             The node that has been removed
+ */
+#define linked_list_remove_beginning(this)  \
+  (linked_list_remove_after(this, this->edge))
+
+/**
+ * Insert a value after a specified, reference, node
+ * 
+ * @param   this         The list
+ * @param   value        The value to insert
+ * @param   predecessor  The reference node
+ * @return               The node that has been created and inserted,
+ *                       `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
+ */
+ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssize_t predecessor);
+
+/**
+ * Remove the node after a specified, reference, node
+ * 
+ * @param   this         The list
+ * @param   predecessor  The reference node
+ * @return               The node that has been removed
+ */
+ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);    
+
+/**
+ * Insert a value before a specified, reference, node
+ * 
+ * @param   this       The list
+ * @param   value      The value to insert
+ * @param   successor  The reference node
+ * @return             The node that has been created and inserted,
+ *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
+ */
+ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor);
+
+/**
+ * Remove the node before a specified, reference, node
+ * 
+ * @param   this       The list
+ * @param   successor  The reference node
+ * @return             The node that has been removed
+ */
+ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);    
+
+/**
+ * Remove the node from the list
+ * 
+ * @param  this  The list
+ * @param  node  The node to remove
+ */
+void linked_list_remove(linked_list_t* restrict this, ssize_t node);
+
+/**
+ * Insert a value in the end of the list
+ * 
+ * @param   this:linked_list_t*  The list
+ * @param   value:size_t         The value to insert
+ * @return  :ssize_t             The node that has been created and inserted,
+ *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
+ */
+#define linked_list_insert_end(this, value)  \
+  (linked_list_insert_before((this), (value), (this)->edge))
+
+/**
+ * Remove the node at the end of the list
+ * 
+ * @param   this:linked_list_t*  The list
+ * @return  :ssize_t             The node that has been removed
+ */
+#define linked_list_remove_end(this)  \
+  (linked_list_remove_before((this), (this)->edge))
+
+/**
+ * Wrapper for `for` keyword that iterates over each element in a linked list
+ * 
+ * @param  list:linked_list_t  The linked list
+ * @param  node:ssize_t        The variable to store the node in at each iteration
+ */
+#define foreach_linked_list_node(list, node)  \
+  for (node = (list).edge; node = (list).next[node], node != (list).edge;)
+
+/**
+ * Print the content of the list
+ * 
+ * @param  this    The list
+ * @param  output  Output file
+ */
+void linked_list_dump(linked_list_t* restrict this, FILE* restrict output);
+
+
+
+
+
+/**
+ * Hash table entry
+ */
+typedef struct hash_entry
+{
+  /**
+   * A key
+   */
+  size_t key;
+  
+  /**
+   * The value associated with the key
+   */
+  size_t value;
+  
+  /**
+   * The truncated hash value of the key
+   */
+  size_t hash;
+  
+  /**
+   * The next entry in the bucket
+   */
+  struct hash_entry* next;
+  
+} hash_entry_t;
+
+
+/**
+ * Value lookup table based on hash value, that do not support
+ */
+typedef struct hash_table
+{
+  /**
+   * The table's capacity, i.e. the number of buckets
+   */
+  size_t capacity;
+  
+  /**
+   * Entry buckets
+   */
+  hash_entry_t** buckets;
+  
+  /**
+   * When, in the ratio of entries comparied to the capacity, to grow the table
+   */
+  float load_factor;
+  
+  /**
+   * When, in the number of entries, to grow the table
+   */
+  size_t threshold;
+  
+  /**
+   * The number of entries stored in the table
+   */
+  size_t size;
+  
+  /**
+   * Check whether two values are equal
+   * 
+   * If this function pointer is `NULL`, the identity is used
+   * 
+   * Be aware, this variable cannot be marshalled
+   */
+  compare_func* value_comparator;
+  
+  /**
+   * Check whether two keys are equal
+   * 
+   * If this function pointer is `NULL`, the identity is used
+   * 
+   * Be aware, this variable cannot be marshalled
+   */
+  compare_func* key_comparator;
+  
+  /**
+   * Calculate the hash of a key
+   * 
+   * If this function pointer is `NULL`, the identity hash is used
+   * 
+   * Be aware, this variable cannot be marshalled
+   * 
+   * @param   key  The key
+   * @return       The hash of the key
+   */
+  hash_func* hasher;
+  
+} hash_table_t;
+
+/**
+ * Create a hash table
+ * 
+ * @param   this              Memory slot in which to store the new hash table
+ * @param   initial_capacity  The initial capacity of the table
+ * @param   load_factor       The load factor of the table, i.e. when to grow the table
+ * @return                    Non-zero on error, `errno` will have been set accordingly
+ */
+int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_capacity, float load_factor);
+
+/**
+ * Create a hash table
+ * 
+ * @param   this:hash_table_t*       Memory slot in which to store the new hash table
+ * @param   initial_capacity:size_t  The initial capacity of the table
+ * @return  :int                     Non-zero on error, `errno` will have been set accordingly
+ */
+#define hash_table_create_tuned(this, initial_capacity)  \
+  hash_table_create_fine_tuned(this, initial_capacity, 0.75f)
+
+/**
+ * Create a hash table
+ * 
+ * @param   this:hash_table_t*  Memory slot in which to store the new hash table
+ * @return  :int                Non-zero on error, `errno` will have been set accordingly
+ */
+#define hash_table_create(this)  \
+  hash_table_create_tuned(this, 16)
+
+/**
+ * Release all resources in a hash table, should
+ * be done even if construction fails
+ * 
+ * @param  this          The hash table
+ * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
+ * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
+ */
+void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_func* value_freer);
+
+/**
+ * Check whether a value is stored in the table
+ * 
+ * @param   this   The hash table
+ * @param   value  The value
+ * @return         Whether the value is stored in the table
+ */
+int hash_table_contains_value(const hash_table_t* restrict this, size_t value) __attribute__((pure));
+
+/**
+ * Check whether a key is used in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key
+ * @return        Whether the key is used
+ */
+int hash_table_contains_key(const hash_table_t* restrict this, size_t key) __attribute__((pure));
+
+/**
+ * Look up a value in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key associated with the value
+ * @return        The value associated with the key, 0 if the key was not used
+ */
+size_t hash_table_get(const hash_table_t* restrict this, size_t key);
+
+/**
+ * Look up an entry in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key associated with the value
+ * @return        The entry associated with the key, `NULL` if the key was not used
+ */
+hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key);
+
+/**
+ * Add an entry to the table
+ * 
+ * @param   this   The hash table
+ * @param   key    The key of the entry to add
+ * @param   value  The value of the entry to add
+ * @return         The previous value associated with the key, 0 if the key was not used.
+ *                 0 will also be returned on error, check the `errno` variable.
+ */
+size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
+
+/**
+ * Remove an entry in the table
+ * 
+ * @param   this  The hash table
+ * @param   key   The key of the entry to remove
+ * @return        The previous value associated with the key, 0 if the key was not used
+ */
+size_t hash_table_remove(hash_table_t* restrict this, size_t key);
+
+/**
+ * Remove all entries in the table
+ * 
+ * @param  this  The hash table
+ */
+void hash_table_clear(hash_table_t* restrict this);
+
+/**
+ * Wrapper for `for` keyword that iterates over entry element in a hash table
+ * 
+ * @param  table:hash_table_t   The hans table
+ * @param  i:size_t             The variable to store the buckey index in at each iteration
+ * @param  entry:hash_entry_t*  The variable to store the entry in at each iteration
+ */
+#define foreach_hash_table_entry(table, i, entry)  \
+  for (i = 0; i < (table).capacity; i++)           \
+    for (entry = (table).buckets[i]; entry != NULL; entry = entry->next)
+
+/**
+ * Unmarshals a hash table
+ * 
+ * @param   this      Memory slot in which to store the new hash table
+ * @param   data      In buffer with the marshalled data
+ * @param   remapper  Function that translates values, `NULL` if not translation takes place
+ * @return            Non-zero on error, errno will be set accordingly.
+ *                    Destroy the table on error.
+ */
+int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper);
+
+
+
+
+
+  /**
+   * The number of entries stored in the table
+   */
+  size_t size;
+  
+  /**
+   * Map from keys to values
+   */
+  size_t* values;
+  
+  /**
+   * Map from keys to whether that are in used, bit-packed
+   */
+  uint64_t* used;
+  
+  /**
+   * Check whether two values are equal
+   * 
+   * If this function pointer is `NULL`, the identity is used
+   * 
+   * Be aware, this variable cannot be marshalled
+   */
+  compare_func* value_comparator;
+
+/**
+ * Create a fd table
+ * 
+ * @param   this              Memory slot in which to store the new fd table
+ * @param   initial_capacity  The initial capacity of the table
+ * @return                    Non-zero on error, `errno` will have been set accordingly
+ */
+int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
+
+/**
+ * Create a fd table
+ * 
+ * @param   this:fd_table_t*  Memory slot in which to store the new fd table
+ * @return  :int              Non-zero on error, `errno` will have been set accordingly
+ */
+#define fd_table_create(this)  \
+  fd_table_create_tuned(this, 16)
+
+/**
+ * Release all resources in a fd table, should
+ * be done even if construction fails
+ * 
+ * @param  this          The fd table
+ * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
+ * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
+ */
+void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func* value_freer);
+
+/**
+ * Check whether a value is stored in the table
+ * 
+ * @param   this   The fd table
+ * @param   value  The value
+ * @return         Whether the value is stored in the table
+ */
+int fd_table_contains_value(const fd_table_t* restrict this, size_t value) __attribute__((pure));
+
+/**
+ * Check whether a key is used in the table
+ * 
+ * @param   this  The fd table
+ * @param   key   The key
+ * @return        Whether the key is used
+ */
+int fd_table_contains_key(const fd_table_t* restrict this, int key) __attribute__((pure));
+
+/**
+ * Look up a value in the table
+ * 
+ * @param   this  The fd table
+ * @param   key   The key associated with the value
+ * @return        The value associated with the key, 0 if the key was not used
+ */
+size_t fd_table_get(const fd_table_t* restrict this, int key) __attribute__((pure));
+
+/**
+ * Add an entry to the table
+ * 
+ * @param   this   The fd table
+ * @param   key    The key of the entry to add
+ * @param   value  The value of the entry to add
+ * @return         The previous value associated with the key, 0 if the key was not used.
+ *                 0 will also be returned on error, check the `errno` variable.
+ */
+size_t fd_table_put(fd_table_t* restrict this, int key, size_t value);
+
+/**
+ * Remove an entry in the table
+ * 
+ * @param   this  The fd table
+ * @param   key   The key of the entry to remove
+ * @return        The previous value associated with the key, 0 if the key was not used
+ */
+size_t fd_table_remove(fd_table_t* restrict this, int key);
+
+/**
+ * Remove all entries in the table
+ * 
+ * @param  this  The fd table
+ */
+void fd_table_clear(fd_table_t* restrict this);
+
+/**
+ * Unmarshals a fd table
+ * 
+ * @param   this      Memory slot in which to store the new fd table
+ * @param   data      In buffer with the marshalled data
+ * @param   remapper  Function that translates values, `NULL` if not translation takes place
+ * @return            Non-zero on error, errno will be set accordingly.
+ *                    Destroy the table on error.
+ */
+int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper);
+
+
+
+
+
+/**
+ * Message passed between a server and a client or between two of either
+ */
+typedef struct mds_message
+{
+  /**
+   * The headers in the message, each element in this list
+   * as an unparsed header, it consists of both the header
+   * name and its associated value, joined by ": ". A header
+   * cannot be `NULL` (unless its memory allocation failed,)
+   * but `headers` itself is NULL if there are no headers.
+   * The "Length" should be included in this list.
+   */
+  char** headers;
+  
+  /**
+   * The number of headers in the message
+   */
+  size_t header_count;
+  
+  /**
+   * The payload of the message, `NULL` if none (of zero-length)
+   */
+  char* payload;
+  
+  /**
+   * The size of the payload
+   */
+  size_t payload_size;
+  
+  /**
+   * How much of the payload that has been stored (internal data)
+   */
+  size_t payload_ptr;
+  
+  /**
+   * Internal buffer for the reading function (internal data)
+   */
+  char* buffer;
+  
+  /**
+   * The size allocated to `buffer` (internal data)
+   */
+  size_t buffer_size;
+  
+  /**
+   * The number of bytes used in `buffer` (internal data)
+   */
+  size_t buffer_ptr;
+  
+  /**
+   * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
+   */
+  int stage;
+  
+} mds_message_t;
+
+
+/**
+ * Initialise a message slot so that it can
+ * be used by `mds_message_read`
+ * 
+ * @param   this  Memory slot in which to store the new message
+ * @return        Non-zero on error, errno will be set accordingly.
+ *                Destroy the message on error.
+ */
+int mds_message_initialise(mds_message_t* restrict this);
+
+/**
+ * Zero initialise a message slot
+ * 
+ * @param  this  Memory slot in which to store the new message
+ */
+void mds_message_zero_initialise(mds_message_t* restrict this);
+
+/**
+ * Extend the header list's allocation
+ * 
+ * @param   this    The message
+ * @param   extent  The number of additional entries
+ * @return          Zero on success, -1 on error
+ */
+int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
+
+/**
+ * Read the next message from a file descriptor
+ * 
+ * @param   this  Memory slot in which to store the new message
+ * @param   fd    The file descriptor
+ * @return        Non-zero on error or interruption, errno will be
+ *                set accordingly. Destroy the message on error,
+ *                be aware that the reading could have been
+ *                interrupted by a signal rather than canonical error.
+ *                If -2 is returned errno will not have been set,
+ *                -2 indicates that the message is malformated,
+ *                which is a state that cannot be recovered from.
+ */
+int mds_message_read(mds_message_t* restrict this, int fd);
+
+/**
+ * Get the required allocation size for `data` of the
+ * function `mds_message_compose`
+ * 
+ * @param   this  The message
+ * @return        The size of the message when marshalled
+ */
+size_t mds_message_compose_size(const mds_message_t* restrict this) __attribute__((pure));
+
+/**
+ * Marshal a message for communication
+ * 
+ * @param  this  The message
+ * @param  data  Output buffer for the marshalled data
+ */
+void mds_message_compose(const mds_message_t* restrict this, char* restrict data);
 
