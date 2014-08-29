@@ -815,6 +815,10 @@ in its argument list will be replaced by
 @option{--respawn} to let the server know it is being
 respawned.
 
+A server is considered to exit with a failure status
+unless it exits with the return value 0 or is terminated
+by the signal @code{SIGTERM}.
+
 
 
 @node External Utilities
