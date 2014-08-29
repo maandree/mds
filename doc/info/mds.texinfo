@@ -1160,8 +1160,8 @@ client ID:s.
 
 @item @code{linked_list_t} @{also known as @code{struct linked_list}@}
 In the header file @file{<libmdsserver/linked-list.h>},
-libmdsserver defines a double linked linear
-sentinel-array-linked list.
+libmdsserver defines a linear array sentinel doubly
+linked list.
 
 @item @code{hash_table_t} @{also known as @code{struct hash_table}@}
 In the header file @file{<libmdsserver/hash-table.h>},
@@ -1224,11 +1224,13 @@ However, @code{hash_table_unmarshal} and
 @end table
 
 @menu
-* Client List::                     The @code{client_list_t} data structure..
+* Client List::                     The @code{client_list_t} data structure.
+* Linked List::                     The @code{linked_list_t} data structure.
 @end menu
 
 
 
+@page
 @node Client List
 @subsection Client List
 
@@ -1279,6 +1281,168 @@ void print_elements(client_list_t* this)
 
 
 
+@node Linked List
+@subsection Linked List
+
+@code{linked_list_t} is a linear array sentinel
+doubly linked list. This means that is implemented
+using arrays rather than node references. More
+specifically, since it is doubly linked@footnote{And
+not using XOR-linking.}, it is implemented using
+three arrays:
+
+@table @code
+@item size_t* values
+The value stored in each node.
+
+@item ssize_t* next
+The next node for each node, @code{edge} if the current
+node is the last node, and @code{LINKED_LIST_UNUSED} if
+there is no node on this position.
+
+@item ssize_t* previous
+The previous node for each node, @code{edge} if the current
+node is the first node, and @code{LINKED_LIST_UNUSED} if
+there is no node on this position.
+@end table
+
+The linked list has a sentinel node that joins
+boths ends of the list. The index of this node
+is stored in the variable @code{edge}.
+
+Because the list is implemented using arrays, if the
+number of elements in it shinks considerably, it will
+not be able to automatically free unused space. Instead
+you must call @code{linked_list_pack}:
+
+@table @asis
+@item @code{linked_list_pack} [(@code{linked_list_t* restrict this}) @arrow{} @code{int}]
+Pack the list so that there are no reusable positions,
+and reduce the capacity to the smallest capacity that
+can be used. Note that values (nodes) returned by the
+list's methods will become invalid. Additionally (to
+reduce the complexity) the list will be defragment so
+that the nodes' indices are continuous. This method has
+linear time complexity and linear memory complexity.
+@end table
+
+To create a linked list list, allocate a
+@code{linked_list_t*} or otherwise obtain
+a @code{linked_list_t*}, and call
+@code{linked_list_create} with that
+pointer as the first argument, and
+the @code{0} as the second argument,
+unless you want to tune the initialisation.
+@code{linked_list_create} will return
+zero on and only on successful initialisation.
+@code{linked_list_create}'s second parameter
+--- @code{size_t capacity} --- can be used
+to specify how many element the list should
+initially fit. It will grow when needed, but
+it is a good idea to tell it how many elements
+you are planning to populate it with.
+
+There are five functions adding and removing
+items to and from a linked list:
+
+@table @asis
+@item @code{linked_list_insert_after} [(@code{this, size_t value, ssize_t predecessor}) @arrow{} @code{ssize_t}]
+Create a new node with the value @code{value} and add it
+to the list @code{*this} after the node @code{predecessor}.
+On success, the new node is returned, on failure
+@code{LINKED_LIST_UNUSED} is returned.
+
+@item @code{linked_list_insert_before} [(@code{this, size_t value, ssize_t successor}) @arrow{} @code{ssize_t}]
+Create a new node with the value @code{value} and add it
+to the list @code{*this} before the node @code{successor}.
+On success, the new node is returned, on failure
+@code{LINKED_LIST_UNUSED} is returned.
+
+@item @code{linked_list_remove_after} [(@code{this, ssize_t predecessor}) @arrow{} @code{ssize_t}]
+Remove and return the node in the list @code{*this}
+directly after the node @code{predecessor}.
+
+@item @code{linked_list_remove_before} [(@code{this, ssize_t successor}) @arrow{} @code{ssize_t}]
+Remove and return the node in the list @code{*this}
+directly before the node @code{predecessor}.
+
+@item @code{linked_list_remove} [(@code{this, ssize_t node}) @arrow{} @code{void}]
+Remove the node @code{node} from the list @code{*this}.
+@end table
+
+The data type for @code{this} is @code{linked_list_t*}
+with the @code{restrict} modifier for these and all
+other @code{linked_list_t} functions.
+
+Note that if the node @code{this->edge} is removed,
+the list become circularly linked and the sentinel
+will become missing which renders invokation of all
+macros undefined in behaviour. Further note that
+removing the sentinel while it is the only node in
+the list invokes undefined behaviour. Also note that
+addressing non-existing nodes invokes undefined
+behaviour.
+
+@file{<libmdsserver/linked_list.h>} defines two
+macros for inserting nodes at the edges of a linked
+list and two macros for removing nodes from the
+edges of a linked list:
+
+@table @asis
+@item @code{linked_list_insert_beginning} [(@code{linked_list_t* this, size_t value}) @arrow{} @code{ssize_t}]
+Create a new node with the value @code{value} in
+insert it to the beginning of the list @code{*this}.
+On success, the new node is returned, on failure
+@code{LINKED_LIST_UNUSED} is returned.
+
+@item @code{linked_list_insert_end} [(@code{linked_list_t* this, size_t value}) @arrow{} @code{ssize_t}]
+Create a new node with the value @code{value} in
+insert it to the end of the list @code{*this}.
+On success, the new node is returned, on failure
+@code{LINKED_LIST_UNUSED} is returned.
+
+@item @code{linked_list_remove_beginning} [(@code{linked_list_t* this}) @arrow{} @code{ssize_t}]
+Remove and return the first node in the
+list @code{*this}.
+
+@item @code{linked_list_remove_end} [(@code{linked_list_t* this}) @arrow{} @code{ssize_t}]
+Remove and return the node node in the
+list @code{*this}.
+@end table
+
+Additionally the library defines a macro that
+wrappes the @code{for} keyword to iterate over
+all nodes (except the sentinel node) the a
+linked list:
+
+@table @asis
+@item @code{foreach_linked_list_node} [(@code{linked_list_t this, ssize_t node})]
+Wrapper for `for` keyword that iterates over each
+element in the list @code{this}, and store the
+current node to the variable named by the parameter
+@code{node} for each iterations.
+
+@example
+void print_linked_list_values(linked_list_t* list)
+@{
+  ssize_t node;
+  foreach_linked_list_node (*list, node)
+    printf("%zi\n", list->values[node]);
+@}
+@end example
+
+Note that the data type for @code{this} in the
+macro is not a pointer.
+@end table
+
+There is also a function intended for debugging:
+
+@table @asis
+@item @code{linked_list_dump} [(@code{linked_list_t* restrict this, FILE* restrict output}) @arrow{} @code{void}]
+The all internal data of the list @code{*this}
+into the stream @code{output}.
+@end table
+
 
 
 @node GNU Free Documentation License
@@ -1286,186 +1450,6 @@ void print_elements(client_list_t* this)
 @include fdl.texinfo
 
 @bye
-
-
-  /**
-   * The size of the arrays
-   */
-  size_t capacity;
-  
-  /**
-   * The index after the last used index in
-   * `values` and `next`
-   */
-  size_t end;
-  
-  /**
-   * Head of the stack of reusable positions
-   */
-  size_t reuse_head;
-  
-  /**
-   * Stack of indices than are no longer in use
-   */
-  ssize_t* reusable;
-  
-  /**
-   * The value stored in each node
-   */
-  size_t* values;
-  
-  /**
-   * The next node for each node, `edge` if the current
-   * node is the last node, and `LINKED_LIST_UNUSED`
-   * if there is no node on this position
-   */
-  ssize_t* next;
-  
-  /**
-   * The previous node for each node, `edge` if
-   * the current node is the first node, and
-   * `LINKED_LIST_UNUSED` if there is no node
-   * on this position
-   */
-  ssize_t* previous;
-  
-  /**
-   * The sentinel node in the list
-   */
-  ssize_t edge;
-  
-/**
- * Create a linked list
- * 
- * @param   this      Memory slot in which to store the new linked list
- * @param   capacity  The minimum initial capacity of the linked list, 0 for default
- * @return            Non-zero on error, `errno` will have been set accordingly
- */
-int linked_list_create(linked_list_t* restrict this, size_t capacity);
-
-/**
- * Pack the list so that there are no reusable
- * positions, and reduce the capacity to the
- * smallest capacity that can be used. Not that
- * values (nodes) returned by the list's methods
- * will become invalid. Additionally (to reduce
- * the complexity) the list will be defragment
- * so that the nodes' indices are continuous.
- * This method has linear time complexity and
- * linear memory complexity.
- * 
- * @param   this  The list
- * @return        Non-zero on error, `errno` will have been set accordingly
- */
-int linked_list_pack(linked_list_t* restrict this);
-    
-/**
- * Insert a value in the beginning of the list
- * 
- * @param   this:linked_list_t*  The list
- * @param   value:size_t         The value to insert
- * @return  :ssize_t             The node that has been created and inserted,
- *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
- */
-#define linked_list_insert_beginning(this, value)  \
-  (linked_list_insert_after(this, value, this->edge))
-
-/**
- * Remove the node at the beginning of the list
- * 
- * @param   this:linked_list_t*  The list
- * @return  :ssize_t             The node that has been removed
- */
-#define linked_list_remove_beginning(this)  \
-  (linked_list_remove_after(this, this->edge))
-
-/**
- * Insert a value after a specified, reference, node
- * 
- * @param   this         The list
- * @param   value        The value to insert
- * @param   predecessor  The reference node
- * @return               The node that has been created and inserted,
- *                       `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
- */
-ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssize_t predecessor);
-
-/**
- * Remove the node after a specified, reference, node
- * 
- * @param   this         The list
- * @param   predecessor  The reference node
- * @return               The node that has been removed
- */
-ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);    
-
-/**
- * Insert a value before a specified, reference, node
- * 
- * @param   this       The list
- * @param   value      The value to insert
- * @param   successor  The reference node
- * @return             The node that has been created and inserted,
- *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
- */
-ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor);
-
-/**
- * Remove the node before a specified, reference, node
- * 
- * @param   this       The list
- * @param   successor  The reference node
- * @return             The node that has been removed
- */
-ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);    
-
-/**
- * Remove the node from the list
- * 
- * @param  this  The list
- * @param  node  The node to remove
- */
-void linked_list_remove(linked_list_t* restrict this, ssize_t node);
-
-/**
- * Insert a value in the end of the list
- * 
- * @param   this:linked_list_t*  The list
- * @param   value:size_t         The value to insert
- * @return  :ssize_t             The node that has been created and inserted,
- *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
- */
-#define linked_list_insert_end(this, value)  \
-  (linked_list_insert_before((this), (value), (this)->edge))
-
-/**
- * Remove the node at the end of the list
- * 
- * @param   this:linked_list_t*  The list
- * @return  :ssize_t             The node that has been removed
- */
-#define linked_list_remove_end(this)  \
-  (linked_list_remove_before((this), (this)->edge))
-
-/**
- * Wrapper for `for` keyword that iterates over each element in a linked list
- * 
- * @param  list:linked_list_t  The linked list
- * @param  node:ssize_t        The variable to store the node in at each iteration
- */
-#define foreach_linked_list_node(list, node)  \
-  for (node = (list).edge; node = (list).next[node], node != (list).edge;)
-
-/**
- * Print the content of the list
- * 
- * @param  this    The list
- * @param  output  Output file
- */
-void linked_list_dump(linked_list_t* restrict this, FILE* restrict output);
-
-
-
 
 
 /**
