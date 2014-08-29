@@ -770,6 +770,7 @@ Command: keyboard-enumeration\n
 
 @menu
 * mds-respawn::                     The server immortality protocol.
+* External Utilities::              Suggestion on utilities you can utilise.
 @end menu
 
 
@@ -803,7 +804,7 @@ its own argument. For example:
 @example
 mds-respawn --interval=5       \
   @{ mds-foo --initial-spawn @}  \
-  @{ mds-bar --initial-spawn @}
+  @{ mds-bar --initial-spawn @}  &
 @end example
 
 will spawn and supervise the servers @command{mds-foo}
@@ -813,6 +814,53 @@ respawed by @command{mds-respawn}, @option{--initial-spawn}
 in its argument list will be replaced by
 @option{--respawn} to let the server know it is being
 respawned.
+
+
+
+@node External Utilities
+@section External Utilities
+
+Servers let you use the option @command{--on-init-fork}
+to put the process in the background when it has been
+initialised. This can used to spawn that depend on each
+other in linear order. For example, if @command{mds-bar}
+requires that @command{mds-foo} is initialised before it
+can be initialised, you can in
+@file{$@{XDG_CONFIG_HOME@}/mdsinitrc} write:
+
+@example
+mds-foo --on-init-fork
+mds-bar &
+@end example
+
+This will start @command{mds-bar} when @command{mds-foo}
+has been initialised. However if one of them crashes,
+that server will not respawn; to fix this @command{mds-respawn}
+can be used, but use of @command{mds-respawn} hinders
+the use of @option{--on-init-fork}. Instead you can use
+@option{--on-init-sh} and global semaphores. The packages,
+and commands, @command{cmdipc} and @command{ipcmd} can be
+used for this purpose. We will use @command{cmdipc} in an
+example:
+
+@example
+S=$(cmdipc -Scx set 1 | cut -d ' ' -f 2)
+# Create a System V semaphore with the value 1.
+
+mds-respawn @{ mds-foo --on-init-sh="cmdipc -Sk $S p" @} &
+# Spawn `mds-foo` and decrease the semaphore with 1 when initialised.
+
+cmdipc -Sk $S z            # Wait for the semaphore's value to become 0.
+cmdipc -Srk $S             # Remove the semaphore.
+mds-respawn @{ mds-bar @} &  # Spawn `mds-bar`.
+@end example
+
+Another useful command (and package) is @command{setpgrp}.
+@command{mds} puts itself an all its children in a new
+process group. However you may want to put processes that
+are not @command{mds} servers or @command{mds} utilities
+in a separate process group. @command{setpgrp} can be used
+to starta process in a new process group.
 
 
 
