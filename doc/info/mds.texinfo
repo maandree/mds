@@ -54,6 +54,7 @@ Texts. A copy of the license is included in the section entitled
 * Overview::                        Brief overview of @command{mds}.
 * Architecture::                    Architectural overview of @command{mds}.
 * Protocol::                        The @command{mds} procotol.
+* Utilities::                       About @command{mds} utilities.
 * libmdsserver::                    Overview of @command{libmdsserver}.
 * mds-base::                        Overview of @command{mds-base}.
 * GNU Free Documentation License::  Copying and sharing this manual.
@@ -761,6 +762,57 @@ Length: 30\n
 \n
 Command: keyboard-enumeration\n
 @end example
+
+
+
+@node Utilities
+@chapter Utilities
+
+@menu
+* mds-respawn::                     The server immortality protocol.
+@end menu
+
+
+
+@node mds-respawn
+@section @command{mds-respawn}
+
+@command{mds-respawn} is a utility intended to be used
+in @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}. It will spawn
+a selected set of servers. If a server it spawns exits
+with a bad status, @command{mds-respawn} will respawn it.
+@command{mds-respawn} supports two options in the command
+line:
+
+@table @option
+@item --alarm=SECONDS
+Schedule @command{mds-respawn} to die in @var{SECONDS}
+seconds. At most 1 minute.
+
+@item --interval=SECONDS
+Spawned servers that die twice with @var{SECONDS}
+seconds should stop respawning until the signal
+@code{SIGUSR2} is send to @command{mds-respawn}.
+At most 1 minute.
+@end table
+
+Commands for servers to spawn are specified within
+curly braces. Each of the braces must be alone its
+its own argument. For example:
+
+@example
+mds-respawn --interval=5  \
+  @{ mds-foo --initial-spawn @}  \
+  @{ mds-bar --initial-spawn @}
+@end example
+
+will spawn and supervise the servers @command{mds-foo}
+and @command{mds-bar}. Both spawned with the
+argument @option{--initial-spawn}. When a server is
+respawed by @command{mds-respawn}, @option{--initial-spawn}
+in its argument list will be replaced by
+@option{--respawn} to let the server know it is being
+respawned.
 
 
 
