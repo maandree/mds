@@ -281,7 +281,7 @@ int __attribute__((weak)) server_initialised(void)
  * 
  * @param  signo  The signal that has been received
  */
-void received_noop(int signo)
+static void __attribute__((const)) received_noop(int signo)
 {
   (void) signo;
 }
@@ -327,7 +327,7 @@ void __attribute__((weak)) received_reexec(int signo)
 
 /**
  * This function is called when a signal that
- * signals the server to re-exec has been received
+ * signals the server to terminate has been received
  * 
  * When this function is invoked, it should set `terminating` to a non-zero value
  * 

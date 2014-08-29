@@ -55,6 +55,7 @@ Texts. A copy of the license is included in the section entitled
 * Architecture::                    Architectural overview of @command{mds}.
 * Protocol::                        The @command{mds} procotol.
 * libmdsserver::                    Overview of @command{libmdsserver}.
+* mds-base::                        Overview of @command{mds-base}.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -1293,16 +1294,16 @@ specifically, since it is doubly linked@footnote{And
 not using XOR-linking.}, it is implemented using
 three arrays:
 
-@table @code
-@item size_t* values
+@table @asis
+@item @code{values} [@code{size_t*}]
 The value stored in each node.
 
-@item ssize_t* next
+@item @code{next} [@code{ssize_t*}]
 The next node for each node, @code{edge} if the current
 node is the last node, and @code{LINKED_LIST_UNUSED} if
 there is no node on this position.
 
-@item ssize_t* previous
+@item @code{previous} [@code{ssize_t*}]
 The previous node for each node, @code{edge} if the current
 node is the first node, and @code{LINKED_LIST_UNUSED} if
 there is no node on this position.
@@ -1585,12 +1586,12 @@ arguments. The data type for @code{value_comparator} is
 
 @code{hash_table_t} also contains two other variables:
 
-@table @code
-@item compare_func* key_comparator
+@table @asis
+@item @code{key_comparator} [@code{compare_func*}]
 Identical to @code{value_comparator}, except it is used for
 keys rather the values.
 
-@item hash_func* hasher
+@item @code{hasher} [@code{hash_func*}]
 By default, the hash value for key is identical to the key
 itself. However, if this variable is not @code{NULL}, it
 will be used to calculate the hash value for keys.
@@ -1601,14 +1602,14 @@ There is a secondary data structure defined for hash tables:
 It is the data structure used for entries in a hash table.
 @code{hash_entry_t} contain three variables you may be interested in:
 
-@table @code
-@item size_t key
+@table @asis
+@item @code{key} [@code{size_t}]
 The key.
 
-@item size_t value
+@item @code{value} [@code{size_t}]
 The value associated with the key.
 
-@item size_t hash
+@item @code{hash} [@code{size_t}]
 The hash value of the key.
 @end table
 
@@ -1662,8 +1663,8 @@ These functions are defined as pure and @code{static inline}.
 Apart from internal data @code{mds_message_t} contains four
 variables:
 
-@table @code
-@item char** headers
+@table @asis
+@item @code{headers} [@code{char**}]
 The headers in the message, each element in this list
 as an unparsed header, it consists of both the header
 name and its associated value, joined by `: '. A header
@@ -1672,14 +1673,14 @@ but @code{headers} itself is @code{NULL} if there are
 no headers. The `Length' header should be included in
 this list.
 
-@item size_t header_count
+@item @code{header_count} [@code{size_t}]
 The number of headers in the message.
 
-@item char* payload
+@item @code{payload} [@code{char*}]
 The payload of the message, @code{NULL} if
 none (of zero-length).
 
-@item size_t payload_size
+@item @code{payload_size} [@code{size_t}]
 The length of the message's payload.
 This value will be the same as the value
 of the `Length' header.
@@ -1727,6 +1728,263 @@ This function is similar to @code{mds_message_marshal}.
 The only difference is that it will not store internal
 data and instead create a message that can be broadcasted
 in the display server message passing system.
+@end table
+
+
+
+@node mds-base
+@chapter @file{mds-base}
+
+@file{mds-base.c} and @file{mds-base.h} as an object
+filepair whose purpose is similar to libmdsserver.
+@file{mds-base} is compiled into all @command{mds}
+servers and implements common procedures including
+@code{main}. It also complements procedures that are
+weakly defined, that is, if the server implementation
+also defines them, the server implementations procedure
+replaces @file{mds-base}'s implementation at
+compile-time.
+
+@file{mds-base} defines one function that you can
+call from threads you create and functions that should
+be implement depending on specified conditions:
+
+@table @asis
+@item @code{trap_signals} [(@code{void}) @arrow{} @code{int}]
+Set up signal traps for all especially handled signals.
+Returns zero on and only on success.
+@end table
+
+@file{mds-base} weakly defines functions that you can
+replace if they do not suit your needs:
+
+@table @asis
+@item @code{parse_cmdline} [(@code{void}) @arrow{} @code{int}]
+Parses command line arguments.
+Returns zero on and only on success.
+
+This function will parse the following options:
+
+@table @option
+@item --initial-spawn
+It is the first time the server is spawn by its
+spawner process.
+
+@item --respawn
+The server was respawned.
+
+@item --re-exec
+The server is re-executing.
+
+@item --alarm=SECONDS
+Kill the process after @var{SECONDS} seconds.
+At most one minute.
+
+@item --on-init-fork
+Fork the process to detach it from its parent when
+the server has been initialised.
+
+@item --on-init-sh=COMMAND
+When the server has been initialised, run the
+command @var{COMMAND}.
+
+@item --immortal
+The server should to its best not to die. For example
+do not die if @code{SIGDANGER} is received even if that
+is the server's default action.
+@end table
+
+@item @code{connect_to_display} [(@code{void}) @arrow{} @code{int}]
+Connects to the display.
+Returns zero on and only on success.
+
+@item @code{server_initialised} [(@code{void}) @arrow{} @code{int}]
+This function should be called when the server has
+been properly initialised but before initialisation
+of anything that is removed at forking is initialised.
+Returns zero on and only on success.
+
+@item @code{signal_all} [(@code{int signo}) @arrow{} @code{void}]
+This function should be implemented by the actual server
+implementation if the server is multi-threaded. It sends
+the singal @code{signo} to all threads except the current
+thread.
+
+@item @code{received_reexec} [(@code{int signo}) @arrow{} @code{void}]
+This function is called when a signal that signals the
+server to re-execute has been received. The exact
+received signal is specified by the parameter @code{signo}.
+When this function is invoked, it should set the variables
+@code{reexecing} and @code{terminating} to a non-zero value.
+
+@item @code{received_terminate} [(@code{int signo}) @arrow{} @code{void}]
+This function is called when a signal that signals the
+server to terminate has been received. The exact received
+signal is specified by the parameter @code{signo}. When
+this function is invoked, it should set the variable
+@code{terminating} to a non-zero value.
+
+@item @code{fork_cleanup} [(@code{int status}) @arrow{} @code{void}]
+This function should be implemented by the actual server
+implementation if the server has set
+@code{server_characteristics.fork_for_safety} to be a
+non-zero value. This function is called by the parent server
+process when the child server process exits, if the server
+has completed its initialisation. The parameter @code{status}
+specifies the child process exit status as returned by
+@code{waitpid}.
+@end table
+
+Additionally, @file{mds-base} expects the server implementation
+to define and implement a set of functions:
+
+@table @asis
+@item @code{preinitialise_server} [(@code{void}) @arrow{} @code{int}]
+This function will be invoked before @code{initialise_server}
+(if not re-executing) or before @code{unmarshal_server}
+(if not re-executing). Returns zero on and only on success.
+
+@item @code{initialise_server} [(@code{void}) @arrow{} @code{int}]
+This function should initialise the server. It not invoked
+after a re-execution. Returns zero on and only on success.
+
+@item @code{postinitialise_server} [(@code{void}) @arrow{} @code{int}]
+This function will be invoked after @code{initialise_server}
+(if not re-executing) or after @code{unmarshal_server} (if
+re-executing). Returns zero on and only on success.
+
+@item @code{marshal_server_size} [(@code{void}) @arrow{} @code{size_t}, pure]
+Calculate and returns the number of bytes that will be stored
+by @code{marshal_server}. On failure the server should call
+@code{abort} or exit with failure status by other means.
+However it should not be possible for this function to fail.
+@code{marshal_server_size} must be pure.@footnote{That is,
+define with and conforming to @code{__attribute__((pure))}}.
+
+@item @code{marshal_server} [(@code{char* state_buf}) @arrow{} @code{int}]
+Marshal server implementation specific data into the buffer
+@code{state_buf}. Returns zero on and only on success.
+
+@item @code{unmarshal_server} [(@code{char* state_buf}) @arrow{} @code{int}]
+Unmarshal server implementation specific data from the
+buffer @code{state_buf} and update the servers state
+accordingly. Returns zero on and only on success.
+
+On critical failure the program should call @code{abort}
+or exit with failure status by other means. That is, do not
+let @code{reexec_failure_recover} run successfully, if it
+unrecoverable error has occurred or one severe enough that
+it is better to simply respawn.
+
+@item @code{reexec_failure_recover} [(@code{void}) @arrow{} @code{int}]
+Attempt to recover from a re-execution failure that has been
+detected after the server successfully updated it execution
+image. Returns zero on and only on success.
+
+@item @code{master_loop} [(@code{void}) @arrow{} @code{int}]
+Perform the server's mission. Returns zero on and only on success.
+@end table
+
+@file{mds-base} also defines a number of global variables.
+
+@table @asis
+@item @code{argc} [@code{int}]
+Number of elements in @code{argv}.
+
+@item @code{argv} [@code{char**}]
+Command line arguments.
+
+@item @code{is_respawn} [@code{int}]
+Whether the server has been respawn rather than this
+being the initial spawn. This will be at least as true
+as @code{is_reexec}.
+
+@item @code{is_reexec} [@code{int}]
+Whether the server is continuing from a self-reexecution.
+
+@item @code{is_immortal} [@code{int}]
+Whether the server should do its best to resist event
+triggered death.
+
+@item @code{on_init_fork} [@code{int}]
+Whether to fork the process when the server has been
+properly initialised.
+
+@item @code{on_init_sh} [@code{char*}]
+Command the run (@code{NULL} for none) when the server
+has been properly initialised.
+
+@item @code{master_thread} [@code{pthread_t}]
+The thread that runs the master loop.
+
+@item @code{terminating} [@code{volatile sig_atomic_t}]
+Whether the server has been signaled to terminate.
+
+@item @code{reexecing} [@code{volatile sig_atomic_t}]
+Whether the server has been signaled to re-execute.
+
+@item @code{socket_fd} [@code{int}]
+The file descriptor of the socket that is connected
+to the server.
+@end table
+
+@file{mds-base} expects the server implementation to define
+a variable that specifies how @file{mds-base} should behave:
+
+@table @asis
+@item @code{server_characteristics} [@code{server_characteristics_t}]
+This variable should declared by the actual server
+implementation. It must be configured before @code{main}
+is invoked. That is, it should be configured by a
+constructor. If it is configured at its definition,
+it is configured by a constructor; that is normally
+how you want to configured it.
+@end table
+
+@code{server_characteristics_t} @{also known as
+@code{struct server_characteristics}@} is a packed
+@footnote{That is, define with @code{__attribute__((packed))}}
+with the following fields:
+
+@table @asis
+@item @code{require_privileges} [@code{unsigned : 1}]
+Setting this to zero will cause the server to drop
+privileges as a security precaution.
+
+@item @code{require_display} [@code{unsigned : 1}]
+Setting this to non-zero will cause the server to connect
+to the display.
+
+@item @code{require_respawn_info} [@code{unsigned : 1}]
+Setting this to non-zero will cause the server to refuse
+to start unless either @option{--initial-spawn} or
+@option{--respawn} is used.
+
+@item @code{sanity_check_argc} [@code{unsigned : 1}]
+Setting this to non-zero will cause the server to refuse to
+start if there are too many command line arguments.
+
+@item @code{fork_for_safety} [@code{unsigned : 1}]
+Setting this to non-zero will cause the server to place
+itself in a fork of itself when initialised. This can be
+used to let the server clean up fatal stuff after itself
+if it crashes. When the child exits, no matter how it
+exits, the parent will call @code{fork_cleanup} and then
+die it the same manner as the child.
+
+@item @code{danger_is_deadly} [@code{unsigned : 1}]
+Setting this to non-zero without setting a signal action
+for @code{SIGDANGER} will cause the server to die if
+@code{SIGDANGER} is received. It is safe to set both
+@code{danger_is_deadly} and @code{fork_for_safety} to
+non-zero, during the call of @code{server_initialised}
+the signal handler for @code{SIGDANGER} in the parent
+process will be set to @code{SIG_IGN} independently of
+the value of @code{danger_is_deadly} if
+@code{fork_for_safety} is set to non-zero.
+
+This setting will be treated as set to zero if
+@option{--immortal} is used.
 @end table
 
 
