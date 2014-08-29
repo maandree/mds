@@ -55,6 +55,7 @@ Texts. A copy of the license is included in the section entitled
 * Architecture::                    Architectural overview of @command{mds}.
 * Protocol::                        The @command{mds} procotol.
 * Utilities::                       About @command{mds} utilities.
+* Servers::                         About @command{mds} servers.
 * libmdsserver::                    Overview of @command{libmdsserver}.
 * mds-base::                        Overview of @command{mds-base}.
 * GNU Free Documentation License::  Copying and sharing this manual.
@@ -865,6 +866,84 @@ process group. However you may want to put processes that
 are not @command{mds} servers or @command{mds} utilities
 in a separate process group. @command{setpgrp} can be used
 to starta process in a new process group.
+
+
+
+@node Servers
+@chapter Servers
+
+An @command{mds} display server instance is comprised of
+multiple small servers that each implements a small part
+of the display server's functionallity. This chapter will
+include all servers but the master sever and the kernel,
+the latter of which is not actually a server.
+
+@menu
+* mds-echo::                        The @command{mds-echo} server.
+* mds-registry::                    The @command{mds-registry} server.
+* mds-vt::                          The @command{mds-vt} server.
+* mds-clipboard::                   The @command{mds-clipboard} server.
+* mds-kkbd::                        The @command{mds-kkbd} server.
+@end menu
+
+
+
+@node mds-echo
+@section mds-echo
+
+@command{mds-echo} is a server that echos message that
+contain the header--value pair @command{Command: echo}.
+This server can be used for debugging and testing as
+well as to enable network heartbeats.
+
+
+
+@node mds-registry
+@section mds-registry
+
+@command{mds-registry} is a server that keeps a registry
+of all protocols that are supported they the sum of all
+active servers. It can also be used by other servers to
+wait until a protocol has become available.
+
+
+
+@node mds-vt
+@section mds-vt
+
+@command{mds-vt} is the server that acquires a virtual
+terminal for the display, manages virtual terminal
+switches and enables other servers to get access to
+the virtual terminal's TTY and informs them of which
+virtual terminal the display is located on. It also
+enables other servers to switch the virtual terminals
+mode to graphical mode or text mode.
+
+
+
+@node mds-clipboard
+@section mds-clipboard
+
+@command{mds} has three clipboards, one for copied
+text, one for selected text, and one for non-textual
+data. Each of these clipboards are stacks, just
+like in GNU Emacs. @command{mds-clipboard} implements
+these clipboards and automatic removal of outdated
+clips. Clips can be configured to expire based on
+time or when its originator closes.
+
+
+
+@node mds-kkbd
+@section mds-kkbd
+
+@command{mds-kkbd} implements access to the kernel-based
+keyboard. It does not however implement delay and rate
+configurations for the kernel-based keyboard as that
+requires root privileges. The kernel-based keyboard is
+a keyboard that can be accessed by reconfiguring
+stdin in a TTY using @code{ioctl} and then read from
+stdin.
 
 
 
