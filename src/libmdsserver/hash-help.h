@@ -27,7 +27,7 @@
  * Calculate the hash of a string
  * 
  * @param   str  The string
- * @return         The hash of the string
+ * @return       The hash of the string
  */
 static inline size_t __attribute__((pure)) string_hash(const char* str)
 {
@@ -42,7 +42,7 @@ static inline size_t __attribute__((pure)) string_hash(const char* str)
 
 
 /**
- * Check whether two char* are of equal value
+ * Check whether two `char*` are of equal value
  * 
  * @param   str_a  The first string
  * @param   str_b  The second string

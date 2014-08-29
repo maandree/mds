@@ -1226,6 +1226,7 @@ However, @code{hash_table_unmarshal} and
 @menu
 * Client List::                     The @code{client_list_t} data structure.
 * Linked List::                     The @code{linked_list_t} data structure.
+* Tables::                          The @code{fd_table_t} and @code{hash_table_t} data structures.
 @end menu
 
 
@@ -1445,349 +1446,220 @@ into the stream @code{output}.
 
 
 
+@node Tables
+@subsection Tables
+
+libmdsserver defines two similar data structures:
+@code{fd_table_t} and @code{hash_table_t}. Whenever
+a function exists for both data structures we will
+write @code{X_table} instead of @code{fd_table} and
+@code{hash_table}. Additionally, unless otherwise
+stated, a function's parameter named @code{this}
+will be of the type @code{hash_table_t*} if the
+function's name start with @code{hash_table} and
+@code{fd_table_t*} if the function's name start
+with @code{fd_table}, with the @code{restrict}
+modifier.
+
+@table @asis
+@item @code{X_table_create} [(@code{this}) @arrow{} @code{int}]
+Initialises @code{*this} so it can be used as a
+table. Returns zero on and only on success.
+
+These functions are defined as macros.
+
+@item @code{X_table_create_tuned} [(@code{this, size_t initial_capacity}) @arrow{} @code{int}]
+Initialises @code{*this} so it can be used as a
+table, and makes its initial capacity at least
+@code{initial_capacity}. Returns zero on and only
+on success.
+
+@code{hash_table_create_tuned} is defined as a macro.
+
+@item @code{hash_table_create_tuned} [(@code{this, size_t initial_capacity, float load_factor}) @arrow{} @code{int}]
+Initialises @code{*this} so it can be used as a
+table, and makes its initial capacity at least
+@code{initial_capacity} and its load factor
+@code{load_factor}. Returns zero on and only
+on success.
+
+@item @code{X_table_destroy} [(@code{this, free_func* key_freer, free_func* value_freer}) @arrow{} @code{void}]
+Release all resources in the table @code{*this},
+but do not @code{free} @code{this} itself.
+Should be called even if construction fails.
+If @code{keys_freer} is not @code{NULL}, this
+function will be called for each key.
+If @code{values_freer} is not @code{NULL}, this
+function will be called for each value.
+
+@item @code{X_table_contains_value} [(@code{const this, size_t value}) @arrow{} @code{int}]
+Check whether the value @code{value} is stored
+in the table @code{*this}.
+
+@item @code{X_table_contains_key} [(@code{const this, key}) @arrow{} @code{int}]
+Check whether the key @code{code} is used in the
+table @code{*this}.
+
+The data type for the parameter @code{key} is
+@code{size_t} for @code{hash_table} and @code{int}
+for @code{fd_table}.
+
+@item @code{X_table_get} [(@code{const this, key}) @arrow{} @code{size_t}]
+Look up a value by its key @code{key} in the
+table @code{*this}. Zero will be returned if
+the key was not used.
+
+@item @code{hash_table_get_entry} [(@code{const this, size_t key}) @arrow{} @code{hash_entry_t*}]
+Look up an entry by its key @code{key} in the
+table @code{*this}. @code{NULL} will be returned
+if the key was not used.
+
+@item @code{X_table_put} [(@code{this, key, size_t value}) @arrow{} @code{size_t}]
+Map the value @code{value} to the key @code{key}
+in the talbe @code{*this}. If a value was already
+mapped to the key, that value will be returned,
+otherwise zero will be returned. Zero will also
+be returned on error. @code{errno} will be set to
+zero on and only on success.
+
+The data type for the parameter @code{key} is
+@code{size_t} for @code{hash_table} and @code{int}
+for @code{fd_table}.
+
+@item @code{X_table_remove} [(@code{this, key}) @arrow{} @code{size_t}]
+Unmaps the key @code{key} for the table @code{*this}.
+If a value was mapped to the key, that value will
+be returned, otherwise zero will be returned.
+
+The data type for the parameter @code{key} is
+@code{size_t} for @code{hash_table} and @code{int}
+for @code{fd_table}.
+
+@item @code{X_table_clear} [(@code{this}) @arrow{} @code{void}]
+Unmaps all keys in the table @code{*this}.
+
+@item @code{X_table_unmarshal} [(@code{this, char* restrict data, remap_func* remapper}) @arrow{} @code{int}]
+As described in @ref{Data Structures} but with one
+additional parameter: @code{remapper}. If this
+parameter is not @code{NULL} this function is used
+to edit values. It will be called once for each
+value and the output of the function will be used
+inplace of the input value.
+@end table
+
+@file{<libmdsserver/hash-table.h>} also defines
+as wrapper macro for the @code{for} keyword:
+
+@table @asis
+@item @code{foreach_hash_table_entry} [(@code{hash_table_t this, size_t i, hash_entry_t* entry})]
+Iterates over entry element in the hash table
+@code{*this}. On each iteration, the entry will
+be stored to the variable @code{entry} and the
+bucket index will be stored to the variable
+@code{i}.
+
+@example
+void print_hash_table(hash_table_t* table)
+@{
+  hash_entry_t* entry;
+  size_t i;
+  foreach_hash_table_entry (*table, i, entry)
+    printf("%zu --> %zu\n", entry->key, entry->value);
+@}
+@end example
+
+Note the the data type for the parameter @code{this}
+is not a popinter.
+@end table
+
+The structures @code{hash_table_t} and @code{fd_table_t}
+contain the variable @code{value_comparator} which by
+default is @code{NULL}. If this variable is set to @code{NULL},
+two values will be considered equal if and only if they are
+numerically identical; otherwise two values will be considered
+equal if and only if @code{value_comparator} returned a
+non-zero value if those two values are used for the function's
+arguments. The data type for @code{value_comparator} is
+@code{compare_func*}.
+
+@code{hash_table_t} also contains two other variables:
+
+@table @code
+@item compare_func* key_comparator
+Identical to @code{value_comparator}, except it is used for
+keys rather the values.
+
+@item hash_func* hasher
+By default, the hash value for key is identical to the key
+itself. However, if this variable is not @code{NULL}, it
+will be used to calculate the hash value for keys.
+@end table
+
+There is a secondary data structure defined for hash tables:
+@code{hash_entry_t} @{also known as @code{struct hash_entry}@}.
+It is the data structure used for entries in a hash table.
+@code{hash_entry_t} contain three variables you may be interested in:
+
+@table @code
+@item size_t key
+The key.
+
+@item size_t value
+The value associated with the key.
+
+@item size_t hash
+The hash value of the key.
+@end table
+
+By inclusion of @file{<libmdsserver/table-common.h>},
+@file{<libmdsserver/hash-table.h>} and @file{<libmdsserver/fd-table.h>}
+defines four @code{typedef} for function signatures:
+
+@table @asis
+@item @code{compare_func} [(@code{size_t a, size_t b}) @arrow{} @code{int}]
+A function that performs a comparison of two objects.
+Should return non-zero if and only if @code{a} and
+@code{b} are to be considered equal in the given
+context.
+
+@item @code{hash_func} [(@code{size_t value}) @arrow{} @code{size_t}]
+A function that hashes an object or a value.
+Should return the hash value for @code{value}.
+
+@item @code{free_func} [(@code{size_t obj}) @arrow{} @code{void}]
+A function that, to the extent that is appropriate,
+releases the object @code{obj}'s resources and
+@code{free}:s it.
+
+@item @code{remap_func} [(@code{size_t obj}) @arrow{} @code{size_t}]
+A function that translates a object into a new object.
+The function should return new object that should replace
+the object @code{obj}.
+@end table
+
+If you are working with strings, you may consider
+including the header file @file{<libmdsserver/hash-help.h>}.
+It defines to useful functions:
+
+@table @asis
+@item @code{string_hash} [(@code{const char* str}) @arrow{} @code{size_t}]
+Calculate and returns the hash value of the string @code{str}.
+
+@item @code{string_comparator} [(@code{char* str_a, char* str_b}) @arrow{} @code{int}]
+Returns non-zero if either both @code{str_a} and @code{str_b}
+are @code{NULL} or neither are @code{NULL} but are identical
+strings by content upto their first NUL characters (or by address).
+@end table
+
+These functions are defined as pure and @code{static inline}.
+
+
+
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
 @include fdl.texinfo
 
 @bye
-
-
-/**
- * Hash table entry
- */
-typedef struct hash_entry
-{
-  /**
-   * A key
-   */
-  size_t key;
-  
-  /**
-   * The value associated with the key
-   */
-  size_t value;
-  
-  /**
-   * The truncated hash value of the key
-   */
-  size_t hash;
-  
-  /**
-   * The next entry in the bucket
-   */
-  struct hash_entry* next;
-  
-} hash_entry_t;
-
-
-/**
- * Value lookup table based on hash value, that do not support
- */
-typedef struct hash_table
-{
-  /**
-   * The table's capacity, i.e. the number of buckets
-   */
-  size_t capacity;
-  
-  /**
-   * Entry buckets
-   */
-  hash_entry_t** buckets;
-  
-  /**
-   * When, in the ratio of entries comparied to the capacity, to grow the table
-   */
-  float load_factor;
-  
-  /**
-   * When, in the number of entries, to grow the table
-   */
-  size_t threshold;
-  
-  /**
-   * The number of entries stored in the table
-   */
-  size_t size;
-  
-  /**
-   * Check whether two values are equal
-   * 
-   * If this function pointer is `NULL`, the identity is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   */
-  compare_func* value_comparator;
-  
-  /**
-   * Check whether two keys are equal
-   * 
-   * If this function pointer is `NULL`, the identity is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   */
-  compare_func* key_comparator;
-  
-  /**
-   * Calculate the hash of a key
-   * 
-   * If this function pointer is `NULL`, the identity hash is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   * 
-   * @param   key  The key
-   * @return       The hash of the key
-   */
-  hash_func* hasher;
-  
-} hash_table_t;
-
-/**
- * Create a hash table
- * 
- * @param   this              Memory slot in which to store the new hash table
- * @param   initial_capacity  The initial capacity of the table
- * @param   load_factor       The load factor of the table, i.e. when to grow the table
- * @return                    Non-zero on error, `errno` will have been set accordingly
- */
-int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_capacity, float load_factor);
-
-/**
- * Create a hash table
- * 
- * @param   this:hash_table_t*       Memory slot in which to store the new hash table
- * @param   initial_capacity:size_t  The initial capacity of the table
- * @return  :int                     Non-zero on error, `errno` will have been set accordingly
- */
-#define hash_table_create_tuned(this, initial_capacity)  \
-  hash_table_create_fine_tuned(this, initial_capacity, 0.75f)
-
-/**
- * Create a hash table
- * 
- * @param   this:hash_table_t*  Memory slot in which to store the new hash table
- * @return  :int                Non-zero on error, `errno` will have been set accordingly
- */
-#define hash_table_create(this)  \
-  hash_table_create_tuned(this, 16)
-
-/**
- * Release all resources in a hash table, should
- * be done even if construction fails
- * 
- * @param  this          The hash table
- * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
- * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
- */
-void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_func* value_freer);
-
-/**
- * Check whether a value is stored in the table
- * 
- * @param   this   The hash table
- * @param   value  The value
- * @return         Whether the value is stored in the table
- */
-int hash_table_contains_value(const hash_table_t* restrict this, size_t value) __attribute__((pure));
-
-/**
- * Check whether a key is used in the table
- * 
- * @param   this  The hash table
- * @param   key   The key
- * @return        Whether the key is used
- */
-int hash_table_contains_key(const hash_table_t* restrict this, size_t key) __attribute__((pure));
-
-/**
- * Look up a value in the table
- * 
- * @param   this  The hash table
- * @param   key   The key associated with the value
- * @return        The value associated with the key, 0 if the key was not used
- */
-size_t hash_table_get(const hash_table_t* restrict this, size_t key);
-
-/**
- * Look up an entry in the table
- * 
- * @param   this  The hash table
- * @param   key   The key associated with the value
- * @return        The entry associated with the key, `NULL` if the key was not used
- */
-hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key);
-
-/**
- * Add an entry to the table
- * 
- * @param   this   The hash table
- * @param   key    The key of the entry to add
- * @param   value  The value of the entry to add
- * @return         The previous value associated with the key, 0 if the key was not used.
- *                 0 will also be returned on error, check the `errno` variable.
- */
-size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
-
-/**
- * Remove an entry in the table
- * 
- * @param   this  The hash table
- * @param   key   The key of the entry to remove
- * @return        The previous value associated with the key, 0 if the key was not used
- */
-size_t hash_table_remove(hash_table_t* restrict this, size_t key);
-
-/**
- * Remove all entries in the table
- * 
- * @param  this  The hash table
- */
-void hash_table_clear(hash_table_t* restrict this);
-
-/**
- * Wrapper for `for` keyword that iterates over entry element in a hash table
- * 
- * @param  table:hash_table_t   The hans table
- * @param  i:size_t             The variable to store the buckey index in at each iteration
- * @param  entry:hash_entry_t*  The variable to store the entry in at each iteration
- */
-#define foreach_hash_table_entry(table, i, entry)  \
-  for (i = 0; i < (table).capacity; i++)           \
-    for (entry = (table).buckets[i]; entry != NULL; entry = entry->next)
-
-/**
- * Unmarshals a hash table
- * 
- * @param   this      Memory slot in which to store the new hash table
- * @param   data      In buffer with the marshalled data
- * @param   remapper  Function that translates values, `NULL` if not translation takes place
- * @return            Non-zero on error, errno will be set accordingly.
- *                    Destroy the table on error.
- */
-int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper);
-
-
-
-
-
-  /**
-   * The number of entries stored in the table
-   */
-  size_t size;
-  
-  /**
-   * Map from keys to values
-   */
-  size_t* values;
-  
-  /**
-   * Map from keys to whether that are in used, bit-packed
-   */
-  uint64_t* used;
-  
-  /**
-   * Check whether two values are equal
-   * 
-   * If this function pointer is `NULL`, the identity is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   */
-  compare_func* value_comparator;
-
-/**
- * Create a fd table
- * 
- * @param   this              Memory slot in which to store the new fd table
- * @param   initial_capacity  The initial capacity of the table
- * @return                    Non-zero on error, `errno` will have been set accordingly
- */
-int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
-
-/**
- * Create a fd table
- * 
- * @param   this:fd_table_t*  Memory slot in which to store the new fd table
- * @return  :int              Non-zero on error, `errno` will have been set accordingly
- */
-#define fd_table_create(this)  \
-  fd_table_create_tuned(this, 16)
-
-/**
- * Release all resources in a fd table, should
- * be done even if construction fails
- * 
- * @param  this          The fd table
- * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
- * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
- */
-void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func* value_freer);
-
-/**
- * Check whether a value is stored in the table
- * 
- * @param   this   The fd table
- * @param   value  The value
- * @return         Whether the value is stored in the table
- */
-int fd_table_contains_value(const fd_table_t* restrict this, size_t value) __attribute__((pure));
-
-/**
- * Check whether a key is used in the table
- * 
- * @param   this  The fd table
- * @param   key   The key
- * @return        Whether the key is used
- */
-int fd_table_contains_key(const fd_table_t* restrict this, int key) __attribute__((pure));
-
-/**
- * Look up a value in the table
- * 
- * @param   this  The fd table
- * @param   key   The key associated with the value
- * @return        The value associated with the key, 0 if the key was not used
- */
-size_t fd_table_get(const fd_table_t* restrict this, int key) __attribute__((pure));
-
-/**
- * Add an entry to the table
- * 
- * @param   this   The fd table
- * @param   key    The key of the entry to add
- * @param   value  The value of the entry to add
- * @return         The previous value associated with the key, 0 if the key was not used.
- *                 0 will also be returned on error, check the `errno` variable.
- */
-size_t fd_table_put(fd_table_t* restrict this, int key, size_t value);
-
-/**
- * Remove an entry in the table
- * 
- * @param   this  The fd table
- * @param   key   The key of the entry to remove
- * @return        The previous value associated with the key, 0 if the key was not used
- */
-size_t fd_table_remove(fd_table_t* restrict this, int key);
-
-/**
- * Remove all entries in the table
- * 
- * @param  this  The fd table
- */
-void fd_table_clear(fd_table_t* restrict this);
-
-/**
- * Unmarshals a fd table
- * 
- * @param   this      Memory slot in which to store the new fd table
- * @param   data      In buffer with the marshalled data
- * @param   remapper  Function that translates values, `NULL` if not translation takes place
- * @return            Non-zero on error, errno will be set accordingly.
- *                    Destroy the table on error.
- */
-int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper);
-
-
 
 
 

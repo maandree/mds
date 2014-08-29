@@ -222,13 +222,13 @@ void hash_table_clear(hash_table_t* restrict this);
 /**
  * Wrapper for `for` keyword that iterates over entry element in a hash table
  * 
- * @param  table:hash_table_t   The hans table
+ * @param  this:hash_table_t    The hash table
  * @param  i:size_t             The variable to store the buckey index in at each iteration
  * @param  entry:hash_entry_t*  The variable to store the entry in at each iteration
  */
-#define foreach_hash_table_entry(table, i, entry)  \
-  for (i = 0; i < (table).capacity; i++)           \
-    for (entry = (table).buckets[i]; entry != NULL; entry = entry->next)
+#define foreach_hash_table_entry(this, i, entry)  \
+  for (i = 0; i < (this).capacity; i++)           \
+    for (entry = (this).buckets[i]; entry != NULL; entry = entry->next)
 
 /**
  * Calculate the buffer size need to marshal a hash table

@@ -40,7 +40,7 @@ typedef int compare_func(size_t a, size_t b);
 typedef size_t hash_func(size_t value);
 
 /**
- * A function that release an objects resources an frees it
+ * A function that releases an object's resources and `free`:s it
  * 
  * @param  obj  The object
  */
