@@ -155,7 +155,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
 /**
  * Pack the list so that there are no reusable
  * positions, and reduce the capacity to the
- * smallest capacity that can be used. Not that
+ * smallest capacity that can be used. Note that
  * values (nodes) returned by the list's methods
  * will become invalid. Additionally (to reduce
  * the complexity) the list will be defragment

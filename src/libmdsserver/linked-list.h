@@ -140,7 +140,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
 /**
  * Pack the list so that there are no reusable
  * positions, and reduce the capacity to the
- * smallest capacity that can be used. Not that
+ * smallest capacity that can be used. Note that
  * values (nodes) returned by the list's methods
  * will become invalid. Additionally (to reduce
  * the complexity) the list will be defragment
@@ -191,7 +191,7 @@ ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssi
  * @param   predecessor  The reference node
  * @return               The node that has been removed
  */
-ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);    
+ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);
 
 /**
  * Insert a value before a specified, reference, node
@@ -211,7 +211,7 @@ ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ss
  * @param   successor  The reference node
  * @return             The node that has been removed
  */
-ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);    
+ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);
 
 /**
  * Remove the node from the list
