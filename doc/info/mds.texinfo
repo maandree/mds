@@ -1613,7 +1613,7 @@ The hash value of the key.
 
 By inclusion of @file{<libmdsserver/table-common.h>},
 @file{<libmdsserver/hash-table.h>} and @file{<libmdsserver/fd-table.h>}
-defines four @code{typedef} for function signatures:
+defines four @code{typedef}:s for function signatures:
 
 @table @asis
 @item @code{compare_func} [(@code{size_t a, size_t b}) @arrow{} @code{int}]
