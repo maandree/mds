@@ -883,13 +883,32 @@ the latter of which is not actually a server.
 * mds-registry::                    The @command{mds-registry} server.
 * mds-vt::                          The @command{mds-vt} server.
 * mds-clipboard::                   The @command{mds-clipboard} server.
+* mds-iclipboard::                  The @command{mds-iclipboard} server.
 * mds-kkbd::                        The @command{mds-kkbd} server.
+* mds-kkbdrate::                    The @command{mds-kkbdrate} server.
+* mds-kbd::                         The @command{mds-kbd} server.
+* mds-keytrans::                    The @command{mds-keytrans} server.
+* mds-keystick::                    The @command{mds-keystick} server.
+* mds-kbdbind::                     The @command{mds-kbdbind} server.
+* mds-multikey::                    The @command{mds-multikey} server.
+* mds-rat::                         The @command{mds-rat} server.
+* mds-ratbind::                     The @command{mds-ratbind} server.
+* mds-gestures::                    The @command{mds-gestures} server.
+* mds-kbd2rat::                     The @command{mds-kbd2rat} server.
+* mds-hwcursor::                    The @command{mds-hwcursor} server.
+* mds-swcursor::                    The @command{mds-swcursor} server.
+* mds-cursorshadow::                The @command{mds-cursorshadow} server.
+* mds-cursorgamma::                 The @command{mds-cursorgamma} server.
+* mds-hwgamma::                     The @command{mds-hwgamma} server.
+* mds-swgamma::                     The @command{mds-swgamma} server.
+* mds-coopgamma::                   The @command{mds-coopgamma} server.
+* mds-dcvs::                        The @command{mds-dcvs} server.
 @end menu
 
 
 
 @node mds-echo
-@section mds-echo
+@section @command{mds-echo}
 
 @command{mds-echo} is a server that echos message that
 contain the header--value pair @command{Command: echo}.
@@ -899,7 +918,7 @@ well as to enable network heartbeats.
 
 
 @node mds-registry
-@section mds-registry
+@section @command{mds-registry}
 
 @command{mds-registry} is a server that keeps a registry
 of all protocols that are supported they the sum of all
@@ -909,7 +928,7 @@ wait until a protocol has become available.
 
 
 @node mds-vt
-@section mds-vt
+@section @command{mds-vt}
 
 @command{mds-vt} is the server that acquires a virtual
 terminal for the display, manages virtual terminal
@@ -922,7 +941,7 @@ mode to graphical mode or text mode.
 
 
 @node mds-clipboard
-@section mds-clipboard
+@section @command{mds-clipboard}
 
 @command{mds} has three clipboards, one for copied
 text, one for selected text, and one for non-textual
@@ -934,8 +953,17 @@ time or when its originator closes.
 
 
 
+@node mds-iclipboard
+@section @command{mds-iclipboard}
+
+@command{mds-iclipboard} is an alternative to
+@command{mds-clipboard} that can be used to share
+clipboard between multiple display servers.
+
+
+
 @node mds-kkbd
-@section mds-kkbd
+@section @command{mds-kkbd}
 
 @command{mds-kkbd} implements access to the kernel-based
 keyboard. It does not however implement delay and rate
@@ -943,7 +971,239 @@ configurations for the kernel-based keyboard as that
 requires root privileges. The kernel-based keyboard is
 a keyboard that can be accessed by reconfiguring
 stdin in a TTY using @code{ioctl} and then read from
-stdin.
+stdin. @command{mds-kkbd} does not implement any keyboard
+layout, rather it broadcasts scancodes and keycode.
+However it can remap keycodes, but not scancodes.
+
+
+
+@node mds-kkbdrate
+@section @command{mds-kkbdrate}
+
+@command{mds-kkbdrate} is a complemental server to
+@command{mds-kkbd}, it implements rate and delay
+control for the kernel-based keyboard.
+
+
+
+@node mds-kbd
+@section @command{mds-kbd}
+
+@command{mds-kbd} is an alternative to
+@command{mds-kkbd} and @command{mds-kkbdrate}.
+In contrast to @command{mds-kkbd}, @command{mds-kbd}
+implements control over individual keybroads rather
+than utilising the kernels keyboard drivers to
+treats all keyboards a one keyboard. This server
+is only useful for multiseat sessions and if you
+otherwise actually want to handle the keyboards
+individually.
+
+
+
+@node mds-keytrans
+@section @command{mds-keytrans}
+
+@command{mds-keytrans} is the server than translates
+keycodes from @command{mds-kkbd} and @command{mds-kbd},
+and third-party alternatives, to characters and other
+attributes. It implements the keyboard's layouts including
+modifiers, letters, other symbols, dead keys and compose.
+
+
+
+@node mds-keystick
+@section @command{mds-keystick}
+
+@command{mds-keystick} is a server that can be used
+to enable sticky keys.
+
+
+
+@node mds-kbdbind
+@section @command{mds-kbdbind}
+
+@command{mds-kbdbind} is a server similar to
+@command{xbindkeys}. It can be used to run commands
+upon selected key combinations, for example starting
+@code{dmenu} or change keyboard layout.
+@command{mds-kbdbind} can distinguish keyboards
+from eachother.
+
+
+
+@node mds-multikey
+@section @command{mds-multikey}
+
+@command{mds-multikey} is a server that can
+bind a key, key combination, or sequence their
+of to a sequence of keys or key combinations.
+For example, you could bind `<super>x, y' to
+simulate that a key `Faux1' is pressed, a key
+that does not exist, this key press could be
+picked up by @command{mds-kbdbind} to enable
+@command{mds-kbdbind} to respond to squences
+rather than single keys and single key
+combinations. alternatively you could bind
+`<super>x' to press `x' a selected number of
+times with a short selectable delay between
+them; or `<super>x, 5' to press `x' five times.
+
+
+
+@node mds-rat
+@section @command{mds-rat}
+
+@command{mds-rat} is a server that implements
+support of rat (also known as mouse) devices.
+
+
+
+@node mds-ratbind
+@section @command{mds-ratbind}
+
+@command{mds-ratbind} is a server similar to
+@command{mds-kbdbind}. However, @command{mds-ratbind}
+respons to rat and rat cursor actions rather
+than keyboard actions. It can for example be
+used to implement hotcorners.
+
+
+
+@node mds-gestures
+@section @command{mds-gestures}
+
+@command{mds-gestures} is a server similar to
+@command{mds-ratbind}. However it is specialised
+to respond to gestures.
+
+
+
+@node mds-kbd2rat
+@section @command{mds-kbd2rat}
+
+If you do not have a rat or rather use your keyboard,
+the server @command{mds-kbd2rat} can be used to
+bind keyboard actions to simulate rat actions.
+This server is a specialisation of @code{mds-kbdbind},
+rather than spawning generic commands it broadcasts
+messages without the display server to move the
+rat cursor and click on rat buttons. @code{mds-kbdbind}
+could be used to do this, but @command{mds-kbd2rat}
+will not spawn a new process for each action.
+
+
+
+@node mds-hwcursor
+@section @command{mds-hwcursor}
+
+@command{mds-hwcursor} is a server that draws
+the rat cursor to the monitor on a plane
+separate from all other content on the display.
+Is less esoteric terms, it implements a hardware
+cursor.
+
+
+
+@node mds-swcursor
+@section @command{mds-swcursor}
+
+@command{mds-swcursor} is a server that draws
+the rat cursor to the monitor on the same plane
+as all other content on the display. Is less
+esoteric terms, it implements a software cursor.
+
+
+
+@node mds-cursorshadow
+@section @command{mds-cursorshadow}
+
+@command{mds-cursorshadow} is a server that
+can be used to decorate the rat cursor with
+a configurable shadow.
+
+
+
+@node mds-cursorgamma
+@section @command{mds-cursorgamma}
+
+@command{mds-cursorgamma} is a server you can
+use if you use @command{mds-hwcursor} to, if
+not done by the graphics driver, correct the
+gamma correction on the hardware cursor using
+software gamma ramps. This of courses works
+whether you are using hardware or software
+gamma ramps for your monitor's gamma correction.
+If can even be used if you do not use gamma
+correction, in such case, only the cursor
+will have its gamma corrected.
+
+
+
+@node mds-hwgamma
+@section @command{mds-hwgamma}
+
+To enable gamma correction, use the server
+@command{mds-hwgamma}. It implements hardware
+gamma ramps, that is, gamma ramps assisted
+by hardware acceleration.
+
+
+
+@node mds-swgamma
+@section @command{mds-swgamma}
+
+If your graphics driver does not support
+@command{mds-hwgamma}, you can instead use
+@command{mds-swgamma}. It implements software
+gamma ramps, that is, it will modify each
+pixel according to the selected gamma
+correction before it is send to the presentation
+sever. To accelerate this process,
+@command{mds-swgamma} can tell programs how
+to modify its colours before sending it; the
+programs can then tell @command{mds-swgamma}
+not to apply its correction. Programs such
+as video players can also use this to tell
+the server not to apply gamma correction as
+that may cause the video to be played back
+to slowly.
+
+
+
+@node mds-coopgamma
+@section @command{mds-coopgamma}
+
+@command{mds-coopgamma} is a server that
+can be used to enable multiple clients to
+manipulate the gamma ramps without stepping
+on eachothers toes. It does this by letting
+clients tell which priority their corrections
+has and use this data to chain together there
+modifications. For example if one program
+wants to apply a red filter to the display
+and another program wants to correct the
+monitors' gamma, the red filter program will
+send lookup tables for the gamma with high
+priority and the correction program will
+send its lookup tables with low priority.
+@command{mds-coopgamma} will then apply the
+latter lookup tables on top of the red filter.
+The clients can tell @command{mds-coopgamma}
+whether it should remove their changes when
+they close, or even keep them and wait for
+the client to restart.
+
+
+
+@node mds-dcvs
+@section mds-dcvs
+
+@command{mds-dcvs} is a server than can be
+used to simulate defective colour vision.
+That is, it can for example turn the display
+greyscale (colour blindness) or add a filter
+the simulates deuteranopia or deuteranomaly.
 
 
 

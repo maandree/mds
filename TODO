@@ -6,25 +6,25 @@ Missing servers:
 	mdsx		Translation from mds to X
 	mdsw		Translation from mds to Wayland
 	mdsm		Translation from mds to Mir
-	hwgamma		Hardware implementation of gamma ramps
-	swgamma		Software implementation of gamma ramps
-	hwcursor	Hardware cursor
-	swcursor	Software cursor
-	cursorgamma	Fixes gamma ramps for cursors
-	coopgamma	Enables multiple gamma servers
+	hwgamma
+	swgamma
+	hwcursor
+	swcursor
+	cursorgamma
+	coopgamma
 	host		Network enabled display server
 	remote		Bind to a remote display server
 	fb		Framebuffer presenter
-	kbd		Keyboard input
-	keytrans	Translates pure (but possibly remapped) keycodes into characters and keys
-	kkbdrate	Rate and delay for kkbd
-	rat		Rat input
+	kbd
+	keytrans
+	kkbdrate
+	rat
 	compositor	Composites the display
 	crtc		CRTC identifier
 	seat		Seat sandboxing
 	dri		DRI output
 	drag		Drag and drop
-	cursorshadow	Decorate cursors with shadows
+	cursorshadow
 	kill		Kill processes based on their windows
 	focus		Focuses the selected window
 	colour		Mapping of colour by name (system colours) and value
@@ -37,9 +37,9 @@ Missing protocols:
 
 Extra servers:
 
-	kbdbind		Bind keyboard combinations to external commands, e.g. super+p -> dmenu
-	ratbind		Bind cursor actions to external commands, e.g. hotcorners
-	gestures	Bind rat gestures to external commands, e.g. shacking to minimise windows
+	kbdbind
+	ratbind
+	gestures
 	dcvs		Defective colour vision simulation
 	decorator	A simple, reference implementation of a, window decorator
 	tile		A simple, reference implementation of a, tiling window manager
@@ -47,10 +47,10 @@ Extra servers:
 	workspace	A simple, reference implementation of a, workspaces
 	tray		A simple, reference implementation of a, status icon tray
 	cool-old-crt	Old CRT emulator, like cool-old-term but display-wide
-	kbd2rat		Control the rat cursor with the keyboard
-	multikey	Bind keys to send sequences of keys
-	iclipboard	User-private interdisplay clipboard
-	keystick	Sticky keys
+	kbd2rat
+	multikey
+	iclipboard
+	keystick
 
 Missing commands:
 
