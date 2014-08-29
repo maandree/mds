@@ -801,7 +801,7 @@ curly braces. Each of the braces must be alone its
 its own argument. For example:
 
 @example
-mds-respawn --interval=5  \
+mds-respawn --interval=5       \
   @{ mds-foo --initial-spawn @}  \
   @{ mds-bar --initial-spawn @}
 @end example
