@@ -207,8 +207,9 @@ static void spawn_server(size_t index)
       return;
     }
   
-  /* In the child process (server): change execution image to the server..  */
+  /* In the child process (server): remove the alarm and change execution image to the server..  */
   
+  alarm(0);
   execvp(commands[index][0], commands[index]);
   xperror(commands[index][0]);
   _exit(1);
