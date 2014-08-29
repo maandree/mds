@@ -1959,7 +1959,7 @@ by @code{marshal_server}. On failure the server should call
 @code{abort} or exit with failure status by other means.
 However it should not be possible for this function to fail.
 @code{marshal_server_size} must be pure.@footnote{That is,
-define with and conforming to @code{__attribute__((pure))}}.
+define with and conforming to @code{__attribute__((pure))}.}.
 
 @item @code{marshal_server} [(@code{char* state_buf}) @arrow{} @code{int}]
 Marshal server implementation specific data into the buffer
@@ -2043,7 +2043,7 @@ how you want to configured it.
 
 @code{server_characteristics_t} @{also known as
 @code{struct server_characteristics}@} is a packed
-@footnote{That is, define with @code{__attribute__((packed))}}
+@footnote{That is, define with @code{__attribute__((packed))}.}
 with the following fields:
 
 @table @asis
