@@ -34,8 +34,8 @@ typedef struct mds_message
    * as an unparsed header, it consists of both the header
    * name and its associated value, joined by ": ". A header
    * cannot be `NULL` (unless its memory allocation failed,)
-   * but `headers` itself is NULL if there are no headers.
-   * The "Length" should be included in this list.
+   * but `headers` itself is `NULL` if there are no headers.
+   * The "Length" header should be included in this list.
    */
   char** headers;
   

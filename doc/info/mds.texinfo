@@ -1227,6 +1227,7 @@ However, @code{hash_table_unmarshal} and
 * Client List::                     The @code{client_list_t} data structure.
 * Linked List::                     The @code{linked_list_t} data structure.
 * Tables::                          The @code{fd_table_t} and @code{hash_table_t} data structures.
+* Message Structure::               The @code{mds_message_t} data structure.
 @end menu
 
 
@@ -1655,127 +1656,84 @@ These functions are defined as pure and @code{static inline}.
 
 
 
+@node Message Structure
+@subsection Message Structure
+
+Apart from internal data @code{mds_message_t} contains four
+variables:
+
+@table @code
+@item char** headers
+The headers in the message, each element in this list
+as an unparsed header, it consists of both the header
+name and its associated value, joined by `: '. A header
+cannot be @code{NULL} (unless its memory allocation failed,)
+but @code{headers} itself is @code{NULL} if there are
+no headers. The `Length' header should be included in
+this list.
+
+@item size_t header_count
+The number of headers in the message.
+
+@item char* payload
+The payload of the message, @code{NULL} if
+none (of zero-length).
+
+@item size_t payload_size
+The length of the message's payload.
+This value will be the same as the value
+of the `Length' header.
+@end table
+
+There are six functions specific to @code{mds_message_t}.
+The @code{this}-parameter's data type for this functions
+are @code{mds_message_t*} with the @code{restrict} modifier.
+
+@table @asis
+@item @code{mds_message_initialise} [(@code{this}) @arrow{} @code{int}]
+Initialises @code{*this} so that it can be used by
+@code{mds_message_read}. Returns zero on and only on
+success. On failure you should destroy @code{*this}
+using @code{mds_message_destroy}.
+
+@item @code{mds_message_zero_initialise} [(@code{this}) @arrow{} @code{void}]
+This function is similar to @code{mds_message_initialise},
+however it cannot fail and thus have no return value.
+The difference it is action is that it will not allocate
+an internal buffer.
+
+@item @code{mds_message_extend_headers} [(@code{this, size_t extent}) @arrow{} @code{int}]
+Ensures that @code{extent} additional headers can
+be stored in the @code{*this}. Returns zero on
+and only on success.
+
+@item @code{mds_message_read} [(@code{this, int fd}) @arrow{} @code{int}]
+Reads the next message from the socket file descriptor
+@code{fd} and stores it in @code{*this}. Returns zero
+on success and non-zero on error or interruption. @code{*this}
+should be destroyed using @code{mds_message_destroy} on
+error but not on interruption. If @code{-2} is returned
+@code{errno} will not have been set; @code{-2} indicates
+that the message is malformated, which is a state that
+cannot be recovered from.
+
+@item @code{mds_message_compose_size} [(@code{const this}) @arrow{} @code{size_t}]
+This function is to @code{mds_message_compose} as
+@code{mds_message_marshal_size} is to
+@code{mds_message_marshal}.
+
+@item @code{mds_message_compose} [(@code{const this, char* restrict data}) @arrow{} @code{void}]
+This function is similar to @code{mds_message_marshal}.
+The only difference is that it will not store internal
+data and instead create a message that can be broadcasted
+in the display server message passing system.
+@end table
+
+
+
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
 @include fdl.texinfo
 
 @bye
-
-
-
-/**
- * Message passed between a server and a client or between two of either
- */
-typedef struct mds_message
-{
-  /**
-   * The headers in the message, each element in this list
-   * as an unparsed header, it consists of both the header
-   * name and its associated value, joined by ": ". A header
-   * cannot be `NULL` (unless its memory allocation failed,)
-   * but `headers` itself is NULL if there are no headers.
-   * The "Length" should be included in this list.
-   */
-  char** headers;
-  
-  /**
-   * The number of headers in the message
-   */
-  size_t header_count;
-  
-  /**
-   * The payload of the message, `NULL` if none (of zero-length)
-   */
-  char* payload;
-  
-  /**
-   * The size of the payload
-   */
-  size_t payload_size;
-  
-  /**
-   * How much of the payload that has been stored (internal data)
-   */
-  size_t payload_ptr;
-  
-  /**
-   * Internal buffer for the reading function (internal data)
-   */
-  char* buffer;
-  
-  /**
-   * The size allocated to `buffer` (internal data)
-   */
-  size_t buffer_size;
-  
-  /**
-   * The number of bytes used in `buffer` (internal data)
-   */
-  size_t buffer_ptr;
-  
-  /**
-   * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
-   */
-  int stage;
-  
-} mds_message_t;
-
-
-/**
- * Initialise a message slot so that it can
- * be used by `mds_message_read`
- * 
- * @param   this  Memory slot in which to store the new message
- * @return        Non-zero on error, errno will be set accordingly.
- *                Destroy the message on error.
- */
-int mds_message_initialise(mds_message_t* restrict this);
-
-/**
- * Zero initialise a message slot
- * 
- * @param  this  Memory slot in which to store the new message
- */
-void mds_message_zero_initialise(mds_message_t* restrict this);
-
-/**
- * Extend the header list's allocation
- * 
- * @param   this    The message
- * @param   extent  The number of additional entries
- * @return          Zero on success, -1 on error
- */
-int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
-
-/**
- * Read the next message from a file descriptor
- * 
- * @param   this  Memory slot in which to store the new message
- * @param   fd    The file descriptor
- * @return        Non-zero on error or interruption, errno will be
- *                set accordingly. Destroy the message on error,
- *                be aware that the reading could have been
- *                interrupted by a signal rather than canonical error.
- *                If -2 is returned errno will not have been set,
- *                -2 indicates that the message is malformated,
- *                which is a state that cannot be recovered from.
- */
-int mds_message_read(mds_message_t* restrict this, int fd);
-
-/**
- * Get the required allocation size for `data` of the
- * function `mds_message_compose`
- * 
- * @param   this  The message
- * @return        The size of the message when marshalled
- */
-size_t mds_message_compose_size(const mds_message_t* restrict this) __attribute__((pure));
-
-/**
- * Marshal a message for communication
- * 
- * @param  this  The message
- * @param  data  Output buffer for the marshalled data
- */
-void mds_message_compose(const mds_message_t* restrict this, char* restrict data);
 
