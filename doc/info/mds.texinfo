@@ -875,8 +875,9 @@ to starta process in a new process group.
 An @command{mds} display server instance is comprised of
 multiple small servers that each implements a small part
 of the display server's functionallity. This chapter will
-include all servers but the master sever and the kernel,
-the latter of which is not actually a server.
+include all servers but the master sever, @command{mds-server}
+and the kernel, @command{mds}, the latter of which is not
+actually a server.
 
 @menu
 * mds-echo::                        The @command{mds-echo} server.
