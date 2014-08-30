@@ -1248,6 +1248,9 @@ used to simulate defective colour vision.
 That is, it can for example turn the display
 greyscale (colour blindness) or add a filter
 the simulates deuteranopia or deuteranomaly.
+This server is intended for testing that
+interfaces are suitable for people with
+defective colour vision.
 
 
 
