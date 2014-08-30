@@ -884,6 +884,8 @@ the latter of which is not actually a server.
 * mds-vt::                          The @command{mds-vt} server.
 * mds-clipboard::                   The @command{mds-clipboard} server.
 * mds-iclipboard::                  The @command{mds-iclipboard} server.
+* mds-drag::                        The @command{mds-drag} server.
+* mds-idrag::                       The @command{mds-idrag} server.
 * mds-kkbd::                        The @command{mds-kkbd} server.
 * mds-kkbdrate::                    The @command{mds-kkbdrate} server.
 * mds-kbd::                         The @command{mds-kbd} server.
@@ -903,6 +905,30 @@ the latter of which is not actually a server.
 * mds-swgamma::                     The @command{mds-swgamma} server.
 * mds-coopgamma::                   The @command{mds-coopgamma} server.
 * mds-dcvs::                        The @command{mds-dcvs} server.
+* mds-colour::                      The @command{mds-colour} server.
+* mds-cool-old-crt::                The @command{mds-cool-old-crt} server.
+* mds-state::                       The @command{mds-state} server.
+* mds-focus::                       The @command{mds-focus} server.
+* mds-kill::                        The @command{mds-kill} server.
+* mds-screensaver::                 The @command{mds-screensaver} server.
+* mds-compositor::                  The @command{mds-compositor} server.
+* mds-crtc::                        The @command{mds-crtc} server.
+* mds-dri::                         The @command{mds-dri} server.
+* mds-fb::                          The @command{mds-fb} server.
+* mds-seat::                        The @command{mds-seat} server.
+* mds-host::                        The @command{mds-host} server.
+* mds-remote::                      The @command{mds-remote} server.
+* mds-xmds::                        The @command{mds-xmds} server.
+* mds-wmds::                        The @command{mds-wmds} server.
+* mds-mmds::                        The @command{mds-mmds} server.
+* mds-mdsx::                        The @command{mds-mdsx} server.
+* mds-mdsw::                        The @command{mds-mdsw} server.
+* mds-mdsm::                        The @command{mds-mdsm} server.
+* mds-decorator::                   The @command{mds-decorator} server.
+* mds-tile::                        The @command{mds-tile} server.
+* mds-stack::                       The @command{mds-stack} server.
+* mds-workspace::                   The @command{mds-workspace} server.
+* mds-tray::                        The @command{mds-tray} server.
 @end menu
 
 
@@ -958,7 +984,25 @@ time or when its originator closes.
 
 @command{mds-iclipboard} is an alternative to
 @command{mds-clipboard} that can be used to share
-clipboard between multiple display servers.
+clipboard between multiple display servers
+instances.
+
+
+
+@node mds-drag
+@section @command{mds-drag}
+
+@command{mds-drag} is the server that implements
+drag-and-drop support.
+
+
+
+@node mds-idrag
+@section @command{mds-idrag}
+
+@command{mds-idrag} is an alternative to
+@command{mds-drag} that lets you drag and drop
+between display server instances.
 
 
 
@@ -1197,13 +1241,257 @@ the client to restart.
 
 
 @node mds-dcvs
-@section mds-dcvs
+@section @command{mds-dcvs}
 
 @command{mds-dcvs} is a server than can be
 used to simulate defective colour vision.
 That is, it can for example turn the display
 greyscale (colour blindness) or add a filter
 the simulates deuteranopia or deuteranomaly.
+
+
+
+@node mds-colour
+@section @command{mds-colour}
+
+@command{mds-colour} is a server that implements
+colour names, such as system colours and generic
+names, for example `red', whose exact colour can
+be configured by the user. A terminal written for
+@command{mds} whould look up colours such as `red'
+and `light red' and get the colours the terminal
+should use by default. Nothing is to be assumed
+for such colours, not even that `light red' is in
+fact lighter than `dark red', or that `red' is in
+fact `red', only that it is the colour the user
+wants to see when a colour is supposed to be `red'.
+@command{mds-colour} will notify clients when a
+colour has been reconfigured, added or removed.
+
+@command{mds-colour} is also responsible for
+informing clients on which two colours clients
+should use and how to dither them (by percent, not
+by pattern). This is useful if only 16-bit colours
+can be used, or if only 24-colour can used but
+gradients between for example sRGB(255, 255, 255)
+and sRGB(254, 254, 254) is to be drawn.
+
+
+
+@node mds-cool-old-crt
+@section @command{mds-cool-old-crt}
+
+@command{mds-cool-old-crt} is a server that applies
+filters used in the terminal emulator
+@command{cool-old-term} to the whole display.
+
+
+
+@node mds-state
+@section @command{mds-state}
+
+@command{mds-state} is the server that keeps tracks
+of the windows' state.
+
+
+
+@node mds-focus
+@section @command{mds-focus}
+
+@command{mds-focus} is the server focuses windows
+and windows' components.
+
+
+
+@node mds-kill
+@section @command{mds-kill}
+
+@command{mds-kill} is a server that can be used to
+send signals to processes by identifying them by
+their windows. This server can also be used to
+simply identify the process that owns a window.
+
+
+
+@node mds-screensaver
+@section @command{mds-screensaver}
+
+@command{mds-screensaver} is a server that can be
+used to start a screensaver or deactive monitors when
+the input devices has not be used for a period of
+time provided that no client has disabled this. It
+is capable of deactiving single monitors or start
+a screensaver on single monitors rather than all
+monitors.
+
+
+
+@node mds-compositor
+@section @command{mds-compositor}
+
+@command{mds-compositor} is the server that composes
+the output. It takes output of all windows and arranges
+it to one image per monitor and sends it to the presentation
+servers, such as @command{mds-dri} and @command{mds-fb}.
+It is also capable of some primitive transformations such
+as rotation and skewing.
+
+
+
+@node mds-crtc
+@section @command{mds-crtc}
+
+@command{mds-crtc} is the server that identifies
+CRTC:s and provide access to them.
+
+
+
+@node mds-dri
+@section @command{mds-dri}
+
+@command{mds-dri} is a server that displays
+content using the Direct Rendering Infrastructure.
+
+
+
+@node mds-fb
+@section @command{mds-fb}
+
+@command{mds-fd} is a server that displays
+content using frame buffers.
+
+
+
+@node mds-seat
+@section @command{mds-seat}
+
+@command{mds-seat} is a server that enables
+seat-sandboxing. It can be used to place
+two users on the same machine without them
+interfering with each others monitors and
+input devices. Servers started below
+@command{mds-seat} become shared and servers
+started above @command{mds-seat} become
+seat-private. @command{mds-seat} can filter
+messages from shared servers so only the
+appropriate seat receives them.
+
+
+
+@node mds-host
+@section @command{mds-host}
+
+@command{mds-host} is a server that enables
+servers like @command{mds-remote} running
+on remote machines to connect to the local
+machine and its display server.
+
+
+
+@node mds-remote
+@section @command{mds-remote}
+
+@command{mds-remote} is a server that enables
+you to connect extend a remote @command{mds}
+with your local machine. This can be used to
+make a display server instance span multiple
+computers including its monitors and input
+devices.
+
+
+
+@node mds-xmds
+@section @command{mds-xmds}
+
+@command{mds-xmds} is a server that translates
+X.org calls to @command{mds} calls. It can be used
+to run X.org-only programs inside @command{mds}.
+
+
+@node mds-wmds
+@section @command{mds-wmds}
+
+@command{mds-wmds} is a server that translates
+X.org calls to @command{mds} calls. It can be used
+to run Wayland-only programs inside @command{mds}.
+
+
+@node mds-mmds
+@section @command{mds-mmds}
+
+@command{mds-mmds} is a server that translates
+X.org calls to @command{mds} calls. It can be used
+to run Mir-only programs inside @command{mds}.
+
+
+
+@node mds-mdsx
+@section @command{mds-mdsx}
+
+@command{mds-mdsx} is a server that translates
+@command{mds} calls to X.org calls. It can be used
+to enable @command{mds} specific programs to run
+inside the X.org display servers.
+
+
+
+@node mds-mdsw
+@section @command{mds-mdsw}
+
+@command{mds-mdsw} is a server that translates
+@command{mds} calls to Wayland calls. It can be used
+to enable @command{mds} specific programs to run
+inside the Wayland display servers.
+
+
+
+@node mds-mdsm
+@section @command{mds-mdsm}
+
+@command{mds-mdsm} is a server that translates
+@command{mds} calls to Mir calls. It can be used
+to enable @command{mds} specific programs to run
+inside the display server Mir.
+
+
+
+@node mds-decorator
+@section @command{mds-decorator}
+
+@command{mds-decorator} is a server that provides a
+simple, reference implementation of a, window decorator.
+
+
+
+@node mds-tile
+@section @command{mds-tile}
+
+@command{mds-tile} is a server that provides a
+simple, reference implementation of a, tiling window manager.
+
+
+
+@node mds-stack
+@section @command{mds-stack}
+
+@command{mds-stack} is a server that provides a
+simple, reference implementation of a, stack window manager.
+
+
+
+@node mds-workspace
+@section @command{mds-workspace}
+
+@command{mds-workspace} is a server that provides
+simple, reference implementation of, workspaces.
+
+
+
+@node mds-tray
+@section @command{mds-tray}
+
+@command{mds-tray} is a server that provides a
+simple, reference implementation of a, status icon tray.
 
 
 

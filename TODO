@@ -1,35 +1,13 @@
 Missing servers:
 
-	xmds		Translation from X to mds
-	wmds		Translation from Wayland to mds
-	mmds		Translation from Mir to mds
-	mdsx		Translation from mds to X
-	mdsw		Translation from mds to Wayland
-	mdsm		Translation from mds to Mir
-	hwgamma
-	swgamma
-	hwcursor
-	swcursor
-	cursorgamma
-	coopgamma
-	host		Network enabled display server
-	remote		Bind to a remote display server
-	fb		Framebuffer presenter
-	kbd
-	keytrans
-	kkbdrate
-	rat
-	compositor	Composites the display
-	crtc		CRTC identifier
-	seat		Seat sandboxing
-	dri		DRI output
-	drag		Drag and drop
-	cursorshadow
-	kill		Kill processes based on their windows
-	focus		Focuses the selected window
-	colour		Mapping of colour by name (system colours) and value
-	state		Keeps track of windows' states
-	screensaver	Launch screensaver when the computer is idle
+	xmds		wmds		mmds		mdsx
+	mdsw		mdsm		hwgamma		swgamma
+	hwcursor	swcursor	cursorgamma	coopgamma
+	host		remote		fb		kbd
+	keytrans	kkbdrate	rat		compositor
+	crtc		seat		dri		drag
+	idrag		cursorshadow	kill		focus
+	colour		state		screensaver
 
 Missing protocols:
 
@@ -37,20 +15,10 @@ Missing protocols:
 
 Extra servers:
 
-	kbdbind
-	ratbind
-	gestures
-	dcvs		Defective colour vision simulation
-	decorator	A simple, reference implementation of a, window decorator
-	tile		A simple, reference implementation of a, tiling window manager
-	stack		A simple, reference implementation of a, stack window manager
-	workspace	A simple, reference implementation of a, workspaces
-	tray		A simple, reference implementation of a, status icon tray
-	cool-old-crt	Old CRT emulator, like cool-old-term but display-wide
-	kbd2rat
-	multikey
-	iclipboard
-	keystick
+	kbdbind		ratbind		gestures	dcvs
+	decorator	tile		stack		workspace
+	tray		cool-old-crt	kbd2rat		multikey
+	iclipboard	keystick
 
 Missing commands:
 
