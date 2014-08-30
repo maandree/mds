@@ -191,6 +191,15 @@
 
 
 /**
+ * The name of the environment variable that
+ * indicates the display server's process group
+ */
+#ifndef PGROUP_ENV
+#define PGROUP_ENV  "MDS_PGROUP"
+#endif
+
+
+/**
  * The minimum time that most have elapsed
  * for respawning to be allowed
  */

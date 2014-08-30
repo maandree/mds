@@ -101,11 +101,11 @@ int main(int argc_, char** argv_)
   
   /* Set up to ignore SIGUPDATE, used in mds for re-exec, but we cannot re-exec. */
   if (xsigaction(SIGUPDATE, SIG_IGN) < 0)
-    perror(*argv);
+    xperror(*argv);
   
   /* Set up to ignore SIGDANGER. */
   if (xsigaction(SIGDANGER, SIG_IGN) < 0)
-    perror(*argv);
+    xperror(*argv);
   
   /* Create directory for socket files, PID files and such. */
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
@@ -124,7 +124,7 @@ int main(int argc_, char** argv_)
 	  f = fopen(pathname, "r");
 	  if (f == NULL) /* Race, or error? */
 	    {
-	      perror(*argv);
+	      xperror(*argv);
 	      continue;
 	    }
 	  r = is_pid_file_reusable(f);
@@ -146,13 +146,13 @@ int main(int argc_, char** argv_)
     {
       fclose(f);
       if (unlink(pathname) < 0)
-	perror(*argv);
+	xperror(*argv);
       return 1;
     }
   fflush(f);
   fclose(f);
   if (chmod(pathname, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) < 0)
-    perror(*argv);
+    xperror(*argv);
   
   /* Create data storage directory. */
   xsnprintf(pathname,  "%s/%u.data", MDS_STORAGE_ROOT_DIRECTORY, display);
@@ -165,6 +165,12 @@ int main(int argc_, char** argv_)
   xsnprintf(pathname, /* Excuse the reuse without renaming. */
 	    ":%u", display);
   fail_if (setenv(DISPLAY_ENV, pathname, 1) < 0);
+  
+  /* Create a new process group and export MDS_PGROUP */
+  fail_if (setpgid(0, 0) < 0);
+  xsnprintf(pathname, /* Excuse the reuse without renaming. */
+	    "%ji", (intmax_t)getpgrp());
+  fail_if (setenv(PGROUP_ENV, pathname, 1) < 0);
   
   /* Create display socket. */
   xsnprintf(pathname, "%s/%u.socket", MDS_RUNTIME_ROOT_DIRECTORY, display);
@@ -204,7 +210,7 @@ int main(int argc_, char** argv_)
   return rc;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   rc = 1;
   goto done;
 }
@@ -223,7 +229,7 @@ int is_pid_file_reusable(FILE* f)
   
   read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
   if (ferror(f)) /* Failed to read. */
-    perror(*argv);
+    xperror(*argv);
   else if (feof(f) == 0) /* Did not read everything. */
     eprint("the content of a PID file is larger than expected.");
   else
@@ -337,7 +343,7 @@ int spawn_and_respawn_server(int fd)
   
   /* Get the current time. (Start of child process.) */
   if ((time_error = (monotone(&time_start) < 0)))
-    perror(*argv);
+    xperror(*argv);
   
   /* Wait for master server to die. */
   if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
@@ -359,7 +365,7 @@ int spawn_and_respawn_server(int fd)
   /* Do not respawn if we could not read the time. */
   if (time_error)
     {
-      perror(*argv);
+      xperror(*argv);
       eprintf("`%s' died abnormally, not respawning because we could not read the time.", master_server);
       goto fail;
     }
@@ -396,7 +402,7 @@ int spawn_and_respawn_server(int fd)
   return rc;
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   goto fail;
 }
 
@@ -436,7 +442,7 @@ int create_directory_root(const char* pathname)
   return 0;
 
  pfail:
-  perror(*argv);
+  xperror(*argv);
   return 1;
 }
 
@@ -468,7 +474,7 @@ int create_directory_user(const char* pathname)
 	{
 	  if (errno != EEXIST) /* Unlikely race condition. */
 	    {
-	      perror(*argv);
+	      xperror(*argv);
 	      return 1;
 	    }
 	}
@@ -476,7 +482,7 @@ int create_directory_user(const char* pathname)
 	/* Set ownership. */
 	if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
 	  {
-	    perror(*argv);
+	    xperror(*argv);
 	    return 1;
 	  }
     }
@@ -530,7 +536,7 @@ int unlink_recursive(const char* pathname)
   
   
  pfail:
-  perror(*argv);
+  xperror(*argv);
   rc = -1;
   goto done;
 }
