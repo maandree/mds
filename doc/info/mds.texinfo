@@ -1412,7 +1412,7 @@ to run X.org-only programs inside @command{mds}.
 @section @command{mds-wmds}
 
 @command{mds-wmds} is a server that translates
-X.org calls to @command{mds} calls. It can be used
+Wayland calls to @command{mds} calls. It can be used
 to run Wayland-only programs inside @command{mds}.
 
 
@@ -1420,7 +1420,7 @@ to run Wayland-only programs inside @command{mds}.
 @section @command{mds-mmds}
 
 @command{mds-mmds} is a server that translates
-X.org calls to @command{mds} calls. It can be used
+Mir calls to @command{mds} calls. It can be used
 to run Mir-only programs inside @command{mds}.
 
 
