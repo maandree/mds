@@ -66,7 +66,7 @@ Texts. A copy of the license is included in the section entitled
 @node Overview
 @chapter Overview
 
-@command{mds}@footnote{mds stands for micro-display server}
+@command{mds}@footnote{mds stands for micro-display server.}
 is a display server protocol and an implementation of said
 protocol. What makes @command{mds} stand out is its core
 design choice: it is desigend just like a microkernel.
@@ -77,7 +77,7 @@ exchangable and responsible for one thing.
 @command{mds} goal is neither security, performance nor
 a perfect graphical experience. @command{mds} is all
 about flexibility and freedom 0@footnote{The freedom to run
-the program as you wish, for any purpose}.
+the program as you wish, for any purpose.}.
 
 The reason for having a display server architectured as a
 microkernel is so that components can be added, remove
@@ -674,7 +674,7 @@ it is enough that one client before you
 has or it was originally included
 @footnote{You may however not include
 this header when you send out an
-orginal message}.
+orginal message.}.
 
 If you receive the message as such
 and want to add the line
