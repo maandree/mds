@@ -1805,15 +1805,21 @@ will store the content of @file{/proc/self/exe}.
 Return zero on success and @code{-1} on error.
 
 @item @code{reexec_server} [(@code{int argc, char** argv, int reexeced}) @arrow{} @code{void}]
-Re-exec the server.
+Re-execute the server. If @code{prepare_reexec}
+failed or has not been called, @code{argv[0]}
+will be used as a fallback. This functions
+has three input parameters:
+
+@table @code
+@item argc
+The number of elements in @code{argv}.
+@item argv
+The command line arguments.
+@item reexeced
+Whether the server has previously been re-executed
+@end table
+
 This function only returns on failure.
-
-If `prepare_reexec` failed or has not been called,
-`argv[0]` will be used as a fallback.
-
-param  argc      The number of elements in `argv`
-param  argv      The command line arguments
-param  reexeced  Whether the server has previously been re-exec:ed
 
 @item @code{xsigaction} [(@code{int signo, void (*function)(int signo)}) @arrow{} @code{int}]
 @code{sigaction} with the same parameters as @code{signal}.
