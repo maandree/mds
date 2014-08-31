@@ -80,7 +80,7 @@ static size_t clipboard_used[CLIPBOARD_LEVELS] = { 0, 0, 0 };
 /**
  * The entries in each clipstack
  */
-static clipitem_t* clipboard[CLIPBOARD_LEVELS];
+static clipitem_t* clipboard[CLIPBOARD_LEVELS]; /* TODO: removed expired on danger */
 
 
 
