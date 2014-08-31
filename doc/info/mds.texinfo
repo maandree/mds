@@ -860,6 +860,11 @@ cmdipc -Srk $S             # Remove the semaphore.
 mds-respawn @{ mds-bar @} &  # Spawn `mds-bar`.
 @end example
 
+This is however seldom necessary as @command{mds-reg} can
+often be used instead, with more abstraction as you would
+only need to specify what servers need to wait for, not
+what they provide.
+
 Another useful command (and package) is @command{setpgrp}.
 @command{mds} puts itself an all its children in a new
 process group. However you may want to put processes that
