@@ -819,10 +819,10 @@ Instructions: When a virtual terminal switch is requested the
 	      that it may switch VT. The server should detect
 	      this by setting up secondary contection to the
 	      display that intercepts this message. This connection
-	      should intercept this message with priority −2³²,
+	      should intercept this message with priority −2⁶³,
 	      all servers that need to perform actions before the
 	      switch takes place must have a priority higher than
-	      −2³², preferably 0.
+	      −2⁶³, preferably 0.
 
 Purpose: Allow servers to release resources when the user switch
 	 virtual terminal before the terminal actually changes and
