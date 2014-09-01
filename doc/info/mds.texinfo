@@ -1434,8 +1434,6 @@ monitors.
 the output. It takes output of all windows and arranges
 it to one image per monitor and sends it to the presentation
 servers, such as @command{mds-dri} and @command{mds-fb}.
-It is also capable of some primitive transformations such
-as rotation and skewing.
 
 
 
