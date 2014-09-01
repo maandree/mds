@@ -771,6 +771,8 @@ Command: keyboard-enumeration\n
 
 @menu
 * mds-respawn::                     The server immortality protocol.
+* mds-reg::                         The registry control command.
+* mds-clip::                        The clipboard control command.
 * External Utilities::              Suggestion on utilities you can utilise.
 @end menu
 
@@ -819,6 +821,96 @@ respawned.
 A server is considered to exit with a failure status
 unless it exits with the return value 0 or is terminated
 by the signal @code{SIGTERM}.
+
+
+
+@node mds-reg
+@section @command{mds-reg}
+
+@command{mds-reg} is a utility that can be used to list,
+available protocols provided by running servers. It can
+also wait for a set of protocols to become available. To
+list all available protocols run @command{mds-reg --list}.
+And to wait for the protocol @code{foo} run
+@command{mds-reg --wait=foo}. To also wait for the protocol
+@code{bar} run @command{mds-reg --wait=foo,bar} or
+@command{mds-reg --wait=foo --wait=bar}. Both of these
+styles can be mixed if you want to wait for even more
+protocols.
+
+
+
+@node mds-clip
+@section @command{mds-clip}
+
+@command{mds-clip} is a utility that can be used to
+review the clipboards on the display and manipulate them.
+@command{mds-clip} recognises the following options:
+
+@table @option
+@item --push
+Push non-option arguments from the command line into
+the clipboard.
+
+@item --expire=SECONDS
+Can be used with @option{--push}. The clip will not
+removed after @var{SECONDS} seconds.
+
+@item --pop
+Pop items from the clipboard whose indices are listed
+in the command line as non-option arguments. The first
+index is 1.
+
+@item --clear
+Pop all items in the clipboard.
+
+@item --list
+List items in the clipboard whose indices are listed
+in the command line as non-option arguments. The first
+index is 1. If no indicies are specified, all clips
+will be listed.
+
+@item --size
+Print the size of the clipboard, the number of clips
+in the clipboard.
+
+@item --capacity
+Print the capacity of the clipboard, the number of
+clips the clipboard can hold. If both @option{--size}
+and @option{--capacity} is used, the size will be
+printed on the first line and the capacity will be
+printed on the second line.
+
+@item --resize=CAPACITY
+Change the capaciy of the clipboard to @var{CAPACITY}
+clips.
+
+@item --stdin
+Can be used with @option{--push}. If used, the clip
+that should be placed on the top of the clipboard
+stack should be read from stdin.
+
+@item --delimiter=DELIMITER
+Can be used with @option{--stdin} or @option{--list}.
+If used with @option{--stdin}, an line containing
+only @var{DELIMITER} will delimit two values that
+should be placed in the clipboard. If used with
+@option{--list}, a line containing only @var{DELIMITER}
+will delimit two values in the output. The default
+delimiter for @option{--list} is an empty line.
+
+@item -1
+Use the primary clipboard, that is, the text copy
+clipboard. This is the default clipboard.
+
+@item -2
+Use the secondary clipboard, that is, the text
+selection clipboard.
+
+@item -3
+Use the secondary clipboard, that is, the non-text
+copy clipboard.
+@end table
 
 
 

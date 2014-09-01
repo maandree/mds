@@ -22,9 +22,9 @@ Extra servers:
 
 Missing commands:
 
-	reg		Command line interface for the protocol registry
+	reg
 	conf		Command line interface for reconfiguring servers
-	clip		Command line interface for the clipboard
+	clip
 	screenshot	Take a screenshot
 
 Need testing:
