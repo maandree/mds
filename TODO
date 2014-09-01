@@ -22,10 +22,8 @@ Extra servers:
 
 Missing commands:
 
-	reg
+	reg		clip		screenshot	slay
 	conf		Command line interface for reconfiguring servers
-	clip
-	screenshot	Take a screenshot
 
 Need testing:
 

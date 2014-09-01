@@ -773,6 +773,8 @@ Command: keyboard-enumeration\n
 * mds-respawn::                     The server immortality protocol.
 * mds-reg::                         The registry control command.
 * mds-clip::                        The clipboard control command.
+* mds-screenshot::                  The screenshot utility.
+* mds-slay::                        The process killing utility.
 * External Utilities::              Suggestion on utilities you can utilise.
 @end menu
 
@@ -908,8 +910,126 @@ Use the secondary clipboard, that is, the text
 selection clipboard.
 
 @item -3
-Use the secondary clipboard, that is, the non-text
+Use the tertiary clipboard, that is, the non-text
 copy clipboard.
+@end table
+
+
+
+@node mds-screenshot
+@section @command{mds-screenshot}
+
+@command{mds-screenshot} is a simple utility, and
+reference implementation there of, that can take a
+screeenshot of either the display, a monitor, or a
+window with or without its decorating window. It can
+also include or exclude the rat cursor or gamma
+ramps. @command{mds-screenshot} recognises the
+following options:
+
+@table @option
+@item --monitor
+Take screenshot of the monitor. The rat will
+be used to select monitor.
+
+@item --monitor=WINDOW_ID
+Take screenshot of the monitor whose root window's
+window ID is @var{WINDOW_ID} or has another window
+in it whose window ID is @var{WINDOW_ID}.
+
+@item --embed
+Take a screenshot of an embedded window.
+The rat will be used to select window.
+
+@item --embed=WINDOW_ID
+Take a screenshot of an embedded window whose
+window ID is @var{WINDOW_ID}.
+
+@item --window
+Take a screenshot a window.
+The rat will be used to select window.
+
+@item --window=WINDOW_ID
+Take a screenshot of a window whose
+window ID is @var{WINDOW_ID}.
+
+@item --decoration
+Include the window's decoration, if used together
+with @option{--window}. Ignored if used without
+@option{--window}.
+
+@item --cursor
+Include the rat cursor in the screenshot.
+
+@item --gamma
+Include the effects of gamma ramps in the screenshot.
+
+@item --low-gamma=LOW_PRIORITY
+Include the effects of gamma ramps with a priority
+above @var{LOW_PRIORITY} in the screenshot.
+
+@item --high-gamma=HIGH_PRIORITY
+Include the effects of gamma ramps with a priority
+below @var{HIGH_PRIORITY} in the screenshot. If used
+together with @option{--low-gamma=LOW_PRIORITY},
+the range [@var{LOW_PRIORITY}, @var{HIGH_PRIORITY}]
+will be used.
+@end table
+
+Optionally, you can add a non-option argument that
+specifies the pathname of the saved file.
+
+If neither @option{--monitor}, @option{--embed} or
+@option{--window} is used, a screenshot will be
+taked of the display. That is, all monitors.
+
+In case of mirrored outputs, one of the potential
+outputs will be selected arbitrarily if
+@option{--gamma}, @option{--low-gamma} or
+@option{--high-gamma} is used. If neither is used,
+the screenshot will be identical for all mirrored
+outputs.
+
+
+
+@node mds-slay
+@section @command{mds-slay}
+
+@command{mds-slay} a utility that can be used to
+kill a process by it window or identify the window
+ID of a window. @command{mds-slay} recognises the
+following options:
+
+@table @option
+@item --embed
+Kill an embedded window.
+The rat will be used to select window.
+
+@item --embed=WINDOW_ID
+Kill an embedded window whose
+window ID is @var{WINDOW_ID}.
+
+@item --window
+Kill a window.
+The rat will be used to select window.
+
+@item --window=WINDOW_ID
+Kill a window whose
+window ID is @var{WINDOW_ID}.
+
+@item --signal=SIGNAL
+Send the signal @var{SIGNAL} to the
+process owning the selected window.
+
+@item --no-signal
+Do not send a signal; only identify the
+window.
+
+@item --keep-cursor
+Do not change the cursor to a kill cursor.
+
+@item --print
+The the ID of the selected window.
 @end table
 
 
