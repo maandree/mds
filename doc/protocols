@@ -1,48 +1,5 @@
 ---------------------------------------------------------------------
 
-Command: assign-id
-  Assign new ID to client, or fetch current ID
-
-Purpose: assigning ID to clients so server can respond to that client
-
-Compulsivity: manditory (core infrastructure)
-
-More documentation: doc/messages
-
-Reference implementation: mds-server
-
----------------------------------------------------------------------
-
-Command: intercept
-  Sign up for reception of message
-
-Optional header: Stop
-  Stop reception of messages if `yes`
-
-Optional header: Priority
-  Signed 64-bit integer of reception priority (reversed of order)
-
-Optional header: Modifying
-  Send message asynchronously and await modification if `yes`
-
-Optional header: Length
-  Length of the message
-
-Message: list of headers and header–value-pairs that qualifies
-         a message for reception, all messages qualifies if this
-	 list is empty
-
-Purpose: filter received message for clients and servers
-Purpose: assigned interception order for modification of messages
-
-Compulsivity: manditory (core infrastructure)
-
-More documentation: doc/messages
-
-Reference implementation: mds-server
-
----------------------------------------------------------------------
-
 Command: echo
   Echo back a message
 
@@ -61,56 +18,6 @@ Purpose: network heartbeat
 Compulsivity: recommended for network enabled servers
 
 Reference implementation: mds-echo
-
----------------------------------------------------------------------
-
-Command: register
-  Register availability of a command for which you implement a service
-
-Required header: Client ID
-  Your ID, provided by `ID assignment`
-  in response to `Command: assign-id`
-
-Conditionally required header: Length
-  Required if: `Action: list`
-  Length of the message
-
-Optional header: Action
-  Remove availability for registry if `remove`.
-  Wait until listed commands are available if `wait`,
-    however if a protocol becomes unavailable during this
-    wait period it will still be counted as available for
-    this wait action.
-  Send a list of availability commands if `list`.
-
-Conditionally optional header: Time to live
-  Available and optional if: `Action: wait`
-  The maximum number of seconds to wait.
-
-Message: List of values for the header `Command` that you implement
-
-Purpose: Identify supported display server operations
-Purpose: Initialisation process synchronisation
-
-Compulsivity: highly recommended (infrastructure), programs may
-	      stall a bit from time to time without it, or at
-	      initialisation depending on the program's implementation
-
-Reference implementation: mds-registry
-
----------------------------------------------------------------------
-
-Command: reregister
-  Request that all servers resends `Command: register` with either
-  `Action: add` or without the `Action` header (does the same thing)
-
-Purpose: Rebuild registry created with `Command: register` if the
-	 registry server crashes
-
-Compulsivity: highly recommended (infrastructure), programs may
-	      think a protocol is not supported of the registry
-	      server crashes if you do not implement this in your
-	      server
 
 ---------------------------------------------------------------------
 
@@ -701,38 +608,6 @@ Purpose: Enable servers and clients to detect removal of keyboards
 Compulsivity: recommended
 
 Reference implementation: kbd
-
----------------------------------------------------------------------
-
-Command: error
-  Notify a client about a request failure
-
-Required header: To
-  The ID of the client that send a request that failed
-
-Required header: In response to
-  The ID of the message whose request failed
-
-Required header: Error
-  The errno number of the error, 0 on success if the
-  message was not an information query. The string
-  "custom" can be used if there is not errno number,
-  optionally followed by a blank space and a number
-  that identifies the error, this number must be
-  positive (not zero).
-
-Conditionally optional header: Length
-  Available and optional if: "custom" as used in `Error`
-  The length of the message
-
-Message: Description of the error, single line, mid-sentence case,
-	 no punctuation in the end, must not be question but rather
-	 it must be a statement
-
-Purpose: Enable keyboard layout servers to automatically set active
-	 locks when the server starts based on currently active LED:s
-
-Compulsivity: optional
 
 ---------------------------------------------------------------------
 

@@ -56,6 +56,7 @@ Texts. A copy of the license is included in the section entitled
 * Protocol::                        The @command{mds} procotol.
 * Utilities::                       About @command{mds} utilities.
 * Servers::                         About @command{mds} servers.
+* Protocols::                       @command{mds} procotols.
 * libmdsserver::                    Overview of @command{libmdsserver}.
 * mds-base::                        Overview of @command{mds-base}.
 * GNU Free Documentation License::  Copying and sharing this manual.
@@ -1711,6 +1712,227 @@ simple, reference implementation of, workspaces.
 
 @command{mds-tray} is a server that provides a
 simple, reference implementation of a, status icon tray.
+
+
+
+@node Protocols
+@chapter Protocols
+
+@menu
+* Infrastructure protocols::        Infrastructure protocols.
+@end menu
+
+
+
+@node Infrastructure protocols
+@section Infrastructure protocols
+
+@menu
+* assign-id::                       Assign new ID to client, or fetch current ID.
+* intercept::                       Sign up for reception of message.
+* register::                        Register availability of a command for which you implement a service.
+* reregister::                      Request for reregistration for available commands.
+* error::                           Notify a client about a request failure.
+@end menu
+
+
+
+@node assign-id
+@subsection assign-id
+
+@table @asis
+@item Identifying header:
+@code{Command: assign-id}
+
+@item Action:
+Assign new ID to client, or fetch current ID.
+
+@item Purpose:
+Assigning ID to clients so server can respond to that client.
+
+@item Compulsivity:
+Manditory, part of the core infrastructure.
+
+@item Reference implementation:
+@command{mds-server}
+@end table
+
+
+
+@node intercept
+@subsection intercept
+
+@table @asis
+@item Identifying header:
+@code{Command: intercept}
+
+@item Action:
+Sign up for reception of message.
+
+@item Optional header: @code{Stop}
+Stop reception of messages if the value for
+the header @code{Stop} is @code{yes}.
+
+@item Optional header: @code{Priority}
+Signed 64-bit integer of reception priority
+(reversed of order).
+
+@item Optional header: @code{Modifying}
+Send message asynchronously and await
+modification if the value for the header
+@code{Modifying} is @code{yes}.
+
+@item Optional header: @code{Length}
+Length of the message.
+
+@item Message:
+List of headers and header--value-pairs that
+qualifies a message for reception, all messages
+qualifies if this list is empty.
+
+@item Purpose:
+Filter received message for clients and servers.
+
+@item Purpose:
+Assigned interception order for modification of messages.
+
+@item Compulsivity:
+Manditory, part of the core infrastructure.
+
+@item Reference implementation:
+@command{mds-server}
+@end table
+
+
+
+@node register
+@subsection register
+
+@table @asis
+@item Identifying header:
+@code{Command: register}
+
+@item Action:
+Register availability of a command for which you implement a service.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Conditionally required header: @code{Length}
+Length of the message.
+Required if @code{Action: list} is included in the headers.
+
+@item Optional header: @code{Action}
+@table @code
+@item remove
+Remove availability from registry if the value
+of the header @code{Action} is @code{remove}.
+@item wait
+Wait until listed commands are available if the
+value of the header @code{Action} is @code{wait}.
+However if a protocol becomes unavailable during this
+wait period it will still be counted as available for
+this wait action.
+@item list
+Send a list of availability commands if the value
+of the header @code{Action} is @code{list}.
+@end table
+
+@item Conditionally optional header: @code{Time to live}
+The maximum number of seconds to wait.
+Available and optional if @code{Action: wait}
+is included in the headers.
+
+@item Message:
+List of values for the header @code{Command}
+that you implement.
+
+@item Purpose:
+Identify supported display server operations.
+
+@item Purpose:
+Initialisation process synchronisation.
+
+@item Compulsivity:
+Highly recommended, programs may stall a bit from
+time to time without it, or at initialisation
+depending on the program's implementation.
+
+@item Reference implementation:
+@command{mds-registry}
+@end table
+
+
+
+@node reregister
+@subsection reregister
+
+@table @asis
+@item Identifying header:
+@code{Command: reregister}
+
+@item Action:
+Request that all servers resends @code{Command: register}
+with either @code{Action: add} or without the @code{Action}
+header (does the same thing.)
+
+@item Purpose:
+Rebuild registry created with @code{Command: register}
+if the registry server crashes.
+
+@item Compulsivity:
+Highly recommended, programs may think a protocol is not
+supported of the registry server crashes if you do not
+implement this in your server.
+
+@item Reference implementation:
+@command{mds-registry} and most servers.
+@end table
+
+
+
+@node error
+@subsection error
+
+@table @asis
+@item Identifying header:
+@code{Command: error}
+
+@item Action:
+Notify a client about a request failure.
+
+@item Required header: @code{To}
+The ID of the client that send a request that failed.
+
+@item Required header: @code{In response to}
+The ID of the message whose request failed.
+
+@item Required header: @code{Error}
+The errno number of the error, 0 on success if the
+message was not an information query. The string
+``custom'' can be used if there is not errno number,
+optionally followed by a blank space and a number
+that identifies the error, this number must be
+positive (not zero).
+
+@item Conditionally optional header: @code{Length}
+The length of the message.
+Available and optional if ``custom'' is used in
+the header @code{Error}.
+
+@item Message:
+Description of the error, single line, mid-sentence case,
+no punctuation in the end, must not be question but rather
+it must be a statement.
+
+@item Purpose:
+Enable keyboard layout servers to automatically set active
+locks when the server starts based on currently active LED:s.
+
+@item Compulsivity:
+Optional.
+@end table
 
 
 
