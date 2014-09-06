@@ -1721,6 +1721,7 @@ simple, reference implementation of a, status icon tray.
 @menu
 * Infrastructure protocols::        Infrastructure protocols.
 * Virtual terminal protocols::      Virtual terminal protocols.
+* Keyboard protocols::              Keyboard protocols.
 @end menu
 
 
@@ -1985,7 +1986,7 @@ VT such that they can use ioctl and similar calls on that TTY.
 Required.
 
 @item Reference implementation:
-@code{vt}
+@code{mds-vt}
 @end table
 
 
@@ -2042,7 +2043,7 @@ VT such that they can use ioctl and similar calls on that TTY.
 Required.
 
 @item Reference implementation:
-@code{vt}
+@code{mds-vt}
 @end table
 
 
@@ -2098,7 +2099,531 @@ active again.
 Required.
 
 @item Reference implementation:
-@code{vt} and @code{kkbd}
+@code{mds-vt} and @code{mds-kkbd}
+@end table
+
+
+
+@node Keyboard protocols
+@section Keyboard protocols
+
+@menu
+* key-sent::                        Announce a keyboard input event.
+* enumerate-keyboards::             List available keyboards.
+* keyboard-enumeration::            Response to @code{Command: enumerate-keyboards}.
+* set-keyboard-leds::               Activate and deactivate LED:s on a keyboard.
+* get-keyboard-leds::               List exisiting LED:s on a keyboard and their state.
+* keycode-map::                     Remap keyboard keycodes and query current mapping.
+* new-keyboard::                    Announce the existance of a new keyboard.
+* old-keyboard::                    Announce the removal of an old keyboard.
+@end menu
+
+
+
+@node key-sent
+@subsection key-sent
+
+@table @asis
+@item Identifying header:
+@command{Command: key-sent}
+
+@item Action:
+Announce a keyboard input event.
+
+@item Required header: @code{Keyboard}
+Any string that uniquely identifies the keyboard.
+@table @asis
+@item Purpose:
+Enable multi-keyboard aware programs and give at
+least on keyboard per seat in a multi-seat environment.
+@item Note:
+mds-kkbd uses @code{kernel} to indicate that it uses
+the kernel and thus lumps together all keyboards.
+@end table
+
+@item Required header: @code{Released}
+@table @code
+@item yes
+The value of the header @code{Released} will
+be @code{yes} if the key was released.
+@item no
+The value of the header @code{Released} will be
+@code{no} otherwise, that is, held down or pressed.
+@end table
+Note: pause/break is automatically released directly after
+it has been pressed. This is feature built into keyboards
+and servers should not try to circumvent this.
+
+@item Required header: @code{Keycode}
+An unsigned 14-bit integer identifying the key, may be remapped.
+
+@item Optional header: @code{Scancode}
+Either an unsigned 7-bit integer or a single blank space
+separated trio of unsigned 7-bit integers, identifying the key.
+This is the scancode sent from the keyboard and optionally
+unified by the keyboard driver, however with the typed/released
+bit zeroed out. This may not be remapped.
+
+@item Optional header: @code{Modifiers}
+Single blank space separated list of active modifiers:
+@table @code
+@item shift
+Shift (level 2)
+@item ctrl
+Control
+@item alt
+Alternative/Option
+@item altgr
+Alternative Graphic (level 3)
+@item lvl*
+@code{*} may be any @math{2^n + 1} integer with
+@math{1 < n < 20}.
+@item super
+Super
+@item hyper
+Hyper
+@item ultra
+Ultra
+@item caps
+Caps (usually a lock key)
+@item num
+Num (usually a lock key)
+@item scrl
+Scroll (usually a lock key)
+@item top
+Top (historical)
+@item front
+Front (historical)
+@item greek
+Greek (historical)
+@item compose
+Compose (rare, it is usally a dead key)
+@end table
+Any key that has been locked should be prefix with
+@code{+}, if the key has been locked by nullified
+with non-lock modifier it should be prefixed with
+a @code{-}. If no modifier is active or has been
+nullified, @code{none} should be used.
+
+@item Optional header: @code{Key}
+A textual representation of the key that has been typed or
+released, as mapped by the keyboard layout.
+@table @code
+@item esc
+Escape
+@item f*
+F@code{*} where @code{*} is any integer.
+@item sysrq
+System Request/Print Screen
+@item scrl
+Scroll (lock)
+@item break
+Break/Pause
+@item backspace
+Backspace
+@item tab
+Tab
+@item return
+Return/Enter
+@item space
+Blank Space
+@item menu
+Application Menu
+@item ins
+Insert
+@item home
+Home
+@item pgup
+Page Up
+@item del
+Delete
+@item end
+End
+@item pgdown
+Page Down
+@item up
+Up Arrow
+@item left
+Left Arrow
+@item down
+Down Arrow
+@item right
+Right Arrow
+@item shift
+Shift (level 2)
+@item begin
+Begin (keypad 5 in nagivation mode)
+@item ctrl
+Control
+@item alt
+Alternative/Option
+@item altgr
+Alternative Graphic (level 3)
+@item lvl*
+@code{*} may be any @math{2^n + 1} integer
+@math{with 1 < n < 20}.
+@item super
+Super
+@item hyper
+Hyper
+@item ultra
+Ultra
+@item caps
+Caps (usually a lock key)
+@item num
+Num (usually a lock key)
+@item scrl
+Scroll (usually a lock key)
+@item top
+Top (historical)
+@item front
+Front (historical)
+@item greek
+Greek (historical)
+@item compose
+Compose (usally a dead key)
+@item hexcompose
+Hex-Compose (usally a dead key)
+(Use to create aribitrary characters.)
+@item longhexcompose
+Long Hex-Compose (usally a dead key)
+(Variant of hexcompose for longer codepoints.)
+@item modelock
+Mode Lock
+@item letter *
+@code{*} may be any UTF-8 encoded letter.
+@end table
+Keys that lock/unlock a modifer should be suffixed with a
+blank space and a @code{lock}. If the key is a dead key
+(even the compose key) should use @code{dead} instead. A
+position, either @code{left}, @code{right}, @code{keypad}
+or an index, followed by a blank space, should prefix any
+key that occurs on multiple position on the keyboard,
+unless it only appears on the keypad once and once not on
+the keypad. Keys without any meaning should be identified
+as @code{unknown}. Modifiers and dead keys should not
+affect the value.
+
+@item Optional header: @code{Characters}
+UTF-8 encoded string that has been written.
+
+@item Purpose:
+Enable the user to use a keyboard, physical or on-screen.
+
+@item Purpose:
+Enable programs to send keys as part of a
+script or a reply of a recorded session.
+
+@item Compulsivity:
+Highly-recommended, a computer is as good
+as useless without a keyboard.
+
+@item Reference implementation:
+@command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@end table
+
+
+
+@node enumerate-keyboards
+@subsection enumerate-keyboards
+
+@table @asis
+@item Identifying header:
+@command{Command: enumerate-keyboards}
+
+@item Action:
+List available keyboards.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Instructions:
+This message must be consumed by the first server that
+receives it and implements support for it, and then send
+out a @code{Command: keyboard-enumeration} populated with
+the keyboard it provide as named in the @code{Keyboard}
+header for protocols such as @code{Command: key-sent}.
+
+@item Purpose:
+Make it possible for clients to list all available
+keyboards so that can be configured individually.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-kkbd} and @command{mds-kbd}
+@end table
+
+
+
+@node keyboard-enumeration
+@subsection keyboard-enumeration
+
+@table @asis
+@item Identifying header:
+@command{Command: keyboard-enumeration}
+
+@item Action:
+Response to @code{Command: enumerate-keyboards}.
+
+@item Required header: @code{To}
+The ID received under @code{Client ID} header in
+the @code{Command: enumerate-keyboards} message
+that triggered this message to be broadcasted
+
+@item Required header: @code{In response to}
+The ID received under the @code{Message ID} header
+in the @code{Command: enumerate-keyboards} message
+that triggered this message to be broadcasted.
+
+@item Required header: @code{Length}
+Length of the message.
+
+@item Message:
+New line separated list of available keyboards.
+
+@item Instructions:
+All keyboard servers should listen for this message
+and append all keyboards it implement to the message
+once recieved.
+
+@item Purpose:
+Make it possible for clients to list all available
+keyboards so that can be configured individually
+
+@item Compulsivity:
+Required if you implement @command{Command: enumerate-keyboards}.
+
+@item Reference implementation:
+@command{mds-kkbd} and @command{mds-kbd}
+@end table
+
+
+
+@node set-keyboard-leds
+@subsection set-keyboard-leds
+
+@table @asis
+@item Identifying header:
+@command{Command: set-keyboard-leds}
+
+@item Action:
+Activate and deactivate LED:s on a keyboard.
+
+@item Required header: @code{Active}
+LED:s that should be turned on. If a LED is listed here
+but not in @code{Mask} that LED should be turned on if
+it is off, and turned off if it is on.
+
+The value is a single blank space separated list of LED:s:
+@table @code
+@item num
+Num lock
+@item caps
+Caps lock
+@item scroll
+Scroll lock
+@item compose
+Compose
+@end table
+Unsupported LED:s should be silently ignored.
+
+@item Required header: @code{Mask}
+LED:s listed here that do not appear in @code{Active}
+should be turned off. The value of this header follows
+the same rules as for @code{Active}.
+
+@item Optional header: @code{Keyboard}
+A string that identifies the keyboard that should be
+affected. If omitted all keyboard are affected.
+
+@item Purpose:
+Enable keyboard layout servers to activate and deactive
+LED:s on the keyboard to indicate active locks.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@end table
+
+
+
+@node get-keyboard-leds
+@subsection get-keyboard-leds
+
+@table @asis
+@item Identifying header:
+@command{Command: get-keyboard-leds}
+
+@item Action:
+List exisiting LED:s on a keyboard and their state.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Required header: @code{Keyboard}
+A string that identifies the keyboard that
+should be affected.
+
+@item Response:
+The server implementing support for
+@code{Command: get-keyboard-leds} for the keyboard
+indicated by @code{Keyboard} should send a message
+back to the client indicated by rge @code{Client ID}
+header (using the @code{To} header) with the headers:
+@table @code
+@item Active
+List of currently turned on LED:s.
+@item Present
+List of LED:s that the server believes
+to be present on the keyboards.
+@end table
+Both of these headers followes the rules of the
+@code{Active} header under @code{Command: set-keyboard-leds}.
+
+@item Purpose:
+Enable keyboard layout servers to automatically
+set active locks when the server starts based on
+currently active LED:s
+
+@item Compulsivity:
+Recommended. Required if you implement support for
+@code{Command: set-keyboard-leds}. If you do not
+support this protocol servers and clients and stall
+when they try to get the active LED:s
+
+@item Reference implementation:
+@command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@end table
+
+
+
+@node keycode-map
+@subsection keycode-map
+
+@table @asis
+@item Identifying header:
+@command{Command: keycode-map}
+
+@item Action:
+Remap keyboard keycodes and query current mapping.
+
+@item Required header: @code{Action}
+@table @code
+@item remap
+Remap keys if the value of the header @code{Action}
+is @code{remap}.
+@item reset
+Reset all mappings to identity mapping if the value
+of the header @code{Action} is @code{reset}.
+@item query
+Query mapping if the value of the header @code{Action}
+is @code{query}.
+@end table
+Each affected server will send a message format
+like that of @code{Action: remap} with current
+mapping that are not identity mappings.
+
+@item Optional header: @code{Keyboard}
+A string that identifies the keyboard that should be
+affected. If omitted all keyboard are affected.
+
+@item Conditionally required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+Required if @code{Action: query} is included in the headers.
+
+@item Conditionally optional header: @code{Length}
+The length of the message.
+Available and optional if @code{Action: remap}
+is included in the headers.
+
+@item Message:
+Each line contains contains two single space delimited numbers,
+the first number is the keycode as determined by the scancode,
+the second number is keycode that scancode should generate.
+For example, @code{1 1} resets Escape to be mapped to Escape,
+and @code{1 59} remaps Escape to F1, while
+@example
+1 59
+59 1
+@end example
+swaps Escape and F1.
+
+@item Purpose:
+Enable the user to swap or replace keys on the keyboard.
+
+@item Purpose:
+Enable the user manually correct an incorrectly mapped keyboard.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-kbd} and @command{mds-kkbd}
+@end table
+
+
+
+@node new-keyboard
+@subsection new-keyboard
+
+@table @asis
+@item Identifying header:
+@command{Command: new-keyboard}
+
+@item Action:
+Announce the existance of a new keyboard.
+
+@item Required header: @code{Length}
+The length of the message.
+
+@item Message:
+List of strings that identifies the keyboards
+that have been added.
+
+@item Purpose:
+Enable servers and clients to detect new keyboards.
+
+@item Compulsivity:
+Recommended.
+
+@item Reference implementation:
+@command{mds-kbd} and @command{mds-kkbd}
+@end table
+
+
+
+@node old-keyboard
+@subsection old-keyboard
+
+@table @asis
+@item Identifying header:
+@command{Command: old-keyboard}
+
+@item Action:
+Announce the removal of an old keyboard.
+
+@item Required header: @command{Length}
+The length of the message.
+
+@item Message:
+List of strings that identifies the keyboards
+that have been removed.
+
+@item Purpose:
+Enable servers and clients to detect removal of keyboards.
+
+@item Compulsivity:
+Recommended.
+
+@item Reference implementation:
+@command{mds-kbd}
 @end table
 
 
