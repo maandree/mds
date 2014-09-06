@@ -1720,6 +1720,7 @@ simple, reference implementation of a, status icon tray.
 
 @menu
 * Infrastructure protocols::        Infrastructure protocols.
+* Virtual terminal protocols::      Virtual terminal protocols.
 @end menu
 
 
@@ -1936,12 +1937,178 @@ Optional.
 
 
 
+@node Virtual terminal protocols
+@section Virtual terminal protocols
+
+@menu
+* get-vt::                          Get the index of the virtual terminal the server is display on.
+* configure-vt::                    Reconfigure the virtual terminal the server is display on.
+* switching-vt::                    Notify servers about an ongoing virtual terminal switch.
+@end menu
+
+
+
+@node get-vt
+@subsection get-vt
+
+@table @asis
+@item Identifying header:
+@code{Command: get-vt}
+
+@item Action:
+Get the index of the virtual terminal the server is display on.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Response:
+The server will response with the header @code{VT index}
+and the index of the virtual terminal the server is
+display on in decimal format. Additionally the server
+will respond with the header @code{Active} with the value
+@code{yes} if the VT is in the foreground or the value
+@code{no} if the VT is in the background.
+
+@item Purpose:
+Allow programs to be aware of whether the display is in the
+foreground or the background.
+
+@item Purpose:
+Allow programs to be aware of which VT the server is running on.
+
+@item Purpose:
+Allow programs to gain access of the TTY associated with the
+VT such that they can use ioctl and similar calls on that TTY.
+
+@item Compulsivity:
+Required.
+
+@item Reference implementation:
+@code{vt}
+@end table
+
+
+
+@node configure-vt
+@subsection configure-vt
+
+@table @asis
+@item Identifying header:
+@code{configure-vt}
+
+@item Action:
+Reconfigure the virtual terminal the server is display on.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Optional header: @code{graphical}
+@table @code
+@item yes
+Set the TTY graphical mode if the value of the header
+@code{graphical} is @code{yes}.
+@item no
+Set the TTY text mode if the value of the header
+@code{graphical} is @code{no}.
+@end table
+The server implementing this protocol should not set the
+TTY to  text mode temporarily when switching TTY. It is
+up the the server that set the request for graphical mode
+to temporarily switch to text mode when switching TTY.
+
+@item Optional header: @code{exclusive}
+@table @code
+@item yes
+The server may block other process from opening the TTY
+if the value of the header @code{exclusive} is @code{yes}.
+@item no
+The server may not block other process from opening the TTY
+if the value of the header @code{exclusive} is @code{no}.
+@end table
+
+@item Response:
+The server will response with a @code{Command: error}.
+
+@item Purpose:
+Allow presentation servers to enter and leave graphical mode.
+
+@item Purpose:
+Allow programs to gain access of the TTY associated with the
+VT such that they can use ioctl and similar calls on that TTY.
+
+@item Compulsivity:
+Required.
+
+@item Reference implementation:
+@code{vt}
+@end table
+
+
+
+@node switching-vt
+@subsection switching-vt
+
+@table @asis
+@item Identifying header:
+@code{Command: switching-vt}
+
+@item Action:
+Notify servers about an ongoing virtual terminal switch.
+
+@item Required header: @code{Status}
+@table @code
+@item deactivating
+The kernel wants to place the display in the background
+if the value of the header @code{Status} is @code{deactivating}.
+@item activating
+The kernel wants to place the display in the foreground
+if the value of the header @code{Status} is @code{activating}.
+@end table
+
+@item Instructions:
+When a virtual terminal switch is requested the
+server implementing control VT switching involving
+the display's virtual terminal will get signaled by
+the kernel. Upon this signal the server should
+broadcast this command. All servers that need to
+release or acquire resouces should intercept this
+message with the possibility of modifying it. Once
+a server is ready for the VT to switch it should
+let the message pass to the next server by telling
+the master server that it is no modification to do.
+Once all servers are read for the switch the server
+that emitted this message should signal the kernel
+that it may switch VT. The server should detect
+this by setting up secondary contection to the
+display that intercepts this message. This connection
+should intercept this message with priority @math{-2^{62}},
+all servers that need to perform actions before the
+switch takes place must have a priority higher than
+@math{-2^{62}}, preferably 0.
+
+@item Purpose:
+Allow servers to release resources when the user switch
+virtual terminal before the terminal actually changes and
+to reacquire resources when the virtual terminal become
+active again.
+
+@item Compulsivity:
+Required.
+
+@item Reference implementation:
+@code{vt} and @code{kkbd}
+@end table
+
+
+
 @node libmdsserver
 @chapter libmdsserver
 
 libmdsserver is library written for the reference
 implementation of the @command{mds} servers.
-libmdsserver does not contain support or any
+llibmdsserver does not contain support or any
 protocols, rather it contains auxiliary functions,
 macros, data structures such as linked lists and
 hash tables, and support the basics of the message
