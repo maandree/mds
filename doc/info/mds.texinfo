@@ -4381,7 +4381,7 @@ Key left of @kbd{backspace}
 @item @code{14}
 @kbd{Backspace} key
 @item @code{15}
-Tab key
+@kbd{Tab} key
 @item @code{16}--@code{25}
 Keys: @kbd{q}, @kbd{w}, @kbd{e}, @kbd{r}, @kbd{t}, @kbd{y}, @kbd{u}, @kbd{i}, @kbd{o}, @kbd{p}
 @item @code{26}
