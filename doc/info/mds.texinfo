@@ -1890,7 +1890,7 @@ supported of the registry server crashes if you do not
 implement this in your server.
 
 @item Reference implementation:
-@command{mds-registry} and most servers.
+@command{mds-registry}.
 @end table
 
 
