@@ -4360,10 +4360,14 @@ keycode is @math{a \cdot 128 + b} where @math{a} is the
 value of the second byte and @math{b} is the value
 of the third byte.
 
+@menu
+* 105-keys Keycodes::               List of keycodes for 105-keys keyboards.
+@end menu
 
 
-@node 105-keys keycodes
-@section 105-keys keycodes
+
+@node 105-keys Keycodes
+@section 105-keys Keycodes
 
 This is a list of keyboards for the
 105-keys keyboards, using QWERTY-layout
