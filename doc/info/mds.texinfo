@@ -1723,6 +1723,7 @@ simple, reference implementation of a, status icon tray.
 * Virtual Terminal Protocols::      Virtual terminal protocols.
 * Keyboard Protocols::              Keyboard protocols.
 * Clipboard Protocols::             Clipboard protocols.
+* Status Icon Protocols::           Status icon protocols.
 * Miscellaneous Protocols::         Miscellaneous protocols.
 @end menu
 
@@ -2792,6 +2793,268 @@ Optional add-on to the clipboard's functionallity.
 
 @item Reference implementation:
 @command{mds-clipboard}
+@end table
+
+
+
+@node Status Icon Protocols
+@section Status Icon Protocols
+
+@menu
+* add-tray-icon::                   Add a status icons to the status icon tray.
+* update-tray-icon::                Change the status of a status icon.
+* tray-update::                     Send updates about the status tray to the status icon.
+* new-tray::                        Announce the existence of a new status icon trays.
+@end menu
+
+
+
+@node add-tray-icon
+@subsection add-tray-icon
+
+@table @asis
+@item Identifying header:
+@command{Command: add-tray-icon}
+
+@item Action:
+Add a status icons to the status icon tray.
+
+The client should keep in mind that there can be any number of
+trays available on the system: zero, one, two or three, ...,
+and that it will get a response once from every tray.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Required header: @code{Package}
+The name of the package to which the program announced the icon
+belongs.
+
+@item Required header: @code{Icon ID}
+An ID of the icon that can be used identify the icon, icon ID:s
+are not unique, but the combination of a package and a icon ID
+should be unque and can be used to ignore already added icons
+and hide icons that the user has been configured to be hidden.
+
+@item Required header: @code{Title}
+A title describing the icon for the user, used to configured
+when icons should be hidden and shown among other configuration.
+
+@item Required header: @code{Icon}
+The name or pathname of an icon to use together with the title.
+
+@item Response:
+Recipients will respond with a message containing the headers:
+@table @code
+@item To
+Will contain the value of the @code{Client ID} from the
+message that triggered this response.
+@item In response to
+Will contain the value of the @code{Message ID} from the
+message that triggered this response.
+@item Message ID
+Will contain a value as described in @ref{Message Passing}.
+@item Socket
+Will contain an ID to where the icon should be embeded.
+@item Will send update
+The value of this header will be @code{yes} if this
+message will be followed by a @code{Command: tray-update}
+message. Otherwise the value will be @code{no}.
+@end table
+
+@item Purpose:
+Enable clients to add a small icon that displays the status
+of programs, particularly minimised programs and services.
+
+@item Compulsivity:
+Optional.
+@end table
+
+
+
+@node update-tray-icon
+@subsection update-tray-icon
+
+@table @asis
+@item Identifying header:
+@command{Command: update-tray-icon}
+
+@item Action:
+Change the status of a status icon.
+
+@item Required header: @code{Status}
+@table @code
+@item hide
+Hide the icon if the value of the
+@code{Status} header is @code{hide}.
+@item show
+Show the icon if the value of the
+@code{Status} header is @code{show}.
+@item active
+The icon is active if the value of
+the @code{Status} header is @code{active}.
+@item inactive
+The icon is inactive if the value of
+the @code{Status} header is @code{inactive}.
+@end table
+
+@item Purpose:
+Enable status trays to automatically hide inactive icons.
+
+@item Purpose:
+Hide icons without actually removing them.
+
+@item Compulsivity:
+Required if supporting @code{Command: add-tray-icon},
+only @code{Status: hide} and @code{Status show} is required.
+@end table
+
+
+
+@node tray-update
+@subsection tray-update
+
+@table @asis
+@item Identifying header:
+@command{Command: tray-update}
+
+@item Action:
+Send updates about the status tray to the status icon.
+
+@item Required header: @code{Socket}
+Where the icon is embedded, used to identify the
+affected tray.
+
+@item Conditionally required header: @code{Max colour}
+The maximum colour component value, for example, if using 24-bit
+colour, which component will be 8-bit and the maximum value will
+be 255, this also applies to the alpha component.
+Required if either for the @code{Colour}-, @code{Foreground}-
+or @code{Alpha}-header are used.
+
+@item Conditionally required header: @code{Size}
+The width and height, in pixels, the icon should have.
+Required if the @code{Length}-header is used,
+otherwise this header is optional.
+
+@item Conditionally required header: @code{Has alpha}
+@table @code
+@item yes
+The message contains an alpha channel if the
+value of the @code{Has alpha} header is @code{yes}.
+@item no
+The message does not contain an alpha channel if the
+value of the @code{Has alpha} header is @code{no}.
+@end table
+Required if the @code{Length}-header is used.
+
+@item Conditionally required header: @code{Bytes}
+The number of bytes the subpixels used, for example,
+24-bit colours will have this set to 1 because each
+subpixel has 8 bits, 48-bit colours will have this
+set to 2 because each subpixel has 16 bits
+Allowed values are: 1, 2, 4 and 8. These values are
+used used so that CPU:s with any endianness can be
+trivially used as the words sizes are guaranteed to
+be supported in C, and mixed/middle-endiannes gets
+complicated if we go outside this.
+Required if the @code{Length}-header is used.
+
+@item Conditionally optional/required header: @code{Colour}
+Single blank space-separated [0, @code{<Max colour>}]
+sRGB 3-tuple.
+Available and optional if the @code{Length}-header
+is not used.
+Required if the @code{Foreground}-header but not
+@code{Length}-header is used.
+
+@item Conditionally optional header: @code{Foreground}
+Single blank space-separated [0, @code{<Max colour>}] sRGB 3-tuple.
+
+@item Optional header: @code{Alpha}
+The opacity of the tray.
+
+@item Optional header: @code{Length}
+Length of the message.
+
+@item Optional header: @code{Use urgency}
+@table @code
+@item yes
+The icon tray may blink if the value of the
+@code{Use urgency} header is @code{yes}.
+@item no
+The icon tray may not blink if the value of
+the @code{Use urgency} header is @code{no}.
+@end table
+
+@item Message:
+Raw binary encoding of the background image, bytes
+are orders: row, pixel, channel (alpha, red, green,
+blue), subpixel value (native CPU encoding). The
+Alpha channel should be included but ignored if
+@code{Has alpha: no}, in such as it is best to set
+it to full.
+
+Example image with @code{Bytes: 2},
+@code{Has alpha: no} and @code{Size: 3}:
+@example
+sRGB(x0102, 0, 0), sRGB(0, x0304, 0), sRGB(0, 0, x0506)
+sRGB(x0708, 0, 0), sRGB(0, x090A, 0), sRGB(0, 0, x0B0C)
+sRGB(x0D0E, 0, 0), sRGB(0, x0F10, 0), sRGB(0, 0, x1112)
+@end example
+
+Encoding of example image in hexadecimal representation:
+@example
+FFFF 0102 0000 0000 FFFF 0000 0304 0000 FFFF 0000 0000 0506
+FFFF 0708 0000 0000 FFFF 0000 090A 0000 FFFF 0000 0000 0B0C
+FFFF 0D0E 0000 0000 FFFF 0000 0F10 0000 FFFF 0000 0000 1112
+@end example
+
+Note that on a big-endian system this would be:
+@footnote{x86_64 computers are big-endian.}
+@example
+FF FF 02 01 0 0 0 0 FF FF 0 0 04 03 0 0 FF FF 0 0 0 0 06 05
+FF FF 08 07 0 0 0 0 FF FF 0 0 0A 09 0 0 FF FF 0 0 0 0 0C 0B
+FF FF 0E 0D 0 0 0 0 FF FF 0 0 10 0F 0 0 FF FF 0 0 0 0 12 11
+@end example
+
+It is up to the networking servers to translate
+the encoding between machines.@footnote{The host
+translates to big-endian unless they can confirm
+that they have the same endianness.}
+
+@item Purpose:
+Enable clients to be aware of the appearance of the tray,
+such as colours, transparency and background image.
+
+@item Purpose:
+Enable clients to be aware of how the user wants
+status icons to behave.
+
+@item Compulsivity:
+Optional.
+@end table
+
+
+
+@node new-tray
+@subsection new-tray
+
+@table @asis
+@item Identifying header:
+@command{Command: new-tray}
+
+@item Action:
+Announce the existence of a new status icon trays.
+
+@item Purpose:
+Allow clients to add their status icons to status icon
+trays that have been added to the display after those
+programs have started and attempted to add their icons.
+
+@item Compulsivity:
+Required if supporting @code{Command: add-tray-icon}.
 @end table
 
 
