@@ -1722,6 +1722,7 @@ simple, reference implementation of a, status icon tray.
 * Infrastructure Protocols::        Infrastructure protocols.
 * Virtual Terminal Protocols::      Virtual terminal protocols.
 * Keyboard Protocols::              Keyboard protocols.
+* Clipboard Protocols::             Clipboard protocols.
 * Miscellaneous Protocols::         Miscellaneous protocols.
 @end menu
 
@@ -2625,6 +2626,172 @@ Recommended.
 
 @item Reference implementation:
 @command{mds-kbd}
+@end table
+
+
+
+@node Clipboard Protocols
+@section Clipboard Protocols
+
+@menu
+* clipboard::                       Read or manipulate a clipboard.
+* clipboard-info::                  Clipboard event announcements.
+@end menu
+
+
+
+@node clipboard
+@subsection clipboard
+
+@table @asis
+@item Identifying header:
+@command{Command: clipboard}
+
+@item Action:
+Read or manipulate a clipboard.
+
+@item Required header: @code{Level}
+The clipboard level, an [1, 3] integer:
+@table @code
+@item 1
+Text copied/pasted using the keyboard or a menu item.
+(This level is called `primary'.)
+@item 2
+Text copied/pasted using the rat.
+(This level is called `secondary'.)
+@item 3
+Data to begin with a line describing the data type.
+(This level is called `tertiary'.)
+@end table
+
+@item Required header: @code{Action}
+What to do with the clipboard:
+    add)  Write the message to the clipboard
+    read)  Read the clipboard
+    clear)  Clear all entries on the selected level on the clipboard
+    set-size)  Shrink/grow the clipstack
+    get-size)  Read the size of the clipstack
+      In the reply, the server will send:
+        Size: <configured maximum size of the clipstack>
+        Used: <number of elements currently in the clipstack>
+
+@item Conditionally required header: @code{Length}
+Length of the message.
+Required if @code{Action: add} is included in the headers.
+
+@item Conditionally required header: @code{Size}
+The maximum number of elements in the clipstack.
+Required if @code{Action: set-size} is included in the headers.
+
+@item Conditionally required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+Required if @code{Action: read} or @code{Action: read} is
+included in the headers, or if @code{Action: add} is
+included in the headers and if the header @code{Time to live}
+is included and has a value starting with @code{until-death}.
+
+@item Conditionally optional header: @code{Index}
+The index of the item in the clipstack, starting at 0.
+Available and optional if the @code{Action: read} is
+included in the headers.
+
+@item Conditionally optional header: @code{Time to live}
+The number of seconds the entry should be available before
+it is removed by the server, or:
+@table @code
+@item until-death
+Remove entry when the client closes.
+@item until-death #
+Remove entry when the client closes,
+or @code{#} seconds have elapsed.
+@item forever:
+Never remove it. (This is the default.)
+@end table
+The server will always remove the entry when either:
+@enumerate 1
+@item
+it is at the bottom of the clipstack and a new
+entry is added to the clipstack, or
+@item
+@code{Action: clear} is issued for the clipstack.
+@end enumerate
+The entry will also be removed, unless
+@code{Time to live: forever} is used, if the server
+crashes or is re-executed.
+
+It is up to the implementation to choose when the
+removal actually takes place. For example, the reference
+implementation will pop entries that have timed out when
+a new entry is added, the reading on the clipstack is
+requested or the server is reexecuted, but another
+implement may choose to pop entires asynchronously using
+another thread or an alarm an pop when @code{SIGARLM} is
+received.
+
+Available and optional if the @code{Action: add} is
+included in the headers.
+
+@item Message:
+The content to add to the clipboard.
+
+@item Purpose:
+Enable the user to duplicate content from one process
+into another process without requiring those processes
+to be aware of eathother to any extent.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-clipboard}
+@end table
+
+
+
+@node clipboard-info
+@subsection clipboard-info
+
+@table @asis
+@item Identifying header:
+@command{Command: clipboard-info}
+
+@item Action:
+The clipboard server sends out some information about
+what it is doing, such as automatically removing entires.
+
+@item Included header: @code{Event}
+@table @code
+@item pop
+The value of the header @code{Event} is @code{pop}
+when an item in the clipstack has been removed.
+If the value header--value-pair is used the following
+headers will also be included in the message:
+@table @code
+@item Level
+The clipboard level that has been affected.
+@item Popped
+The index of the item in the clipstack that has been removed.
+@item Size
+Configured maximum size of the clipstack.
+@item Used
+Number of elements currently in the clipstack.
+@end table
+@item crash
+The value of the header @code{Event} is @code{crash} when
+the clipboard has been reset because of a software crash.
+@end table
+
+@item Purpose:
+Enable clients to get notification about changes
+to the clipboard, that cannot trivially derived
+from @command{Command: clipboard}
+
+@item Compulsivity:
+Optional add-on to the clipboard's functionallity.
+
+@item Reference implementation:
+@command{mds-clipboard}
 @end table
 
 
