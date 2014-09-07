@@ -59,6 +59,7 @@ Texts. A copy of the license is included in the section entitled
 * Protocols::                       @command{mds} procotols.
 * libmdsserver::                    Overview of @command{libmdsserver}.
 * mds-base::                        Overview of @command{mds-base}.
+* Keyboard Codes::                  Scancodes and keycodes.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -4331,6 +4332,158 @@ the value of @code{danger_is_deadly} if
 
 This setting will be treated as set to zero if
 @option{--immortal} is used.
+@end table
+
+
+
+@node Keyboard Codes
+@chapter Keyboard Codes
+
+Keyboard servers receive scancodes from keyboard
+drivers. A scancode can either be comprised of
+one byte or three bytes. In each byte, the most
+significant bit (assuming unsigned bytes) is
+ignore, however for it first byte in the scancode
+it signifies whether the key was released: it is
+set of the key is released, and not set if the key
+was pressed or is being held down.
+
+A scancode is comprised of three bytes if the lower
+7-bits of the first byte is are all cleared, and the
+highest bit in the two following bytes are set.
+
+Ignoring the most significant bit in all bytes, the
+keycode is the value of the byte if the scancode
+is a single byte scancode. If the scancode is comprised
+of three bytes, the first byte is ignored and the
+keycode is @math{a \cdot 128 + b} where @math{a} is the
+value of the second byte and @math{b} is the value
+of the third byte.
+
+
+
+@node 105-keys keycodes
+@section 105-keys keycodes
+
+This is a list of keyboards for the
+105-keys keyboards, using QWERTY-layout
+for reference.
+
+@table @asis
+@item @code{1}
+@kbd{Escape} key
+@item @code{2}--@code{11}
+Keys: @kbd{1}, @kbd{2}, @kbd{3}, @kbd{4}, @kbd{5}, @kbd{6}, @kbd{7}, @kbd{8}, @kbd{9}, @kbd{0}
+@item @code{12}
+Key right of @kbd{0}.
+@item @code{13}
+Key left of @kbd{backspace}
+@item @code{14}
+@kbd{Backspace} key
+@item @code{15}
+Tab key
+@item @code{16}--@code{25}
+Keys: @kbd{q}, @kbd{w}, @kbd{e}, @kbd{r}, @kbd{t}, @kbd{y}, @kbd{u}, @kbd{i}, @kbd{o}, @kbd{p}
+@item @code{26}
+Key right of @kbd{p}, once removed
+@item @code{27}
+Key right of @kbd{p}, twice removed
+@item @code{28}
+@kbd{Return} key
+@item @code{29}
+Left @kbd{control} key
+@item @code{30}--@code{38}
+Keys: @kbd{a}, @kbd{s}, @kbd{d}, @kbd{f}, @kbd{g}, @kbd{h}, @kbd{j}, @kbd{k}, @kbd{l}
+@item @code{39}
+Key right of @kbd{l}, once removed
+@item @code{40}
+Key right of @kbd{l}, twice removed
+@item @code{41}
+Key left of @kbd{1}
+@item @code{42}
+Left @kbd{shift} key
+@item @code{43}
+Key right of @kbd{l}, three times removed
+@item @code{44}--@code{50}
+Keys: @kbd{z}, @kbd{x}, @kbd{c}, @kbd{v}, @kbd{b}, @kbd{n}, @kbd{m}
+@item @code{51}
+Key right of @kbd{m}, once removed
+@item @code{52}
+Key right of @kbd{m}, twice removed
+@item @code{53}
+Key right of @kbd{m}, three times removed
+@item @code{54}
+Right @kbd{shift} key
+@item @code{55}
+@kbd{Multiply} key on the keypad
+@item @code{56}
+@kbd{Alternative} key
+@item @code{57}
+@kbd{Space} key
+@item @code{58}
+@kbd{Caps lock} key
+@item @code{59}--@code{68}
+Keys: @kbd{F1} through @kbd{F10}
+@item @code{69}
+@kbd{Num lock} key
+@item @code{70}
+@kbd{Scroll lock} key
+@item @code{71}--@code{73}
+@kbd{7}, @kbd{8}, @kbd{9} keys on the keypad
+@item @code{74}
+@kbd{Minus} key on the keypad
+@item @code{75}--@code{77}
+@kbd{4}, @kbd{5}, @kbd{6} keys on the keypad
+@item @code{78}
+@kbd{Plus} key on the keypad
+@item @code{79}--@code{82}
+@kbd{1}, @kbd{2}, @kbd{3}, @kbd{0} keys on the keypad
+@item @code{83}
+@kbd{Comma} key on the keypad
+@item @code{86}
+Key left of @kbd{z}
+@item @code{87}
+@kbd{F11} key
+@item @code{88}
+@kbd{F12} key
+@item @code{96}
+@kbd{Return} key on the keypad
+@item @code{97}
+Right @kbd{control} key
+@item @code{98}
+@kbd{Divide} key on the keypad
+@item @code{99}
+@kbd{System Request/Print Screen} key
+@item @code{100}
+@kbd{Alternative graphic} key
+@item @code{102}
+@kbd{Home} key
+@item @code{103}
+@kbd{Up} arrow key
+@item @code{104}
+@kbd{Page up} key
+@item @code{105}
+@kbd{Left} arrow key
+@item @code{106}
+@kbd{Right} arrow key
+@item @code{107}
+@kbd{End} key
+@item @code{108}
+@kbd{Down} arrow key
+@item @code{109}
+@kbd{Page down} down
+@item @code{110}
+@kbd{Insert} key
+@item @code{111}
+@kbd{Delete} key
+@item @code{119}
+@kbd{Pause/Break} key
+@item @code{125}
+Left @kbd{super} key
+@item @code{126}
+Right @kbd{super} key
+@item @code{127}
+@kbd{Application menu} key
 @end table
 
 
