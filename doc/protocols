@@ -1,26 +1,5 @@
 ---------------------------------------------------------------------
 
-Command: echo
-  Echo back a message
-
-Required header: Client ID
-  Your ID, provided by `ID assignment`
-  in response to `Command: assign-id`
-  
-Optional header: Length
-  Length of the message
-
-Message: message to echo
-
-Purpose: debugging and testing
-Purpose: network heartbeat
-
-Compulsivity: recommended for network enabled servers
-
-Reference implementation: mds-echo
-
----------------------------------------------------------------------
-
 Command: clipboard
   Read or manipulate a clipboard
 

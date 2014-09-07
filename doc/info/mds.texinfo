@@ -1719,15 +1719,16 @@ simple, reference implementation of a, status icon tray.
 @chapter Protocols
 
 @menu
-* Infrastructure protocols::        Infrastructure protocols.
-* Virtual terminal protocols::      Virtual terminal protocols.
-* Keyboard protocols::              Keyboard protocols.
+* Infrastructure Protocols::        Infrastructure protocols.
+* Virtual Terminal Protocols::      Virtual terminal protocols.
+* Keyboard Protocols::              Keyboard protocols.
+* Miscellaneous Protocols::         Miscellaneous protocols.
 @end menu
 
 
 
-@node Infrastructure protocols
-@section Infrastructure protocols
+@node Infrastructure Protocols
+@section Infrastructure Protocols
 
 @menu
 * assign-id::                       Assign new ID to client, or fetch current ID.
@@ -1938,8 +1939,8 @@ Optional.
 
 
 
-@node Virtual terminal protocols
-@section Virtual terminal protocols
+@node Virtual terminal Protocols
+@section Virtual terminal Protocols
 
 @menu
 * get-vt::                          Get the index of the virtual terminal the server is display on.
@@ -2104,8 +2105,8 @@ Required.
 
 
 
-@node Keyboard protocols
-@section Keyboard protocols
+@node Keyboard Protocols
+@section Keyboard Protocols
 
 @menu
 * key-sent::                        Announce a keyboard input event.
@@ -2625,6 +2626,51 @@ Recommended.
 @item Reference implementation:
 @command{mds-kbd}
 @end table
+
+
+
+@node Miscellaneous Protocols
+@section Miscellaneous Protocols
+
+@menu
+* echo::                            Echo back a message.
+@end menu
+
+
+
+@node echo
+@subsection echo
+
+@table @asis
+@item Identifying header:
+@command{Command: echo}
+
+@item Action:
+Echo back a message.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Optional header: @code{Length}
+Length of the message.
+
+@item Message:
+Message to echo.
+
+@item Purpose:
+Debugging and testing.
+
+@item Purpose:
+Network heartbeat.
+
+@item Compulsivity:
+Recommended for network enabled servers.
+
+@item Reference implementation:
+@command{mds-echo}
+@end table
+
 
 
 
