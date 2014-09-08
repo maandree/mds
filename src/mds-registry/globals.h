@@ -55,7 +55,7 @@ extern hash_table_t reg_table;
 /**
  * Reusable buffer for data to send
  */
-extern char* send_buffer; /* TODO free on danger */
+extern char* send_buffer;
 
 /**
  * The size of `send_buffer`
@@ -75,7 +75,7 @@ extern size_t running_slaves;
 /**
  * List of running slaves
  */
-extern linked_list_t slave_list; /* TODO pack on danger */
+extern linked_list_t slave_list;
 
 /**
  * Mutex for slave data

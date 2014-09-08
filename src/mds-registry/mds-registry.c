@@ -152,12 +152,19 @@ int postinitialise_server(void)
  */
 int master_loop(void)
 {
-  int rc = 1;
+  int rc = 1, r;
   
   while (!reexecing && !terminating)
     {
-      int r = mds_message_read(&received, socket_fd);
-      if (r == 0)
+      if (danger)
+	{
+	  danger = 0;
+	  free(send_buffer), send_buffer = NULL;
+	  send_buffer_size = 0;
+	  with_mutex (slave_mutex, linked_list_pack(&slave_list););
+	}
+      
+      if (r = mds_message_read(&received, socket_fd), r == 0)
 	if (r = handle_message(), r == 0)
 	  continue;
       
