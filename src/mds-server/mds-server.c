@@ -190,10 +190,18 @@ int __attribute__((const)) postinitialise_server(void)
  */
 int master_loop(void)
 {
-  /* Accepting incoming connections. */
+  /* Accepting incoming connections and take care of dangers. */
   while (running && (terminating == 0))
-    if (accept_connection() == 1)
-      break;
+    {
+      if (danger)
+	{
+	  danger = 0;
+	  with_mutex (slave_mutex, linked_list_pack(&client_list););
+	}
+      
+      if (accept_connection() == 1)
+	break;
+    }
   
   /* Join with all slaves threads. */
   with_mutex (slave_mutex,

@@ -64,7 +64,7 @@ extern fd_table_t client_map;
 /**
  * List of client information (client_t)
  */
-extern linked_list_t client_list; /* TODO pack on danger */
+extern linked_list_t client_list;
 
 /**
  * The next free ID for a client
