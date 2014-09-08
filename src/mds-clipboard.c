@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define reconnect_to_display() -1 /* TODO */
+#define reconnect_to_display() -1
 
 
 

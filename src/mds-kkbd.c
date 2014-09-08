@@ -33,7 +33,7 @@
 #include <sys/ioctl.h>
 #include <linux/kd.h>
 #include <pthread.h>
-#define reconnect_to_display() -1 /* TODO */
+#define reconnect_to_display() -1
 
 
 

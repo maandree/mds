@@ -27,7 +27,7 @@
 
 #include <errno.h>
 #include <stdio.h>
-#define reconnect_to_display() -1 /* TODO */
+#define reconnect_to_display() -1
 
 
 
