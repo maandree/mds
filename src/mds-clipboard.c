@@ -80,7 +80,12 @@ static size_t clipboard_used[CLIPBOARD_LEVELS] = { 0, 0, 0 };
 /**
  * The entries in each clipstack
  */
-static clipitem_t* clipboard[CLIPBOARD_LEVELS]; /* TODO: removed expired on danger */
+static clipitem_t* clipboard[CLIPBOARD_LEVELS];
+
+/**
+ * Whether the server should free memory as soon as possible
+ */
+static int danger = 0;
 
 
 
@@ -333,19 +338,38 @@ int __attribute__((const)) reexec_failure_recover(void)
 
 
 /**
+ * This function is called when a signal that
+ * signals that the system is running out of memory
+ * has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_danger(int signo)
+{
+  (void) signo;
+  danger = 1;
+}
+
+
+/**
  * Perform the server's mission
  * 
  * @return  Non-zero on error
  */
 int master_loop(void)
 {
-  int rc = 1;
+  int rc = 1, r;
   size_t i, j;
   
   while (!reexecing && !terminating)
     {
-      int r = mds_message_read(&received, socket_fd);
-      if (r == 0)
+      if (danger)
+	{
+	  danger = 0;
+	  clipboard_danger();
+	}
+      
+      if (r = mds_message_read(&received, socket_fd), r == 0)
 	{
 	  if (r = handle_message(), r == 0)
 	    continue;
@@ -637,6 +661,21 @@ static int clipboard_purge(int level, const char* client_id)
  pfail:
   xperror(*argv);
   return -1;
+}
+
+
+/**
+ * Remove expired entries
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int clipboard_danger(void)
+{
+  int i;
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    if (clipboard_purge(i, NULL))
+      return -1;
+  return 0;
 }
 
 

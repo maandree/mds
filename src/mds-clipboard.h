@@ -106,6 +106,13 @@ int full_send(const char* message, size_t length);
 int handle_message(void);
 
 /**
+ * Remove expired entries
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int clipboard_danger(void);
+
+/**
  * Remove entries in the clipboard added by a client
  * 
  * @param   recv_client_id  The ID of the client

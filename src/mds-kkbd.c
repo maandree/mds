@@ -160,7 +160,7 @@ static char key_send_buffer[111];
 /**
  * Message buffer for the main thread
  */
-static char* send_buffer = NULL; /* TODO free on danger */
+static char* send_buffer = NULL;
 
 /**
  * The size of `send_buffer`
@@ -186,6 +186,11 @@ static pthread_mutex_t send_mutex;
  * Mutex that should be used when accessing the keycode map
  */
 static pthread_mutex_t mapping_mutex;
+
+/**
+ * Whether the server should free memory as soon as possible
+ */
+static int danger = 0;
 
 
 
@@ -411,21 +416,41 @@ int __attribute__((const)) reexec_failure_recover(void)
 
 
 /**
+ * This function is called when a signal that
+ * signals that the system is running out of memory
+ * has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_danger(int signo)
+{
+  (void) signo;
+  danger = 1;
+}
+
+
+/**
  * Perform the server's mission
  * 
  * @return  Non-zero on error
  */
 int master_loop(void)
 {
-  int rc = 1, joined = 0;
+  int rc = 1, joined = 0, r;
   void* kbd_ret;
   
   fail_if ((errno = pthread_create(&kbd_thread, NULL, keyboard_loop, NULL)));
   
   while (!reexecing && !terminating)
     {
-      int r = mds_message_read(&received, socket_fd);
-      if (r == 0)
+      if (danger)
+	{
+	  danger = 0;
+	  free(send_buffer), send_buffer = NULL;
+	  send_buffer_size = 0;
+	}
+      
+      if (r = mds_message_read(&received, socket_fd), r == 0)
 	{
 	  if (r = handle_message(), r == 0)
 	    continue;
