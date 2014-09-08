@@ -4157,6 +4157,16 @@ implementation if the server is multi-threaded. It sends
 the singal @code{signo} to all threads except the current
 thread.
 
+@item @code{received_danger} [(@code{int signo}) @arrow{} @code{void}]
+This function is called when a signal that signals the
+system is running out of memory has been received. The exact
+received signal is specified by the parameter @code{signo}.
+When this function is invoked, the server should free up
+all memory it can spare. If the server never has any memory
+that could be freed this function does not been to be
+overridden. If @code{server_characteristics.danger_is_deadly}
+is set, this function will never be called.
+
 @item @code{received_reexec} [(@code{int signo}) @arrow{} @code{void}]
 This function is called when a signal that signals the
 server to re-execute has been received. The exact

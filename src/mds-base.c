@@ -275,18 +275,6 @@ int __attribute__((weak)) server_initialised(void)
 }
 
 
-/**
- * This function is called when an intraprocess signal
- * that used to send a notification to a thread
- * 
- * @param  signo  The signal that has been received
- */
-static void __attribute__((const)) received_noop(int signo)
-{
-  (void) signo;
-}
-
-
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
 /**
@@ -301,7 +289,37 @@ void __attribute__((weak)) signal_all(int signo)
 {
   (void) signo;
 }
+
+
+/**
+ * This function is called when a signal that
+ * signals that the system is running out of memory
+ * has been received
+ * 
+ * By default this function does not do anything
+ * 
+ * @param  signo  The signal that has been received
+ */
+void __attribute__((weak)) received_danger(int signo)
+{
+  (void) signo;
+}
 # pragma GCC diagnostic pop
+
+
+/**
+ * This function is called when an intraprocess signal
+ * that used to send a notification to a thread
+ * 
+ * @param  signo  The signal that has been received
+ */
+static void __attribute__((const)) received_noop(int signo)
+{
+  (void) signo;
+  /* This function is used rather than SIG_IGN because we
+   * want blocking functions to return with errno set to
+   * `EINTR` rather than continue blocking. */
+}
 
 
 /**
@@ -611,7 +629,7 @@ int trap_signals(void)
   if (server_characteristics.danger_is_deadly && !is_immortal)
     { fail_if (xsigaction(SIGDANGER, commit_suicide) < 0); }
   else
-    { fail_if (xsigaction(SIGDANGER, SIG_IGN) < 0); }
+    { fail_if (xsigaction(SIGDANGER, received_danger) < 0); }
   
   return 0;
  pfail:

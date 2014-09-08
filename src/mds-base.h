@@ -203,6 +203,17 @@ void signal_all(int signo); /* __attribute__((weak)) */
 
 /**
  * This function is called when a signal that
+ * signals that the system is running out of memory
+ * has been received
+ * 
+ * By default this function does not do anything
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_danger(int signo);
+
+/**
+ * This function is called when a signal that
  * signals the server to re-exec has been received
  * 
  * When this function is invoked, it should set `reexecing` and
