@@ -1942,8 +1942,8 @@ Optional.
 
 
 
-@node Virtual terminal Protocols
-@section Virtual terminal Protocols
+@node Virtual Terminal Protocols
+@section Virtual Terminal Protocols
 
 @menu
 * get-vt::                          Get the index of the virtual terminal the server is display on.
