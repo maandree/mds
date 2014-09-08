@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <time.h>
+#include <signal.h>
 
 
 
@@ -63,7 +64,7 @@ typedef struct slave
   /**
    * Whether the client has been closed
    */
-  volatile int closed;
+  volatile sig_atomic_t closed;
   
   /**
    * The slave thread

@@ -345,10 +345,11 @@ void slave_destroy(slave_t* restrict this)
  */
 size_t slave_marshal_size(const slave_t* restrict this)
 {
-  size_t rc = 2 * sizeof(int) + sizeof(ssize_t) + sizeof(size_t) + sizeof(uint64_t);
+  size_t rc;
   hash_entry_t* restrict entry;
   size_t n;
   
+  rc = sizeof(int) + sizeof(sig_atomic_t) + sizeof(ssize_t) + sizeof(size_t) + sizeof(uint64_t);
   rc += sizeof(int) + sizeof(time_t) + sizeof(long);
   rc += (strlen(this->client_id) + strlen(this->message_id) + 2) * sizeof(char);
   
@@ -375,7 +376,7 @@ size_t slave_marshal(const slave_t* restrict this, char* restrict data)
   size_t n;
   
   buf_set_next(data, int, SLAVE_T_VERSION);
-  buf_set_next(data, int, this->closed);
+  buf_set_next(data, sig_atomic_t, this->closed);
   buf_set_next(data, ssize_t, this->node);
   buf_set_next(data, uint64_t, this->client);
   buf_set_next(data, int, this->timed);
@@ -422,7 +423,7 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
   /* buf_get_next(data, int, SLAVE_T_VERSION); */
   buf_next(data, int, 1);
   
-  buf_get_next(data, int, this->closed);
+  buf_get_next(data, sig_atomic_t, this->closed);
   buf_get_next(data, ssize_t, this->node);
   buf_get_next(data, uint64_t, this->client);
   buf_get_next(data, int, this->timed);
@@ -483,7 +484,7 @@ size_t slave_unmarshal_skip(char* restrict data)
   /* buf_get_next(data, int, SLAVE_T_VERSION); */
   buf_next(data, int, 1);
   
-  buf_next(data, int, 1);
+  buf_next(data, sig_atomic_t, 1);
   buf_next(data, ssize_t, 1);
   buf_next(data, uint64_t, 1);
   buf_next(data, int, 1);

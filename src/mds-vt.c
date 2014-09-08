@@ -97,7 +97,7 @@ static struct stat old_vt_stat;
 /**
  * -1 if switching to our VT, 1 if switching to another VT, 0 otherwise
  */
-static volatile int switching_vt = 0;
+static volatile sig_atomic_t switching_vt = 0;
 
 /**
  * The pathname for the file containing VT information
