@@ -369,7 +369,6 @@ void __attribute__((weak)) received_danger(int signo)
     {
       danger = 1;
       eprint("danger signal received.");
-      signal_all(signo);
     }
 }
 
