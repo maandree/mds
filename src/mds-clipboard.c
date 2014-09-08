@@ -85,7 +85,7 @@ static clipitem_t* clipboard[CLIPBOARD_LEVELS];
 /**
  * Whether the server should free memory as soon as possible
  */
-static int danger = 0;
+static volatile sig_atomic_t danger = 0;
 
 
 

@@ -190,7 +190,7 @@ static pthread_mutex_t mapping_mutex;
 /**
  * Whether the server should free memory as soon as possible
  */
-static int danger = 0;
+static volatile sig_atomic_t danger = 0;
 
 
 
