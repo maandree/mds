@@ -149,6 +149,11 @@ extern volatile sig_atomic_t terminating;
  */
 extern volatile sig_atomic_t reexecing;
 
+/**
+ * Whether the server has been signaled to free unneeded memory
+ */
+extern volatile sig_atomic_t danger;
+
 
 /**
  * The file descriptor of the socket
@@ -203,17 +208,6 @@ void signal_all(int signo); /* __attribute__((weak)) */
 
 /**
  * This function is called when a signal that
- * signals that the system is running out of memory
- * has been received
- * 
- * By default this function does not do anything
- * 
- * @param  signo  The signal that has been received
- */
-void received_danger(int signo);
-
-/**
- * This function is called when a signal that
  * signals the server to re-exec has been received
  * 
  * When this function is invoked, it should set `reexecing` and
@@ -232,6 +226,16 @@ void received_reexec(int signo); /* __attribute__((weak)) */
  * @param  signo  The signal that has been received
  */
 void received_terminate(int signo); /* __attribute__((weak)) */
+
+/**
+ * This function is called when a signal that signals that
+ * the system is running out of memory has been received
+ * 
+ * When this function is invoked, it should set `danger` to a non-zero value
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_danger(int signo); /* __attribute__((weak)) */
 
 /**
  * This function should be implemented by the actual server implementation

@@ -4162,10 +4162,10 @@ This function is called when a signal that signals the
 system is running out of memory has been received. The exact
 received signal is specified by the parameter @code{signo}.
 When this function is invoked, the server should free up
-all memory it can spare. If the server never has any memory
-that could be freed this function does not been to be
-overridden. If @code{server_characteristics.danger_is_deadly}
-is set, this function will never be called.
+all memory it can spare. When this function is invoked, it
+should set the variable @code{danger} to a non-zero value.
+If @code{server_characteristics.danger_is_deadly} is set,
+this function will never be called.
 
 @item @code{received_reexec} [(@code{int signo}) @arrow{} @code{void}]
 This function is called when a signal that signals the
@@ -4279,6 +4279,9 @@ Whether the server has been signaled to terminate.
 
 @item @code{reexecing} [@code{volatile sig_atomic_t}]
 Whether the server has been signaled to re-execute.
+
+@item @code{danger} [@code{volatile sig_atomic_t}]
+Whether the server has been signaled to free unneeded memory.
 
 @item @code{socket_fd} [@code{int}]
 The file descriptor of the socket that is connected

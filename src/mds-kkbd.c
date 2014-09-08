@@ -187,11 +187,6 @@ static pthread_mutex_t send_mutex;
  */
 static pthread_mutex_t mapping_mutex;
 
-/**
- * Whether the server should free memory as soon as possible
- */
-static volatile sig_atomic_t danger = 0;
-
 
 
 /**
@@ -412,20 +407,6 @@ int unmarshal_server(char* state_buf)
 int __attribute__((const)) reexec_failure_recover(void)
 {
   return -1;
-}
-
-
-/**
- * This function is called when a signal that
- * signals that the system is running out of memory
- * has been received
- * 
- * @param  signo  The signal that has been received
- */
-void received_danger(int signo)
-{
-  (void) signo;
-  danger = 1;
 }
 
 

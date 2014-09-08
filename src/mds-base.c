@@ -96,6 +96,11 @@ volatile sig_atomic_t terminating = 0;
  */
 volatile sig_atomic_t reexecing = 0;
 
+/**
+ * Whether the server has been signaled to free unneeded memory
+ */
+volatile sig_atomic_t danger = 0;
+
 
 /**
  * The file descriptor of the socket
@@ -289,21 +294,6 @@ void __attribute__((weak)) signal_all(int signo)
 {
   (void) signo;
 }
-
-
-/**
- * This function is called when a signal that
- * signals that the system is running out of memory
- * has been received
- * 
- * By default this function does not do anything
- * 
- * @param  signo  The signal that has been received
- */
-void __attribute__((weak)) received_danger(int signo)
-{
-  (void) signo;
-}
 # pragma GCC diagnostic pop
 
 
@@ -358,6 +348,27 @@ void __attribute__((weak)) received_terminate(int signo)
     {
       terminating = 1;
       eprint("terminate signal received.");
+      signal_all(signo);
+    }
+}
+
+
+/**
+ * This function is called when a signal that
+ * signals that the system is running out of memory
+ * has been received
+ * 
+ * When this function is invoked, it should set `danger` to a non-zero value
+ * 
+ * @param  signo  The signal that has been received
+ */
+void __attribute__((weak)) received_danger(int signo)
+{
+  (void) signo;
+  if (danger == 0)
+    {
+      danger = 1;
+      eprint("danger signal received.");
       signal_all(signo);
     }
 }
