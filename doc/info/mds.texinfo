@@ -1126,7 +1126,7 @@ actually a server.
 * mds-coopgamma::                   The @command{mds-coopgamma} server.
 * mds-dcvs::                        The @command{mds-dcvs} server.
 * mds-colour::                      The @command{mds-colour} server.
-* mds-cool-old-crt::                The @command{mds-cool-old-crt} server.
+* mds-retro-crt::                   The @command{mds-retro-crt} server.
 * mds-state::                       The @command{mds-state} server.
 * mds-focus::                       The @command{mds-focus} server.
 * mds-kill::                        The @command{mds-kill} server.
@@ -1501,12 +1501,12 @@ and sRGB(254, 254, 254) is to be drawn.
 
 
 
-@node mds-cool-old-crt
-@section @command{mds-cool-old-crt}
+@node mds-retro-crt
+@section @command{mds-retro-crt}
 
-@command{mds-cool-old-crt} is a server that applies
+@command{mds-retro-crt} is a server that applies
 filters used in the terminal emulator
-@command{cool-old-term} to the whole display.
+@command{cool-retro-term} to the whole display.
 
 
 
