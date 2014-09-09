@@ -2848,7 +2848,7 @@ Optional add-on to the clipboard's functionallity.
 Add a status icons to the status icon tray.
 
 The client should keep in mind that there can be any number of
-trays available on the system: zero, one, two or three, ...,
+trays available on the system: zero, one, two or three, …,
 and that it will get a response once from every tray.
 
 @item Required header: @code{Client ID}
