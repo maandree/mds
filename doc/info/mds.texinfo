@@ -2009,28 +2009,28 @@ Reconfigure the virtual terminal the server is display on.
 Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
 
-@item Optional header: @code{graphical}
+@item Optional header: @code{Graphical}
 @table @code
 @item yes
 Set the TTY graphical mode if the value of the header
-@code{graphical} is @code{yes}.
+@code{Graphical} is @code{yes}.
 @item no
 Set the TTY text mode if the value of the header
-@code{graphical} is @code{no}.
+@code{Graphical} is @code{no}.
 @end table
 The server implementing this protocol should not set the
 TTY to  text mode temporarily when switching TTY. It is
 up the the server that set the request for graphical mode
 to temporarily switch to text mode when switching TTY.
 
-@item Optional header: @code{exclusive}
+@item Optional header: @code{Exclusive}
 @table @code
 @item yes
 The server may block other process from opening the TTY
-if the value of the header @code{exclusive} is @code{yes}.
+if the value of the header @code{Exclusive} is @code{yes}.
 @item no
 The server may not block other process from opening the TTY
-if the value of the header @code{exclusive} is @code{no}.
+if the value of the header @code{Exclusive} is @code{no}.
 @end table
 
 @item Response:
