@@ -26,6 +26,34 @@
 
 
 /**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void);
+
+/**
+ * Handle a received `Command: get-vt` message
+ * 
+ * @param   client   The value of the header `Client ID` in the received message
+ * @param   message  The value of the header `Message ID` in the received message
+ * @return           Zero on success, -1 on error
+ */
+int handle_get_vt(const char* client, const char* message);
+
+/**
+ * Handle a received `Command: configure-vt` message
+ * 
+ * @param   client     The value of the header `Client ID` in the received message
+ * @param   message    The value of the header `Message ID` in the received message
+ * @param   graphical  The value of the header `Graphical` in the received message
+ * @param   exclusive  The value of the header `Exclusive` in the received message
+ * @return             Zero on success, -1 on error
+ */
+int handle_configure_vt(const char* client, const char* message, const char* graphical, const char* exclusive);
+
+
+/**
  * This function is called when the kernel wants
  * to switch foreground virtual terminal
  * 

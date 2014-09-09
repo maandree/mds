@@ -375,7 +375,7 @@ int master_loop(void)
 	}
       
       if (r = mds_message_read(&received, socket_fd), r == 0)
-	if (r = 0, r == 0) /* FIXME */
+	if (r = handle_message(), r == 0)
 	  continue;
       
       if (r == -2)
@@ -410,6 +410,141 @@ int master_loop(void)
   if (rc || !reexecing)
     mds_message_destroy(&received);
   return rc;
+}
+
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void)
+{
+  /* Fetch message headers. */
+  
+  const char* recv_client_id = "0:0";
+  const char* recv_message_id = NULL;
+  const char* recv_graphical = "neither";
+  const char* recv_exclusive = "neither";
+  const char* recv_command = NULL;
+  size_t i;
+  
+#define __get_header(storage, header)  \
+  (startswith(received.headers[i], header))  \
+    storage = received.headers[i] + strlen(header)
+  
+  for (i = 0; i < received.header_count; i++)
+    {
+      if      __get_header(recv_client_id,  "Client ID: ");
+      else if __get_header(recv_message_id, "Message ID: ");
+      else if __get_header(recv_graphical,  "Graphical: ");
+      else if __get_header(recv_exclusive,  "Exclusive: ");
+      else if __get_header(recv_command,    "Command: ");
+    }
+  
+#undef __get_header
+  
+  
+  /* Validate headers. */
+  
+  if (recv_message_id == NULL)
+    {
+      eprint("received message with ID, ignoring, master server is misbehaving.");
+      return 0;
+    }
+  
+  if (strequals(recv_client_id, "0:0"))
+    {
+      eprint("received information request from an anonymous client, ignoring.");
+      return 0;
+    }
+  
+  if (strlen(recv_client_id) > 21)
+    {
+      eprint("received invalid client ID, ignoring.");
+      return 0;
+    }
+  if (strlen(recv_message_id) > 10)
+    {
+      eprint("received invalid message ID, ignoring.");
+      return 0;
+    }
+  
+  
+  /* Take appropriate action. */
+  
+  if (strequals(recv_command, "get-vt"))
+    return handle_get_vt(recv_client_id, recv_message_id);
+  
+  if (strequals(recv_command, "configure-vt"))
+    return handle_configure_vt(recv_client_id, recv_message_id, recv_graphical, recv_exclusive);
+  
+  return 0;
+}
+
+
+/**
+ * Handle a received `Command: get-vt` message
+ * 
+ * @param   client   The value of the header `Client ID` in the received message
+ * @param   message  The value of the header `Message ID` in the received message
+ * @return           Zero on success, -1 on error
+ */
+int handle_get_vt(const char* client, const char* message)
+{
+  char buf[57 + 44 + 3 * sizeof(int)];
+  int active = vt_get_active();
+  int r;
+  
+  sprintf(buf,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIu32 "\n"
+	  "VT index: %i\n"
+	  "Active: %s\n"
+	  "\n",
+	  client, message, message_id, display_vt,
+	  active == display_vt ? "yes" : "no");
+  
+  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
+  
+  r = full_send(buf, strlen(buf));
+  return ((active < 0) || r) ? -1 : 0;
+}
+
+
+/**
+ * Handle a received `Command: configure-vt` message
+ * 
+ * @param   client     The value of the header `Client ID` in the received message
+ * @param   message    The value of the header `Message ID` in the received message
+ * @param   graphical  The value of the header `Graphical` in the received message
+ * @param   exclusive  The value of the header `Exclusive` in the received message
+ * @return             Zero on success, -1 on error
+ */
+int handle_configure_vt(const char* client, const char* message, const char* graphical, const char* exclusive)
+{
+  char buf[60 + 41 + 3 * sizeof(int)];
+  int r = 0;
+  
+  if (strequals(exclusive, "yes") || strequals(exclusive, "no"))
+    r |= vt_set_graphical(display_tty_fd, strequals(exclusive, "yes"));
+  
+  if (strequals(graphical, "yes") || strequals(graphical, "no"))
+    r |= vt_set_exclusive(display_tty_fd, strequals(graphical, "yes"));
+  
+  sprintf(buf,
+	  "Command: error\n"
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIu32 "\n"
+	  "Error: %i\n"
+	  "\n",
+	  client, message, message_id, r);
+  
+  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
+  
+  return -!!full_send(buf, strlen(buf));
 }
 
 
