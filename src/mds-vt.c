@@ -599,13 +599,16 @@ int handle_message(void)
   
   /* Take appropriate action. */
   
+  if (recv_command == NULL)
+    return 0; /* How did that get here, not matter, just ignore it? */
+  
   if (strequals(recv_command, "get-vt"))
     return handle_get_vt(recv_client_id, recv_message_id);
   
   if (strequals(recv_command, "configure-vt"))
     return handle_configure_vt(recv_client_id, recv_message_id, recv_graphical, recv_exclusive);
   
-  return 0;
+  return 0; /* How did that get here, not matter, just ignore it? */
 }
 
 
