@@ -16,7 +16,7 @@ SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \
           mds-kkbd mds-vt
 
 # Servers that need setuid and root owner.
-SETUID_SERVERS = mds mds-vt
+SETUID_SERVERS = mds mds-kkbd mds-vt
 
 
 
