@@ -923,7 +923,7 @@ copy clipboard.
 @section @command{mds-screenshot}
 
 @command{mds-screenshot} is a simple utility, and
-reference implementation there of, that can take a
+reference implementation thereof, that can take a
 screeenshot of either the display, a monitor, or a
 window with or without its decorating window. It can
 also include or exclude the rat cursor or gamma
