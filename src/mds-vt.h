@@ -25,6 +25,16 @@
 #include <linux/vt.h>
 
 
+
+/**
+ * Perform a VT switch requested by the OS kernel
+ * 
+ * @param   leave_foreground  Whether the display is leaving the foreground
+ * @return                    Zero on success, -1 on error
+ */
+int switch_vt(int leave_foreground);
+
+
 /**
  * Handle the received message
  * 

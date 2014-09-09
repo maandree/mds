@@ -371,12 +371,15 @@ int master_loop(void)
     {
       if (switching_vt)
 	{
-	  /* FIXME */
+	  int leaving = switching_vt == 1;
+	  switching_vt = 0;
+	  r = switch_vt(leaving);
 	}
-      
-      if (r = mds_message_read(&received, socket_fd), r == 0)
-	if (r = handle_message(), r == 0)
-	  continue;
+      else
+	if (r = mds_message_read(&received, socket_fd), r == 0)
+	  r = handle_message();
+      if (r == 0)
+	continue;
       
       if (r == -2)
 	{
@@ -410,6 +413,30 @@ int master_loop(void)
   if (rc || !reexecing)
     mds_message_destroy(&received);
   return rc;
+}
+
+
+/**
+ * Perform a VT switch requested by the OS kernel
+ * 
+ * @param   leave_foreground  Whether the display is leaving the foreground
+ * @return                    Zero on success, -1 on error
+ */
+int switch_vt(int leave_foreground)
+{
+  char buf[46 + 12 + 3 * sizeof(int)];
+  
+  sprintf(buf,
+	  "Command: switching-vt\n"
+	  "Message ID: %" PRIu32 "\n"
+	  "Status: %s\n"
+	  "\n",
+	  message_id,
+	  leave_foreground ? "deactivating" : "activating");
+  
+  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
+  
+  return -!!full_send(buf, strlen(buf));
 }
 
 
