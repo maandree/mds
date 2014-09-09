@@ -19,6 +19,7 @@ Extra servers:
 	decorator	tile		stack		workspace
 	tray		retro-crt	kbd2rat		multikey
 	iclipboard	keystick	idrag		posmem
+	nest		mds
 
 Missing commands:
 

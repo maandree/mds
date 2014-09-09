@@ -1154,7 +1154,9 @@ actually a server.
 * mds-crtc::                        The @command{mds-crtc} server.
 * mds-dri::                         The @command{mds-dri} server.
 * mds-fb::                          The @command{mds-fb} server.
+* mds-mds::                         The @command{mds-mds} server.
 * mds-seat::                        The @command{mds-seat} server.
+* mds-nest::                        The @command{mds-nest} server.
 * mds-host::                        The @command{mds-host} server.
 * mds-remote::                      The @command{mds-remote} server.
 * mds-xmds::                        The @command{mds-xmds} server.
@@ -1611,6 +1613,15 @@ content using framebuffers.
 
 
 
+@node mds-mds
+@section @command{mds-mds}
+
+@command{mds-mds} is a server that displays
+content using another @command{mds} window.
+It creates a window that emulates a monitor.
+
+
+
 @node mds-seat
 @section @command{mds-seat}
 
@@ -1624,6 +1635,16 @@ started above @command{mds-seat} become
 seat-private. @command{mds-seat} can filter
 messages from shared servers so only the
 appropriate seat receives them.
+
+
+
+@node mds-nest
+@section @command{mds-nest}
+
+@command{mds-nest} is a server that creates
+a new @command{mds} instance inside another
+@command{mds} instance. A display server
+inside another display server.
 
 
 
