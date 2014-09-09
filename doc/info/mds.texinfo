@@ -1383,7 +1383,7 @@ will not spawn a new process for each action.
 @command{mds-hwcursor} is a server that draws
 the rat cursor to the monitor on a plane
 separate from all other content on the display.
-Is less esoteric terms, it implements a hardware
+In less esoteric terms, it implements a hardware
 cursor.
 
 
@@ -1393,7 +1393,7 @@ cursor.
 
 @command{mds-swcursor} is a server that draws
 the rat cursor to the monitor on the same plane
-as all other content on the display. Is less
+as all other content on the display. In less
 esoteric terms, it implements a software cursor.
 
 
