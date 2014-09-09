@@ -50,7 +50,9 @@
  */
 server_characteristics_t server_characteristics =
   {
-    .require_privileges = 1, /* we want to open the new tty (the rest is fine without root for some reason) */
+    .require_privileges = 1,
+    /* Required for acquiring a TTY and requesting a VT switch. */
+    
     .require_display = 1,
     .require_respawn_info = 1,
     .sanity_check_argc = 1,
