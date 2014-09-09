@@ -2695,14 +2695,31 @@ Data to begin with a line describing the data type.
 
 @item Required header: @code{Action}
 What to do with the clipboard:
-    add)  Write the message to the clipboard
-    read)  Read the clipboard
-    clear)  Clear all entries on the selected level on the clipboard
-    set-size)  Shrink/grow the clipstack
-    get-size)  Read the size of the clipstack
-      In the reply, the server will send:
-        Size: <configured maximum size of the clipstack>
-        Used: <number of elements currently in the clipstack>
+@table @code
+@item add
+Write the message to the clipboard if the value of
+the header @code{Action} is @code{add}.
+@item read
+Read the clipboard if the value of
+the header @code{Action} is @code{read}.
+@item clear
+Clear all entries on the selected level on the clipboard
+if the value of the header @code{Action} is @code{read}.
+@item set-size
+Shrink/grow the clipstack if the value of
+the header @code{Action} is @code{set-size}.
+@item get-size
+Read the size of the clipstack if the value of
+the header @code{Action} is @code{get-size}.
+In the reply, the server will send a message
+containing the headers:
+@table @code
+@item Size
+The configured maximum size of the clipstack.
+@item Used
+The number of elements currently in the clipstack.
+@end table
+@end table
 
 @item Conditionally required header: @code{Length}
 Length of the message.
