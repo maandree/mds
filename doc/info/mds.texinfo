@@ -1606,7 +1606,7 @@ content using the Direct Rendering Infrastructure.
 @section @command{mds-fb}
 
 @command{mds-fd} is a server that displays
-content using frame buffers.
+content using framebuffers.
 
 
 
