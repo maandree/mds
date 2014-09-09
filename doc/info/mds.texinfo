@@ -1163,6 +1163,7 @@ actually a server.
 * mds-mdsx::                        The @command{mds-mdsx} server.
 * mds-mdsw::                        The @command{mds-mdsw} server.
 * mds-mdsm::                        The @command{mds-mdsm} server.
+* mds-posmem::                      The @command{mds-posmem} server.
 * mds-decorator::                   The @command{mds-decorator} server.
 * mds-tile::                        The @command{mds-tile} server.
 * mds-stack::                       The @command{mds-stack} server.
@@ -1700,6 +1701,15 @@ inside the Wayland display servers.
 @command{mds} calls to Mir calls. It can be used
 to enable @command{mds} specific programs to run
 inside the display server Mir.
+
+
+
+@node mds-posmem
+@section @command{mds-posmem}
+
+@command{mds-posmem} is a server that remembers where
+window's were positioned and their size, and moves
+and resizes them accordingly when they are created.
 
 
 
