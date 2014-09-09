@@ -33,7 +33,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
-#define reconnect_to_display() -1
+#define reconnect_fd_to_display(fd) -1
+#define reconnect_to_display() reconnect_fd_to_display(&socket_fd)
 
 
 
@@ -103,6 +104,26 @@ static volatile sig_atomic_t switching_vt = 0;
  * The pathname for the file containing VT information
  */
 static char vtfile_path[PATH_MAX];
+
+/**
+ * The file descriptor for the secondary connection to the display
+ */
+static int secondary_socket_fd;
+
+/**
+ * Whether the secondary thread has been started
+ */
+static int secondary_thread_started = 0;
+
+/**
+ * The secondary thread
+ */
+static pthread_t secondary_thread;
+
+/**
+ * Whether the secondary thread failed
+ */
+static volatile sig_atomic_t secondary_thread_failed = 0;
 
 
 
@@ -186,6 +207,7 @@ int initialise_server(void)
 {
   struct vt_mode mode;
   char* display_env;
+  int primary_socket_fd;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
@@ -193,6 +215,19 @@ int initialise_server(void)
     "\n"
     "Command: get-vt\n"
     "Command: configure-vt\n";
+  const char* const secondary_message =
+    "Command: intercept\n"
+    "Message ID: 0\n"
+    "Priority: -4611686018427387904\n" /* −2⁶² */
+    "Length: 22\n"
+    "\n"
+    "Command: switching-vt\n";
+  
+  primary_socket_fd = socket_fd;
+  if (connect_to_display())
+    return 1;
+  secondary_socket_fd = socket_fd;
+  socket_fd = primary_socket_fd;
   
   display_env = getenv("MDS_DISPLAY");
   display_env = display_env ? strchr(display_env, ':') : NULL;
@@ -223,7 +258,9 @@ int initialise_server(void)
       fail_if (vt_is_active < 0);
     }
   
-  if (full_send(message, strlen(message)))
+  if (full_send(secondary_socket_fd, secondary_message, strlen(secondary_message)))
+    return 1;
+  if (full_send(socket_fd, message, strlen(message)))
     return 1;
   fail_if (server_initialised() < 0);
   fail_if (mds_message_initialise(&received));
@@ -267,6 +304,10 @@ int postinitialise_server(void)
       return 1;
     }
   connected = 1;
+  
+  if ((errno = pthread_create(&secondary_thread, NULL, secondary_loop, NULL)))
+    return 1;
+  
   return 0;
 }
 
@@ -281,7 +322,7 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 5 * sizeof(int) + sizeof(uint32_t);
+  size_t rc = 6 * sizeof(int) + sizeof(uint32_t);
   rc += sizeof(struct stat);
   rc += PATH_MAX * sizeof(char);
   rc += mds_message_marshal_size(&received);
@@ -304,6 +345,7 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, int, display_tty_fd);
   buf_set_next(state_buf, int, vt_is_active);
   buf_set_next(state_buf, struct stat, old_vt_stat);
+  buf_set_next(state_buf, int, secondary_socket_fd);
   memcpy(state_buf, vtfile_path, PATH_MAX * sizeof(char));
   state_buf += PATH_MAX;
   mds_message_marshal(&received, state_buf);
@@ -334,6 +376,7 @@ int unmarshal_server(char* state_buf)
   buf_get_next(state_buf, int, display_tty_fd);
   buf_get_next(state_buf, int, vt_is_active);
   buf_get_next(state_buf, struct stat, old_vt_stat);
+  buf_set_next(state_buf, int, secondary_socket_fd);
   memcpy(vtfile_path, state_buf, PATH_MAX * sizeof(char));
   state_buf += PATH_MAX;
   r = mds_message_unmarshal(&received, state_buf);
@@ -391,7 +434,7 @@ int master_loop(void)
       else if (errno != ECONNRESET)
 	goto pfail;
       
-      eprint("lost connection to server.");
+      eprint("lost primary connection to server.");
       mds_message_destroy(&received);
       mds_message_initialise(&received);
       connected = 0;
@@ -410,9 +453,65 @@ int master_loop(void)
  pfail:
   xperror(*argv);
  fail:
+  rc |= secondary_thread_failed;
   if (rc || !reexecing)
     mds_message_destroy(&received);
+  if ((errno = pthread_join(secondary_thread, NULL)))
+    xperror(*argv);
   return rc;
+}
+
+
+/**
+ * Wait for confirmation that we may switch virtual terminal
+ * 
+ * @param   data  Thread input parameter, will always be `NULL`
+ * @return        Thread return value, will always be `NULL`
+ */
+void* secondary_loop(void* data)
+{
+  mds_message_t secondary_received;
+  int r;
+  (void) data;
+  
+  secondary_thread_started = 1;
+  fail_if (mds_message_initialise(&secondary_received) < 0);
+  
+  while (!reexecing && !terminating)
+    {
+      if (r = mds_message_read(&secondary_received, secondary_socket_fd), r == 0)
+	r = vt_accept_switch(display_tty_fd);
+      if (r == 0)
+	continue;
+      
+      if (r == -2)
+	{
+	  eprint("corrupt message received, aborting.");
+	  goto fail;
+	}
+      else if (errno == EINTR)
+	continue;
+      else if (errno != ECONNRESET)
+	goto pfail;
+      
+      eprint("lost secondary connection to server.");
+      mds_message_destroy(&secondary_received);
+      mds_message_initialise(&secondary_received);
+      if (reconnect_fd_to_display(&secondary_socket_fd) < 0)
+	goto fail;
+    }
+  
+  goto done;
+ pfail:
+  xperror(*argv);
+ fail:
+  secondary_thread_failed = 1;
+ done:
+  secondary_thread_started = 0;
+  mds_message_destroy(&secondary_received);
+  if (!reexecing && !terminating)
+    pthread_kill(master_thread, SIGTERM);
+  return NULL;
 }
 
 
@@ -436,7 +535,7 @@ int switch_vt(int leave_foreground)
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
-  return -!!full_send(buf, strlen(buf));
+  return -!!full_send(socket_fd, buf, strlen(buf));
 }
 
 
@@ -535,7 +634,7 @@ int handle_get_vt(const char* client, const char* message)
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
-  r = full_send(buf, strlen(buf));
+  r = full_send(socket_fd, buf, strlen(buf));
   return ((active < 0) || r) ? -1 : 0;
 }
 
@@ -571,7 +670,23 @@ int handle_configure_vt(const char* client, const char* message, const char* gra
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
-  return -!!full_send(buf, strlen(buf));
+  return -!!full_send(socket_fd, buf, strlen(buf));
+}
+
+
+/**
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo)
+{      
+  pthread_t current_thread = pthread_self();
+  
+  if (pthread_equal(current_thread, master_thread) == 0)
+    pthread_kill(master_thread, signo);
+  else if (secondary_thread_started)
+    pthread_kill(secondary_thread, signo);
 }
 
 
@@ -591,17 +706,18 @@ void received_switch_vt(int signo)
 /**
  * Send a full message even if interrupted
  * 
+ * @param   socket   The file descriptor for the socket to use
  * @param   message  The message to send
  * @param   length   The length of the message
- * @return           Non-zero on success
+ * @return           Zero on success, -1 on error
  */
-int full_send(const char* message, size_t length)
+int full_send(int socket, const char* message, size_t length)
 {
   size_t sent;
   
   while (length > 0)
     {
-      sent = send_message(socket_fd, message, length);
+      sent = send_message(socket, message, length);
       if (sent > length)
 	{
 	  eprint("Sent more of a message than exists in the message, aborting.");

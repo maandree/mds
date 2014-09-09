@@ -27,6 +27,15 @@
 
 
 /**
+ * Wait for confirmation that we may switch virtual terminal
+ * 
+ * @param   data  Thread input parameter, will always be `NULL`
+ * @return        Thread return value, will always be `NULL`
+ */
+void* secondary_loop(void* data);
+
+
+/**
  * Perform a VT switch requested by the OS kernel
  * 
  * @param   leave_foreground  Whether the display is leaving the foreground
@@ -75,11 +84,12 @@ void received_switch_vt(int signo);
 /**
  * Send a full message even if interrupted
  * 
+ * @param   socket   The file descriptor for the socket to use
  * @param   message  The message to send
  * @param   length   The length of the message
- * @return           Non-zero on success
+ * @return           Zero on success, -1 on error
  */
-int full_send(const char* message, size_t length);
+int full_send(int socket, const char* message, size_t length);
 
 
 /**
