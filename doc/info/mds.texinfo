@@ -2819,9 +2819,9 @@ The clipboard level that has been affected.
 @item Popped
 The index of the item in the clipstack that has been removed.
 @item Size
-Configured maximum size of the clipstack.
+The configured maximum size of the clipstack.
 @item Used
-Number of elements currently in the clipstack.
+The number of elements currently in the clipstack.
 @end table
 @item crash
 The value of the header @code{Event} is @code{crash} when
