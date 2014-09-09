@@ -374,13 +374,9 @@ int master_loop(void)
 	  /* FIXME */
 	}
       
-      r = mds_message_read(&received, socket_fd);
-      if (r == 0)
-	{
-	  r = 0; /* FIXME */
-	  if (r == 0)
-	    continue;
-	}
+      if (r = mds_message_read(&received, socket_fd), r == 0)
+	if (r = 0, r == 0) /* FIXME */
+	  continue;
       
       if (r == -2)
 	{

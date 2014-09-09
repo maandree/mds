@@ -218,17 +218,13 @@ int __attribute__((const)) reexec_failure_recover(void)
  */
 int master_loop(void)
 {
-  int rc = 1;
+  int rc = 1, r;
   
   while (!reexecing && !terminating)
     {
-      int r = mds_message_read(&received, socket_fd);
-      if (r == 0)
-	{
-	  r = echo_message();
-	  if (r == 0)
-	    continue;
-	}
+      if (r = mds_message_read(&received, socket_fd), r == 0)
+	if (r = echo_message(), r == 0)
+	  continue;
       
       if (r == -2)
 	{
