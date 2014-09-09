@@ -2130,7 +2130,7 @@ active again.
 Required.
 
 @item Reference implementation:
-@code{mds-vt} and @code{mds-kkbd}
+@code{mds-vt}
 @end table
 
 
