@@ -180,7 +180,7 @@ int __attribute__((weak)) connect_to_display(void)
   exit_if ((display == NULL) || (strchr(display, ':') == NULL),
 	   eprint("MDS_DISPLAY has not set."););
   exit_if (display[0] != ':',
-	   eprint("Remote mds sessions are not supported."););
+	   eprint("remote mds sessions are not supported."););
   xsnprintf(pathname, "%s/%s.socket", MDS_RUNTIME_ROOT_DIRECTORY, display + 1);
   address.sun_family = AF_UNIX;
   strcpy(address.sun_path, pathname);
