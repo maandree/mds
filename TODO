@@ -17,7 +17,7 @@ Extra servers:
 
 	kbdbind		ratbind		gestures	dcvs
 	decorator	tile		stack		workspace
-	tray		cool-old-crt	kbd2rat		multikey
+	tray		retro-crt	kbd2rat		multikey
 	iclipboard	keystick	idrag
 
 Missing commands:
