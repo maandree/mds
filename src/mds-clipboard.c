@@ -496,13 +496,13 @@ int handle_message(void)
       return 0;
     }
   if (strequals(recv_client_id, "0:0"))
-    if (strequals(recv_message_id, "read") || strequals(recv_message_id, "get-size"))
+    if (strequals(recv_action, "read") || strequals(recv_action, "get-size"))
       {
 	eprint("received information request from an anonymous client, ignoring.");
 	return 0;
       }
   
-  if (strequals(recv_message_id, "add"))
+  if (strequals(recv_action, "add"))
     {
       if (recv_length == NULL)
 	{
@@ -517,11 +517,11 @@ int handle_message(void)
 	}
       return clipboard_add(level, recv_time_to_live, recv_client_id);
     }
-  else if (strequals(recv_message_id, "read"))
+  else if (strequals(recv_action, "read"))
     return clipboard_read(level, atoz(recv_index), recv_client_id, recv_message_id);
-  else if (strequals(recv_message_id, "clear"))
+  else if (strequals(recv_action, "clear"))
     return clipboard_clear(level);
-  else if (strequals(recv_message_id, "set-size"))
+  else if (strequals(recv_action, "set-size"))
     {
       if (recv_size == NULL)
 	{
@@ -530,7 +530,7 @@ int handle_message(void)
 	}
       return clipboard_set_size(level, atoz(recv_size));
     }
-  else if (strequals(recv_message_id, "get-size"))
+  else if (strequals(recv_action, "get-size"))
     return clipboard_get_size(level, recv_client_id, recv_message_id);
   
   eprint("received message with invalid action, ignoring.");
