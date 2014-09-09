@@ -32,6 +32,7 @@ Need testing:
 	clipboard
 	kkbd
 	kkbd, on a SPARC
+	vt
 
 Fast lanes
 Optimise use of mutexe by replace them with rwlocks
