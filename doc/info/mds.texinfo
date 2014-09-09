@@ -1518,6 +1518,14 @@ can be used, or if only 24-colour can used but
 gradients between for example sRGB(255, 255, 255)
 and sRGB(254, 254, 254) is to be drawn.
 
+@command{mds-colour} is gamma ramp-aware. For
+example, if for the red channel, 0 is mapped to
+0, 1 is mapped to 3, 2 is mapped 2 and 3 is mapped
+to 1, but 1 and 3 requires dithering, then if
+3 is requested, @command{mds-colour} will tell
+the client to deither 0 and 2 with 50 %, which
+should generate 1, but 1 and 3 has been swapped.
+
 
 
 @node mds-retro-crt
