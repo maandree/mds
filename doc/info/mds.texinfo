@@ -777,6 +777,7 @@ Command: keyboard-enumeration\n
 * mds-clip::                        The clipboard control command.
 * mds-screenshot::                  The screenshot utility.
 * mds-slay::                        The process killing utility.
+* mds-chvt::                        Utility for switching virtual terminal.
 * External Utilities::              Suggestion on utilities you can utilise.
 @end menu
 
@@ -1032,6 +1033,24 @@ Do not change the cursor to a kill cursor.
 
 @item --print
 The the ID of the selected window.
+@end table
+
+
+
+@node mds-chvt
+@section @command{mds-chvt}
+
+@command{mds-chvt} is a utility similar to the command
+@command{chvt} from the @command{kbd} project. However,
+@command{mds-chvt} has setuid and therefore does not
+require root permissions, but it will only request a
+virtual terminal switch if the display server's virtual
+terminal is in the foreground. @command{mds-chvt}
+recognises the following options:
+
+@table @option
+@item --switch=VT
+Switch to the virtual terminal with the index @var{VT}.
 @end table
 
 

@@ -23,6 +23,7 @@ Extra servers:
 Missing commands:
 
 	reg		clip		screenshot	slay
+	chvt
 	conf		Command line interface for reconfiguring servers
 
 Need testing:
