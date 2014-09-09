@@ -1,0 +1,34 @@
+RUNTIME DEPENDENCIES:
+
+	glibc
+
+	Under linux and linux-libre:
+		linux
+		libdrm
+
+
+BUILD DEPENDENCIES:
+
+	glibc
+	gcc
+	make
+	coreutils
+	texinfo (opt-out, for manuals: info pdf ps dvi)
+	texlive-core (opt-out, for manuals: pdf ps dvi)
+
+	Under linux and linux-libre:
+		linux-api-headers
+		libdrm
+
+
+INSTALL DEPENDENCIES:
+
+	make
+	coreutils
+
+
+SUPPORTED KERNELS:
+
+	linux
+	linux-libre
+
