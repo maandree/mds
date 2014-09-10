@@ -1820,6 +1820,7 @@ simple, reference implementation of a, status icon tray.
 * Keyboard Protocols::              Keyboard protocols.
 * Clipboard Protocols::             Clipboard protocols.
 * Status Icon Protocols::           Status icon protocols.
+* Colour Protocols::                Colour protocols.
 * Miscellaneous Protocols::         Miscellaneous protocols.
 @end menu
 
@@ -3168,6 +3169,237 @@ programs have started and attempted to add their icons.
 
 @item Compulsivity:
 Required if supporting @code{Command: add-tray-icon}.
+@end table
+
+
+
+@node Colour Protocols
+@section Colour Protocols
+
+@menu
+* get-gamma-info::                  Query gamma ramp information.
+* get-gamma::                       Query gamma ramps.
+* set-gamma::                       Modify gamma ramps.
+@end menu
+
+
+
+@node get-gamma-info
+@subsection get-gamma-info
+
+@table @asis
+@item Identifying header:
+@command{Command: get-gamma-info}
+
+@item Action:
+Query gamma ramp information.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}
+header in response to a @code{Command: assign-id}
+header.
+
+@item Required header: @code{CRTC}
+The output name for the CRTC of interest.
+
+@item Response:
+The server will response with a @code{Command: error}
+on error, unsuccess the server will respond with a
+message contain the headers:
+@table @code
+@item To
+Will contain the value of the header @code{Client ID}
+in the message that was received by the server.
+@item In response to
+Will contain the value of the header @code{Message ID}
+in the message that was received by the server.
+@item Cooperative
+Whether a server like @command{mds-coopgamma} is
+running. That is, if priorities and classes are
+respected. The value with be either @code{yes},
+for cooperative, or @code{no}, for non-cooperative.
+@item Depth
+The bit-depth of the gamma ramps. Possible values
+are: 8, 16, 32 och 64.
+@item Red size
+The number of stops in the red gamma ramp.
+@item Green size
+The number of stops in the green gamma ramp.
+@item Blue size
+The number of stops in the blue gamma ramp.
+@item Gamma support
+Will have one of the following values:
+@table @code
+@item yes
+It is known that gamma ramps are supported.
+@item no
+It is known that gamma ramps are not supported.
+@item maybe
+It is now known whether gamma ramps are supported.
+@end table
+@end table
+If @code{Gamma support: no} is send in the response,
+the headers @code{Depth}, @code{Red size},
+@code{Green size} and @code{Blue size} may be omitted.
+
+@item Purpose:
+Enable performance optimisation when manipulating
+gamma ramps.
+
+@item Compulsivity:
+Optional. Required if your implement support
+for @command{Command: get-gamma}
+or @command{Command: set-gamma}.
+
+@item Reference implementation:
+@command{mds-hwgamma}, @command{mds-swgamma},
+@command{mds-coopgamma} and @command{mds-cursorgamma}.
+@end table
+
+
+
+@node get-gamma
+@subsection get-gamma
+
+@table @asis
+@item Identifying header:
+@command{Command: get-gamma}
+
+@item Action:
+Query gamma ramps.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}
+header in response to a @code{Command: assign-id}
+header.
+
+@item Required header: @code{CRTC}
+The output name for the CRTC of interest.
+
+@item Required header: @code{Coalesce}
+Whether the received the full gamma ramp
+filter list, of the value is @code{yes},
+rather than the result of them, of the
+value is @code{no}.
+
+@item Required header: @code{High priority}
+The upper bound of the priority range of
+the gamma ramps to received. This is a
+signed 64-bit integer.
+
+@item Required header: @code{Low priority}
+The lower bound of the priority range of
+the gamma ramps to received. This is a
+signed 64-bit integer.
+
+@item Response:
+TODO
+
+@item Purpose:
+Enable analysation and readings of the current
+gamma ramps.
+
+@item Compulsivity:
+Optional. Required if your implement support
+for @command{Command: get-gamma-info}
+or @command{Command: set-gamma}.
+
+@item Reference implementation:
+@command{mds-hwgamma}, @command{mds-swgamma},
+@command{mds-coopgamma} and @command{mds-cursorgamma}.
+@end table
+
+
+
+@node set-gamma
+@subsection set-gamma
+
+@table @asis
+@item Identifying header:
+@command{Command: set-gamma}
+
+@item Action:
+Modify gamma ramps.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}
+header in response to a @code{Command: assign-id}
+header.
+
+@item Required header: @code{CRTC}
+The output name for the CRTC of interest.
+
+@item Required header: @code{Priority}
+A signed 64-bit integer of the priority for the filter.
+gamma correction should use zero priority. It is
+preferable that search logical adjustment is sent with
+different priorities so other programs can insert filters
+between them.
+
+@item Required header: @code{Class}
+A string that identifies the filter. It should
+be formatted as @code{package::command::role}.
+@code{package} should be the package name the
+package was installed with on the system.
+@code{command} should be the basename of the
+command for the program.
+
+@item Required header: @code{Lifespan}
+The value may be one of the following:
+@table @code
+@item until-removal
+Remove the filter when @command{Lifespan: remove}
+is sent.
+@item until-death
+Remove the filter when the client dies.
+@item remove
+Remove the filter now.
+@end table
+
+@item Conditionally required header: @code{Length}
+TODO
+
+@item Message:
+TODO
+
+@item Response:
+The server will response with a @code{Command: error}.
+
+@item Instructions:
+For optimal flexibility a system may run a server such
+as @command{mds-hwgamma} that applies the gamma ramps,
+and a server such as @command{mds-coopgamma} to let
+multiple programs adjust the output with their open
+filters that stack up. In a configuration like this,
+@command{mds-coopgamma} will keep track of all filters
+and when a modification is made it sends the grand result
+to @command{mds-hwgamma}, that is, what the filters together
+produce. To do this, @command{mds-coopgamma} listens for
+@command{Command: set-gamma} with priority @math{2^{62}}
+and modifies the message so the payload is filled with the
+result rather than to single filter. This modified message
+is then received by @command{mds-hwgamma} that listens with
+priority zero and applies the gamma ramps.
+@command{mds-hwgamma} will ignore the @code{Priority} and
+the @code{Class} header, but it will respect the @code{Lifespan}
+header, therefore @command{mds-coopgamma} will always modify
+the value of the @code{Lifespan} header to @code{until-removal}.
+
+@item Purpose:
+Enable colour output correction such as gamma correction.
+
+@item Purpose:
+Enable colour output filters such colour temperature
+adjustments, colour invertion and dimming.
+
+@item Compulsivity:
+Optional. Required if your implement support
+for @command{Command: get-gamma-info}
+or @command{Command: get-gamma}.
+
+@item Reference implementation:
+@command{mds-hwgamma}, @command{mds-swgamma},
+@command{mds-coopgamma} and @command{mds-cursorgamma}.
 @end table
 
 
