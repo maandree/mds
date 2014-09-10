@@ -3338,10 +3338,10 @@ between them.
 
 @item Required header: @code{Class}
 A string that identifies the filter. It should
-be formatted as @code{package::command::role}.
-@code{package} should be the package name the
+be formatted as @code{pkg::cmd::role}.
+@code{pkg} should be the package name the
 package was installed with on the system.
-@code{command} should be the basename of the
+@code{cmd} should be the basename of the
 command for the program.
 
 @item Required header: @code{Lifespan}
