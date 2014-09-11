@@ -11,7 +11,13 @@ Missing servers:
 
 Missing protocols:
 
+	drag		kkbdrate  	keytrans	multikey
+	rat		cursor		colour		state
+	focus		kill		screensaver	compositor
+	crtc		presentation	network		decorator
+	workspace
 	embed		Embedding windows inside other windows such as a status icon tray
+
 
 Extra servers:
 
