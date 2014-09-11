@@ -3293,7 +3293,45 @@ the gamma ramps to received. This is a
 signed 64-bit integer.
 
 @item Response:
-TODO
+The server will response with a @code{Command: error}
+on error, unsuccess the server will respond with a
+message contain the headers:
+@table @code
+@item Depth
+The bit-depth of the gamma ramps. Possible values
+are: 8, 16, 32 och 64.
+@item Red size
+The number of stops in the red gamma ramp.
+@item Green size
+The number of stops in the green gamma ramp.
+@item Blue size
+The number of stops in the blue gamma ramp.
+@end table
+These headers are included so you can make sure
+the no metadata for gamma ramps have changed,
+which could happen if the user switches between
+hardware and software gamma ramps.
+The response will also contain a @code{Length}
+header and a message formatted in the same
+manner as for @command{Command. set-gamma}
+messages. That is, assuming as an example that
+the gamma ramp depth is 16 bits, the red ramp
+is (1, 2, 3, 4, 5, 6), the green ramp is (17, 18, 19,
+20, 21, 22, 23) and the blue ramp is (33, 34, 35, 36,
+37, 38, 39, 40) then the message will be (hexadecimal
+representation):
+@example
+0001 0002 0003 0004 0005 0006
+0011 0012 0013 0014 0015 0016 0017
+0021 0022 0023 0024 0025 0026 0027 0028
+@end example
+
+On a big-endian system this would be:
+@example
+01 00 02 00 03 00 04 00 05 00 06 00
+11 00 12 00 13 00 14 00 15 00 16 00 17 00
+21 00 22 00 23 00 24 00 25 00 26 00 27 00 28 00
+@end example
 
 @item Purpose:
 Enable analysation and readings of the current
@@ -3357,10 +3395,45 @@ Remove the filter now.
 @end table
 
 @item Conditionally required header: @code{Length}
-TODO
+The length of the message.
+Available and required if @code{Lifespan: remove}
+is not included in the message.
 
 @item Message:
-TODO
+The gamma ramps in binary encoding. As an example,
+assume the gamma ramp depth is 16 bits, the red ramp
+is (1, 2, 3, 4, 5, 6), the green ramp is (17, 18, 19,
+20, 21, 22, 23) and the blue ramp is (33, 34, 35, 36,
+37, 38, 39, 40) then the message will be (hexadecimal
+representation):
+@example
+0001 0002 0003 0004 0005 0006
+0011 0012 0013 0014 0015 0016 0017
+0021 0022 0023 0024 0025 0026 0027 0028
+@end example
+
+Note that on a big-endian system this would be:
+@footnote{x86_64 computers are big-endian.}
+@example
+01 00 02 00 03 00 04 00 05 00 06 00
+11 00 12 00 13 00 14 00 15 00 16 00 17 00
+21 00 22 00 23 00 24 00 25 00 26 00 27 00 28 00
+@end example
+
+It is up to the networking servers to translate
+the encoding between machines.@footnote{The host
+translates to big-endian unless they can confirm
+that they have the same endianness.}
+
+The use of binary rather than text here is chosen
+to increase performance for programs that try the
+change the adjustments fluently. For programs
+similar to @command{xgamma} that sets the ramps
+once this is however unnessary. However it does
+simplify the program code as one would only need
+to write the ramps to the message without creating
+a string with all stops converted and then measure
+the length of that string.
 
 @item Response:
 The server will response with a @code{Command: error}.
