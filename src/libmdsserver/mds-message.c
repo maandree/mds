@@ -34,7 +34,7 @@
  * be used by `mds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
- * @return        Non-zero on error, errno will be set accordingly.
+ * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
  */
 int mds_message_initialise(mds_message_t* restrict this)
@@ -278,7 +278,7 @@ static int store_header(mds_message_t* restrict this, size_t length)
  * Continue reading from the socket into the buffer
  * 
  * @param   this  The message
- * @param   fd    The file descriptor of the socekt
+ * @param   fd    The file descriptor of the socket
  * @return        The return value follows the rules of `mds_message_read`
  */
 static int continue_read(mds_message_t* restrict this, int fd)
@@ -295,7 +295,7 @@ static int continue_read(mds_message_t* restrict this, int fd)
     {
       /* grow the buffer, */
       try (mds_message_extend_buffer(this));
-	  
+      
       /* and recalculate how much space we have left. */
       n = this->buffer_size - this->buffer_ptr;
     }
@@ -317,15 +317,15 @@ static int continue_read(mds_message_t* restrict this, int fd)
 
 
 /**
- * Read the next message from a file descriptor of the socekt
+ * Read the next message from a file descriptor of the socket
  * 
  * @param   this  Memory slot in which to store the new message
- * @param   fd    The file descriptor of the socekt
- * @return        Non-zero on error or interruption, errno will be
+ * @param   fd    The file descriptor of the socket
+ * @return        Non-zero on error or interruption, `errno` will be
  *                set accordingly. Destroy the message on error,
  *                be aware that the reading could have been
  *                interrupted by a signal rather than canonical error.
- *                If -2 is returned errno will not have been set,
+ *                If -2 is returned `errno` will not have been set,
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
  */
@@ -468,7 +468,7 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
  * 
  * @param  this  Memory slot in which to store the new message
  * @param  data  In buffer with the marshalled data
- * @return       Non-zero on error, errno will be set accordingly.
+ * @return       Non-zero on error, `errno` will be set accordingly.
  *               Destroy the message on error.
  */
 int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)

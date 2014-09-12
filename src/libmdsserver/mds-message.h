@@ -87,7 +87,7 @@ typedef struct mds_message
  * be used by `mds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
- * @return        Non-zero on error, errno will be set accordingly.
+ * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
  */
 int mds_message_initialise(mds_message_t* restrict this);
@@ -121,11 +121,11 @@ int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
  * 
  * @param   this  Memory slot in which to store the new message
  * @param   fd    The file descriptor
- * @return        Non-zero on error or interruption, errno will be
+ * @return        Non-zero on error or interruption, `errno` will be
  *                set accordingly. Destroy the message on error,
  *                be aware that the reading could have been
  *                interrupted by a signal rather than canonical error.
- *                If -2 is returned errno will not have been set,
+ *                If -2 is returned `errno` will not have been set,
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
  */
@@ -153,7 +153,7 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
  * 
  * @param   this  Memory slot in which to store the new message
  * @param   data  In buffer with the marshalled data
- * @return        Non-zero on error, errno will be set accordingly.
+ * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
  */
 int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
