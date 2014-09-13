@@ -54,7 +54,7 @@ size_t queued_interception_marshal(const queued_interception_t* restrict this, c
  * 
  * @param   this  Memory slot in which to store the new queued interception
  * @param   data  In buffer with the marshalled data
- * @return        Zero on error, errno will be set accordingly, otherwise the number of read bytes.
+ * @return        Zero on error, `errno` will be set accordingly, otherwise the number of read bytes.
  */
 size_t queued_interception_unmarshal(queued_interception_t* restrict this, char* restrict data)
 {

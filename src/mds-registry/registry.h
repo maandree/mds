@@ -23,7 +23,7 @@
  * Handle the received message
  * 
  * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
+ *          `errno` will be set accordingly
  */
 int handle_message(void);
 

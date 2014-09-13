@@ -127,7 +127,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
  * 
  * @param   this    The list
  * @param   client  The client to add
- * @return          Non-zero on error, errno will be set accordingly
+ * @return          Non-zero on error, `errno` will be set accordingly
  */
 int client_list_add(client_list_t* restrict this, uint64_t client)
 {
@@ -212,7 +212,7 @@ void client_list_marshal(const client_list_t* restrict this, char* restrict data
  * 
  * @param   this  Memory slot in which to store the new client list
  * @param   data  In buffer with the marshalled data
- * @return        Non-zero on error, errno will be set accordingly.
+ * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the list on error.
  */
 int client_list_unmarshal(client_list_t* restrict this, char* restrict data)

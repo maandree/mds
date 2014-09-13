@@ -41,7 +41,7 @@
  * Handle the received message containing a ‘Client closed’-header
  * 
  * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
+ *          `errno` will be set accordingly
  */
 static int handle_close_message(void)
 {
@@ -256,7 +256,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
  * @param   recv_client_id   The ID of the client
  * @param   recv_message_id  The ID of the received message
  * @return                   Zero on success -1 on error or interruption,
- *                           errno will be set accordingly
+ *                           `errno` will be set accordingly
  */
 static int registry_action(size_t length, int action, const char* recv_client_id, const char* recv_message_id)
 {
@@ -337,7 +337,7 @@ static int registry_action(size_t length, int action, const char* recv_client_id
  * @param   recv_client_id   The ID of the client
  * @param   recv_message_id  The ID of the received message
  * @return                   Zero on success -1 on error or interruption,
- *                           errno will be set accordingly
+ *                           `errno` will be set accordingly
  */
 static int list_registry(const char* recv_client_id, const char* recv_message_id)
 {
@@ -489,7 +489,7 @@ static int handle_register_message(void)
  * Handle the received message
  * 
  * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
+ *          `errno` will be set accordingly
  */
 int handle_message(void)
 {

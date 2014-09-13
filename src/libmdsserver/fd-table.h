@@ -170,7 +170,7 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data);
  * @param   this      Memory slot in which to store the new fd table
  * @param   data      In buffer with the marshalled data
  * @param   remapper  Function that translates values, `NULL` if not translation takes place
- * @return            Non-zero on error, errno will be set accordingly.
+ * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
 int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper);

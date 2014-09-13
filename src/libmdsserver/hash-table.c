@@ -65,7 +65,7 @@ static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* res
  * Grow the table
  * 
  * @param   this  The hash table
- * @return        Non zero on error, errno will be set accordingly
+ * @return        Non zero on error, `errno` will be set accordingly
  */
 static int rehash(hash_table_t* restrict this)
 {
@@ -453,7 +453,7 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
  * @param   this      Memory slot in which to store the new hash table
  * @param   data      In buffer with the marshalled data
  * @param   remapper  Function that translates values, `NULL` if not translation takes place
- * @return            Non-zero on error, errno will be set accordingly.
+ * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
 int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper)

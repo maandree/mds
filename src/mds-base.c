@@ -306,8 +306,8 @@ void __attribute__((weak)) signal_all(int signo)
 static void __attribute__((const)) received_noop(int signo)
 {
   (void) signo;
-  /* This function is used rather than SIG_IGN because we
-   * want blocking functions to return with errno set to
+  /* This function is used rather than `SIG_IGN` because we
+   * want blocking functions to return with `errno` set to
    * `EINTR` rather than continue blocking. */
 }
 

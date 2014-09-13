@@ -59,7 +59,7 @@ size_t interception_condition_marshal(const interception_condition_t* restrict t
  * 
  * @param   this  Memory slot in which to store the new interception condition
  * @param   data  In buffer with the marshalled data
- * @return        Zero on error, errno will be set accordingly, otherwise the number of read bytes
+ * @return        Zero on error, `errno` will be set accordingly, otherwise the number of read bytes
  */
 size_t interception_condition_unmarshal(interception_condition_t* restrict this, char* restrict data)
 {

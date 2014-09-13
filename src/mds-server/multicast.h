@@ -103,8 +103,8 @@ size_t multicast_marshal(const multicast_t* restrict this, char* restrict data);
  * 
  * @param   this  Memory slot in which to store the new message multicast state
  * @param   data  In buffer with the marshalled data
- * @return        Zero on error, errno will be set accordingly, otherwise the number of read bytes.
- *                Destroy the message multicast state on error.
+ * @return        Zero on error, `errno` will be set accordingly, otherwise the
+ *                number of read bytes. Destroy the message multicast state on error.
  */
 size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data);
 

@@ -163,8 +163,8 @@ size_t slave_marshal(const slave_t* restrict this, char* restrict data);
  * 
  * @param   this  Memory slot in which to store the new slave information
  * @param   data  In buffer with the marshalled data
- * @return        Zero on error, errno will be set accordingly, otherwise the number of read bytes.
- *                Destroy the slave information on error.
+ * @return        Zero on error, `errno` will be set accordingly, otherwise the
+ *                number of read bytes. Destroy the slave information on error.
  */
 size_t slave_unmarshal(slave_t* restrict this, char* restrict data);
 

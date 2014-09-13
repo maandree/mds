@@ -26,7 +26,7 @@
  * Echo the received message payload
  * 
  * @return  Zero on success -1 on error or interruption,
- *          errno will be set accordingly
+ *          `errno` will be set accordingly
  */
 int echo_message(void);
 

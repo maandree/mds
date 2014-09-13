@@ -198,7 +198,7 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
  * 
  * @param   this  Memory slot in which to store the new client information
  * @param   data  In buffer with the marshalled data
- * @return        Zero on error, errno will be set accordingly, otherwise the number of read bytes
+ * @return        Zero on error, `errno` will be set accordingly, otherwise the number of read bytes
  */
 size_t client_unmarshal(client_t* restrict this, char* restrict data)
 {
