@@ -241,7 +241,7 @@ int initialise_server(void)
   
   if (is_respawn == 0)
     {
-      display_vt = vt_get_next_available();
+      display_vt = vt_get_next_available(); /* TODO add support for $XDG_VTNR */
       if (display_vt == 0)
 	{
 	  eprint("out of available virtual terminals, I am stymied.");
