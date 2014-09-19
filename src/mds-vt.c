@@ -653,10 +653,10 @@ int handle_configure_vt(const char* client, const char* message, const char* gra
   int r = 0;
   
   if (strequals(exclusive, "yes") || strequals(exclusive, "no"))
-    r |= vt_set_graphical(display_tty_fd, strequals(exclusive, "yes"));
+    r |= vt_set_exclusive(display_tty_fd, strequals(exclusive, "yes"));
   
   if (strequals(graphical, "yes") || strequals(graphical, "no"))
-    r |= vt_set_exclusive(display_tty_fd, strequals(graphical, "yes"));
+    r |= vt_set_graphical(display_tty_fd, strequals(graphical, "yes"));
   
   sprintf(buf,
 	  "Command: error\n"
