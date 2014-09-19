@@ -3306,6 +3306,12 @@ The number of stops in the red gamma ramp.
 The number of stops in the green gamma ramp.
 @item Blue size
 The number of stops in the blue gamma ramp.
+@item Tables
+The number of gamma ramp lookup tables that
+is included in the respone's message. This header
+will not necessarily be included if @code{Coalesce: yes}
+was used in the query, rather reference implementations
+will exclude it.
 @end table
 These headers are included so you can make sure
 the no metadata for gamma ramps have changed,
@@ -3332,6 +3338,17 @@ On a big-endian system this would be:
 11 00 12 00 13 00 14 00 15 00 16 00 17 00
 21 00 22 00 23 00 24 00 25 00 26 00 27 00 28 00
 @end example
+
+However if @code{Coalesce: no} was used in the query,
+the message will include multiple gamma ramps lookup
+tables. These will be in the order they are applied,
+that is, highest priority first. The tables will be
+encoded in the same way as for @code{Coalesce: yes}
+and they with be included without any delimiter.
+However, each table will be prefixed with the priority
+and the class. The priority will be encoded in native
+binary format as an @code{int64_t} and the class will
+be encoded as a NUL-terminated UTF-8 string
 
 @item Purpose:
 Enable analysis and readings of the current
@@ -3375,11 +3392,10 @@ different priorities so other programs can insert filters
 between them.
 
 @item Required header: @code{Class}
-A string that identifies the filter. It should
-be formatted as @code{pkg::cmd::role}.
-@code{pkg} should be the package name the
-package was installed with on the system.
-@code{cmd} should be the basename of the
+A UTF-8 string that identifies the filter. It should
+be formatted as @code{pkg::cmd::role}. @code{pkg} should
+be the package name the package was installed with on
+the system. @code{cmd} should be the basename of the
 command for the program.
 
 @item Required header: @code{Lifespan}
