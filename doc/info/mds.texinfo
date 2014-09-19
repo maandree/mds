@@ -77,7 +77,7 @@ Rather than one, possibly modular, process --- a monolithic
 process --- mds is comprised of many small servers, each
 exchangable and responsible for one thing.
 
-@command{mds} goal is neither security, performance nor
+@command{mds}'s goal is neither security, performance nor
 a perfect graphical experience. @command{mds} is all
 about flexibility and freedom 0@footnote{The freedom to run
 the program as you wish, for any purpose.}.
