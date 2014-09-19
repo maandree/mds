@@ -127,6 +127,11 @@ static pthread_t secondary_thread;
  */
 static volatile sig_atomic_t secondary_thread_failed = 0;
 
+/**
+ * The number of servers currently require non-exclusive mode
+ */
+static ssize_t nonexclusive_counter = 0;
+
 
 
 /**
@@ -318,7 +323,7 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  size_t rc = 6 * sizeof(int) + sizeof(uint32_t);
+  size_t rc = 6 * sizeof(int) + sizeof(uint32_t) + sizeof(ssize_t);
   rc += sizeof(struct stat);
   rc += PATH_MAX * sizeof(char);
   rc += mds_message_marshal_size(&received);
@@ -342,6 +347,7 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, int, vt_is_active);
   buf_set_next(state_buf, struct stat, old_vt_stat);
   buf_set_next(state_buf, int, secondary_socket_fd);
+  buf_set_next(state_buf, ssize_t, nonexclusive_counter);
   memcpy(state_buf, vtfile_path, PATH_MAX * sizeof(char));
   state_buf += PATH_MAX;
   mds_message_marshal(&received, state_buf);
@@ -372,7 +378,8 @@ int unmarshal_server(char* state_buf)
   buf_get_next(state_buf, int, display_tty_fd);
   buf_get_next(state_buf, int, vt_is_active);
   buf_get_next(state_buf, struct stat, old_vt_stat);
-  buf_set_next(state_buf, int, secondary_socket_fd);
+  buf_get_next(state_buf, int, secondary_socket_fd);
+  buf_get_next(state_buf, ssize_t, nonexclusive_counter);
   memcpy(vtfile_path, state_buf, PATH_MAX * sizeof(char));
   state_buf += PATH_MAX;
   r = mds_message_unmarshal(&received, state_buf);
@@ -650,10 +657,19 @@ int handle_get_vt(const char* client, const char* message)
 int handle_configure_vt(const char* client, const char* message, const char* graphical, const char* exclusive)
 {
   char buf[60 + 41 + 3 * sizeof(int)];
-  int r = 0;
+  int r = 0, set_nonexclusive;
   
   if (strequals(exclusive, "yes") || strequals(exclusive, "no"))
-    r |= vt_set_exclusive(display_tty_fd, strequals(exclusive, "yes"));
+    {
+      /* Switch to exclusive mode when no server has request
+	 non-exclusive mode anymore, and switch to non-exclusive
+	 mode when the number of server that server that has
+	 request non-exclusive switches from zero to one. */
+      set_nonexclusive = strequals(exclusive, "no");
+      if (nonexclusive_counter == (ssize_t)!set_nonexclusive)
+	r |= vt_set_exclusive(display_tty_fd, !set_nonexclusive);
+      nonexclusive_counter += set_nonexclusive ? 1 : -1;
+    }
   
   if (strequals(graphical, "yes") || strequals(graphical, "no"))
     r |= vt_set_graphical(display_tty_fd, strequals(graphical, "yes"));

@@ -2145,6 +2145,10 @@ if the value of the header @code{Exclusive} is @code{yes}.
 The server may not block other process from opening the TTY
 if the value of the header @code{Exclusive} is @code{no}.
 @end table
+The server implementing this protocol should keep a counter
+for how many servers have requested non-exclusive mode and
+only switch back to exclusive mode when that counter reaches
+zero
 
 @item Response:
 The server will response with a @code{Command: error}.
