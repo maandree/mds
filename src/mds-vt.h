@@ -93,6 +93,14 @@ int full_send(int socket, const char* message, size_t length);
 
 
 /**
+ * Get the index of the virtual terminal on which the display should be opened
+ * 
+ * @return  The index of the virtual terminal on which the display should be opened, -1 on error
+ */
+int select_vt(void);
+
+
+/**
  * Get the index of the next available virtual terminal
  * 
  * @return  -1 on error, 0 if the terminals are exhausted, otherwise the next terminal

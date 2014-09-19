@@ -241,13 +241,8 @@ int initialise_server(void)
   
   if (is_respawn == 0)
     {
-      display_vt = vt_get_next_available(); /* TODO add support for $XDG_VTNR */
-      if (display_vt == 0)
-	{
-	  eprint("out of available virtual terminals, I am stymied.");
-	  goto fail;
-	}
-      else if (display_vt < 0)
+      display_vt = select_vt();
+      if (display_vt < 0)
 	goto pfail;
       display_tty_fd = vt_open(display_vt, &old_vt_stat);
       fail_if (write_vt_file() < 0);
@@ -280,7 +275,6 @@ int initialise_server(void)
   return 1;
  pfail:
   xperror(*argv);
- fail:
   unlink(vtfile_path);
   if (display_tty_fd >= 0)
     vt_close(display_tty_fd, &old_vt_stat);
@@ -737,6 +731,45 @@ int full_send(int socket, const char* message, size_t length)
       length -= sent;
     }
   return 0;
+}
+
+
+/**
+ * Get the index of the virtual terminal on which the display should be opened
+ * 
+ * @return  The index of the virtual terminal on which the display should be opened, -1 on error
+ */
+int select_vt(void)
+{
+  int rc, r;
+  const char* xdg_vtnr;
+  
+  xdg_vtnr = getenv("XDG_VTNR");
+  if (xdg_vtnr == NULL)
+    xdg_vtnr = "";
+  
+  if (*xdg_vtnr)
+    {
+      /* $XDG_VTNR has been specified, use it to select VT. */
+      r = strict_atoi(xdg_vtnr, &rc, MIN_NR_CONSOLES, MAX_NR_CONSOLES);
+      if (r < 0)
+	{
+	  eprint("the environment variable XDG_VTNR contains an invalid value.");
+	  return errno = 0, -1;
+	}
+    }
+  else
+    {
+      /* $XDG_VTNR has not been specified, select next available VT. */
+      rc = vt_get_next_available();
+      if (rc == 0)
+	{
+	  eprint("out of available virtual terminals, I am stymied.");
+	  return errno = 0, -1;
+	}
+    }
+  
+  return rc;
 }
 
 
