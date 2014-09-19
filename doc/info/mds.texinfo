@@ -1243,6 +1243,23 @@ virtual terminal the display is located on. It also
 enables other servers to switch the virtual terminals
 mode to graphical mode or text mode.
 
+By default @command{mds-vt} will select the next
+available virtual terminal for the display server.
+You can override this behaviour by exporting a value
+to the environment variable @env{XDG_VTNR}. The value
+must be a decimal integer of a valid virtual terminal
+index@footnote{Which is the same thing as a valid TTY
+index.}. To select the virtual terminal the display
+was started from you can use the following code in
+your @file{~/.mdsinitrc}:
+
+@example
+export XDG_VTNR="$(fgconsole)"
+@end example
+
+@command{fgconsole} is a part of the @command{kbd}
+package.
+
 
 
 @node mds-clipboard
