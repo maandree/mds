@@ -2132,8 +2132,8 @@ Set the TTY text mode if the value of the header
 @code{Graphical} is @code{no}.
 @end table
 The server implementing this protocol should not set the
-TTY to  text mode temporarily when switching TTY. It is
-up the the server that set the request for graphical mode
+TTY to text mode temporarily when switching TTY. It is
+up to the server that set the request for graphical mode
 to temporarily switch to text mode when switching TTY.
 
 @item Optional header: @code{Exclusive}
