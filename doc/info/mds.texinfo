@@ -3312,14 +3312,14 @@ the no metadata for gamma ramps have changed,
 which could happen if the user switches between
 hardware and software gamma ramps.
 The response will also contain a @code{Length}
-header and a message formatted in the same
-manner as for @command{Command. set-gamma}
-messages. That is, assuming as an example that
-the gamma ramp depth is 16 bits, the red ramp
-is (1, 2, 3, 4, 5, 6), the green ramp is (17, 18, 19,
-20, 21, 22, 23) and the blue ramp is (33, 34, 35, 36,
-37, 38, 39, 40) then the message will be (hexadecimal
-representation):
+header and a message formatted in the same manner
+as for @command{Command. set-gamma} messages. That
+is, assuming as an example that the gamma ramp depth
+is 16 bits, @code{Coalesce: yes} was used in the
+query, the red ramp is (1, 2, 3, 4, 5, 6), the green
+ramp is (17, 18, 19, 20, 21, 22, 23) and the blue
+ramp is (33, 34, 35, 36, 37, 38, 39, 40) then the
+message will be (hexadecimal representation):
 @example
 0001 0002 0003 0004 0005 0006
 0011 0012 0013 0014 0015 0016 0017
@@ -3334,7 +3334,7 @@ On a big-endian system this would be:
 @end example
 
 @item Purpose:
-Enable analysation and readings of the current
+Enable analysis and readings of the current
 gamma ramps.
 
 @item Compulsivity:
