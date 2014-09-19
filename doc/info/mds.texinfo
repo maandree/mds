@@ -3580,7 +3580,7 @@ to them by one of their windows.
 Optional.
 
 @item Reference implementation:
-@command{mds-echo}
+@command{mds-kill} and @command{mds-slay}
 @end table
 
 
