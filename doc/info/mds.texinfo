@@ -300,7 +300,7 @@ and wait for a reply from all of them.
 @chapter Application Design
 
 When creating graphical @command{mds} applications,
-where are some guildlines you should follow.
+there are some guildlines you should follow.
 
 @itemize @bullet
 @item
