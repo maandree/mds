@@ -83,8 +83,8 @@ about flexibility and freedom 0@footnote{The freedom to run
 the program as you wish, for any purpose.}.
 
 The reason for having a display server architectured as a
-microkernel is so that components can be added, remove
-and replaced online. Additionally, the message passing
+microkernel is so that components can be added, removed,
+updated and replaced online. Additionally, the message passing
 between the servers makes it easy to design a system that
 lets you make clients that can listen on messages between
 the servers and perhaps modify them. This enables you to
