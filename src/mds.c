@@ -53,6 +53,11 @@ static char** argv;
  */
 static const char* master_server = LIBEXECDIR "/mds-server";
 
+/**
+ * The umask the server start with
+ */
+static mode_t saved_umask;
+
 
 /**
  * Entry point of the program
@@ -106,6 +111,9 @@ int main(int argc_, char** argv_)
   /* Set up to ignore SIGDANGER. */
   if (xsigaction(SIGDANGER, SIG_IGN) < 0)
     xperror(*argv);
+  
+  /* Remove umask. */
+  saved_umask = umask(0);
   
   /* Create directory for socket files, PID files and such. */
   if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
@@ -333,7 +341,11 @@ int spawn_and_respawn_server(int fd)
   
   if (pid == 0) /* Child. */
     {
+      /* If this image exits, it should do so with failure status. */
       rc++;
+      /* Reinstate original umask. */
+      umask(saved_umask);
+      /* Change image into the master server. */
       exec_master_server(child_args);
       goto pfail;
     }
@@ -435,9 +447,11 @@ int create_directory_root(const char* pathname)
 	  goto pfail;
       }
     else
-      /* Set ownership. */
-      if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
-	goto pfail;
+      {
+	/* Set ownership. */
+	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
+	  goto pfail;
+      }
   
   return 0;
 
