@@ -2405,7 +2405,7 @@ Greek (historical)
 Compose (usally a dead key)
 @item hexcompose
 Hex-Compose (usally a dead key)
-(Use to create aribitrary characters.)
+(Used to create aribitrary characters.)
 @item longhexcompose
 Long Hex-Compose (usally a dead key)
 (Variant of hexcompose for longer codepoints.)
