@@ -825,12 +825,12 @@ to be @code{-INT16_MAX} (@math{-32767}) rather than
 
 @item
 Integer that are not especially encoded must not be
-larger than 64-bits if they use fixed bit-size. If
-for example @code{size_t} is 128-bits on your platform
-but you are using a language that only have native
-integer up to 64-bits you must use arbitrary size
-integers or otherwise make sure that the value can
-be properly stored and used.
+larger than 64-bits if they use fixed bit-size. If,
+for example, @code{size_t} is 128-bits on your
+platform but you are using a language that only have
+native integers up to 64-bits you must use arbitrary
+size integers or otherwise make sure that the value
+can be properly stored and used.
 
 @item
 Integer 64-bits that are not especially encoded
