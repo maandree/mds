@@ -25,10 +25,10 @@ Missing commands:
 
 Missing protocols:
 
-	drag		kkbdrate  	keytrans	multikey
-	rat		cursor		colour		state
-	focus		screensaver	compositor	crtc
-	presentation	network		decorator	workspace
+	drag		kkbdrate  	keytrans	rat
+	cursor		colour		state		focus
+	screensaver	compositor	crtc		presentation
+	network		decorator	workspace
 	embed		Embedding windows inside other windows such as a status icon tray
 
 
