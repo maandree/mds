@@ -374,7 +374,7 @@
  * Quick, free up all your unused memory or kill yourself!
  */
 #ifndef SIGDANGER
-# define SIGDANGER  SIGRTMAX
+# define SIGDANGER  (SIGRTMIN + 1)
 #endif
 
 

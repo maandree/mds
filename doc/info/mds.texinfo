@@ -382,7 +382,7 @@ instead of @command{SIGUSR1}.
 If you need servers to free up allocated
 memory that they do not use, send the signal
 @command{SIGDANGER}, or if not defined
-@command{SIGRTMAX}. Unimportant servers may
+@command{SIGRTMIN + 1}. Unimportant servers may
 choose to die on @command{SIGDANGER}.
 
 

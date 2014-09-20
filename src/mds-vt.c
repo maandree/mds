@@ -267,9 +267,9 @@ int initialise_server(void)
   fail_if (server_initialised() < 0);
   fail_if (mds_message_initialise(&received));
   
-  fail_if (xsigaction(SIGRTMIN + 1, received_switch_vt) < 0);
   fail_if (xsigaction(SIGRTMIN + 2, received_switch_vt) < 0);
-  vt_construct_mode(1, SIGRTMIN + 1, SIGRTMIN + 2, &mode);
+  fail_if (xsigaction(SIGRTMIN + 3, received_switch_vt) < 0);
+  vt_construct_mode(1, SIGRTMIN + 2, SIGRTMIN + 3, &mode);
   fail_if (vt_get_set_mode(display_tty_fd, 1, &mode) < 0);
   if (vt_set_exclusive(display_tty_fd, 1) < 0)
     xperror(*argv);
@@ -713,7 +713,7 @@ void signal_all(int signo)
  */
 void received_switch_vt(int signo)
 {
-  int leaving = signo == (SIGRTMIN + 1);
+  int leaving = signo == (SIGRTMIN + 2);
   switching_vt = leaving ? 1 : -1;
 }
 

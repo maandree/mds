@@ -56,3 +56,5 @@ Implement reconnect_to_display()
 
 src/libmdsserver/config.h should be sed:ed rather than use #ifndef
 
+Something is up with the test...
+
