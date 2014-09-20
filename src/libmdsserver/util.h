@@ -124,7 +124,7 @@ int full_write(int fd, const char* buffer, size_t length);
  * 
  * @param   fd      The file descriptor
  * @param   length  Output parameter for the length of the file, may be `NULL`
- * @return          The content of the file, you will need to free it. `NULL` on error.
+ * @return          The content of the file, you will need to free it. `NULL` on error
  */
 char* full_read(int fd, size_t* length);
 
@@ -150,6 +150,15 @@ int startswith_n(const char* haystack, const char* needle, size_t haystack_n, si
  * @return           See the documentation for `waitpid`
  */
 pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options);
+
+/**
+ * Check whether a NUL-terminated string is encoded in UTF-8
+ * 
+ * @param   string              The string
+ * @param   allow_modified_nul  Whether Modified UTF-8 is allowed, which allows a two-byte encoding for NUL
+ * @return                      Zero if good, -1 on encoding error
+ */
+int verify_utf8(const char* string, int allow_modified_nul) __attribute__((pure));
 
 
 #endif

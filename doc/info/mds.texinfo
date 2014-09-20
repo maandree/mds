@@ -3990,6 +3990,18 @@ Wrapper around @code{waitpid} that never returns on an
 interruption unless it is interrupted one hundred times
 within the same clock second. The parameters and return
 value are exactly those of @code{waitpid}.
+
+@item @code{verify_utf8}[(@code{const char* string, int allow_modified_nul}) @arrow{} @code{int}]
+Checks whether a NUL-terminated string's encoding
+matches UTF-8. This function will reject the string
+if it does not use the shorted possible
+byte-combination for each character. However, if
+@code{allow_modified_nul} is set, it will allow
+@code{192 128} in place of @code{0} for a
+NUL-character.@footnote{Remember @code{0} is used
+to terminated the string, but @code{192 128} is not.}
+This function returns zero if the @code{string} is
+properly formatted, and @code{-1} otherwise.
 @end table
 
 
