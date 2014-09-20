@@ -336,11 +336,12 @@ time they were closed.
 @chapter Protocol
 
 @menu
-* Environment Variables::           Identifying the active display server
-* Signals::                         Signalling individual servers
-* Filesystem::                      The display server's footprint on the filesystem
-* Message Passing::                 Sending messages between servers and clients
-* Interception::                    Implementing protocols and writing unanticipated clients
+* Environment Variables::           Identifying the active display server.
+* Signals::                         Signalling individual servers.
+* Filesystem::                      The display server's footprint on the filesystem.
+* Message Passing::                 Sending messages between servers and clients.
+* Interception::                    Implementing protocols and writing unanticipated clients.
+* Portability::                     Restrictions for portability on protocols.
 @end menu
 
 
@@ -802,6 +803,61 @@ Length: 30\n
 \n
 Command: keyboard-enumeration\n
 @end example
+
+
+
+@node Portability
+@section Portability
+
+For optimal portability, there are some restrictions
+on protocols.
+
+@itemize @bullet{}
+@item
+Because C allows unsigned integers to be encoded as
+either sign and magnitude, one's complement or two's
+complement@footnote{GCC only allows two's complement},
+the minimum value of any signed value with a fixed
+bit-size is the negative of its maximum value, that
+is, the minimum value @code{int16_t} is to be assumed
+to be @code{-INT16_MAX} (@math{-32767}) rather than
+@code{INT16_MIN} (@math{-32768} with two's complement.)
+
+@item
+Integer that are not especially encoded must not be
+larger than 64-bits if they use fixed bit-size. If
+for example @code{size_t} is 128-bits on your platform
+but you are using a language that only have native
+integer up to 64-bits you must use arbitrary size
+integers or otherwise make sure that the value can
+be properly stored and used.
+
+@item
+Integer 64-bits that are not especially encoded
+must not be unsigned if the bit-size is fixed.
+
+@item
+Native endianness when a endianness is choosen.
+Do not assume big endianness, but the same
+endianness that appear on the same machine when
+using C.
+
+@item
+All strings musts be encoded in UTF-8 without
+any NUL-character unless expressive permission
+is given. NUL-character may be encoded either
+using a zero byte or using Modified UTF-8, where
+it is encoded using two bytes. Which is used is
+selected in the protocol, however headers and
+their values must not include NUL-characters.
+No character may be encoded with more bytes than
+necessary.
+
+@item
+The new line-character is always LF (@code{'\n'},
+10, line feed) and never a combination of LF and
+any other character, or multiple LF:s.
+@end itemize
 
 
 
