@@ -2382,7 +2382,7 @@ Alternative/Option
 Alternative Graphic (level 3)
 @item lvl*
 @code{*} may be any @math{2^n + 1} integer
-@math{with 1 < n < 20}.
+with @math{1 < n < 20}.
 @item super
 Super
 @item hyper
