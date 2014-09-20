@@ -56,5 +56,5 @@ Implement reconnect_to_display()
 
 src/libmdsserver/config.h should be sed:ed rather than use #ifndef
 
-Something is up with the test...
+Something is up with the test, it does not exit on Control+C
 
