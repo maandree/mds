@@ -18,6 +18,7 @@
 #include "mds-message.h"
 
 #include "macros.h"
+#include "util.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -179,7 +180,7 @@ static int get_payload_length(mds_message_t* restrict this)
 
 
 /**
- * Verify that a header is correctly formated
+ * Verify that a header is correctly formatted
  * 
  * @param   header  The header, must be NUL-terminated
  * @param   length  The length of the header
@@ -188,6 +189,11 @@ static int get_payload_length(mds_message_t* restrict this)
 static int __attribute__((pure)) validate_header(const char* header, size_t length)
 {
   char* p = memchr(header, ':', length * sizeof(char));
+  
+  if (verify_utf8(header, 0) < 0)
+    /* Either the string is not UTF-8, or your are under an UTF-8 attack,
+       lets just call this unrecoverable because the client will not correct. */
+    return -2;
   
   if ((p == NULL) || /* Buck you, rawmemchr should not segfault the program. */
       (p[1] != ' ')) /* Also an invalid format. ' ' is mandated after the ':'. */
