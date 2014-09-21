@@ -1738,15 +1738,15 @@ instance name.
 @command{mds-meta} works by connecting to the
 running display server instance, the display,
 and create a new display server instance, the
-meta-display. Messages passed via the meta-display's
+metadisplay. Messages passed via the metadisplay's
 socket is forward to the display, and messages
 passed to via the display to @command{mds-meta}
 is send to the appropriate server. @command{mds-meta}
 manages interception in the same way as
 @command{mds-server} and @command{mds-remote}.
 
-If @command{mds-meta} creates a new meta-display,
-rather than joining an existing meta-display, it
+If @command{mds-meta} creates a new metadisplay,
+rather than joining an existing metadisplay, it
 will spawn @file{~/.mdsmetainitrc} to let you
 start the shared servers.
 
@@ -1754,9 +1754,9 @@ An interesting property of @command{mds-meta} is
 that it can be used to share servers across display
 servers on multiple computers. For example, if you
 start @command{mds-host} and @command{mds-clipboard}
-inside the meta-display on your central computer,
+inside the metadisplay on your central computer,
 displays started on other servers can run
-@command{mds-remote} to connect to the meta-display
+@command{mds-remote} to connect to the metadisplay
 so that all computers share the same clipboard.
 However, this network will be centralised and not
 distributed, so it is not perfect.
