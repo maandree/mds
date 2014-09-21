@@ -1218,9 +1218,7 @@ actually a server.
 * mds-registry::                    The @command{mds-registry} server.
 * mds-vt::                          The @command{mds-vt} server.
 * mds-clipboard::                   The @command{mds-clipboard} server.
-* mds-iclipboard::                  The @command{mds-iclipboard} server.
 * mds-drag::                        The @command{mds-drag} server.
-* mds-idrag::                       The @command{mds-idrag} server.
 * mds-kkbd::                        The @command{mds-kkbd} server.
 * mds-kkbdrate::                    The @command{mds-kkbdrate} server.
 * mds-kbd::                         The @command{mds-kbd} server.
@@ -1251,6 +1249,7 @@ actually a server.
 * mds-dri::                         The @command{mds-dri} server.
 * mds-fb::                          The @command{mds-fb} server.
 * mds-mds::                         The @command{mds-mds} server.
+* mds-meta::                        The @command{mds-meta} server.
 * mds-seat::                        The @command{mds-seat} server.
 * mds-nest::                        The @command{mds-nest} server.
 * mds-host::                        The @command{mds-host} server.
@@ -1334,30 +1333,11 @@ time or when its originator closes.
 
 
 
-@node mds-iclipboard
-@section @command{mds-iclipboard}
-
-@command{mds-iclipboard} is an alternative to
-@command{mds-clipboard} that can be used to share
-clipboard between multiple display servers
-instances.
-
-
-
 @node mds-drag
 @section @command{mds-drag}
 
 @command{mds-drag} is the server that implements
 drag-and-drop support.
-
-
-
-@node mds-idrag
-@section @command{mds-idrag}
-
-@command{mds-idrag} is an alternative to
-@command{mds-drag} that lets you drag and drop
-between display server instances.
 
 
 
@@ -1732,6 +1712,43 @@ content using framebuffers.
 @command{mds-mds} is a server that displays
 content using another @command{mds} window.
 It creates a window that emulates a monitor.
+
+
+
+@node mds-meta
+@section @command{mds-meta}
+
+@command{mds-meta} is a meta-display server.
+It creates or joins a named meta-display server,
+and creates and alternative values for
+@env{MDS_DISPLAY}. Any server connecting to
+this alternative @env{MDS_DISPLAY} connects
+to this meta-display server. This can be used
+to make servers shared between display server
+instances.
+
+@command{mds-meta} uses the environment variable
+@env{MDS_METADISPLAY} to acquire the name of the
+meta-display server instance it should join or
+create. If @env{MDS_METADISPLAY} has not been set
+it is treated as having an empty string for its
+value which is a valid meta-display server
+instance name.
+
+@command{mds-meta} works by connecting to the
+running display server instance, the display,
+and create a new display server instance, the
+meta-display. Messages passed via the meta-display's
+socket is forward to the display, and messages
+passed to via the display to @command{mds-meta}
+is send to the appropriate server. @command{mds-meta}
+manages interception in the same way as
+@command{mds-server} and @command{mds-remote}.
+
+If @command{mds-meta} creates a new meta-display,
+rather than joining an existing meta-display, it
+will spawn @file{~/.mdsmetainitrc} to let you
+start the shared servers.
 
 
 
