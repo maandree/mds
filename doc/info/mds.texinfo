@@ -5410,6 +5410,10 @@ Cannot be networked without exposing an alternative
 display server protocol.
 @end itemize
 
+@noindent
+Exo-display servers could be interesting for high
+performing gaming consoles.
+
 
 
 @node GNU Free Documentation License
