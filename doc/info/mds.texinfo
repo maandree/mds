@@ -5120,11 +5120,12 @@ and will often not require any modifications to
 the existing servers.
 
 @item
-Replacing the display server is easier than it
-is for a monolithic display server, because there
-servers could be replaced one by one and could
-even support running under two distinct protocol
-during the transitional period.
+Replacing the display server is easier for a
+micro-display server than it is for a monolithic
+display server, because the servers could be
+replaced one by one and could even support running
+under two distinct protocol during the transitional
+period.
 
 @item
 Not as many subprotocols needs to be defined.
