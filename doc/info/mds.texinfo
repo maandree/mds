@@ -5117,6 +5117,17 @@ passed between servers.
 @item
 If a server crashes it does not crash the entire
 session. Crashes can most often be repaired.
+
+@item
+Because servers can easily be omitted and replaced
+when starting the display server, it becomes much
+easier to mount the display server on top of an
+already running display server. For example, if you
+want the performance of @code{weston} but then
+flexibility and functionallity of @code{mds}, you
+could start @code{mds} inside @code{weston} and
+replace a small set of the servers with variants
+written to running on top of Wayland.
 @end itemize
 
 
