@@ -5129,6 +5129,10 @@ could start @code{mds} inside @code{weston} and
 replace a small set of the servers with variants
 written to running on top of Wayland; of course
 with some functionallity of @code{mds} missing.
+
+@item
+It is trivial to only have setuid on for the
+part of the display server where it is required.
 @end itemize
 
 
