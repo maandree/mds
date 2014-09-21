@@ -5162,7 +5162,8 @@ Description: The display server is implemented
 as one binary.
 
 @noindent
-Implementations: X11, Mir, Wayland.
+Implementations: X11, Mir, Wayland, Surface Flinger,
+Quartz Compositor, Desktop Window Manager.
 
 @noindent
 Advantages:
