@@ -5079,12 +5079,30 @@ Right @kbd{super} key
 @chapter Discussion
 
 This chapter aims to enumerate advantages and
-disavantages with micro-display servers and
-traditional monolithic display servers. Please
-chime in with any insight.
+disavantages with micro-display servers,
+traditional monolithic display servers and
+other possible designs. Please chime in with
+any insight.
+
+@menu
+* The Microserver Architecture::              The Microserver Architecture.
+* The Monolithic Server Architecture::        The Monolithic Server Architecture.
+@end menu
 
 
-@b{Advantages of the microserver architecture:}
+
+@node The Microserver Architecture
+@section The Microserver Architecture
+
+Description: The display server is implement with
+multiple binaries that speak with each other using
+a well defined protocol.
+
+@noindent
+Implementations: mds.
+
+@noindent
+Advantages:
 
 @itemize @bullet{}
 @item
@@ -5136,7 +5154,18 @@ part of the display server where it is required.
 @end itemize
 
 
-@b{Advantages of the monolithic server architecture:}
+
+@node The Monolithic Server Architecture
+@section The Monolithic Server Architecture
+
+Description: The display server is implemented
+as one binary.
+
+@noindent
+Implementations: X11, Mir, Wayland.
+
+@noindent
+Advantages:
 
 @itemize @bullet{}
 @item
