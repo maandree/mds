@@ -5226,7 +5226,7 @@ display servers for tasks where it is desirable.
 
 The mds protocol and its reference implemention can
 easily be made into a hybrid display server protocol
-and and implementation thereof.
+and an implementation thereof.
 
 
 
