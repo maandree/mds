@@ -5127,7 +5127,8 @@ want the performance of @code{weston} but then
 flexibility and functionallity of @code{mds}, you
 could start @code{mds} inside @code{weston} and
 replace a small set of the servers with variants
-written to running on top of Wayland.
+written to running on top of Wayland; of course
+with some functionallity of @code{mds} missing.
 @end itemize
 
 
