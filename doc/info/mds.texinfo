@@ -1750,6 +1750,17 @@ rather than joining an existing meta-display, it
 will spawn @file{~/.mdsmetainitrc} to let you
 start the shared servers.
 
+An interesting property of @command{mds-meta} is
+that it can be used to share servers across display
+servers on multiple computers. For example, if you
+start @command{mds-host} and @command{mds-clipboard}
+inside the meta-display on your central computer,
+displays started on other servers can run
+@command{mds-remote} to connect to the meta-display
+so that all computers share the same clipboard.
+However, this network will be centralised and not
+distributed, so it is not perfect.
+
 
 
 @node mds-seat
