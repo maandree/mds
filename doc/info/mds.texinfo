@@ -5115,9 +5115,12 @@ other possible designs. Please chime in with
 any insight.
 
 @menu
-* The Microserver Architecture::              The Microserver Architecture.
-* The Monolithic Server Architecture::        The Monolithic Server Architecture.
-* The Hybrid Server Architecture::            The Hybrid Server Architecture.
+* The Microserver Architecture::              The microserver architecture.
+* The Monolithic Server Architecture::        The monolithic server architecture.
+* The Hybrid Server Architecture::            The hybrid server architecture.
+* The Megalithic Server Architecture::        The megalithic server architecture.
+* The Modular Server Architecture::           The modular server architecture.
+* The Exoserver Architecture::                The exoserver architecture.
 @end menu
 
 
@@ -5209,7 +5212,7 @@ Advantages:
 @itemize @bullet{}
 @item
 The monolithic architecture makes it trivial
-to isolate information for clients to achive
+to isolate information for clients to achieve
 confidentiality. Prioritising confidentiality
 however leads to problems implementing features
 such as screenshooting and global hotkeys.
@@ -5217,10 +5220,10 @@ such as screenshooting and global hotkeys.
 @item
 Monolithic server does not need to pass messages
 between modules, but can rather perform normal
-function calls and achive greater performance.
+function calls and achieve greater performance.
 
 @item
-Monolithic diplay servers can have a smaller memory
+Monolithic display servers can have a smaller memory
 footprint than its full-fledged counterparts.
 @end itemize
 
@@ -5235,6 +5238,18 @@ components are built into the master server for
 performance or security reasons.
 
 @noindent
+Hybrid display server could arguably be called
+milli-display servers to emphasis that they are
+small, but not as small as micro-display servers,
+are much more closely related to micro-display
+servers than monolithic display servers, and, in
+constrast with OS kernels, have a proper distinction
+from monolithic systems and microsystems.
+@footnote{I don't know about calling them
+macro-display servers, that implies that they are
+the total opposite of micro-display servers.}
+
+@noindent
 Implementations: none?
 
 @noindent
@@ -5242,13 +5257,13 @@ Advantages:
 
 @itemize @bullet{}
 @item
-Can achive most of the microserver architecture's
+Can achieve most of the microserver architecture's
 advantages, but not always to the same extent.
 
 @item
 By integrating some servers into the master server,
 the hybrid architecture can isolate information for
-clients to achive confidentiality. Prioritising
+clients to achieve confidentiality. Prioritising
 confidentiality however leads to problems implementing
 features such as screenshooting and global hotkeys.
 
@@ -5256,13 +5271,144 @@ features such as screenshooting and global hotkeys.
 Large and high frequency messages does not need to
 be passed around to other servers if they are integrated
 into the master server. This lets hybrid display server
-achive the same perfomance performance as monolithic
+achieve the same perfomance performance as monolithic
 display servers for tasks where it is desirable.
 @end itemize
 
+@noindent
 The mds protocol and its reference implemention can
 easily be made into a hybrid display server protocol
 and an implementation thereof.
+
+
+
+@node The Megalithic Server Architecture
+@section The Megalithic Server Architecture
+
+Description: A monolithic display server where
+applications are loaded or compiled into the display
+server itself.
+
+@noindent
+These are also known as mega-display servers.
+
+@noindent
+Implementations: none?
+
+@noindent
+Advantages:
+
+@itemize @bullet{}
+@item
+No interprocess communication is required, apart from
+letting the display server know to load modules if it
+does not compile in its programs. This lets megalithic
+display server achieve even greater performance than
+monolithic display servers.
+@end itemize
+
+@noindent
+Disadvantages:
+
+@itemize @bullet{}
+@item
+Imposes restrictions on which languages applications can use.
+
+@item
+Imposes restrictions on how applications can behave.
+
+@item
+Cannot be networked without exposing an alternative
+display server protocol.
+
+@item
+The display becomes more crash prune; if an application
+crashes it is likely to crash the entire display.
+
+@item
+Applications will run with the same privileges as the display
+server, which is root on most operating systems.
+@end itemize
+
+@noindent
+Megalithic display servers could be interesting for high
+performing gaming consoles.
+
+
+
+@node The Modular Server Architecture
+@section The Modular Server Architecture
+
+Description: A monolithic display server where server-like
+programs can be loaded as modules into the display server
+but applicates are connected with interprocess communication.
+
+@noindent
+Implementations: none?
+
+@noindent
+Advantages:
+
+@itemize @bullet{}
+@item
+Can achieve that flexibility of micro-display servers,
+but not when networked, with the same memory footprint
+as monolithic display servers.
+
+@item
+Has the same advantages as monolithic kernels.
+
+@item
+Applications that require absolute performance can
+be loaded as modules and achieve the same performance
+as megalithic kernels, however with the same caveats.
+@end itemize
+
+@noindent
+With a little work the mds protocol could be transformed
+into a modular server display protocol, and with some work
+the reference implementation could be made into a modular
+server display. Then the untransformed version of
+@command{mds-server} cound be made into a module for the
+transformed version to accomplish the best of all worlds,
+with the exception that we would have a rather large
+memory footprint.
+
+
+
+@node The Exoserver Architecture
+@section The Exoserver Architecture
+
+Description: An exo-display server is a tiny display
+server that attempts to let applications access the
+underlaying system directly and implements basic
+interprocess communication to let applications share
+vital information and coordinate with each other.
+
+@noindent
+Implementations: none?
+
+@noindent
+Advantages:
+
+@itemize @bullet{}
+@item
+Can achieve the same performance as megalithic
+display servers.
+
+@item
+Can achieve the same robustness as micro-display
+servers.
+@end itemize
+
+@noindent
+Disavantages:
+
+@itemize @bullet{}
+@item
+Cannot be networked without exposing an alternative
+display server protocol.
+@end itemize
 
 
 
