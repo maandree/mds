@@ -5109,7 +5109,7 @@ Right @kbd{super} key
 @chapter Discussion
 
 This chapter aims to enumerate advantages and
-disavantages with micro-display servers,
+disadvantages with micro-display servers,
 traditional monolithic display servers and
 other possible designs. Please chime in with
 any insight.
@@ -5402,7 +5402,7 @@ servers.
 @end itemize
 
 @noindent
-Disavantages:
+Disadvantages:
 
 @itemize @bullet{}
 @item
