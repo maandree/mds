@@ -5142,7 +5142,9 @@ part of the display server where it is required.
 @item
 The monolithic architecture makes it trivial
 to isolate information for clients to achive
-confidentiality.
+confidentiality. Prioritising confidentiality
+however leads to problems implementing features
+such as screenshooting and global hotkeys.
 
 @item
 Monolithic server does not need to pass messages
