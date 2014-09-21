@@ -5087,6 +5087,7 @@ any insight.
 @menu
 * The Microserver Architecture::              The Microserver Architecture.
 * The Monolithic Server Architecture::        The Monolithic Server Architecture.
+* The Hybrid Server Architecture::            The Hybrid Server Architecture.
 @end menu
 
 
@@ -5181,6 +5182,46 @@ Monolithic server does not need to pass messages
 between modules, but can rather perform normal
 function calls and achive greater performance.
 @end itemize
+
+
+
+@node The Hybrid Server Architecture
+@section The Hybrid Server Architecture
+
+Description: The display server is implmeneted
+with the microserver architecture except some
+components are built into the master server for
+performance or security reasons.
+
+@noindent
+Implementations: none?
+
+@noindent
+Advantages:
+
+@itemize @bullet{}
+@item
+Can achive most of the microserver architecture's
+advantages, but not always to the same extent.
+
+@item
+By integrating some servers into the master server,
+the hybrid architecture can isolate information for
+clients to achive confidentiality. Prioritising
+confidentiality however leads to problems implementing
+features such as screenshooting and global hotkeys.
+
+@item
+Large and high frequency messages does not need to
+be passed around to other servers if they are integrated
+into the master server. This lets hybrid display server
+achive the same perfomance performance as monolithic
+display servers for tasks where it is desirable.
+@end itemize
+
+The mds protocol and its reference implemention can
+easily be made into a hybrid display server protocol
+and and implementation thereof.
 
 
 
