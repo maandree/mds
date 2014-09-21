@@ -59,8 +59,9 @@ Texts. A copy of the license is included in the section entitled
 * Servers::                         About @command{mds} servers.
 * Protocols::                       @command{mds} procotols.
 * libmdsserver::                    Overview of @command{libmdsserver}.
-* mds-base::                        Overview of @command{mds-base}.
+* mds-base.o::                      Overview of @file{mds-base.o}.
 * Keyboard Codes::                  Scancodes and keycodes.
+* Discussion::                      Discussion on display server-architecture.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -4648,8 +4649,8 @@ in the display server message passing system.
 
 
 
-@node mds-base
-@chapter @file{mds-base}
+@node mds-base.o
+@chapter @file{mds-base.o}
 
 @file{mds-base.c} and @file{mds-base.h} as an object
 filepair whose purpose is similar to libmdsserver.
@@ -5071,6 +5072,67 @@ Right @kbd{super} key
 @item @code{127}
 @kbd{Application menu} key
 @end table
+
+
+
+@node Discussion
+@chapter Discussion
+
+This chapter aims to enumerate advantages and
+disavantages with micro-display servers and
+traditional monolithic display servers. Please
+chime in with any insight.
+
+
+@b{Advantages of the microserver architecture:}
+
+@itemize @bullet{}
+@item
+Knowing the names of the servers you use and
+their purpose makes it very easy to find where
+you want to do patching in the source code.
+
+@item
+If the message passing used in the display server
+allows for message modification and retrieval
+ordering, extending, modifying and using the display
+server in unforeseen ways becomes much easier,
+and will often not require any modifications to
+the existing servers.
+
+@item
+Replacing the display server is easier than it
+is for a monolithic display server, because there
+servers could be replaced one by one and could
+even support running under two distinct protocol
+during the transitional period.
+
+@item
+Not as many subprotocols needs to be defined.
+For example, recording the output of the display
+does not require a special protocol, one only
+needs to write a server that listens on messages
+passed between servers.
+
+@item
+If a server crashes it does not crash the entire
+session. Crashes can most often be repaired.
+@end itemize
+
+
+@b{Advantages of the monolithic server architecture:}
+
+@itemize @bullet{}
+@item
+The monolithic architecture makes it trivial
+to isolate information for clients to achive
+confidentiality.
+
+@item
+Monolithic server does not need to pass messages
+between modules, but can rather perform normal
+function calls and achive greater performance.
+@end itemize
 
 
 
