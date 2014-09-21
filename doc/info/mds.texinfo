@@ -5183,9 +5183,8 @@ between modules, but can rather perform normal
 function calls and achive greater performance.
 
 @item
-Monolithic diplay servers can have a smaller
-memory footprint than its full-fledged counter
-parts.
+Monolithic diplay servers can have a smaller memory
+footprint than its full-fledged counterparts.
 @end itemize
 
 
