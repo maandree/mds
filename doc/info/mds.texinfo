@@ -5112,6 +5112,12 @@ their purpose makes it very easy to find where
 you want to do patching in the source code.
 
 @item
+Spaghetti code to a larger extent is virtually
+impossible; the microserver architecture guarantees
+a certain quality of the code architecture for
+the display server.
+
+@item
 If the message passing used in the display server
 allows for message modification and retrieval
 ordering, extending, modifying and using the display
