@@ -41,7 +41,9 @@ Texts. A copy of the license is included in the section entitled
 @author by Mattias Andrée (maandree)
 
 @page
-@c @center `'
+@center `To me, writing a monolithic system in 1991 is a truly poor idea.'
+@c  Well, here we are 23 years later and we are still
+@c  doing, but where it is even easier not to.
 @vskip 0pt plus 1filll
 @insertcopying
 @end titlepage
