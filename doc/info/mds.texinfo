@@ -5344,7 +5344,9 @@ programs can be loaded as modules into the display server
 but applicates are connected with interprocess communication.
 
 @noindent
-Implementations: none?
+Implementations: none?@footnote{Desktop Window Manager
+is partially modular, but as of yet, this cannot be
+utilised by end-users.}
 
 @noindent
 Advantages:
