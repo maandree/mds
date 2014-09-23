@@ -5120,6 +5120,7 @@ any insight.
 * The Hybrid Server Architecture::            The hybrid server architecture.
 * The Megalithic Server Architecture::        The megalithic server architecture.
 * The Modular Server Architecture::           The modular server architecture.
+* The Modular Microserver Architecture::      The modular microserver architecture.
 * The Exoserver Architecture::                The exoserver architecture.
 @end menu
 
@@ -5370,11 +5371,41 @@ as megalithic kernels, however with the same caveats.
 With a little work the mds protocol could be transformed
 into a modular server display protocol, and with some work
 the reference implementation could be made into a modular
+server display.
+
+
+
+@node The Modular Microserver Architecture
+@section The Modular Microserver Architecture
+
+Description: A modular display server with a module
+that enables clients to act as modules that communicates
+via interprocess communication rather than being loaded
+into the display server.
+
+@noindent
+Implementations: none?
+
+@noindent
+Advantages:
+
+@itemize @bullet{}
+@item
+the modular microserver architecture seem to provide
+all of the advantages of the other architecture but
+none of the disadvantages. However, modules can still
+crash and bring down the display server, but the idea
+is to not load unstable modules but let the be servers.
+Therefore exo-diplay server are slightly more robust.
+@end itemize
+
+@noindent
+With a little work the mds protocol could be transformed
+into a modular server display protocol, and with some work
+the reference implementation could be made into a modular
 server display. Then the untransformed version of
 @command{mds-server} cound be made into a module for the
-transformed version to accomplish the best of all worlds,
-with the exception that we would have a rather large
-memory footprint.
+transformed version.
 
 
 
