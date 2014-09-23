@@ -5391,7 +5391,7 @@ Advantages:
 
 @itemize @bullet{}
 @item
-the modular microserver architecture seem to provide
+The modular microserver architecture seem to provide
 all of the advantages of the other architecture but
 none of the disadvantages. However, modules can still
 crash and bring down the display server, but the idea
