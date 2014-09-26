@@ -30,6 +30,12 @@ OBJ_mds-registry_ = mds-registry util globals reexec registry signals  \
 OBJ_mds-server   = $(foreach O,$(OBJ_mds-server_),obj/mds-server/$(O).o)
 OBJ_mds-registry = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
 
+ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
+SEDED = src/libmdsserver/config.h
+else
+SEDED =
+endif
+
 
 
 # Build rules.
@@ -51,5 +57,5 @@ perms: all
 
 .PHONY: clean
 clean:
-	-rm -rf obj bin
+	-rm -rf obj bin $(SEDED)
 

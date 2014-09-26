@@ -11,5 +11,7 @@ obj/
 *.su
 *.gch
 *.out
+*.so
 *.o
+/src/libmdsserver/config.h
 

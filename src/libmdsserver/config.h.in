@@ -22,97 +22,73 @@
 /**
  * The name under which this package is installed
  */
-#ifndef PKGNAME
-#define PKGNAME  "mds"
-#endif
+#define PKGNAME  "@PKGNAME@"
 
 
 /**
  * The directory where all servers are installed
  */
-#ifndef LIBEXECDIR
-#define LIBEXECDIR  "/usr/libexec"
-#endif
+#define LIBEXECDIR  "@LIBEXECDIR@"
 
 
 /**
  * The system's directory for non-persistent temporary files
  */
-#ifndef TMPDIR
-#define TMPDIR  "/tmp"
-#endif
+#define TMPDIR  "@TMPDIR@"
 
 
 /**
  * The system's directory for runtime data
  */
-#ifndef RUNDIR
-#define RUNDIR  "/run"
-#endif
+#define RUNDIR  "@RUNDIR@"
 
 
 /**
  * The system's directory for site-specific configurations
  */
-#ifndef SYSCONFDIR
-#define SYSCONFDIR  "/etc"
-#endif
+#define SYSCONFDIR  "@SYSCONFDIR@"
 
 
 /**
  * The system's directory for pseudo-devices
  */
-#ifndef DEVDIR
-#define DEVDIR  "/dev"
-#endif
+#define DEVDIR  "@DEVDIR@"
 
 
 /**
  * Pathname pattern for virtual terminals
  */
-#ifndef VT_PATH_PATTERN
-#define VT_PATH_PATTERN  DEVDIR "/tty%i"
-#endif
+#define VT_PATH_PATTERN  "@VT_PATH_PATTERN@"
 
 
 /**
- * The root directory of all runtime data stored by MDS
+ * The root directory of all runtime data stored by mds
  */
-#ifndef MDS_RUNTIME_ROOT_DIRECTORY
-#define MDS_RUNTIME_ROOT_DIRECTORY  RUNDIR "/" PKGNAME
-#endif
+#define MDS_RUNTIME_ROOT_DIRECTORY  "@MDS_RUNTIME_ROOT_DIRECTORY@"
 
 
 /**
- * The root directory of temporarily stored data stored by MDS servers
+ * The root directory of temporarily stored data stored by mds servers
  */
-#ifndef MDS_STORAGE_ROOT_DIRECTORY
-#define MDS_STORAGE_ROOT_DIRECTORY  TMPDIR "/.{system-directory}." PKGNAME
-#endif
+#define MDS_STORAGE_ROOT_DIRECTORY  "@MDS_STORAGE_ROOT_DIRECTORY@"
 
 
 /**
  * The user ID for the root user
  */
-#ifndef ROOT_USER_UID
-#define ROOT_USER_UID  0
-#endif
+#define ROOT_USER_UID  @ROOT_USER_UID@
 
 
 /**
  * The group ID for the root group
  */
-#ifndef ROOT_GROUP_GID
-#define ROOT_GROUP_GID  0
-#endif
+#define ROOT_GROUP_GID  @ROOT_GROUP_GID@
 
 
 /**
  * The group ID for the nobody group
  */
-#ifndef NOBODY_GROUP_GID
-#define NOBODY_GROUP_GID  ROOT_GROUP_GID
-#endif
+#define NOBODY_GROUP_GID  @NOBODY_GROUP_GID@
 
 /* These three names above are redundant, but that is to avoid errors. */
 
@@ -120,101 +96,77 @@
 /**
  * The byte length of the authentication token
  */
-#ifndef TOKEN_LENGTH
-#define TOKEN_LENGTH  1024
-#endif
+#define TOKEN_LENGTH  @TOKEN_LENGTH@
 
 
 /**
  * Random number generator to use for generating a token
  */
-#ifndef TOKEN_RANDOM
-#define TOKEN_RANDOM  "/dev/urandom"
-#endif
+#define TOKEN_RANDOM  "@TOKEN_RANDOM@"
 
 
 /**
  * The path of the symlink to the executed command
  */
-#ifndef SELF_EXE
-#define SELF_EXE  "/proc/self/exe"
-#endif
+#define SELF_EXE  "@SELF_EXE@"
 
 
 /**
  * The path to the directory with symlinks to each file that is open
  */
-#ifndef SELF_FD
-#define SELF_FD  "/proc/self/fd"
-#endif
+#define SELF_FD  "@SELF_FD@"
 
 
 /**
  * Pattern for the names of shared object to which states are marshalled
  */
-#ifndef SHM_PATH_PATTERN
-#define SHM_PATH_PATTERN  "/.proc-pid-%ji"
-#endif
+#define SHM_PATH_PATTERN  "@SHM_PATH_PATTERN@"
 
 
 /**
  * The maximum number of command line arguments to allow
  */
-#ifndef ARGC_LIMIT
-#define ARGC_LIMIT  50
-#endif
+#define ARGC_LIMIT  @ARGC_LIMIT@
 
 
 /**
  * The number of additional arguments a libexec server may have
  */
-#ifndef LIBEXEC_ARGC_EXTRA_LIMIT
-#define LIBEXEC_ARGC_EXTRA_LIMIT  5
-#endif
+#define LIBEXEC_ARGC_EXTRA_LIMIT  @LIBEXEC_ARGC_EXTRA_LIMIT@
 
 
 /**
  * The maximum number of display allowed on the system
  */
-#ifndef DISPLAY_MAX
-#define DISPLAY_MAX  1000
-#endif
+#define DISPLAY_MAX  @DISPLAY_MAX@
 
 
 /**
  * The name of the environment variable that
  * indicates the index of the display
  */
-#ifndef DISPLAY_ENV
-#define DISPLAY_ENV  "MDS_DISPLAY"
-#endif
+#define DISPLAY_ENV  "@DISPLAY_ENV@"
 
 
 /**
  * The name of the environment variable that
  * indicates the display server's process group
  */
-#ifndef PGROUP_ENV
-#define PGROUP_ENV  "MDS_PGROUP"
-#endif
+#define PGROUP_ENV  "@PGROUP_ENV@"
 
 
 /**
  * The minimum time that most have elapsed
  * for respawning to be allowed
  */
-#ifndef RESPAWN_TIME_LIMIT_SECONDS
-#define RESPAWN_TIME_LIMIT_SECONDS  5
-#endif
+#define RESPAWN_TIME_LIMIT_SECONDS  @RESPAWN_TIME_LIMIT_SECONDS@
 
 
 /**
  * The dot-prefixless basename of the initrc
  * file that the master server executes
  */
-#ifndef INITRC_FILE
-#define INITRC_FILE  "mdsinitrc"
-#endif
+#define INITRC_FILE  "@INITRC_FILE@"
 
 
 #endif

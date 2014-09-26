@@ -14,9 +14,9 @@ servers: $(foreach S,$(SERVERS),bin/$(S))
 # Link large servers.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds-server: $(OBJ_mds-server) obj/mds-base.o src/mds-server/*.h bin/libmdsserver.so
+bin/mds-server: $(OBJ_mds-server) obj/mds-base.o src/mds-server/*.h bin/libmdsserver.so $(SEDED)
 else
-bin/mds-server: $(OBJ_mds-server) obj/mds-base.o src/mds-server/*.h
+bin/mds-server: $(OBJ_mds-server) obj/mds-base.o src/mds-server/*.h $(SEDED)
 endif
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-server) $(OBJ_mds-server) obj/mds-base.o
@@ -27,12 +27,10 @@ endif
 
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o src/mds-registry/*.h bin/libmdsserver.so
+bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o src/mds-registry/*.h bin/libmdsserver.so $(SEDED)
 else
-bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o src/mds-registry/*.h
+bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o src/mds-registry/*.h $(SEDED)
 endif
-	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry) obj/mds-base.o
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry) obj/mds-base.o
 
@@ -40,12 +38,10 @@ endif
 # Link small servers.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so
+bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so $(SEDED)
 else
-bin/%: obj/%.o obj/mds-base.o
+bin/%: obj/%.o obj/mds-base.o $(SEDED)
 endif
-	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_$*) $< obj/mds-base.o
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_$*) $< obj/mds-base.o
 
@@ -53,12 +49,10 @@ endif
 # Link kernel.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds: obj/mds.o bin/libmdsserver.so
+bin/mds: obj/mds.o bin/libmdsserver.so $(SEDED)
 else
-bin/mds: obj/mds.o
+bin/mds: obj/mds.o $(SEDED)
 endif
-	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds) $<
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds) $<
 
@@ -66,12 +60,12 @@ endif
 # Build object files for kernel/servers.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-obj/%.o: src/%.c $(shell dirname src/%)/*.h src/mds-base.h src/libmdsserver/*.h
+obj/%.o: src/%.c $(shell dirname src/%)/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
 
 else
-obj/%.o: src/%.c $(shell dirname src/%)/*.h src/mds-base.h
+obj/%.o: src/%.c $(shell dirname src/%)/*.h src/mds-base.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -c -o $@ $<
 endif
@@ -83,7 +77,38 @@ bin/libmdsserver.so: $(foreach O,$(LIBOBJ),obj/libmdsserver/$(O).o)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -shared -o $@ $^
 
-obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h
+obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
+
+
+# sed header files.
+ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
+src/libmdsserver/config.h: src/libmdsserver/config.h.in
+	cp $< $@
+	sed -i 's:@PKGNAME@:$(PKGNAME):g' $@
+	sed -i 's:@LIBEXECDIR@:$(LIBEXECDIR):g' $@
+	sed -i 's:@TMPDIR@:$(TMPDIR):g' $@
+	sed -i 's:@RUNDIR@:$(RUNDIR):g' $@
+	sed -i 's:@SYSCONFDIR@:$(SYSCONFDIR):g' $@
+	sed -i 's:@DEVDIR@:$(DEVDIR):g' $@
+	sed -i 's:@ROOT_USER_UID@:$(ROOT_USER_UID):g' $@
+	sed -i 's:@ROOT_GROUP_GID@:$(ROOT_GROUP_GID):g' $@
+	sed -i 's:@NOBODY_GROUP_GID@:$(NOBODY_GROUP_GID):g' $@
+	sed -i 's:@TOKEN_LENGTH@:$(TOKEN_LENGTH):g' $@
+	sed -i 's:@ARGC_LIMIT@:$(ARGC_LIMIT):g' $@
+	sed -i 's:@LIBEXEC_ARGC_EXTRA_LIMIT@:$(LIBEXEC_ARGC_EXTRA_LIMIT):g' $@
+	sed -i 's:@DISPLAY_MAX@:$(DISPLAY_MAX):g' $@
+	sed -i 's:@RESPAWN_TIME_LIMIT_SECONDS@:$(RESPAWN_TIME_LIMIT_SECONDS):g' $@
+	sed -i 's:@DISPLAY_ENV@:$(DISPLAY_ENV):g' $@
+	sed -i 's:@PGROUP_ENV@:$(PGROUP_ENV):g' $@
+	sed -i 's:@INITRC_FILE@:$(INITRC_FILE):g' $@
+	sed -i 's:@SELF_EXE@:$(SELF_EXE):g' $@
+	sed -i 's:@SELF_FD@:$(SELF_FD):g' $@
+	sed -i 's:@TOKEN_RANDOM@:$(TOKEN_RANDOM):g' $@
+	sed -i 's:@VT_PATH_PATTERN@:$(VT_PATH_PATTERN):g' $@
+	sed -i 's:@SHM_PATH_PATTERN@:$(SHM_PATH_PATTERN):g' $@
+	sed -i 's:@MDS_RUNTIME_ROOT_DIRECTORY@:$(MDS_RUNTIME_ROOT_DIRECTORY):g' $@
+	sed -i 's:@MDS_STORAGE_ROOT_DIRECTORY@:$(MDS_STORAGE_ROOT_DIRECTORY):g' $@
+endif
 

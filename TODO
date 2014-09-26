@@ -54,7 +54,5 @@ A facility is needed to lookup available compose sequences to any character,
 Servers should be stored in LIBEXECDIR.
 Implement reconnect_to_display()
 
-src/libmdsserver/config.h should be sed:ed rather than use #ifndef
-
 Something is up with the test, it does not exit on Control+C
 
