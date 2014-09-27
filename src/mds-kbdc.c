@@ -107,8 +107,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
  */
 static size_t remove_comments(char* restrict content, size_t size)
 {
-#define t     content[n_ptr++] = c
-#define last  content[n_ptr - 1]
+#define t  content[n_ptr++] = c
   
   size_t n_ptr = 0, o_ptr = 0;
   int comment = 0, quote = 0, escape = 0;
@@ -116,10 +115,12 @@ static size_t remove_comments(char* restrict content, size_t size)
   while (o_ptr < size)
     {
       char c = content[o_ptr++];
+      /* Remove comment */
       if (comment)
 	{
 	  if (c == '\n')      t, comment = 0;
 	}
+      /* Quotes can contain comment symbols, quotes by also contain escapes. */
       else if (escape)        t, escape = 0;
       else if (quote)
 	{
@@ -127,15 +128,16 @@ static size_t remove_comments(char* restrict content, size_t size)
 	  if     (c == '\\')  escape = 1;
 	  else if (c == '"')  quote = 0;
 	}
+      /* # is the comment symbol. */
       else if (c == '#')      comment = 1;
+      /* " is the quote symbol. */
       else if (c == '"')      t, quote = 1;
-      else
-	t;
+      /* Code and whitespace.  */
+      else                    t;
     }
   
   return n_ptr;
   
-#undef last
 #undef t
 }
 
