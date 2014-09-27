@@ -118,7 +118,7 @@ static size_t remove_comments(char* restrict content, size_t size)
       char c = content[o_ptr++];
       if (comment)
 	{
-	  if (c == '\n')      comment = 0;
+	  if (c == '\n')      t, comment = 0;
 	}
       else if (escape)        t, escape = 0;
       else if (quote)
