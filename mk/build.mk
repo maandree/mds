@@ -17,9 +17,9 @@ tools: $(foreach T,$(TOOLS),bin/$(T))
 # Link large servers.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds-server: $(OBJ_mds-server) obj/mds-base.o src/mds-server/*.h bin/libmdsserver.so $(SEDED)
+bin/mds-server: $(OBJ_mds-server) obj/mds-base.o bin/libmdsserver.so
 else
-bin/mds-server: $(OBJ_mds-server) obj/mds-base.o src/mds-server/*.h $(SEDED)
+bin/mds-server: $(OBJ_mds-server) obj/mds-base.o
 endif
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-server) $(OBJ_mds-server) obj/mds-base.o
@@ -30,9 +30,9 @@ endif
 
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o src/mds-registry/*.h bin/libmdsserver.so $(SEDED)
+bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o bin/libmdsserver.so
 else
-bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o src/mds-registry/*.h $(SEDED)
+bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o
 endif
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry) obj/mds-base.o
@@ -41,9 +41,9 @@ endif
 # Link small servers.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so $(SEDED)
+bin/%: obj/%.o obj/mds-base.o bin/libmdsserver.so
 else
-bin/%: obj/%.o obj/mds-base.o $(SEDED)
+bin/%: obj/%.o obj/mds-base.o
 endif
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_$*) $< obj/mds-base.o
@@ -52,9 +52,9 @@ endif
 # Link kernel.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds: obj/mds.o bin/libmdsserver.so $(SEDED)
+bin/mds: obj/mds.o bin/libmdsserver.so
 else
-bin/mds: obj/mds.o $(SEDED)
+bin/mds: obj/mds.o
 endif
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds) $<
@@ -62,13 +62,14 @@ endif
 
 # Link utilies that do not use mds-base.
 
+
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-bin/mds-kbdc: obj/mds-kbdc.o bin/libmdsserver.so $(SEDED)
+bin/mds-kbdc: $(OBJ_mds-kbdc) bin/libmdsserver.so
 else
-bin/mds-kbdc: obj/mds-kbdc.o $(SEDED)
+bin/mds-kbdc: $(OBJ_mds-kbdc)
 endif
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds) $<
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-kbdc) $(OBJ_mds-kbdc)
 
 
 # Build object files for kernel/servers.

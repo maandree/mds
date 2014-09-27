@@ -22,17 +22,22 @@ TOOLS = mds-kbdc
 SETUID_SERVERS = mds mds-kkbd mds-vt
 
 
-
-OBJ_mds-server_ = mds-server interception-condition client multicast  \
-                  queued-interception globals signals interceptors    \
-                  sending slavery reexec receiving
+# Object files for multi-object file binaries.
+OBJ_mds-server_   = mds-server interception-condition client multicast  \
+                    queued-interception globals signals interceptors    \
+                    sending slavery reexec receiving
 
 OBJ_mds-registry_ = mds-registry util globals reexec registry signals  \
                     slave
 
-OBJ_mds-server   = $(foreach O,$(OBJ_mds-server_),obj/mds-server/$(O).o)
-OBJ_mds-registry = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
+OBJ_mds-kbdc_     = mds-kbdc
 
+OBJ_mds-server    = $(foreach O,$(OBJ_mds-server_),obj/mds-server/$(O).o)
+OBJ_mds-registry  = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
+OBJ_mds-kbdc      = $(foreach O,$(OBJ_mds-kbdc_),obj/mds-kbdc/$(O).o)
+
+
+# sed:ed .h-source file.
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
 SEDED = src/libmdsserver/config.h
 else
