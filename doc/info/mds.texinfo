@@ -874,6 +874,7 @@ any other character, or multiple LF:s.
 * mds-screenshot::                  The screenshot utility.
 * mds-slay::                        The process killing utility.
 * mds-chvt::                        Utility for switching virtual terminal.
+* mds-kbdc::                        The keyboard layout compiler.
 * External Utilities::              Suggestion on utilities you can utilise.
 @end menu
 
@@ -1148,6 +1149,15 @@ recognises the following options:
 @item --switch=VT
 Switch to the virtual terminal with the index @var{VT}.
 @end table
+
+
+
+@node mds-kbdc
+@section @command{mds-kbdc}
+@command{mds-kbdc} is the program used to compile
+keyboard layouts and compose tables.
+
+TODO how to use mds-kbdc
 
 
 
