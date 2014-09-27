@@ -20,6 +20,18 @@
 
 
 
+# If we are compile this file as a stand-alone file we will pretend
+# that the keyboard already have basic latin latters so can create a
+# complete compose table from those symbols without getting a lot of
+# warnings about those symbols not being available.
+assumption
+  have_range "a" "z"
+  have_range "A" "Z"
+  have_range "0" "9"
+  have_chars " !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+end assumption
+
+
 macro dead_ascii/1
   <dead letter \1> [" " <dead letter \1>] : "\1"
   <dead compose> "\1" : <dead letter \1>
