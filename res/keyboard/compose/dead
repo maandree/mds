@@ -38,6 +38,60 @@ macro composite/4
   <dead compose> "\1" ["\2" <dead letter \2> "\3"] : "\4"
 end macro
 
+<dead compose> "-" : <dead letter ->
+<dead compose> "." : <dead letter ˙>
+dead_ascii("˙")
+macro macron/2
+  composite("¯" "\1" "\2")
+end macro
+macro breve/2
+  composite("˘" "\1" "\2")
+end macro
+macro ogonek/2
+  composite("˛" "\1" "\2")
+end macro
+macro tilde/2
+  composite("~" "\1" "\2")
+  composite("˜" "\1" "\2")
+end macro
+macro grave/2
+  composite("`" "\1" "\2")
+end macro
+macro acute/2
+  composite("´" "'" "\1" "\2")
+end macro
+macro circumflex/2
+  composite("^" "\1" "\2")
+end macro
+macro dot_above/2
+  composite("˙" "." "\1" "\2")
+end macro
+macro caron/2
+  composite("ˇ" "\1" "\2")
+end macro
+macro stroke/2
+  composite("-" "\1" "\2")
+end macro
+macro cedilla/2
+  composite("¸" "," "\1" "\2")
+end macro
+macro middle_dot/2
+  dot_above("\1" "\2")
+end macro
+macro slash/2
+  composite("/" "\1" "\2")
+end macro
+macro double_acute/2
+  composite("˝" "\1" "\2")
+end macro
+macro ring_above/2
+  composite("°" "\1" "\2")
+  composite("˚" "\1" "\2")
+end macro
+macro diaeresis/2
+  composite("¨" "\"" "\1" "\2")
+end macro
+
 
 <shift dead compose> "u" "+" : <dead hexcompose>
 <shift dead compose> "U" "+" : <dead longhexcompose>
@@ -87,74 +141,199 @@ dead_ascii("," ",")
 <dead compose> "1" "2" : "½"
 <dead compose> "3" "4" : "¾"
 <dead compose> "?" "?" : "¿"
-composite("`" "A" "À")
-composite("´" "'" "A" "Á")
-composite("~" "A" "Ã")
-composite("¨" "\"" "A" "Ä")
-<dead letter °> "A" : "Å"
+grave("A" "À")
+acute("A" "Á")
+tilde("A" "Ã")
+diaeresis("A" "Ä")
+ring_above("A" "Å")
 <dead compose> "A" "E" : "Æ"
-composite("¸" "," "C" "Ç")
-composite("`" "E" "È")
-composite("´" "'" "E" "É")
-composite("^" "E" "Ê")
-composite("¨" "\"" "E" "Ë")
-composite("`" "I" "Ì")
-composite("´" "'" "I" "Í")
-composite("^" "I" "Î")
-composite("¨" "\"" "I" "Ï")
-<dead compose> "-" : <dead letter ->
-composite("-" "D" "Đ")
+cedilla("C" "Ç")
+grave("E" "È")
+acute("E" "É")
+circumflex("E" "Ê")
+diaeresis("E" "Ë")
+grave("I" "Ì")
+acute("I" "Í")
+circumflex("I" "Î")
+diaeresis("I" "Ï")
 <dead compose> "/" : <dead letter />
-composite("/" "D" "Đ")
-composite("~" "N" "Ñ")
-composite("`" "O" "Ò")
-composite("´" "'" "O" "Ó")
-composite("^" "O" "Ô")
-composite("~" "O" "Õ")
-composite("¨" "\"" "O" "Ö")
+slash("D" "Đ")
+tilde("N" "Ñ")
+grave("O" "Ò")
+acute("O" "Ó")
+circumflex("O" "Ô")
+tilde("O" "Õ")
+diaeresis("O" "Ö")
 <dead compose> "x" "x" : "×"
-composite("/" "O" "Ø")
-composite("`" "U" "Ù")
-composite("´" "'" "U" "Ú")
-composite("^" "U" "Û")
-composite("¨" "\"" "U" "Ü")
-composite("´" "'" "Y" "Ý")
+slash("O" "Ø")
+grave("U" "Ù")
+acute("U" "Ú")
+circumflex("U" "Û")
+diaeresis("U" "Ü")
+acute("Y" "Ý")
 <dead compose> "T" "H" : "Þ"
 <dead compose> "s" "s" : "ß"
 <dead compose> "ſ" "s" : "ß"
-composite("`" "a" "à")
-composite("´" "'" "a" "á")
-composite("~" "a" "ã")
-composite("¨" "\"" "a" "ä")
-<dead letter °> "a" : "å"
+grave("a" "à")
+acute("a" "á")
+tilde("a" "ã")
+diaeresis("a" "ä")
+ring_above("a" "å")
 <dead compose> "a" "e" : "æ"
-composite("¸" "," "c" "ç")
-composite("`" "e" "è")
-composite("´" "'" "e" "é")
-composite("^" "e" "ê")
-composite("¨" "\"" "e" "ë")
-composite("`" "i" "ì")
-composite("´" "'" "i" "í")
-composite("^" "i" "î")
-composite("¨" "\"" "i" "ï")
-composite("/" "d" "ð")
-composite("~" "n" "ñ")
-composite("`" "o" "ò")
-composite("´" "'" "o" "ó")
-composite("^" "o" "ô")
-composite("~" "o" "õ")
-composite("¨" "\"" "o" "ö")
+cedilla("c" "ç")
+grave("e" "è")
+acute("e" "é")
+circumflex("e" "ê")
+diaeresis("e" "ë")
+grave("i" "ì")
+acute("i" "í")
+circumflex("i" "î")
+diaeresis("i" "ï")
+slash("d" "ð")
+tilde("n" "ñ")
+grave("o" "ò")
+acute("o" "ó")
+circumflex("o" "ô")
+tilde("o" "õ")
+diaeresis("o" "ö")
 <dead compose> ":" "-" : "÷"
-composite("/" "o" "ø")
-composite("`" "u" "ù")
-composite("´" "'" "u" "ú")
-composite("^" "u" "û")
-composite("¨" "\"" "u" "ü")
-composite("´" "'" "y" "ý")
+slash("o" "ø")
+grave("u" "ù")
+acute("u" "ú")
+circumflex("u" "û")
+diaeresis("u" "ü")
+acute("y" "ý")
 <dead compose> "t" "h" : "þ"
-composite("¨" "\"" "y" "ÿ")
+diaeresis("y" "ÿ")
 
-# TODO Latin Extended-A
+# Latin Extended-A
+macron("A" "Ā")
+macron("a" "ā")
+breve("A" "Ă")
+breve("a" "ă")
+ogonek("A" "Ą")
+ogonek("a" "ą")
+acute("C" "Ć")
+acute("c" "ć")
+circumflex("C" "Ĉ")
+circumflex("c" "ĉ")
+dot_above("C" "Ċ")
+dot_above("c" "ċ")
+dot_above("D" "Ď")
+dot_above("d" "ď")
+stroke("D" "Đ")
+stroke("d" "đ")
+macron("E" "Ē")
+macron("e" "ē")
+breve("E" "Ĕ")
+breve("e" "ĕ")
+dot_above("E" "Ė")
+dot_above("e" "ė")
+ogonek("E" "Ę")
+ogonek("e" "ę")
+caron("E" "Ě")
+caron("e" "ě")
+circumflex("G" "Ĝ")
+circumflex("g" "ĝ")
+breve("G" "Ğ")
+breve("g" "ğ")
+dot_above("G" "Ġ")
+dot_above("g" "ġ")
+cedilla("G" "Ģ")
+cedilla("g" "ģ")
+circumflex("H" "Ĥ")
+circumflex("h" "ĥ")
+stroke("H" "Ħ")
+stroke("h" "ħ")
+tilde("I" "Ĩ")
+tilde("i" "ĩ")
+macron("I" "Ī")
+macron("i" "ī")
+breve("I" "Ĭ")
+breve("i" "ĭ")
+ogonek("I" "Į")
+ogonek("i" "į")
+dot_above("I" "İ")
+dot_above("i" "ı")
+<dead compose> "I" "J" : "Ĳ"
+<dead compose> "i" "j" : "ĳ"
+circumflex("J" "Ĵ")
+circumflex("j" "ĵ")
+cedilla("K" "Ķ")
+cedilla("k" "ķ")
+<dead compose> "k" "k" : "ĸ"
+acute("L" "Ĺ")
+acute("l" "ĺ")
+cedilla("L" "Ļ")
+cedilla("l" "ļ")
+caron("L" "Ľ")
+caron("l" "ľ")
+middle_dot("L" "Ŀ")
+middle_dot("l" "ŀ")
+slash("L" "Ł")
+slash("l" "ł")
+acute("N" "Ń")
+acute("n" "ń")
+cedilla("N" "Ņ")
+cedilla("n" "ņ")
+caron("N" "Ň")
+caron("n" "ň")
+# ŉ has been deprecated
+<dead compose> "N" ["G" "g"] : "Ŋ"
+<dead compose> "n" "g" : "ŋ"
+macron("O" "Ō")
+macron("o" "ō")
+breve("O" "Ŏ")
+breve("o" "ŏ")
+double_acute("O" "Ő")
+double_acute("o" "ő")
+<dead compose> "O" "E" : "Œ"
+<dead compose> "o" "e" : "œ"
+acute("R" "Ŕ")
+acute("r" "ŕ")
+cedilla("R" "Ŗ")
+cedilla("r" "ŗ")
+caron("R" "Ř")
+caron("r" "ř")
+acute("S" "Ś")
+acute("s" "ś")
+circumflex("S" "Ŝ")
+circumflex("s" "ŝ")
+cedilla("S" "Ş")
+cedilla("s" "ş")
+caron("S" "Š")
+caron("s" "š")
+cedilla("T" "Ţ")
+cedilla("t" "ţ")
+caron("T" "Ť")
+caron("t" "ť")
+stroke("T" "Ŧ")
+stroke("t" "ŧ")
+tilde("U" "Ũ")
+tilde("u" "ũ")
+macron("U" "Ū")
+macron("u" "ū")
+breve("U" "Ŭ")
+breve("u" "ŭ")
+ring_above("U" "Ů")
+ring_above("u" "ů")
+double_acute("U" "Ű")
+double_acute("u" "ű")
+ogonek("U" "Ų")
+ogonek("u" "ų")
+circumflex("W" "Ŵ")
+circumflex("w" "ŵ")
+circumflex("Y" "Ŷ")
+circumflex("y" "ŷ")
+diaeresis("Y" "Ÿ")
+acute("Z" "Ź")
+acute("z" "ź")
+dot_above("Z" "Ż")
+dot_above("z" "ż")
+caron("Z" "Ž")
+caron("z" "ž")
+<dead compose> "s" "f" : "ſ"
+
 # TODO Latin Extended-B
 # TODO IPA Extensions
 # TODO Spacing Modifier Letter
@@ -1048,8 +1227,8 @@ macro boxes/2
     \set(\4 \8 \add(\rsh(\get(\4 \8) \8) \mul(2 \rsh(\get(\6 \8)))))
     \set(\5 \8 \add(\rsh(\get(\5 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
     \set(\4 \8 \add(\get(\4 \8) \get(\4 \8)))
-    if \greater(\get(\4 \8), 2)
-      \set(\4, \8, 2)
+    if \greater(\get(\4 \8) 2)
+      \set(\4 \8 2)
     endif
   end for
   for 0 to 127 as \5
