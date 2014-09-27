@@ -174,7 +174,7 @@ static char** line_split(char* content, size_t length)
   fail_if (xmalloc(lines, count + 1, char));
   lines[count] = NULL;
   
-  for (i = 0; i < length; i++)
+  for (i = j = 0; i < length; i++)
     {
       if (new_line)
 	new_line = 0, lines[j++] = content + i;
@@ -248,6 +248,6 @@ int main(int argc_, char** argv_)
  pfail:
   xperror(*argv);
   rc = 1;
-  goto done:
+  goto done;
 }
 
