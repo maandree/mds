@@ -101,13 +101,13 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
 
 
 /**
- * Remove non-functional code (comments and empty lines) from the content
+ * Remove comments from the content
  * 
  * @param   content  The code to shrink
  * @param   size     The size of `content`, in char:s
  * @return           The new size of `content`, in char:s; this function cannot fail
  */
-static size_t shrink_file(char* restrict content, size_t size)
+static size_t remove_comments(char* restrict content, size_t size)
 {
 #define t     content[n_ptr++] = c
 #define last  content[n_ptr - 1]
@@ -131,13 +131,8 @@ static size_t shrink_file(char* restrict content, size_t size)
 	}
       else if (c == '#')      comment = 1;
       else if (c == '"')      t, quote = 1;
-      else if (!strchr("\n ", c) || !n_ptr || (last != c))
-	{
-	  /* Store data, but remove unnecessary new lines and unnecessary spaces. */
-	  if ((c == '\n') && n_ptr && (last == ' '))  n_ptr--;
-	  if ((c == ' ') && n_ptr && (last == '\n'))  continue;
-	  t;
-	}
+      else
+	t;
     }
   
   return n_ptr;
@@ -158,7 +153,9 @@ int main(int argc_, char** argv_)
 {
   const char* pathname = argv_[1];
   char* restrict content = NULL;
+  char* restrict real_content = NULL;
   size_t content_size;
+  size_t real_content_size;
   
   argc = argc_;
   argv = argv_;
@@ -166,14 +163,20 @@ int main(int argc_, char** argv_)
   /* Read the file. */
   content = read_file(pathname, &content_size);
   fail_if (content == NULL);
-  /* Remove comments and empty lines. */
-  content_size = shrink_file(content, content_size);
+  
+  /* Simplify file. */
+  fail_if (xmalloc(real_content, content_size, char));
+  memcpy(real_content, content, content_size * sizeof(char));
+  real_content_size = content_size;
+  content_size = remove_comments(content, content_size);
   fail_if (xrealloc(content, content_size, char));
   
   return 0;
-
+  
  pfail:
   xperror(*argv);
+  free(content);
+  free(real_content);
   return 1;
 }
 
