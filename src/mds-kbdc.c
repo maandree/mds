@@ -141,6 +141,57 @@ static size_t remove_comments(char* restrict content, size_t size)
 
 
 /**
+ * Create an array of each line in a text
+ * 
+ * @param   content  The text to split, it must end with an LF.
+ *                   LF:s are treated as line endings rather than
+ *                   new lines, this means that the final LF will
+ *                   not create a new line in the returned array.
+ *                   Each LF will be replaced by a NUL-character.
+ * @param   length   The length of `content`.
+ * @return           An array of each line in `content`. This
+ *                   array will be `NULL`-terminated. It will also
+ *                   reuse the allocate of `content`. This means
+ *                   that each element must not be free:d, rather
+ *                   you should simply free this returned allocation
+ *                   and the allocation of `content`. On error
+ *                   `NULL` is returned, and `content` will not
+ *                   have been modified.
+ */
+static char** line_split(char* content, size_t length)
+{
+  char** restrict lines = NULL;
+  size_t count = 0;
+  size_t i, j;
+  int new_line = 1;
+  
+  for (i = 0; i < length; i++)
+    if (content[i] == '\n')
+      count++;
+  
+  fail_if (xmalloc(lines, count + 1, char));
+  lines[count] = NULL;
+  
+  for (i = 0; i < length; i++)
+    {
+      if (new_line)
+	new_line = 0, lines[j++] = content + i;
+      if (content[i] == '\n')
+	{
+	  new_line = 1;
+	  content[i] = '\0';
+	}
+    }
+  
+  return lines;
+  
+ pfail:
+  xperror(*argv);
+  return NULL;
+}
+
+
+/**
  * Compile a keyboard layout file
  * 
  * @param   argc_  The number of elements in `argv_`
@@ -150,11 +201,14 @@ static size_t remove_comments(char* restrict content, size_t size)
 int main(int argc_, char** argv_)
 {
   const char* pathname = argv_[1];
-  char* restrict content = NULL;
-  char* restrict real_content = NULL;
-  char* restrict old = NULL;
+  char* content = NULL;
+  char* real_content = NULL;
+  char* old = NULL;
   size_t content_size;
   size_t real_content_size;
+  char** lines = NULL;
+  char** real_lines = NULL;
+  int rc = 0;
   
   argc = argc_;
   argv = argv_;
@@ -177,13 +231,21 @@ int main(int argc_, char** argv_)
   content_size = remove_comments(content, content_size);
   fail_if (xxrealloc(old, content, content_size, char));
   
-  return 0;
+  /* Split by line.  */
+  fail_if ((lines = line_split(content, content_size)) == NULL);
+  fail_if ((real_lines = line_split(real_content, real_content_size)) == NULL);
   
- pfail:
-  xperror(*argv);
+ done:
   free(old);
   free(content);
   free(real_content);
-  return 1;
+  free(lines);
+  free(real_lines);
+  return rc;
+  
+ pfail:
+  xperror(*argv);
+  rc = 1;
+  goto done:
 }
 
