@@ -40,7 +40,6 @@ Need testing:
 	kkbd, on a SPARC
 	vt
 
-errno is defined as a error_t {typedef of int} on Hurd, use this convention
 Fast lanes
 Optimise use of mutexe by replace them with rwlocks
 Listen for `Command: reregister`
