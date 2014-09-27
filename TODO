@@ -45,9 +45,6 @@ Fast lanes
 Optimise use of mutexe by replace them with rwlocks
 Listen for `Command: reregister`
 Register protocols
-Make it possible to forbid unauthorised servers for listening, needed for secure password fields
-  I guess we can let servers create their own abstract sockets, report them to mdsinitrc and
-  let mdsinitrc export appropriate environment variables.
 A facility is needed to lookup available compose sequences to any character,
   it would be useful in character map programs so one can easier learn the
   compose sequences for character that one uses often
