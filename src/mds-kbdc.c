@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 
 
@@ -100,6 +101,53 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
 
 
 /**
+ * Remove non-functional code (comments and empty lines) from the content
+ * 
+ * @param   content  The code to shrink
+ * @param   size     The size of `content`, in char:s
+ * @return           The new size of `content`, in char:s; this function cannot fail
+ */
+static size_t shrink_file(char* restrict content, size_t size)
+{
+#define t     content[n_ptr++] = c
+#define last  content[n_ptr - 1]
+  
+  size_t n_ptr = 0, o_ptr = 0;
+  int comment = 0, quote = 0, escape = 0;
+  
+  while (o_ptr < size)
+    {
+      char c = content[o_ptr++];
+      if (comment)
+	{
+	  if (c == '\n')      comment = 0;
+	}
+      else if (escape)        t, escape = 0;
+      else if (quote)
+	{
+	  t;
+	  if     (c == '\\')  escape = 1;
+	  else if (c == '"')  quote = 0;
+	}
+      else if (c == '#')      comment = 1;
+      else if (c == '"')      t, quote = 1;
+      else if (!strchr("\n ", c) || !n_ptr || (last != c))
+	{
+	  /* Store data, but remove unnecessary new lines and unnecessary spaces. */
+	  if ((c == '\n') && n_ptr && (last == ' '))  n_ptr--;
+	  if ((c == ' ') && n_ptr && (last == '\n'))  continue;
+	  t;
+	}
+    }
+  
+  return n_ptr;
+  
+#undef last
+#undef t
+}
+
+
+/**
  * Compile a keyboard layout file
  * 
  * @param   argc_  The number of elements in `argv_`
@@ -115,8 +163,12 @@ int main(int argc_, char** argv_)
   argc = argc_;
   argv = argv_;
   
+  /* Read the file. */
   content = read_file(pathname, &content_size);
   fail_if (content == NULL);
+  /* Remove comments and empty lines. */
+  content_size = shrink_file(content, content_size);
+  fail_if (xrealloc(content, content_size, char));
   
   return 0;
 
