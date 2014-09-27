@@ -23,12 +23,18 @@
 # If we are compile this file as a stand-alone file we will pretend
 # that the keyboard already have basic latin latters so can create a
 # complete compose table from those symbols without getting a lot of
-# warnings about those symbols not being available.
+# warnings about those symbols not being available. We will also
+# assume that we have the basic modifiers.
 assumption
   have_range "a" "z"
   have_range "A" "Z"
   have_range "0" "9"
   have_chars " !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+  have <dead compose>
+  have <shift>
+  have <altgr>
+  have <alt>
+  have <ctrl>
 end assumption
 
 
