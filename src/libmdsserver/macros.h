@@ -331,6 +331,20 @@
 
 
 /**
+ * `xremalloc` that stores the old variable
+ *  
+ * @param   old:type*        The variable to which to  store with the old variable that needs
+ *                           to be `free`:ed on failure, and set to `NULL` on success.
+ * @param   var:type*        The variable to which to assign the reallocation
+ * @param   elements:size_t  The number of elements to allocate
+ * @param   type             The data type of the elements for which to create an allocation
+ * @return  :int             Evaluates to true if an only if the allocation failed
+ */
+#define xxrealloc(old, var, elements, type)  \
+  (old = var, (xrealloc(var, elements, type) ? 1 : (old = NULL, 0)))
+
+
+/**
  * Double to the size of an allocation on the heap
  * 
  * @param   old:type*        Variable in which to store the old value temporarily

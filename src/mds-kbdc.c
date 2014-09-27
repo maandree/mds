@@ -69,9 +69,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
       /* Make sure the buffer is not small. */
       if (buf_size - buf_ptr < 2048)
 	{
-	  old = content;
-	  fail_if (xrealloc(content, buf_size <<= 1, char));
-	  old = NULL;
+	  fail_if (xxrealloc(old, content, buf_size <<= 1, char));
 	}
       /* Read a chunk of the file. */
       got = read(fd, content + buf_ptr, (buf_size - buf_ptr) * sizeof(char));
@@ -82,7 +80,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
     }
   
   /* Shrink the buffer so it is not excessively large. */
-  fail_if (xrealloc(content, buf_ptr, char));
+  fail_if (xxrealloc(old, content, buf_ptr, char));
   
   /* Close file decriptor for the file. */
   close(fd);
@@ -154,6 +152,7 @@ int main(int argc_, char** argv_)
   const char* pathname = argv_[1];
   char* restrict content = NULL;
   char* restrict real_content = NULL;
+  char* restrict old = NULL;
   size_t content_size;
   size_t real_content_size;
   
@@ -164,17 +163,25 @@ int main(int argc_, char** argv_)
   content = read_file(pathname, &content_size);
   fail_if (content == NULL);
   
+  /* Make sure the content ends with a new line. */
+  if (!content_size || (content[content_size - 1] != '\n'))
+    {
+      fail_if (xxrealloc(old, content, content_size + 1, char));
+      content[content_size++] = '\n';
+    }
+  
   /* Simplify file. */
   fail_if (xmalloc(real_content, content_size, char));
   memcpy(real_content, content, content_size * sizeof(char));
   real_content_size = content_size;
   content_size = remove_comments(content, content_size);
-  fail_if (xrealloc(content, content_size, char));
+  fail_if (xxrealloc(old, content, content_size, char));
   
   return 0;
   
  pfail:
   xperror(*argv);
+  free(old);
   free(content);
   free(real_content);
   return 1;
