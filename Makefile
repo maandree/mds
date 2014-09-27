@@ -15,6 +15,9 @@ LIBOBJ = linked-list client-list hash-table fd-table mds-message util
 SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \
           mds-kkbd mds-vt
 
+# Utilities that do not utilise mds-base.
+TOOLS = mds-kbdc
+
 # Servers that need setuid and root owner.
 SETUID_SERVERS = mds mds-kkbd mds-vt
 
@@ -41,7 +44,7 @@ endif
 # Build rules.
 
 .PHONY: all
-all: doc servers libraries
+all: doc servers libraries tools
 
 include mk/build.mk
 include mk/build-doc.mk

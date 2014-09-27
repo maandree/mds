@@ -487,7 +487,7 @@ caron("z" "ž")
 <dead compose> "%" "%" : "⁒"
 <shift dead compose> "~" ["-" "~"] : "⁓"
 <shift dead compose> "-" "~" : "⁓"
-<sjift dead compose> ("_" "U") : "⁔"
+<shift dead compose> ("_" "U") : "⁔"
 <dead compose> ("x" "*") : "⁕"
 <dead compose> "." ":" <space>  : "⁖"
 <dead compose> ("4" ["'" "´"]) : "⁗"

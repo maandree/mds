@@ -10,6 +10,9 @@ libraries: bin/libmdsserver.so
 .PHONY: servers
 servers: $(foreach S,$(SERVERS),bin/$(S))
 
+.PHONY: tools
+tools: $(foreach T,$(TOOLS),bin/$(T))
+
 
 # Link large servers.
 
@@ -52,6 +55,17 @@ ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
 bin/mds: obj/mds.o bin/libmdsserver.so $(SEDED)
 else
 bin/mds: obj/mds.o $(SEDED)
+endif
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds) $<
+
+
+# Link utilies that do not use mds-base.
+
+ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
+bin/mds-kbdc: obj/mds-kbdc.o bin/libmdsserver.so $(SEDED)
+else
+bin/mds-kbdc: obj/mds-kbdc.o $(SEDED)
 endif
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds) $<
