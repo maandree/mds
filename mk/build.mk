@@ -62,7 +62,6 @@ endif
 
 # Link utilies that do not use mds-base.
 
-
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
 bin/mds-kbdc: $(OBJ_mds-kbdc) bin/libmdsserver.so
 else
@@ -72,15 +71,38 @@ endif
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-kbdc) $(OBJ_mds-kbdc)
 
 
-# Build object files for kernel/servers.
+# Build object files for kernel/servers/utilities.
 
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
-obj/%.o: src/%.c $(shell dirname src/%)/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
+obj/%.o: src/%.c src/%.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
-
+obj/%.o: src/%.c src/mds-base.h src/libmdsserver/*.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
+obj/mds-server/%.o: src/%.c src/mds-server/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
+obj/mds-registry/%.o: src/%.c src/mds-registry/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
+obj/mds-kbdc/%.o: src/%.c src/mds-kbdc/*.h src/libmdsserver/*.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
 else
-obj/%.o: src/%.c $(shell dirname src/%)/*.h src/mds-base.h $(SEDED)
+obj/%.o: src/%.c src/%.h src/mds-base.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -c -o $@ $<
+obj/%.o: src/%.c src/mds-base.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -c -o $@ $<
+obj/mds-server/%.o: src/%.c src/mds-server/*.h src/mds-base.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -c -o $@ $<
+obj/mds-registry/%.o: src/%.c src/mds-registry/*.h src/mds-base.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -c -o $@ $<
+obj/mds-kbdc/%.o: src/%.c src/mds-kbdc/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -c -o $@ $<
 endif

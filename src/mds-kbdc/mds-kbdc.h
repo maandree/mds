@@ -19,5 +19,8 @@
 #define MDS_MDS_KBDC_H
 
 
+#include "globals.h"
+
+
 #endif
 
