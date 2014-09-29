@@ -52,3 +52,6 @@ Implement reconnect_to_display()
 
 Something is up with the test, it does not exit on Control+C
 
+Make sure it is possible and easy to change window manager
+and desktop environment online.
+
