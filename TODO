@@ -16,6 +16,8 @@ Extra servers:
 	tray		retro-crt	kbd2rat		multikey
 	keystick	posmem		nest		mds
 	meta
+	some server that hides the cursor when appropriate, such
+	as when the user starts typing
 
 Missing commands:
 
