@@ -5120,6 +5120,7 @@ Right @kbd{super} key
 
 @menu
 * Server Architecture::                       Discussion on fundamental design choices.
+* Fixing X.org Issues::                       Can we avoid the problems X.org has?
 @end menu
 
 
@@ -5466,6 +5467,47 @@ display server protocol.
 @noindent
 Exo-display servers could be interesting for high
 performing gaming consoles.
+
+
+
+@node Fixing X.org Issues
+@section Fixing X.org Issues
+
+@menu
+* Automatic Cleanup::                         Cleanup up after applications.
+@end menu
+
+
+
+@node Automatic Cleanup
+@subsection Automatic Cleanup
+
+A common critique of X.org is that the monitor resolution
+is not restored if a game change the resolution and for
+some reason, for instance a software crash, does not switch
+back before exiting. This problem is not intrinsic to the
+protocol, but rather because of a lacking protocol. You
+can run a program like @command{xrandr} to change the
+monitor resolution for the entirety of the session and
+@command{xrandr} can exit when the resolution has changed.
+This is how it should be. However, there is no way to tell
+an X.org server to switch back if the connection between
+the program and server is lost. This is easily fixed by
+adding a lifespan parameter as found in @ref{set-gamma}.
+
+A similar critique of X.org is that gamma ramps are not
+restored when an application exits. Either the ones
+complaining about this do not understand why gamma ramps
+exists, namely so you can calibrate the monitor's output
+in respect to the colours, and just think it is a way
+to make the video in games brighter. Or they think we
+should have daemons running ideally to have gamma
+adjustments. Or, more likely and more validly, its is
+poorly phrased and they actually want a way for
+applications, like games, to inform the display server
+to undo its modifications to the gamma ramps when the
+program exits. This is already supported by the mds
+protocol.
 
 
 
