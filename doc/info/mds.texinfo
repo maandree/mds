@@ -5480,6 +5480,7 @@ issues and discuss how they can be avoided in mds.
 
 @menu
 * Automatic Cleanup::                         Cleanup up after applications.
+* Input Problems::                            Problems related to human input.
 * Other Issues::                              Other issues in X.org.
 @end menu
 
@@ -5514,6 +5515,52 @@ applications, like games, to inform the display server
 to undo its modifications to the gamma ramps when the
 program exits. This is already supported by the mds
 protocol.
+
+
+
+@node Input Problems
+@subsection Input Problems
+
+X11 allows programs to exclusively grab keyboard
+and mouse input. When a program that does this
+misbehaves or become unresponsive, you cannot do
+anything but manage it from another computer or
+restart the computer. In mds exclusively grabbing
+is achieved buy setting the client priority for
+the related message to the highest priority.
+@footnote{If multiple clients do this, it is
+arbitrary who gets the message first and can stop
+the others from getting it.} This is however not
+allowed (but nothing will stop you) as the idea is
+that clients should either select a predefined
+priority, select a priority between servers it to
+be between, or select a priority of 50 percent or
+150 percent of another servers priority. Thus,
+unless a client breaks this rule, you can always
+have your server for switching to the TTY at a
+higher priority than other programs.
+
+A similar, and probably related, problem in X.org
+is that global keybindings don't work when a
+popup or menu has focus. (Thankfully GTK+ will
+close that item if it receives unexpected input.)
+I have hard time seeing how this could become
+an issue in mds.
+
+Another issue related to the keyboard in X.org is
+that hotkeys in programs do not work in a few
+situtations because the program was not designed
+with another keyboard layout in mind than the
+keyboard layout the developer used. I suggest
+that programs restrain themself from including
+Alternative Graph in their hotkeys and only use
+Shift for A through Z and space. However, what
+I would really like to see is that toolkits lets
+users modify all hotkeys. If program additionally
+restrain themself to having all hotkeys contain
+control or alt the keyboard layouts with non-latin
+alphabets would not suffer because they do not
+use the latin alphabet.
 
 
 
