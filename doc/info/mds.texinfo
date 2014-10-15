@@ -5473,8 +5473,14 @@ performing gaming consoles.
 @node Fixing X.org Issues
 @section Fixing X.org Issues
 
+X.org is been critiqued for several shortcoming, some
+of which have caused people to start on new display
+servers replace X.org. This chapter will list some
+issues and discuss how they can be avoided in mds.
+
 @menu
 * Automatic Cleanup::                         Cleanup up after applications.
+* Other Issues::                              Other issues in X.org.
 @end menu
 
 
@@ -5508,6 +5514,34 @@ applications, like games, to inform the display server
 to undo its modifications to the gamma ramps when the
 program exits. This is already supported by the mds
 protocol.
+
+
+
+@node Other Issues
+@subsection Other Issues
+
+X11 display servers do not let you upgrade or
+otherwise replace graphics drivers online. Or other
+parts of it. X11 display servers could allow you to
+send a signal, for instance SIGUSR1, to upgrade the
+whole server, however this is not favourable, and
+X.org does not do this. The reference implemention
+of the mds protocol lets you safely upgrade any part
+of it unline by sending SIGUSR1 to the server that
+should be upgraded. On catastrophic failure in this
+process 0a server would restart and lose volatile
+data, but the server shoul be upgraded and it would
+ask all running clients for resend information the
+server lost.
+
+Another issue with X.org is that it is not
+multithreaded, which can cased intensive programs
+to freeze your desktop. mds is inherently pervasively
+parallel and only subsystems, rather than the whole
+system, can suffer from this. It is however easy
+for mds servers to implement pervasive threading,
+that is, letting each request spin up a new thread
+in the server.
 
 
 
