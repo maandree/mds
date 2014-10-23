@@ -1621,28 +1621,28 @@ function braille/1
 end function
 macro braille_double/1
   let \2 : "\u2800"
-  if \and(\1 1) = 1
+  if \and(\1 1)
     let \2 : \or(\2 8)
   end if
-  if \and(\1 2) = 2
+  if \and(\1 2)
     let \2 : \or(\2 16)
   end if
-  if \and(\1 4) = 4
+  if \and(\1 4)
     let \2 : \or(\2 32)
   end if
-  if \and(\1 8) = 8
+  if \and(\1 8)
     let \2 : \or(\2 1)
   end if
-  if \and(\1 16) = 16
+  if \and(\1 16)
     let \2 : \or(\2 2)
   end if
-  if \and(\1 32) = 32
+  if \and(\1 32)
     let \2 : \or(\2 4)
   end if
-  if \and(\1 64) = 64
+  if \and(\1 64)
     let \2 : \or(\2 128)
   end if
-  if \and(\1 128) = 128
+  if \and(\1 128)
     let \2 : \or(\2 64)
   end if
   <dead compose> "\1" "\1" : "\or(\1 \2)"
