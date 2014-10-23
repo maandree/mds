@@ -44,7 +44,78 @@ int main(int argc_, char** argv_)
   
   source_code_initialise(&source_code);
   fail_if (read_source_lines(pathname, &source_code) < 0);
+
+  /*
+   
+    information
+      language "LANGUAGE" # multiple is allowed
+      country "COUNTRY" # multiple is allowed
+      variant "VARIANT"
+    end information
+    
+    include "some file"
+    
+    function add/3
+      \add(\add(\1 \2) \3)
+    end function
+    
+    macro caps_affected/2
+      <letter \1> : "\1"
+      <shift letter \1> : "\2"
+      <caps letter \1> : "\2"
+      <caps shift letter \1> : "\1"
+    end macro
+    
+    <altgr letter \\> : <dead letter ´>
+    <altgr shift letter \\> : "¬"
+    <altgr shift letter j> : <dead letter \u031B> # horn
+    
+    assumption
+      have_range "a" "z"
+      have_range "A" "Z"
+      have_range "0" "9"
+      have_chars " !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+      have <dead compose>
+      have <shift>
+      have <altgr>
+      have <alt>
+      have <ctrl>
+    end assumption
+    
+    for "A" to "Z" as \1
+      <dead compose> "(" "\1" ")" : "\add(\u24B6 \sub(\1 "A"))"
+    end for
+    
+    let \6 : { \and(\4 16) \and(\4 32) \and(\4 64) \and(\4 128) }
+    
+    for 0 to 3 as \8
+      \set(\6 \8 \add(\rsh(\get(\6 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
+    end for
+    
+    if \and(\1 128) = 128
+      let \2 : \or(\2 64)
+    end if
+    
+    \add(a b)     # a + b
+    \sub(a b)     # a - b
+    \mul(a b)     # a ⋅ b
+    \div(a b)     # floor[a / b]
+    \mod(a b)     # a mod b
+    \rsh(a b)     # a ⋅ 2 ↑ b
+    \lsh(a b)     # floor[a / 2 ↑ b]
+    \or(a b)      # bitwise
+    \and(a b)     # bitwise
+    \xor(a b)     # bitwise
+    \not(a)       # logical
+    \equals(a b)  # a = b
+    \greater(a b) # a > b
+    \less(a b)    # a < b
+    \set(variable index value)
+    \get(variable index)
+    
+   */
   
+  source_code_destroy(&source_code);
   return 0;
   
  pfail:
