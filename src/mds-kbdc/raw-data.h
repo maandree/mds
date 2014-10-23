@@ -45,7 +45,7 @@ typedef struct source_code
   char* content;
   
   /**
-   *Data for `real_lines` (internal data)
+   * Data for `real_lines` (internal data)
    */
   char* real_content;
   
