@@ -61,7 +61,3 @@ It should be possible to remap keyboard LED:s.
 It should be possible to force keys, especially pause/break,
 to autorelease.
 
-/res/keyboard/mods/zero_to_nine_urdu is missing.
-https://en.wikipedia.org/wiki/Numerical_digit uses images,
-they are probably missing in Unicode.
-
