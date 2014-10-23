@@ -58,6 +58,9 @@ int main(int argc_, char** argv_)
     function add/3
       \add(\add(\1 \2) \3)
     end function
+    function add/4
+      \add(\add(\1 \2 \3) \4)
+    end function
     
     macro caps_affected/2
       <letter \1> : "\1"
