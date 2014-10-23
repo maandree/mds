@@ -1,11 +1,11 @@
-<keycode 2> : <letter 〇>
-<keycode 3> : <letter 一>
-<keycode 4> : <letter 二>
-<keycode 5> : <letter 三>
-<keycode 6> : <letter 四>
-<keycode 7> : <letter 五>
-<keycode 8> : <letter 六>
-<keycode 9> : <letter 七>
-<keycode 10> : <letter 八>
-<keycode 11> : <letter 九>
+<keycode 2> : "〇"
+<keycode 3> : "一"
+<keycode 4> : "二"
+<keycode 5> : "三"
+<keycode 6> : "四"
+<keycode 7> : "五"
+<keycode 8> : "六"
+<keycode 9> : "七"
+<keycode 10> : "八"
+<keycode 11> : "九"
 

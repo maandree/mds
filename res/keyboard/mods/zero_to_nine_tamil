@@ -1,11 +1,11 @@
-<keycode 2> : <letter ௦>
-<keycode 3> : <letter ௧>
-<keycode 4> : <letter ௨>
-<keycode 5> : <letter ௩>
-<keycode 6> : <letter ௪>
-<keycode 7> : <letter ௫>
-<keycode 8> : <letter ௬>
-<keycode 9> : <letter ௭>
-<keycode 10> : <letter ௮>
-<keycode 11> : <letter ௯>
+<keycode 2> : "௦"
+<keycode 3> : "௧"
+<keycode 4> : "௨"
+<keycode 5> : "௩"
+<keycode 6> : "௪"
+<keycode 7> : "௫"
+<keycode 8> : "௬"
+<keycode 9> : "௭"
+<keycode 10> : "௮"
+<keycode 11> : "௯"
 

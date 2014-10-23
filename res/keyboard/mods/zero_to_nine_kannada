@@ -1,11 +1,11 @@
-<keycode 2> : <letter ೦>
-<keycode 3> : <letter ೧>
-<keycode 4> : <letter ೨>
-<keycode 5> : <letter ೩>
-<keycode 6> : <letter ೪>
-<keycode 7> : <letter ೫>
-<keycode 8> : <letter ೬>
-<keycode 9> : <letter ೭>
-<keycode 10> : <letter ೮>
-<keycode 11> : <letter ೯>
+<keycode 2> : "೦"
+<keycode 3> : "೧"
+<keycode 4> : "೨"
+<keycode 5> : "೩"
+<keycode 6> : "೪"
+<keycode 7> : "೫"
+<keycode 8> : "೬"
+<keycode 9> : "೭"
+<keycode 10> : "೮"
+<keycode 11> : "೯"
 

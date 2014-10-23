@@ -1,11 +1,11 @@
-<keycode 2> : <letter ༠>
-<keycode 3> : <letter ༡>
-<keycode 4> : <letter ༢>
-<keycode 5> : <letter ༣>
-<keycode 6> : <letter ༤>
-<keycode 7> : <letter ༥>
-<keycode 8> : <letter ༦>
-<keycode 9> : <letter ༧>
-<keycode 10> : <letter ༨>
-<keycode 11> : <letter ༩>
+<keycode 2> : "༠"
+<keycode 3> : "༡"
+<keycode 4> : "༢"
+<keycode 5> : "༣"
+<keycode 6> : "༤"
+<keycode 7> : "༥"
+<keycode 8> : "༦"
+<keycode 9> : "༧"
+<keycode 10> : "༨"
+<keycode 11> : "༩"
 
