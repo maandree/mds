@@ -45,7 +45,13 @@ size_t string_length(const char32_t* restrict string) __attribute__((pure, nonnu
  */
 char32_t* string_decode(const char* restrict string) __attribute__((nonnull));
 
-/* TODO string_encode */
+/**
+ * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string.
+ * 
+ * @param   string  The UTF-32 string.
+ * @return          The string in UTF-8, `NULL` on error.
+ */
+char* string_encode(const char32_t* restrict string) __attribute__((nonnull));
 
 
 #endif
