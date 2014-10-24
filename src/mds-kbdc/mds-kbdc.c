@@ -44,9 +44,9 @@ int main(int argc_, char** argv_)
   
   source_code_initialise(&source_code);
   fail_if (read_source_lines(pathname, &source_code) < 0);
-
+  
   /*
-   
+    
     information
       language "LANGUAGE" # multiple is allowed
       country "COUNTRY" # multiple is allowed
@@ -102,23 +102,6 @@ int main(int argc_, char** argv_)
     if \and(\1 128)  ##  a number is true iff it is not zero
       let \2 : \or(\2 64)
     end if
-    
-    \add(a b)     # a + b
-    \sub(a b)     # a - b
-    \mul(a b)     # a ⋅ b
-    \div(a b)     # floor[a / b]
-    \mod(a b)     # a mod b
-    \rsh(a b)     # a ⋅ 2 ↑ b
-    \lsh(a b)     # floor[a / 2 ↑ b]
-    \or(a b)      # bitwise
-    \and(a b)     # bitwise
-    \xor(a b)     # bitwise
-    \not(a)       # logical
-    \equals(a b)  # a = b
-    \greater(a b) # a > b
-    \less(a b)    # a < b
-    \set(variable index value)
-    \get(variable index)
     
    */
   
