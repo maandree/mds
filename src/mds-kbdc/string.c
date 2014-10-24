@@ -102,9 +102,9 @@ char* string_encode(const char32_t* restrict string)
   for (i = j = 0; i < n; i++)
     {
 #define _c(s)  rc[j++] = (char)(((c >> (s)) & 0x3F) | 0x80)
-#define _t(s)  t < (char32_t)(1L << s)
+#define _t(s)  c < (char32_t)(1L << s)
       char32_t c = string[i];
-      if      (c == 0)  rc[j++] = 0xC0, rc[j++] = 0x80;
+      if      (c == 0)  rc[j++] = (char)0xC0, rc[j++] = (char)0x80;
       else if (_t( 7))  rc[j++] = (char)c;
       else if (_t(11))  rc[j++] = (char)((c >>  6) | 0xC0), _c( 0);
       else if (_t(16))  rc[j++] = (char)((c >> 12) | 0xE0), _c( 6), _c( 0);
