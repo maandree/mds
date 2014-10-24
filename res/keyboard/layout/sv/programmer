@@ -9,16 +9,19 @@ end information
 # Do not forget the caps_is_ctrl mod.
 
 
-include "../common/qwerty"
-include "../common/base"
-
-
+function before_one/0
+  "|"
+end function
 function comma/0
   ","
 end function
 function altcomma/0
   "."
 end function
+
+include "../common/qwerty"
+include "../common/base"
+
 
 macro mod_letter/2
   <letter \1> : "\1"

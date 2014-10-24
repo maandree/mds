@@ -1,5 +1,29 @@
+function digit/1
+  if \or(\equals(\1 0) \equals(\1 "0"))
+     "0"
+  else if \or(\equals(\1 1) \equals(\1 "1"))
+     "1"
+  else if \or(\equals(\1 2) \equals(\1 "2"))
+     "2"
+  else if \or(\equals(\1 3) \equals(\1 "3"))
+     "3"
+  else if \or(\equals(\1 4) \equals(\1 "4"))
+     "4"
+  else if \or(\equals(\1 5) \equals(\1 "5"))
+     "5"
+  else if \or(\equals(\1 6) \equals(\1 "6"))
+     "6"
+  else if \or(\equals(\1 7) \equals(\1 "7"))
+     "7"
+  else if \or(\equals(\1 8) \equals(\1 "8"))
+     "8"
+  else
+     "9"
+  end if
+end function
+
 for "0" to "9" as \1
-  <letter \1> : "\1"
+  <letter \1> : "\digit(\1)"
 end for
 
 for "a" to "z" as \1

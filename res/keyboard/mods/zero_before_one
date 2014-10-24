@@ -1,0 +1,3 @@
+<letter \before_one()> : "\digit(0)"
+<letter \digit(0)> : "\before_one()"
+

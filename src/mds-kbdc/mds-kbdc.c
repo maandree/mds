@@ -95,13 +95,19 @@ int main(int argc_, char** argv_)
       \set(\6 \8 \add(\rsh(\get(\6 \8) \8) \mul(2 \rsh(\get(\7 \8)))))
     end for
     
-    if \equals(\and(\1 128))
-      let \2 : \or(\2 64)
+    if \or(\equals(\1 0) \equals(\1 "0"))
+      "0"
+    else if \or(\equals(\1 1) \equals(\1 "1"))
+      "1"
+    else
+      "9"
     end if
     
     if \and(\1 128)  ##  a number is true iff it is not zero
       let \2 : \or(\2 64)
     end if
+    
+    <altgr menu> : <-altgr ultra>
     
    */
   

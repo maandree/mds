@@ -1,0 +1,11 @@
+<letter \digit(1)> : "\digit(0)"
+<letter \digit(2)> : "\digit(1)"
+<letter \digit(3)> : "\digit(2)"
+<letter \digit(4)> : "\digit(3)"
+<letter \digit(5)> : "\digit(4)"
+<letter \digit(6)> : "\digit(5)"
+<letter \digit(7)> : "\digit(6)"
+<letter \digit(8)> : "\digit(7)"
+<letter \digit(9)> : "\digit(8)"
+<letter \digit(0)> : "\digit(9)"
+

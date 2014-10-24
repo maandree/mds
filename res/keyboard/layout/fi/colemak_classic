@@ -4,16 +4,19 @@ information
   variant "Colemak, classic"
 end information
 
-include "../common/colemak"
-include "../common/base"
-
-
+function before_one/0
+  "§"
+end function
 function comma/0
   ","
 end function
 function altcomma/0
   "."
 end function
+
+include "../common/colemak"
+include "../common/base"
+
 
 macro mod_letter/2
   <letter \1> : "\1"
