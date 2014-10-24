@@ -82,3 +82,40 @@ char32_t* string_decode(const char* restrict string)
   return rc[length] = -1, rc;
 }
 
+
+/**
+ * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string.
+ * 
+ * @param   string  The UTF-32 string.
+ * @return          The string in UTF-8, `NULL` on error.
+ */
+char* string_encode(const char32_t* restrict string)
+{
+  size_t i, j, n = string_length(string);
+  char* restrict rc;
+  
+  /* Allocated Modified UTF-8 string. */
+  if (xmalloc(rc, 6 * n + 1, char))
+    return NULL;
+  
+  /* Convert to Modified UTF-8. */
+  for (i = j = 0; i < n; i++)
+    {
+#define _c(s)  rc[j++] = (char)(((c >> (s)) & 0x3F) | 0x80)
+#define _t(s)  t < (char32_t)(1L << s)
+      char32_t c = string[i];
+      if      (c == 0)  rc[j++] = 0xC0, rc[j++] = 0x80;
+      else if (_t( 7))  rc[j++] = (char)c;
+      else if (_t(11))  rc[j++] = (char)((c >>  6) | 0xC0), _c( 0);
+      else if (_t(16))  rc[j++] = (char)((c >> 12) | 0xE0), _c( 6), _c( 0);
+      else if (_t(21))  rc[j++] = (char)((c >> 18) | 0xF0), _c(12), _c( 6), _c( 0);
+      else if (_t(26))  rc[j++] = (char)((c >> 24) | 0xF8), _c(18), _c(12), _c( 6), _c(0);
+      else              rc[j++] = (char)((c >> 30) | 0xFC), _c(24), _c(18), _c(12), _c(6), _c(0);
+#undef _t
+#undef _c
+    }
+  
+  /* NUL-terminate and return. */
+  return rc[j] = '\0', rc;
+}
+
