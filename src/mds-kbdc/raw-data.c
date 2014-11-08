@@ -147,7 +147,7 @@ static size_t remove_comments(char* restrict content, size_t size)
   size_t n_ptr = 0, o_ptr = 0;
   int comment = 0, quote = 0, escape = 0;
   
-  while (o_ptr < size)
+  while (o_ptr < size) /* TODO nested quotes */
     {
       char c = content[o_ptr++];
       /* Remove comment */
