@@ -54,5 +54,6 @@ char32_t* string_decode(const char* restrict string) __attribute__((nonnull));
 char* string_encode(const char32_t* restrict string) __attribute__((nonnull));
 
 
+
 #endif
 
