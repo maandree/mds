@@ -159,7 +159,7 @@ static size_t remove_comments(char* restrict content, size_t size)
       else if (escape)        t, escape = 0;
       else if (quote)
 	{
-	  t
+	  t;
 	  if      (c == '\\')  escape = 1;
 	  else if (c == '"')   quote = 0;
 	}
