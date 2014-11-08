@@ -20,6 +20,7 @@
 #include "globals.h"
 
 #include <libmdsserver/macros.h>
+
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -158,9 +159,9 @@ static size_t remove_comments(char* restrict content, size_t size)
       else if (escape)        t, escape = 0;
       else if (quote)
 	{
-	  t;
-	  if     (c == '\\')  escape = 1;
-	  else if (c == '"')  quote = 0;
+	  t
+	  if      (c == '\\')  escape = 1;
+	  else if (c == '"')   quote = 0;
 	}
       /* # is the comment symbol. */
       else if (c == '#')      comment = 1;
@@ -205,7 +206,7 @@ static char** line_split(char* content, size_t length)
     if (content[i] == '\n')
       count++;
   
-  fail_if (xmalloc(lines, count + 1, char));
+  fail_if (xmalloc(lines, count + 1, char*));
   lines[count] = NULL;
   
   for (i = j = 0; i < length; i++)
