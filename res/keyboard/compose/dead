@@ -2779,7 +2779,7 @@ macro playing_card/2
 end macro
 for "1" to "9" as \1
   playing_card("\1" \sub(\1 "0") 1)
-endfor
+end for
 playing_card(["a" "A"] 1)
 playing_card("0" 10)
 playing_card(["j" "J"] 11)
