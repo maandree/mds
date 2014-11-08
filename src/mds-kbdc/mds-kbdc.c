@@ -108,7 +108,7 @@ int main(int argc_, char** argv_)
 	  m2 = (size_t)(end - source_code.lines[i]);
 	  fprintf(stderr, "\033[1m%s:%zu:%zu-%zu: \033[31merror:\033[0m invalid keyword \033[1m‘%s’\033[0m\n",
 		  pathname, i + 1, m1 + 1, m2 + 1 /* TODO measure chars, not bytes */, line);
-	  fprintf(stderr, "    %s\n    \033[1;32m", source_code.real_lines[i]);
+	  fprintf(stderr, " %s\n \033[1;32m", source_code.real_lines[i]);
 	  for (j = 0; j < m1; j++)
 	    fputc(' ', stderr);
 	  for (; j < m2; j++)
