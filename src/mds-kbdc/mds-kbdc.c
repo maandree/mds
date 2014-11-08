@@ -23,7 +23,9 @@
 #include <libmdsserver/macros.h>
 
 #include <stdio.h>
+#include <unistd.h>
 #include <errno.h>
+#include <string.h>
 
 
 
@@ -38,13 +40,85 @@ int main(int argc_, char** argv_)
 {
   const char* pathname = argv_[1];
   source_code_t source_code;
+  size_t i, n;
   
   argc = argc_;
   argv = argv_;
   
   source_code_initialise(&source_code);
   fail_if (read_source_lines(pathname, &source_code) < 0);
+  /* TODO '\t':s should be expanded into ' ':s. */
   
+  for (i = 0, n = source_code.line_count; i < n; i++)
+    {
+      char* line = source_code.lines[i];
+      char* end;
+      char prev_end_char;
+      
+      while (*line && (*line == ' '))
+	line++;
+      end = strchrnul(line, ' ');
+      if (end == line)
+	continue;
+      prev_end_char = *end;
+      *end = '\0';
+      
+      if (!strcmp(line, "information"))
+	;
+      else if (!strcmp(line, "language"))
+	;
+      else if (!strcmp(line, "country"))
+	;
+      else if (!strcmp(line, "variant"))
+	;
+      else if (!strcmp(line, "include"))
+	;
+      else if (!strcmp(line, "function"))
+	;
+      else if (!strcmp(line, "macro"))
+	;
+      else if (!strcmp(line, "assumption"))
+	;
+      else if (!strcmp(line, "if"))
+	;
+      else if (!strcmp(line, "else"))
+	;
+      else if (!strcmp(line, "for"))
+	;
+      else if (!strcmp(line, "end"))
+	;
+      else if (!strcmp(line, "return"))
+	;
+      else if (!strcmp(line, "continue"))
+	;
+      else if (!strcmp(line, "break"))
+	;
+      else if (!strcmp(line, "let"))
+	;
+      else if (!strcmp(line, "have"))
+	;
+      else if (!strcmp(line, "have_chars"))
+	;
+      else if (!strcmp(line, "have_range"))
+	;
+      else if ((*line != '"') && (*line != '<') && (strchr(line, '(') == NULL))
+	{
+	  size_t j, m1, m2;
+	  m1 = (size_t)(line - source_code.lines[i]);
+	  m2 = (size_t)(end - source_code.lines[i]);
+	  fprintf(stderr, "\033[1m%s:%zu:%zu-%zu: \033[31merror:\033[0m invalid keyword \033[1m‘%s’\033[0m\n",
+		  pathname, i + 1, m1 + 1, m2 + 1 /* TODO measure chars, not bytes */, line);
+	  fprintf(stderr, "    %s\n    \033[1;32m", source_code.real_lines[i]);
+	  for (j = 0; j < m1; j++)
+	    fputc(' ', stderr);
+	  for (; j < m2; j++)
+	    if ((source_code.lines[i][j] & 0xC0) != 0x80)
+	      fputc('^', stderr);
+	  fprintf(stderr, "\033[0m\n");
+	}
+      
+      *end = prev_end_char;
+    }
   /*
     
     information
