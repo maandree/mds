@@ -621,7 +621,7 @@ dead_ascii("ˇ")
 <shift dead compose> "R" "v" <space> : "ⅴ"
 <shift dead compose> "R" "v" "i" <space> : "ⅵ"
 <shift dead compose> "R" "v" "i" "i" <space> : "ⅶ"
-<shift dead compose> "R" "v" "i" "i" i" <space> : "ⅷ"
+<shift dead compose> "R" "v" "i" "i" "i" <space> : "ⅷ"
 <shift dead compose> "R" "i" "x" <space> : "ⅸ"
 <shift dead compose> "R" "x" <space> : "ⅹ"
 <shift dead compose> "R" "x" "i" <space> : "ⅺ"
@@ -700,7 +700,7 @@ composite("→" "~" "↝")
 <shift dead compose> "←" "_" "|" : "↲"
 <dead compose> "↰" "↰" : "↲"
 <shift dead compose> "|" "_" "→" : "↳"
-<dead compose> "↱" ↱" : "↳"
+<dead compose> "↱" "↱" : "↳"
 <dead compose> "-" "↘" : "↴"
 <dead compose> "." "↲" : "↵"
 <shift dead compose> ("n" "↙") : "↶"
@@ -1480,7 +1480,7 @@ dead_ascii("▐")
 <dead compose> (["□" "◻" "◽"] "◤") : "◩"
 <dead compose> ("◸" "◢") : "◪"
 <dead compose> (["□" "◻" "◽"] "◢") : "◪"
-<dead compose> "[" "|" "]" : ◫
+<dead compose> "[" "|" "]" : "◫"
 <dead compose> "◿" ["." .] "◺" : "◬"
 <dead compose> "" "◺" : "◭"
 <dead compose> "⧨" "⧨" : "◭"
@@ -2178,7 +2178,7 @@ composite("∅" "°" "⦲")
 <dead compose> ("_" "⪫") : "⪭"
 <dead compose> ("=" "≏") : "⪮"
 <dead compose> "≼" "≼" : "⪯"
-<dead compose> "≽" "≽ : "⪰"
+<dead compose> "≽" "≽" : "⪰"
 <dead compose> ("/" "⪯") : "⪱"
 <dead compose> ("/" "⪰") : "⪲"
 <dead compose> ("=" "≺") : "⪳"
@@ -2859,9 +2859,9 @@ end for
 <dead compose> "[" "N" "G" "]" : "\u1F196"
 <dead compose> "[" "O" "K" "]" : "\u1F197"
 <dead compose> "[" "S" "O" "S" "]" : "\u1F198"
-<dead compose> "[" "U" "P" "]" : "\u1F199
-<dead compose> "[" "U" "P" "!" "]" : "\u1F199
-<dead compose> "[" "V" "S" "]" : "\u1F19A
+<dead compose> "[" "U" "P" "]" : "\u1F199"
+<dead compose> "[" "U" "P" "!" "]" : "\u1F199"
+<dead compose> "[" "V" "S" "]" : "\u1F19A"
 for "a" to "z" as \1
   <dead compose> "[" "r" "\1" "]" : "\add(\u1F1E6 \sub(\1 "a"))"
 end for
