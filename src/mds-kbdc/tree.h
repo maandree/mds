@@ -24,127 +24,127 @@
 
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_information_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_information_t`
  */
 #define MDS_KBDC_TREE_TYPE_INFORMATION  0
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_information_language_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_information_language_t`
  */
 #define MDS_KBDC_TREE_TYPE_INFORMATION_LANGUAGE  1
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_information_country_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_information_country_t`
  */
 #define MDS_KBDC_TREE_TYPE_INFORMATION_COUNTRY  2
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_information_variant_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_information_variant_t`
  */
 #define MDS_KBDC_TREE_TYPE_INFORMATION_VARIANT  3
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_include_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_include_t`
  */
 #define MDS_KBDC_TREE_TYPE_INCLUDE  4
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_function_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_function_t`
  */
 #define MDS_KBDC_TREE_TYPE_FUNCTION  5
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_macro_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_macro_t`
  */
 #define MDS_KBDC_TREE_TYPE_MACRO  6
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_assumption`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_assumption`
  */
 #define MDS_KBDC_TREE_TYPE_ASSUMPTION  7
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_assumption_have_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_assumption_have_t`
  */
 #define MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE  8
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_assumption_have_chars_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_assumption_have_chars_t`
  */
 #define MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_CHARS  9
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_assumption_have_range_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_assumption_have_range_t`
  */
 #define MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_RANGE  10
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_for_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_for_t`
  */
 #define MDS_KBDC_TREE_TYPE_FOR  11
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_if_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_if_t`
  */
 #define MDS_KBDC_TREE_TYPE_IF  12
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_let_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_let_t`
  */
 #define MDS_KBDC_TREE_TYPE_LET  13
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_map_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_map_t`
  */
 #define MDS_KBDC_TREE_TYPE_MAP  15
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_array_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_array_t`
  */
 #define MDS_KBDC_TREE_TYPE_ARRAY  16
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_keys_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_keys_t`
  */
 #define MDS_KBDC_TREE_TYPE_KEYS  17
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_string_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_string_t`
  */
 #define MDS_KBDC_TREE_TYPE_STRING  18
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_nothing_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_nothing_t`
  */
 #define MDS_KBDC_TREE_TYPE_NOTHING  19
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_alternation_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_alternation_t`
  */
 #define MDS_KBDC_TREE_TYPE_ALTERNATION  20
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_unordered_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_unordered_t`
  */
 #define MDS_KBDC_TREE_TYPE_UNORDERED  21
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_macro_call_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_macro_call_t`
  */
 #define MDS_KBDC_TREE_TYPE_MACRO_CALL  22
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_return_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_return_t`
  */
 #define MDS_KBDC_TREE_TYPE_RETURN  23
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_break_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_break_t`
  */
 #define MDS_KBDC_TREE_TYPE_BREAK  24
 
 /**
- * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_continue_t`
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_continue_t`
  */
 #define MDS_KBDC_TREE_TYPE_CONTINUE  25
 
@@ -171,7 +171,7 @@ typedef union mds_kbdc_tree mds_kbdc_tree_t;
  * -  int type;            -- Integer that specifies which structure is used
  * -  mds_kbdc_tree_t*;    -- The next node in the tree, at the same level; a sibling
  */
-#define MDS_KBDC_TREE_COMMON       int type; mds_kbdc_tree_t* next
+#define MDS_KBDC_TREE_COMMON  int type; mds_kbdc_tree_t* next
 
 /**
  * This macro is used in this header file, and is then
@@ -190,7 +190,7 @@ typedef union mds_kbdc_tree mds_kbdc_tree_t;
  *            structure excluding this padding and the members defined
  *            by the macro `MDS_KBDC_TREE_COMMON`
  */
-#define MDS_KBDC_TREE_PADDING(N)   MDS_KBDC_TREE_PADDING((N) * sizeof(void*))
+#define MDS_KBDC_TREE_PADDING(N)  MDS_KBDC_TREE_PADDING_((N) * sizeof(void*))
 
 
 
@@ -516,7 +516,7 @@ typedef struct mds_kbdc_tree_keys
   
   MDS_KBDC_TREE_PADDING(1);
   
-} mds_kbdc_trees_key_t;
+} mds_kbdc_tree_keys_t;
 
 
 /**
@@ -562,22 +562,6 @@ typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_unordered_t;
 
 
 /**
- * Leaf structure for "return"-keyword
- */
-typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_type_return_t return_;
-
-/**
- * Leaf structure for "break"-keyword
- */
-typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_type_break_t break_;
-
-/**
- * Leaf structure for "continue"-keyword
- */
-typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_type_continue_t continue_;
-
-
-/**
  * Tree structure for a macro call
  */
 typedef struct mds_kbdc_tree_macro_call
@@ -601,29 +585,48 @@ typedef struct mds_kbdc_tree_macro_call
 } mds_kbdc_tree_macro_call_t;
 
 
+/**
+ * Leaf structure for "return"-keyword
+ */
+typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_return_t;
+
+/**
+ * Leaf structure for "break"-keyword
+ */
+typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_break_t;
+
+/**
+ * Leaf structure for "continue"-keyword
+ */
+typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_continue_t;
+
+
 
 /**
  * Keyboard layout syntax tree
  */
 union mds_kbdc_tree
 {
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpedantic" /* unnamed struct */
   struct
   {
     MDS_KBDC_TREE_COMMON;
     MDS_KBDC_TREE_PADDING(0);
   };
+# pragma GCC diagnostic pop
   
   mds_kbdc_tree_information_t information;
   mds_kbdc_tree_information_language_t language;
   mds_kbdc_tree_information_country_t country;
   mds_kbdc_tree_information_variant_t variant;
-  mds_kbdc_tree_information_include_t include;
+  mds_kbdc_tree_include_t include;
   mds_kbdc_tree_function_t function;
   mds_kbdc_tree_macro_t macro;
   mds_kbdc_tree_assumption_t assumption;
-  mds_kbdc_tree_assumption_have have;
-  mds_kbdc_tree_assumption_have_chars have_chars;
-  mds_kbdc_tree_assumption_have_range have_range;
+  mds_kbdc_tree_assumption_have_t have;
+  mds_kbdc_tree_assumption_have_chars_t have_chars;
+  mds_kbdc_tree_assumption_have_range_t have_range;
   mds_kbdc_tree_for_t for_;
   mds_kbdc_tree_if_t if_;
   mds_kbdc_tree_let_t let;
@@ -635,10 +638,49 @@ union mds_kbdc_tree
   mds_kbdc_tree_alternation_t alternation;
   mds_kbdc_tree_unordered_t unordered;
   mds_kbdc_tree_macro_call_t macro_call;
-  mds_kbdc_tree_type_return_t return_;
-  mds_kbdc_tree_type_break_t break_;
-  mds_kbdc_tree_type_continue_t continue_;
+  mds_kbdc_tree_return_t return_;
+  mds_kbdc_tree_break_t break_;
+  mds_kbdc_tree_continue_t continue_;
 };
+
+
+
+/**
+ * Release all resources stored in a tree node,
+ * without freeing the node itself or freeing
+ * or destroying inner `mds_kbdc_tree_t*`:s
+ * 
+ * @param  this  The tree node
+ */
+void mds_kbdc_tree_destroy_nonrecursive(mds_kbdc_tree_t* restrict this);
+
+/**
+ * Release all resources stored in a tree node,
+ * without freeing or destroying inner
+ * `mds_kbdc_tree_t*`:s, but free this node's
+ * allocation
+ * 
+ * @param  this  The tree node
+ */
+void mds_kbdc_tree_free_nonrecursive(mds_kbdc_tree_t* restrict this);
+
+/**
+ * Release all resources stored in a tree node
+ * recursively, but do not free the allocation
+ * of the tree node
+ * 
+ * @param  this  The tree node
+ */
+void mds_kbdc_tree_destroy(mds_kbdc_tree_t* restrict this);
+
+/**
+ * Release all resources stored in a tree node
+ * recursively, and free the allocation
+ * of the tree node
+ * 
+ * @param  this  The tree node
+ */
+void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this);
 
 
 
