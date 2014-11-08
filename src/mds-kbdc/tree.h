@@ -114,9 +114,39 @@
 #define MDS_KBDC_TREE_TYPE_STRING  18
 
 /**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_nothing_t`
+ */
+#define MDS_KBDC_TREE_TYPE_NOTHING  19
+
+/**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_alternation_t`
+ */
+#define MDS_KBDC_TREE_TYPE_ALTERNATION  20
+
+/**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_unordered_t`
+ */
+#define MDS_KBDC_TREE_TYPE_UNORDERED  21
+
+/**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_macro_call_t`
  */
-#define MDS_KBDC_TREE_TYPE_MACRO_CALL  19
+#define MDS_KBDC_TREE_TYPE_MACRO_CALL  22
+
+/**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_return_t`
+ */
+#define MDS_KBDC_TREE_TYPE_RETURN  23
+
+/**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_break_t`
+ */
+#define MDS_KBDC_TREE_TYPE_BREAK  24
+
+/**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_type_continue_t`
+ */
+#define MDS_KBDC_TREE_TYPE_CONTINUE  25
 
 
 
@@ -507,6 +537,47 @@ typedef struct mds_kbdc_tree_string
 
 
 /**
+ * Leaf structure for nothing (a dot in the layout code)
+ * 
+ * Other leaf structures without any content may `typedef`
+ * this structure
+ */
+typedef struct mds_kbdc_tree_nothing
+{
+  MDS_KBDC_TREE_COMMON;
+  MDS_KBDC_TREE_PADDING(0);
+  
+} mds_kbdc_tree_nothing_t;
+
+
+/**
+ * Tree structure for an alternation
+ */
+typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_alternation_t;
+
+/**
+ * Tree structure for an unordered sequence
+ */
+typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_unordered_t;
+
+
+/**
+ * Leaf structure for "return"-keyword
+ */
+typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_type_return_t return_;
+
+/**
+ * Leaf structure for "break"-keyword
+ */
+typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_type_break_t break_;
+
+/**
+ * Leaf structure for "continue"-keyword
+ */
+typedef struct mds_kbdc_tree_nothing mds_kbdc_tree_type_continue_t continue_;
+
+
+/**
  * Tree structure for a macro call
  */
 typedef struct mds_kbdc_tree_macro_call
@@ -560,7 +631,13 @@ union mds_kbdc_tree
   mds_kbdc_tree_array_t array;
   mds_kbdc_tree_keys_t keys;
   mds_kbdc_tree_string_t string;
+  mds_kbdc_tree_nothing_t nothing;
+  mds_kbdc_tree_alternation_t alternation;
+  mds_kbdc_tree_unordered_t unordered;
   mds_kbdc_tree_macro_call_t macro_call;
+  mds_kbdc_tree_type_return_t return_;
+  mds_kbdc_tree_type_break_t break_;
+  mds_kbdc_tree_type_continue_t continue_;
 };
 
 
