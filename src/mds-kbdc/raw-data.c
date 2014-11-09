@@ -134,6 +134,71 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
 
 
 /**
+ * Find the end of a function call
+ * 
+ * @param   content  The code
+ * @param   offset   The index after the first character after the backslash
+ *                   that triggered this call
+ * @param   size     The length of `code`
+ * @return           The index of the character after the bracket that closes
+ *                   the function call (may be outside the code by one character),
+ *                   or `size` if the call do not end (that is, the code ends
+ *                   prematurely), or zero if there is no function call at `offset`
+ */
+static __attribute__((pure)) size_t get_end_of_call(char* restrict content, size_t offset, size_t size)
+{
+#define C                content[ptr]
+#define r(lower, upper)  (((lower) <= C) && (C <= (upper)))
+  
+  size_t ptr = offset, call_end = 0;
+  int escape = 0, quote = 0;
+  
+  /* Skip to end of function name. */
+  while ((ptr < size) && (r('a', 'z') || r('A', 'Z') || (C == '_')))
+    ptr++;
+  
+  /* Check that it is a function call. */
+  if ((ptr == size) || (ptr == offset) || (C != '('))
+    return 0;
+  
+  /* Find the end of the function call. */
+  while (ptr < size)
+    {
+      char c = content[ptr++];
+      
+      /* Escapes may be longer than one character,
+         but only the first can affect the parsing. */
+      if (escape)                escape = 0;
+      /* Nested function and nested quotes can appear. */
+      else if (ptr <= call_end)  ;
+      /* Quotes end with the same symbols as they start with,
+         and quotes automatically escape brackets. */
+      /* \ can either start a functon call or an escape. */
+      else if (c == '\\')
+	{
+	  /* It may not be an escape, but registering it
+	     as an escape cannot harm us since we only
+	     skip the first character, and a function call
+	     cannot be that short. */
+	  escape = 1;
+	  /* Nested quotes can appear at function calls. */
+	  call_end = get_end_of_call(content, ptr, size);
+	}
+      else if (quote)            quote = (c != '"');
+      /* End of function call, end of fun. */
+      else if (c == ')')         break;
+      /* " is the quote symbol. */
+      else if (c == '"')         quote = 1;
+    }
+  
+  return ptr;
+  
+#undef r
+#undef C
+}
+
+
+/**
  * Remove comments from the content
  * 
  * @param   content  The code to shrink
@@ -144,31 +209,47 @@ static size_t remove_comments(char* restrict content, size_t size)
 {
 #define t  content[n_ptr++] = c
   
-  size_t n_ptr = 0, o_ptr = 0;
+  size_t n_ptr = 0, o_ptr = 0, call_end = 0;
   int comment = 0, quote = 0, escape = 0;
   
-  while (o_ptr < size) /* TODO nested quotes */
+  while (o_ptr < size)
     {
       char c = content[o_ptr++];
-      /* Remove comment */
+      /* Remove comment. */
       if (comment)
 	{
-	  if (c == '\n')      t, comment = 0;
+	  if (c == '\n')           t, comment = 0;
 	}
-      /* Quotes can contain comment symbols, quotes by also contain escapes. */
-      else if (escape)        t, escape = 0;
+      /* Escapes may be longer than one character,
+         but only the first can affect the parsing. */
+      else if (escape)             t, escape = 0;
+      /* Nested quotes can appear at function calls. */
+      else if (o_ptr <= call_end)  t;
+      /* \ can either start a functon call or an escape. */
+      else if (c == '\\')
+	{
+	  t;
+	  /* It may not be an escape, but registering it
+	     as an escape cannot harm us since we only
+	     skip the first character, and a function call
+	     cannot be that short. */
+	  escape = 1;
+	  /* Nested quotes can appear at function calls. */
+	  call_end = get_end_of_call(content, o_ptr, size);
+	}
+      /* Quotes end with the same symbols as they start with,
+         and quotes automatically escape comments. */
       else if (quote)
 	{
 	  t;
-	  if      (c == '\\')  escape = 1;
-	  else if (c == '"')   quote = 0;
+	  if (c == '"')            quote = 0;
 	}
       /* # is the comment symbol. */
-      else if (c == '#')      comment = 1;
+      else if (c == '#')           comment = 1;
       /* " is the quote symbol. */
-      else if (c == '"')      t, quote = 1;
+      else if (c == '"')           t, quote = 1;
       /* Code and whitespace.  */
-      else                    t;
+      else                         t;
     }
   
   return n_ptr;
