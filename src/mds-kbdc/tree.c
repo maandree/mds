@@ -18,6 +18,37 @@
 #include "tree.h"
 
 #include <stdlib.h>
+#include <string.h>
+
+
+
+/**
+ * Initialise a tree node
+ * 
+ * @param  this  The memory slot for the tree node
+ * @param  type  The type of the node
+ */
+void mds_kbdc_tree_initialise(mds_kbdc_tree_t* restrict this, int type)
+{
+  memset(this, 0, sizeof(mds_kbdc_tree_t));
+  this->type = type;
+}
+
+
+/**
+ * Create a tree node
+ * 
+ * @param   type  The type of the node
+ * @return        The tree node, `NULL` on error
+ */
+mds_kbdc_tree_t* mds_kbdc_tree_create(int type)
+{
+  mds_kbdc_tree_t* this = malloc(sizeof(mds_kbdc_tree_t));
+  if (this == NULL)
+    return NULL;
+  mds_kbdc_tree_initialise(this, type);
+  return this;
+}
 
 
 /**
@@ -125,7 +156,6 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
 #undef xfree
 #undef V
 }
-
 
 
 /**

@@ -646,6 +646,22 @@ union mds_kbdc_tree
 
 
 /**
+ * Initialise a tree node
+ * 
+ * @param  this  The memory slot for the tree node
+ * @param  type  The type of the node
+ */
+void mds_kbdc_tree_initialise(mds_kbdc_tree_t* restrict this, int type);
+
+/**
+ * Create a tree node
+ * 
+ * @param   type  The type of the node
+ * @return        The tree node, `NULL` on error
+ */
+mds_kbdc_tree_t* mds_kbdc_tree_create(int type);
+
+/**
  * Release all resources stored in a tree node,
  * without freeing the node itself or freeing
  * or destroying inner `mds_kbdc_tree_t*`:s
