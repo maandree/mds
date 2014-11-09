@@ -313,7 +313,7 @@ static char** line_split(char* content, size_t length)
  * Read lines of a source file
  * 
  * @param   pathname     The pathname of the source file
- * @parma   source_code  Output parameter for read data
+ * @param   source_code  Output parameter for read data
  * @return               Zero on success, -1 on error
  */
 int read_source_lines(const char* restrict pathname, source_code_t* restrict source_code)

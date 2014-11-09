@@ -30,7 +30,8 @@ OBJ_mds-server_   = mds-server interception-condition client multicast  \
 OBJ_mds-registry_ = mds-registry util globals reexec registry signals  \
                     slave
 
-OBJ_mds-kbdc_     = mds-kbdc globals raw-data functions string tree
+OBJ_mds-kbdc_     = mds-kbdc globals raw-data functions string tree  \
+                    make-tree parse-error
 
 OBJ_mds-server    = $(foreach O,$(OBJ_mds-server_),obj/mds-server/$(O).o)
 OBJ_mds-registry  = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
