@@ -42,7 +42,7 @@
 int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict result,
 		  mds_kbdc_parse_error_t*** restrict errors)
 {
-#define xasprintf(var, ...)  (asprintf(&(var), __VA_ARGS__) < 0 ? (var = NULL, -1) : 0)
+#define xasprintf(VAR, ...)  (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
 #define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)					\
   if (errors_ptr + 1 >= errors_size)							\
     {											\
@@ -61,6 +61,30 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   fail_if ((error->pathname = strdup(pathname)) == NULL);				\
   fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
   fail_if (xasprintf(error->description, __VA_ARGS__))
+#define NEW_NODE(LOWERCASE, UPPERCASE)				\
+  mds_kbdc_tree_##LOWERCASE##_t* node;				\
+  fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));	\
+  node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE
+#define NESTING(KEYWORD)					\
+  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;		\
+  tree_stack[stack_ptr + 1] = &(node->inner);			\
+  keyword_stack[stack_ptr++] = KEYWORD
+#define FLAT							\
+  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;		\
+  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next)
+#define NO_PARAMETERS(KEYWORD)						\
+  line += strlen(line);							\
+  *end = prev_end_char, prev_end_char = '\0';				\
+  while (*line && (*line == ' '))					\
+    line++;								\
+  do									\
+    if (*line)								\
+      {									\
+	end = line + strlen(line);					\
+	NEW_ERROR(1, ERROR, "extra token after ‘%s’", KEYWORD);		\
+      }									\
+  while (0)
+  
   
   mds_kbdc_parse_error_t* error;
   mds_kbdc_parse_error_t** old_errors = NULL;
@@ -130,39 +154,33 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       
       if (!strcmp(line, "information"))
 	{
-	  mds_kbdc_tree_information_t* tree;
-	  fail_if (xcalloc(tree, 1, mds_kbdc_tree_information_t));
-	  line += strlen(line);
-	  *end = prev_end_char, prev_end_char = '\0';
-	  while (*line && (*line == ' '))
-	    line++;
-	  if (*line)
-	    {
-	      end = line + strlen(line);
-	      NEW_ERROR(1, ERROR, "extra token after ‘information’");
-	    }
-	  tree->type = MDS_KBDC_TREE_TYPE_INFORMATION;
-	  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)tree;
-	  tree_stack[stack_ptr + 1] = &(tree->inner);
-	  keyword_stack[stack_ptr++] = "information";
+	  NEW_NODE(information, INFORMATION);
+	  NO_PARAMETERS("information");
+	  NESTING("information");
 	}
       else if (!strcmp(line, "assumption"))
 	{
-	  mds_kbdc_tree_assumption_t* tree;
-	  fail_if (xcalloc(tree, 1, mds_kbdc_tree_assumption_t));
-	  line += strlen(line);
-	  *end = prev_end_char, prev_end_char = '\0';
-	  while (*line && (*line == ' '))
-	    line++;
-	  if (*line)
-	    {
-	      end = line + strlen(line);
-	      NEW_ERROR(1, ERROR, "extra token after ‘assumption’");
-	    }
-	  tree->type = MDS_KBDC_TREE_TYPE_ASSUMPTION;
-	  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)tree;
-	  tree_stack[stack_ptr + 1] = &(tree->inner);
-	  keyword_stack[stack_ptr++] = "assumption";
+	  NEW_NODE(assumption, ASSUMPTION);
+	  NO_PARAMETERS("assumption");
+	  NESTING("assumption");
+	}
+      else if (!strcmp(line, "return"))
+	{
+	  NEW_NODE(return, RETURN);
+	  NO_PARAMETERS("return");
+	  FLAT;
+	}
+      else if (!strcmp(line, "continue"))
+	{
+	  NEW_NODE(continue, CONTINUE);
+	  NO_PARAMETERS("continue");
+	  FLAT;
+	}
+      else if (!strcmp(line, "break"))
+	{
+	  NEW_NODE(break, BREAK);
+	  NO_PARAMETERS("break");
+	  FLAT;
 	}
       else if (!strcmp(line, "language"))     ;
       else if (!strcmp(line, "country"))      ;
@@ -173,9 +191,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       else if (!strcmp(line, "if"))           ;
       else if (!strcmp(line, "else"))         ;
       else if (!strcmp(line, "for"))          ;
-      else if (!strcmp(line, "return"))       ;
-      else if (!strcmp(line, "continue"))     ;
-      else if (!strcmp(line, "break"))        ;
       else if (!strcmp(line, "let"))          ;
       else if (!strcmp(line, "have"))         ;
       else if (!strcmp(line, "have_chars"))   ;
@@ -231,6 +246,10 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   mds_kbdc_tree_free(*result), *result = NULL;
   return errno = saved_errno, -1;
   
+#undef NO_PARAMETERS
+#undef FLAT
+#undef NESTING
+#undef NEW_NODE
 #undef NEW_ERROR
 #undef xasprintf
 }
