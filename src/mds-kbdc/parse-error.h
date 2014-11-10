@@ -23,6 +23,7 @@
 #include <stdio.h>
 
 
+
 /**
  * Not an error, simply a note about the previous error or warning
  */
@@ -137,6 +138,7 @@ void mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t** restrict these);
  * @param  this  The group of error structures
  */
 void mds_kbdc_parse_error_free_all(mds_kbdc_parse_error_t** restrict these);
+
 
 
 #endif
