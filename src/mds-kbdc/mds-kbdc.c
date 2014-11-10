@@ -39,11 +39,12 @@
 int main(int argc_, char** argv_)
 {
   mds_kbdc_parse_error_t** parse_errors;
+  mds_kbdc_tree_t* tree;
   
   argc = argc_;
   argv = argv_;
   
-  fail_if (parse_to_tree(argv[1], NULL, &parse_errors) < 0);
+  fail_if (parse_to_tree(argv[1], &tree, &parse_errors) < 0);
   if (parse_errors != NULL)
     {
       mds_kbdc_parse_error_t** errors = parse_errors;

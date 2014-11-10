@@ -42,14 +42,38 @@
 int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict result,
 		  mds_kbdc_parse_error_t*** restrict errors)
 {
+#define xasprintf(var, ...)  (asprintf(&(var), __VA_ARGS__) < 0 ? (var = NULL, -1) : 0)
+#define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)					\
+  if (errors_ptr + 1 >= errors_size)							\
+    {											\
+      errors_size = errors_size ? (errors_size << 1) : 2;				\
+      fail_if (xxrealloc(old_errors, *errors, errors_size, mds_kbdc_parse_error_t*));	\
+    }											\
+  fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));					\
+  (*errors)[errors_ptr + 0] = error;							\
+  (*errors)[errors_ptr + 1] = NULL;							\
+  errors_ptr++;										\
+  error->line  = line_i;								\
+  error->severity = MDS_KBDC_PARSE_ERROR_##SEVERITY;					\
+  error->error_is_in_file = ERROR_IS_IN_FILE;						\
+  error->start = (size_t)(line - source_code.lines[line_i]);				\
+  error->end   = (size_t)(end  - source_code.lines[line_i]);				\
+  fail_if ((error->pathname = strdup(pathname)) == NULL);				\
+  fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
+  fail_if (xasprintf(error->description, __VA_ARGS__))
+  
+  mds_kbdc_parse_error_t* error;
   mds_kbdc_parse_error_t** old_errors = NULL;
   char* pathname;
   source_code_t source_code;
   size_t errors_size = 0;
   size_t errors_ptr = 0;
   size_t line_i, line_n;
+  const char** keyword_stack = NULL;
+  size_t stack_ptr = 0;
   int saved_errno;
   
+  *result = NULL;
   *errors = NULL;
   source_code_initialise(&source_code);
   
@@ -83,6 +107,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   fail_if (read_source_lines(pathname, &source_code) < 0);
   /* TODO '\t':s should be expanded into ' ':s. */
   
+  fail_if (xmalloc(keyword_stack, source_code.line_count, const char*));
+  
   for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
     {
       char* line = source_code.lines[line_i];
@@ -97,68 +123,73 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       prev_end_char = *end;
       *end = '\0';
       
-      if (!strcmp(line, "information"))  ;
-      else if (!strcmp(line, "language"))  ;
-      else if (!strcmp(line, "country"))  ;
-      else if (!strcmp(line, "variant"))  ;
-      else if (!strcmp(line, "include"))  ;
-      else if (!strcmp(line, "function"))  ;
-      else if (!strcmp(line, "macro"))  ;
-      else if (!strcmp(line, "assumption"))  ;
-      else if (!strcmp(line, "if"))  ;
-      else if (!strcmp(line, "else"))  ;
-      else if (!strcmp(line, "for"))  ;
-      else if (!strcmp(line, "end"))  ;
-      else if (!strcmp(line, "return"))  ;
-      else if (!strcmp(line, "continue"))  ;
-      else if (!strcmp(line, "break"))  ;
-      else if (!strcmp(line, "let"))  ;
-      else if (!strcmp(line, "have"))  ;
-      else if (!strcmp(line, "have_chars"))  ;
-      else if (!strcmp(line, "have_range"))  ;
+      if      (!strcmp(line, "information"))  ;
+      else if (!strcmp(line, "language"))     ;
+      else if (!strcmp(line, "country"))      ;
+      else if (!strcmp(line, "variant"))      ;
+      else if (!strcmp(line, "include"))      ;
+      else if (!strcmp(line, "function"))     ;
+      else if (!strcmp(line, "macro"))        ;
+      else if (!strcmp(line, "assumption"))   ;
+      else if (!strcmp(line, "if"))           ;
+      else if (!strcmp(line, "else"))         ;
+      else if (!strcmp(line, "for"))          ;
+      else if (!strcmp(line, "return"))       ;
+      else if (!strcmp(line, "continue"))     ;
+      else if (!strcmp(line, "break"))        ;
+      else if (!strcmp(line, "let"))          ;
+      else if (!strcmp(line, "have"))         ;
+      else if (!strcmp(line, "have_chars"))   ;
+      else if (!strcmp(line, "have_range"))   ;
+      else if (!strcmp(line, "end"))
+	{
+	  char* original = line;
+	  if (stack_ptr == 0)
+	    {
+	      NEW_ERROR(1, ERROR, "stray ‘end’ statement");
+	      goto next;
+	    }
+	  *end = prev_end_char;
+	  stack_ptr--;
+	  line += 3;
+	  while (*line && (*line == ' '))
+	    line++;
+	  if (*line == '\0')
+	    {
+	      line = original;
+	      NEW_ERROR(1, ERROR, "expecting a keyword after ‘end’");
+	    }
+	  else if (!strcmp(line, keyword_stack[stack_ptr]))
+	    {
+	      NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
+	    }
+	}
       else if (strchr("\"<([", *line) || strchr(line, '('))  ;
       else
 	{
-	  mds_kbdc_parse_error_t* error;
-	  
-	  if (errors_ptr + 1 >= errors_size)
-	    {
-	      errors_size = errors_size ? (errors_size << 1) : 2;
-	      fail_if (xxrealloc(old_errors, *errors, errors_size, mds_kbdc_parse_error_t*));
-	    }
-	  
-	  fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));
-	  (*errors)[errors_ptr + 0] = error;
-	  (*errors)[errors_ptr + 1] = NULL;
-	  errors_ptr++;
-	  
-	  error->severity = MDS_KBDC_PARSE_ERROR_ERROR;
-	  error->error_is_in_file = 1;
-	  fail_if ((error->pathname = strdup(pathname)) == NULL);
-	  error->line  = line_i;
-	  error->start = (size_t)(line - source_code.lines[line_i]);
-	  error->end   = (size_t)(end  - source_code.lines[line_i]);
-	  fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);
-	  if (asprintf(&(error->description), "invalid keyword ‘%s’", line) < 0)
-	    {
-	      error->description = NULL;
-	      goto pfail;
-	    }
+	  NEW_ERROR(1, ERROR, "invalid keyword ‘%s’", line);
 	}
       
+    next:
       *end = prev_end_char;
     }
   
   free(pathname);
+  free(keyword_stack);
   source_code_destroy(&source_code);
   return 0;
   
  pfail:
   saved_errno = errno;
   free(pathname);
+  free(keyword_stack);
   source_code_destroy(&source_code);
   mds_kbdc_parse_error_free_all(old_errors);
   mds_kbdc_parse_error_free_all(*errors), *errors = NULL;
+  mds_kbdc_tree_free(*result), *result = NULL;
   return errno = saved_errno, -1;
+  
+#undef NEW_ERROR
+#undef xasprintf
 }
 
