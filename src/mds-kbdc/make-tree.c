@@ -141,30 +141,86 @@
   while (0)
 
 
-// CHARS_1
+#define CHARS(var)									\
+  do											\
+    {											\
+      if (too_few)									\
+	break;										\
+      line += strlen(line);								\
+      *end = prev_end_char, prev_end_char = '\0';					\
+      while (*line && (*line == ' '))							\
+	line++;										\
+      if (*line == '\0')								\
+	{										\
+	  line = original, end = line + strlen(line);					\
+	  NEW_ERROR(1, ERROR, "too few parameters");					\
+	  line = end, too_few = 1;							\
+	}										\
+      else										\
+	{										\
+	  char* arg_end = line;								\
+	  char* call_end = arg_end;							\
+	  int escape = 0, quote = 0;							\
+	  while (*arg_end)								\
+	    {										\
+	      char c = *arg_end++;							\
+	      if      (escape)               escape = 0;				\
+	      else if (arg_end <= call_end)  ;						\
+	      else if (c == '\\')							\
+		{									\
+		  escape = 0;								\
+		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end)); 	\
+		}									\
+	      else if (quote)                quote = (c != '"');			\
+	      else if (c == ' ')             break;					\
+	      else                           quote = (c == '"');			\
+	    }										\
+	  prev_end_char = *arg_end, *arg_end = '\0';					\
+	  fail_if ((node->var = strdup(line)) == NULL);					\
+	  end = line = arg_end;								\
+	}										\
+    }											\
+  while (0)
 
 
-// CHARS_2
+#define CHARS_END						\
+  while (*line && (*line == ' '))				\
+    line++;							\
+  do								\
+    if (*line)							\
+      {								\
+	NEW_ERROR(1, ERROR, "too many parameters");		\
+	error->end = strlen(source_code.lines[line_i]);		\
+      }								\
+  while (0)							\
 
 
-#define QUOTES_1(var)							\
-  {									\
-    line += strlen(line);						\
-    *end = prev_end_char;						\
-    while (*line && (*line == ' '))					\
-      line++;								\
-    if (*line && (*line != '"'))					\
-      {									\
-	char* arg_end = line;						\
-	while (*arg_end && (*arg_end != ' '))				\
-	  arg_end++;							\
-	NEW_ERROR(1, ERROR, "parameter must be in quotes");		\
-	error->end = (size_t)(arg_end - source_code.lines[line_i]);	\
-      }									\
-    *end = '\0';							\
-    line = original;							\
-  }									\
-  CHARS_1(var)
+#define QUOTES								\
+  do									\
+    {									\
+      char* line_ = line;						\
+      line += strlen(line);						\
+      *end = prev_end_char;						\
+      while (*line && (*line == ' '))					\
+	line++;								\
+      if (*line && (*line != '"'))					\
+	{								\
+	  char* arg_end = line;						\
+	  while (*arg_end && (*arg_end != ' '))				\
+	    arg_end++;							\
+	  NEW_ERROR(1, ERROR, "parameter must be in quotes");		\
+	  error->end = (size_t)(arg_end - source_code.lines[line_i]);	\
+	}								\
+      *end = '\0';							\
+      line = line_;							\
+    }									\
+  while (0)
+
+
+#define QUOTES_1(var)	\
+  QUOTES;		\
+  CHARS(var);		\
+  CHARS_END
 
 
 
@@ -237,6 +293,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       char* end;
       char prev_end_char;
       char* original;
+      int too_few = 0;
       
       while (*line && (*line == ' '))
 	line++;
@@ -321,13 +378,15 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       else if (!strcmp(line, "have_chars"))
 	{
 	  NEW_NODE(assumption_have_chars, ASSUMPTION_HAVE_CHARS);
-	  QUOTES_1(filename);
+	  QUOTES_1(chars);
 	  LEAF;
 	}
       else if (!strcmp(line, "have_range"))
 	{
 	  NEW_NODE(assumption_have_range, ASSUMPTION_HAVE_RANGE);
-	  CHARS_2(first, last);
+	  CHARS(first);
+	  CHARS(last);
+	  CHARS_END;
 	  LEAF;
 	}
       else if (!strcmp(line, "end"))
@@ -357,6 +416,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	;
       else
 	{
+	  /* TODO not a keyword if it contains special characters */
 	  NEW_ERROR(1, ERROR, "invalid keyword ‘%s’", line);
 	}
       
@@ -385,8 +445,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 
 
 #undef QUOTES_1
-#undef CHARS_2
-#undef CHARS_1
+#undef QUOTES
+#undef CHARS_END
+#undef CHARS
 #undef NAMES_1
 #undef NO_PARAMETERS
 #undef LEAF

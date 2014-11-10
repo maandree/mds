@@ -81,6 +81,20 @@ void source_code_free(source_code_t* restrict this);
 
 
 /**
+ * Find the end of a function call
+ * 
+ * @param   content  The code
+ * @param   offset   The index after the first character after the backslash
+ *                   that triggered this call
+ * @param   size     The length of `code`
+ * @return           The index of the character after the bracket that closes
+ *                   the function call (may be outside the code by one character),
+ *                   or `size` if the call do not end (that is, the code ends
+ *                   prematurely), or zero if there is no function call at `offset`
+ */
+size_t get_end_of_call(char* restrict content, size_t offset, size_t size) __attribute__((pure));
+
+/**
  * Read lines of a source file
  * 
  * @param   pathname     The pathname of the source file

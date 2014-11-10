@@ -145,7 +145,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
  *                   or `size` if the call do not end (that is, the code ends
  *                   prematurely), or zero if there is no function call at `offset`
  */
-static __attribute__((pure)) size_t get_end_of_call(char* restrict content, size_t offset, size_t size)
+size_t get_end_of_call(char* restrict content, size_t offset, size_t size)
 {
 #define C                content[ptr]
 #define r(lower, upper)  (((lower) <= C) && (C <= (upper)))
