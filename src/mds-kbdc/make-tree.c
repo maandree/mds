@@ -31,18 +31,49 @@
 
 
 
+/**
+ * Wrapper around `asprintf` that makes sure that first
+ * argument gets set to `NULL` on error and that zero is
+ * returned on success rather than the number of printed
+ * characters
+ * 
+ * @param   VAR:char**            The output parameter for the string
+ * @param   ...:const char*, ...  The format string and arguments
+ * @return  :int                  Zero on success, -1 on error
+ */
 #define xasprintf(VAR, ...)					\
   (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
 
 
-#define in_range(LOWER, C, UPPER)		\
-  (((LOWER) <= (C)) && ((C) <= (UPPER)))
+/**
+ * Check whether a value is inside a closed range
+ * 
+ * @param   LOWER:¿T?  The lower bound, inclusive
+ * @param   VALUE:¿T?  The value to test
+ * @param   UPPER:¿T?  The upper bound, inclusive
+ * @return  :int       1 if `LOWER` ≤ `VALUE` ≤ `UPPER`, otherwise 0
+ */
+#define in_range(LOWER, VALUE, UPPER)			\
+  (((LOWER) <= (VALUE)) && ((VALUE) <= (UPPER)))
 
 
+/**
+ * Check whether a character is a valid callable name character, forward slash is accepted
+ * 
+ * @param   C:char  The character
+ * @return  :int    Zero if `C` is a valid callable name character or a forward slash, otherwise 0
+ */
 #define is_name_char(C)									\
   (in_range('a', C, 'z') || in_range('A', C, 'Z') || strchr("0123456789_/", C))
 
 
+/**
+ * Add an error the to error list
+ * 
+ * @param  ERROR_IS_IN_FILE:int  Whether the error is in the layout code
+ * @param  SEVERITY:identifier   * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
+ * @param  ...:const char*, ...  Error description format string and arguments
+ */
 #define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)					\
   if (errors_ptr + 1 >= errors_size)							\
     {											\
@@ -63,23 +94,52 @@
   fail_if (xasprintf(error->description, __VA_ARGS__))
 
 
+/**
+ * Create a new node
+ * 
+ * @param  LOWERCASE:identifier  The keyword, for the node type, in lower case
+ * @param  UPPERCASE:identifier  The keyword, for the node type, in upper case
+ */
 #define NEW_NODE(LOWERCASE, UPPERCASE)				\
   mds_kbdc_tree_##LOWERCASE##_t* node;				\
   fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));	\
   node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE
 
 
+/**
+ * Update the tip of the tree stack with the current node
+ * and change the pointer at the tip to the pointer to the
+ * current node's down pointer
+ * 
+ * This is what should be done when a branch node has
+ * been created and should be added to the result tree
+ * 
+ * @param  KEYWORD:const char*  The keyword for the current node's type
+ */
 #define BRANCH(KEYWORD)					\
   *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;	\
   tree_stack[stack_ptr + 1] = &(node->inner);		\
   keyword_stack[stack_ptr++] = KEYWORD
 
 
+/**
+ * Update the tip of the tree stack with the current node
+ * and change the pointer at the tip to the pointer to the
+ * current node's next pointer
+ * 
+ * This is what should be done when a leaf node has been
+ * created and should be added to the result tree
+ */
 #define LEAF							\
   *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;		\
   tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next)
 
 
+/**
+ * Check that there are no tokens after a keyword
+ * 
+ * @param  KEYWORD:const char*  The keyword,
+ */
 #define NO_PARAMETERS(KEYWORD)						\
   line += strlen(line);							\
   *end = prev_end_char, prev_end_char = '\0';				\
@@ -94,6 +154,13 @@
   while (0)
 
 
+/**
+ * Take next parameter, which should be a name of a callable,
+ * and store it in the current node
+ * 
+ * @param  var:identifier  The name of the member variable, for the current
+ *                         node, where the parameter should be stored
+ */
 #define NAMES_1(var)								\
   line += strlen(line);								\
   *end = prev_end_char, prev_end_char = '\0';					\
@@ -141,6 +208,13 @@
   while (0)
 
 
+/**
+ * Take next parameter, which should be a string or numeral,
+ * and store it in the current node
+ * 
+ * @param  var:identifier  The name of the member variable, for the current
+ *                         node, where the parameter should be stored
+ */
 #define CHARS(var)									\
   do											\
     {											\
@@ -183,6 +257,9 @@
   while (0)
 
 
+/**
+ * Test that there are no more parameters
+ */
 #define CHARS_END						\
   while (*line && (*line == ' '))				\
     line++;							\
@@ -195,6 +272,9 @@
   while (0)							\
 
 
+/**
+ * Test that the next parameter is in quotes
+ */
 #define QUOTES								\
   do									\
     {									\
@@ -217,6 +297,13 @@
   while (0)
 
 
+/**
+ * Check that there is exactly one parameter, that it is in
+ * quotes, and add it to the current node
+ * 
+ * @param  var:identifier  The name of the member variable, for the current
+ *                         node, where the parameter should be stored
+ */
 #define QUOTES_1(var)	\
   QUOTES;		\
   CHARS(var);		\
