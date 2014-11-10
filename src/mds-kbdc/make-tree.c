@@ -146,13 +146,30 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  tree_stack[stack_ptr + 1] = &(tree->inner);
 	  keyword_stack[stack_ptr++] = "information";
 	}
+      else if (!strcmp(line, "assumption"))
+	{
+	  mds_kbdc_tree_assumption_t* tree;
+	  fail_if (xcalloc(tree, 1, mds_kbdc_tree_assumption_t));
+	  line += strlen(line);
+	  *end = prev_end_char, prev_end_char = '\0';
+	  while (*line && (*line == ' '))
+	    line++;
+	  if (*line)
+	    {
+	      end = line + strlen(line);
+	      NEW_ERROR(1, ERROR, "extra token after ‘assumption’");
+	    }
+	  tree->type = MDS_KBDC_TREE_TYPE_ASSUMPTION;
+	  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)tree;
+	  tree_stack[stack_ptr + 1] = &(tree->inner);
+	  keyword_stack[stack_ptr++] = "assumption";
+	}
       else if (!strcmp(line, "language"))     ;
       else if (!strcmp(line, "country"))      ;
       else if (!strcmp(line, "variant"))      ;
       else if (!strcmp(line, "include"))      ;
       else if (!strcmp(line, "function"))     ;
       else if (!strcmp(line, "macro"))        ;
-      else if (!strcmp(line, "assumption"))   ;
       else if (!strcmp(line, "if"))           ;
       else if (!strcmp(line, "else"))         ;
       else if (!strcmp(line, "for"))          ;
