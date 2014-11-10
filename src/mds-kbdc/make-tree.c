@@ -70,6 +70,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   size_t errors_ptr = 0;
   size_t line_i, line_n;
   const char** keyword_stack = NULL;
+  mds_kbdc_tree_t*** tree_stack = NULL;
   size_t stack_ptr = 0;
   int saved_errno;
   
@@ -107,7 +108,11 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   fail_if (read_source_lines(pathname, &source_code) < 0);
   /* TODO '\t':s should be expanded into ' ':s. */
   
+  /* Allocate stacks needed to parse the tree. */
   fail_if (xmalloc(keyword_stack, source_code.line_count, const char*));
+  fail_if (xmalloc(tree_stack, source_code.line_count + 1, mds_kbdc_tree_t**));
+  /* Create a node-slot for the tree root. */
+  *tree_stack = result;
   
   for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
     {
@@ -123,7 +128,24 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       prev_end_char = *end;
       *end = '\0';
       
-      if      (!strcmp(line, "information"))  ;
+      if (!strcmp(line, "information"))
+	{
+	  mds_kbdc_tree_information_t* tree;
+	  fail_if (xcalloc(tree, 1, mds_kbdc_tree_information_t));
+	  line += strlen(line);
+	  *end = prev_end_char, prev_end_char = '\0';
+	  while (*line && (*line == ' '))
+	    line++;
+	  if (*line)
+	    {
+	      end = line + strlen(line);
+	      NEW_ERROR(1, ERROR, "extra token after ‘information’");
+	    }
+	  tree->type = MDS_KBDC_TREE_TYPE_INFORMATION;
+	  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)tree;
+	  tree_stack[stack_ptr + 1] = &(tree->inner);
+	  keyword_stack[stack_ptr++] = "information";
+	}
       else if (!strcmp(line, "language"))     ;
       else if (!strcmp(line, "country"))      ;
       else if (!strcmp(line, "variant"))      ;
@@ -149,20 +171,21 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      NEW_ERROR(1, ERROR, "stray ‘end’ statement");
 	      goto next;
 	    }
-	  *end = prev_end_char;
+	  line += strlen(line);
+	  *end = prev_end_char, prev_end_char = '\0';
 	  stack_ptr--;
-	  line += 3;
 	  while (*line && (*line == ' '))
 	    line++;
 	  if (*line == '\0')
 	    {
-	      line = original;
+	      line = original, end = line + strlen(line);
 	      NEW_ERROR(1, ERROR, "expecting a keyword after ‘end’");
 	    }
-	  else if (!strcmp(line, keyword_stack[stack_ptr]))
+	  else if (strcmp(line, keyword_stack[stack_ptr]))
 	    {
 	      NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
 	    }
+	  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
 	}
       else if (strchr("\"<([", *line) || strchr(line, '('))  ;
       else
@@ -176,6 +199,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   
   free(pathname);
   free(keyword_stack);
+  free(tree_stack);
   source_code_destroy(&source_code);
   return 0;
   
@@ -183,6 +207,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   saved_errno = errno;
   free(pathname);
   free(keyword_stack);
+  free(tree_stack);
   source_code_destroy(&source_code);
   mds_kbdc_parse_error_free_all(old_errors);
   mds_kbdc_parse_error_free_all(*errors), *errors = NULL;
