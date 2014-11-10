@@ -65,11 +65,11 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   mds_kbdc_tree_##LOWERCASE##_t* node;				\
   fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));	\
   node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE
-#define NESTING(KEYWORD)					\
+#define BRANCH(KEYWORD)						\
   *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;		\
   tree_stack[stack_ptr + 1] = &(node->inner);			\
   keyword_stack[stack_ptr++] = KEYWORD
-#define FLAT							\
+#define LEAF							\
   *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;		\
   tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next)
 #define NO_PARAMETERS(KEYWORD)						\
@@ -156,31 +156,31 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	{
 	  NEW_NODE(information, INFORMATION);
 	  NO_PARAMETERS("information");
-	  NESTING("information");
+	  BRANCH("information");
 	}
       else if (!strcmp(line, "assumption"))
 	{
 	  NEW_NODE(assumption, ASSUMPTION);
 	  NO_PARAMETERS("assumption");
-	  NESTING("assumption");
+	  BRANCH("assumption");
 	}
       else if (!strcmp(line, "return"))
 	{
 	  NEW_NODE(return, RETURN);
 	  NO_PARAMETERS("return");
-	  FLAT;
+	  LEAF;
 	}
       else if (!strcmp(line, "continue"))
 	{
 	  NEW_NODE(continue, CONTINUE);
 	  NO_PARAMETERS("continue");
-	  FLAT;
+	  LEAF;
 	}
       else if (!strcmp(line, "break"))
 	{
 	  NEW_NODE(break, BREAK);
 	  NO_PARAMETERS("break");
-	  FLAT;
+	  LEAF;
 	}
       else if (!strcmp(line, "language"))     ;
       else if (!strcmp(line, "country"))      ;
@@ -247,8 +247,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   return errno = saved_errno, -1;
   
 #undef NO_PARAMETERS
-#undef FLAT
-#undef NESTING
+#undef LEAF
+#undef BRANCH
 #undef NEW_NODE
 #undef NEW_ERROR
 #undef xasprintf
