@@ -57,9 +57,10 @@ int main(int argc_, char** argv_)
 	}
       mds_kbdc_parse_error_free_all(parse_errors);
       if (fatal)
-	return 1;
+	return mds_kbdc_tree_free(tree), 1;
     }
   
+  mds_kbdc_tree_free(tree);
   return 0;
   
  pfail:

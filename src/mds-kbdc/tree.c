@@ -63,6 +63,9 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
 #define xfree(t, v)     (free(V(t, v)), V(t, v) = NULL)
 #define xdestroy(t, v)  (recursive ? (mds_kbdc_tree_destroy_(V(t, v), 1), xfree(t, v)) : (V(t, v) = NULL))
   
+  mds_kbdc_tree_t* prev = NULL;
+  mds_kbdc_tree_t* first = this;
+  
  again:
   if (this == NULL)
     return;
@@ -149,7 +152,10 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
       break;
     }
   
+  prev = this;
   this = this->next;
+  if (prev != first)
+    free(prev);
   goto again;
   
 #undef xdestroy
