@@ -678,6 +678,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       *end = prev_end_char;
     }
   
+  /* TODO check that the stack is empty */
+  
   free(pathname);
   free(keyword_stack);
   free(tree_stack);
