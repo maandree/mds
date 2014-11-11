@@ -96,7 +96,7 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
       break;
       
     case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE:
-      xfree(mds_kbdc_tree_assumption_have_t*, data);
+      xdestroy(mds_kbdc_tree_assumption_have_t*, data);
       break;
       
     case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_CHARS:

@@ -352,6 +352,70 @@
   while (0)
 
 
+/**
+ * Take next parameter, which should be a key combination or strings,
+ * and store it in the current node
+ * 
+ * @param  var:identifier  The name of the member variable, for the current
+ *                         node, where the parameter should be stored
+ */
+#define KEYS(var)									\
+  do											\
+    {											\
+      if (too_few)									\
+	break;										\
+      line += strlen(line);								\
+      *end = prev_end_char, prev_end_char = '\0';					\
+      while (*line && (*line == ' '))							\
+	line++;										\
+      if (*line == '\0')								\
+	{										\
+	  line = original, end = line + strlen(line);					\
+	  NEW_ERROR(1, ERROR, "too few parameters");					\
+	  line = end, too_few = 1;							\
+	}										\
+      else										\
+	{										\
+	  char* arg_end = line;								\
+	  char* call_end = arg_end;							\
+	  int escape = 0, quote = 0, triangle = (*arg_end == '<');			\
+	  while (*arg_end)								\
+	    {										\
+	      char c = *arg_end++                ;					\
+	      if      (escape)                   escape = 0;				\
+	      else if (arg_end <= call_end)      ;					\
+	      else if (c == '\\')							\
+		{									\
+		  escape = 0;								\
+		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));	\
+		}									\
+	      else if (quote)                    quote = (c != '"');			\
+	      else if (c == '\"')                quote = 1;				\
+	      else if (c == '>')                 triangle = 0;				\
+	      else if ((c == ' ') && !triangle)  break;					\
+	    }										\
+	  prev_end_char = *arg_end, *arg_end = '\0';					\
+	  if (*line == '<')								\
+	    {										\
+	      mds_kbdc_tree_keys_t* subnode;						\
+	      fail_if (xcalloc(subnode, 1, mds_kbdc_tree_keys_t));			\
+	      subnode->type = MDS_KBDC_TREE_TYPE_KEYS;					\
+	      node->var = (mds_kbdc_tree_t*)subnode;					\
+	      fail_if ((subnode->keys = strdup(line)) == NULL);				\
+	    }										\
+	  else										\
+	    {										\
+	      mds_kbdc_tree_string_t* subnode;						\
+	      fail_if (xcalloc(subnode, 1, mds_kbdc_tree_string_t));			\
+	      subnode->type = MDS_KBDC_TREE_TYPE_STRING;				\
+	      node->var = (mds_kbdc_tree_t*)subnode;					\
+	      fail_if ((subnode->string = strdup(line)) == NULL);			\
+	    }										\
+	  end = line = arg_end;								\
+	}										\
+    }											\
+  while (0)
+
 
 
 /**
@@ -559,7 +623,13 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  BRANCH("for");
 	}
       else if (!strcmp(line, "let"))          ; /* TODO */
-      else if (!strcmp(line, "have"))         ; /* TODO */
+      else if (!strcmp(line, "have"))
+	{
+	  NEW_NODE(assumption_have, ASSUMPTION_HAVE);
+	  KEYS(data);
+	  END;
+	  LEAF;
+	}
       else if (!strcmp(line, "have_chars"))
 	{
 	  NEW_NODE(assumption_have_chars, ASSUMPTION_HAVE_CHARS);
@@ -628,6 +698,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 
 
 
+#undef KEYS
 #undef TEST_FOR_KEYWORD
 #undef QUOTES_1
 #undef QUOTES
