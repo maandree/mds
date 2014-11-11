@@ -457,8 +457,53 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  NAMES_1(name);
 	  BRANCH("macro");
 	}
-      else if (!strcmp(line, "if"))           ;
-      else if (!strcmp(line, "else"))         ;
+      else if (!strcmp(line, "if"))
+	{
+	  NEW_NODE(if, IF);
+	  CHARS(condition);
+	  CHARS_END;
+	  BRANCH("if");
+	}
+      else if (!strcmp(line, "else"))
+	{
+	  if (stack_ptr == 0)
+	    {
+	      NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
+	      goto next;
+	    }
+	  line += strlen(line);
+	  *end = prev_end_char, prev_end_char = '\0';
+	  end = line + strlen(line);
+	  stack_ptr--;
+	  while (*line && (*line == ' '))
+	    line++;
+	  if (strcmp(keyword_stack[stack_ptr], "if"))
+	    {
+	      line = original, end = line + strlen(line);
+	      NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
+	    }
+	  else if (*line == '\0')
+	    {
+	      /* else */
+	      mds_kbdc_tree_if_t* node = &(tree_stack[stack_ptr][0]->if_);
+	      tree_stack[stack_ptr + 1] = &(node->otherwise);
+	      keyword_stack[stack_ptr++] = "if";
+	    }
+	  else if ((strstr(line, "if") == line) && ((line[3] == ' ') || (line[3] == '\0')))
+	    {
+	      /* else if */
+	      NEW_NODE(if, IF);
+	      tree_stack[stack_ptr][0]->if_.otherwise = (mds_kbdc_tree_t*)node;
+	      line += 2;
+	      CHARS(condition);
+	      CHARS_END;
+	      BRANCH("if");
+	    }
+	  else
+	    {
+	      NEW_ERROR(1, ERROR, "expecting nothing or ‘if’");
+	    }
+	}
       else if (!strcmp(line, "for"))          ;
       else if (!strcmp(line, "let"))          ;
       else if (!strcmp(line, "have"))         ;
@@ -480,7 +525,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	{
 	  if (stack_ptr == 0)
 	    {
-	      NEW_ERROR(1, ERROR, "stray ‘end’ statement");
+	      NEW_ERROR(1, ERROR, "runaway ‘end’ statement");
 	      goto next;
 	    }
 	  line += strlen(line);
