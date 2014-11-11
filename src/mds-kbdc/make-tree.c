@@ -310,6 +310,49 @@
   CHARS_END
 
 
+/**
+ * Check that the next word is a specific keyword
+ * 
+ * @parma  KEYWORD:const char*  The keyword
+ */
+#define TEST_FOR_KEYWORD(KEYWORD)							\
+  do											\
+    {											\
+      if (too_few)									\
+	break;										\
+      line += strlen(line);								\
+      *end = prev_end_char, prev_end_char = '\0';					\
+      while (*line && (*line == ' '))							\
+	line++;										\
+      if (*line == '\0')								\
+	{										\
+	  line = original, end = line + strlen(line);					\
+	  NEW_ERROR(1, ERROR, "too few parameters");					\
+	  line = end, too_few = 1;							\
+	}										\
+      else										\
+	{										\
+	  int ok = (strstr(line, KEYWORD) == line);					\
+	  line += strlen(KEYWORD);							\
+	  ok = ok && ((*line == '\0') || (*line == ' '));				\
+	  if (ok)									\
+	    {										\
+	      end = line;								\
+	      prev_end_char = *end, *end = '\0';					\
+	      break;									\
+	    }										\
+	  line -= strlen(KEYWORD);							\
+	  end = line;									\
+	  while (*end && (*end != ' '))							\
+	    end++;									\
+	  prev_end_char = *end, *end = '\0';						\
+	  NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", KEYWORD);			\
+	}										\
+    }											\
+  while (0)
+
+
+
 
 /**
  * Parse a file into a syntex tree
@@ -504,9 +547,19 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      NEW_ERROR(1, ERROR, "expecting nothing or ‘if’");
 	    }
 	}
-      else if (!strcmp(line, "for"))          ;
-      else if (!strcmp(line, "let"))          ;
-      else if (!strcmp(line, "have"))         ;
+      else if (!strcmp(line, "for"))
+	{
+	  NEW_NODE(for, FOR);
+	  CHARS(first);
+	  TEST_FOR_KEYWORD("to");
+	  CHARS(last);
+	  TEST_FOR_KEYWORD("as");
+	  CHARS(variable);
+	  CHARS_END;
+	  BRANCH("for");
+	}
+      else if (!strcmp(line, "let"))          ; /* TODO */
+      else if (!strcmp(line, "have"))         ; /* TODO */
       else if (!strcmp(line, "have_chars"))
 	{
 	  NEW_NODE(assumption_have_chars, ASSUMPTION_HAVE_CHARS);
@@ -545,7 +598,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
 	}
       else if (strchr("\"<([", *line) || strchr(line, '('))
-	;
+	; /* TODO */
       else
 	{
 	  /* TODO not a keyword if it contains special characters */
@@ -576,6 +629,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 
 
 
+#undef TEST_FOR_KEYWORD
 #undef QUOTES_1
 #undef QUOTES
 #undef CHARS_END
