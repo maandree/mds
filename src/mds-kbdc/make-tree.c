@@ -601,8 +601,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	; /* TODO */
       else
 	{
-	  /* TODO not a keyword if it contains special characters */
-	  NEW_ERROR(1, ERROR, "invalid keyword ‘%s’", line);
+	  NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
 	}
       
     next:
