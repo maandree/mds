@@ -260,7 +260,7 @@
 /**
  * Test that there are no more parameters
  */
-#define CHARS_END						\
+#define END						\
   while (*line && (*line == ' '))				\
     line++;							\
   do								\
@@ -307,7 +307,7 @@
 #define QUOTES_1(var)	\
   QUOTES;		\
   CHARS(var);		\
-  CHARS_END
+  END
 
 
 /**
@@ -504,7 +504,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	{
 	  NEW_NODE(if, IF);
 	  CHARS(condition);
-	  CHARS_END;
+	  END;
 	  BRANCH("if");
 	}
       else if (!strcmp(line, "else"))
@@ -539,7 +539,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      tree_stack[stack_ptr][0]->if_.otherwise = (mds_kbdc_tree_t*)node;
 	      line += 2;
 	      CHARS(condition);
-	      CHARS_END;
+	      END;
 	      BRANCH("if");
 	    }
 	  else
@@ -555,7 +555,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  CHARS(last);
 	  TEST_FOR_KEYWORD("as");
 	  CHARS(variable);
-	  CHARS_END;
+	  END;
 	  BRANCH("for");
 	}
       else if (!strcmp(line, "let"))          ; /* TODO */
@@ -571,7 +571,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  NEW_NODE(assumption_have_range, ASSUMPTION_HAVE_RANGE);
 	  CHARS(first);
 	  CHARS(last);
-	  CHARS_END;
+	  END;
 	  LEAF;
 	}
       else if (!strcmp(line, "end"))
@@ -631,7 +631,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef TEST_FOR_KEYWORD
 #undef QUOTES_1
 #undef QUOTES
-#undef CHARS_END
+#undef END
 #undef CHARS
 #undef NAMES_1
 #undef NO_PARAMETERS
