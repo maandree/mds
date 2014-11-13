@@ -90,7 +90,8 @@
   error->start = (size_t)(line - source_code.lines[line_i]);				\
   error->end   = (size_t)(end  - source_code.lines[line_i]);				\
   fail_if ((error->pathname = strdup(pathname)) == NULL);				\
-  fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
+  if (ERROR_IS_IN_FILE)									\
+    fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
   fail_if (xasprintf(error->description, __VA_ARGS__))
 
 
@@ -706,7 +707,18 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       *end = prev_end_char;
     }
   
-  /* TODO check that the stack is empty */
+  /* Check that all scopes have been popped. */
+  if (stack_ptr)
+    {
+      char* line = NULL;
+      char* end = NULL;
+      NEW_ERROR(0, ERROR, "premature end of file");
+      while (stack_ptr--)
+	{
+	  NEW_ERROR(0, NOTE, "missing ‘end %s’", keyword_stack[stack_ptr]);
+	  /* TODO from where? */
+	}
+    }
   
   free(pathname);
   free(keyword_stack);

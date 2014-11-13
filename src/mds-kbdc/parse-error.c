@@ -93,10 +93,15 @@ void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FIL
       abort();
       break;
     }
-  fprintf(output, "%s\n %s\n \033[01;32m", desc, code);
-  i = 0;
-  for (n = start; i < n; i++)  fputc(' ', output);
-  for (n = end;   i < n; i++)  fputc('^', output);
+  if (this->error_is_in_file)
+    {
+      fprintf(output, "%s\n %s\n \033[01;32m", desc, code);
+      i = 0;
+      for (n = start; i < n; i++)  fputc(' ', output);
+      for (n = end;   i < n; i++)  fputc('^', output);
+    }
+  else
+    fprintf(output, "%s\n", desc);
   fprintf(output, "\033[00m\n");
 }
 
