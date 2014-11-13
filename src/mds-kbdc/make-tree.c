@@ -260,7 +260,7 @@
 /**
  * Test that there are no more parameters
  */
-#define END						\
+#define END							\
   while (*line && (*line == ' '))				\
     line++;							\
   do								\
@@ -269,7 +269,7 @@
 	NEW_ERROR(1, ERROR, "too many parameters");		\
 	error->end = strlen(source_code.lines[line_i]);		\
       }								\
-  while (0)							\
+  while (0)
 
 
 /**
@@ -622,7 +622,35 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  END;
 	  BRANCH("for");
 	}
-      else if (!strcmp(line, "let"))          ; /* TODO */
+      else if (!strcmp(line, "let"))
+	{
+	  NEW_NODE(let, LET);
+	  CHARS(variable);
+	  TEST_FOR_KEYWORD(":");
+	  *end = prev_end_char;
+	  while (*line && (*line == ' '))
+	    line++;
+	  if (*line == '\0')
+	    {
+	      line = original, end = line + strlen(line), prev_end_char = '\0';
+	      NEW_ERROR(1, ERROR, "too few parameters");
+	      LEAF;
+	    }
+	  else if (*line != '{')
+	    {
+#define node subnode
+	      NEW_NODE(string, STRING);
+	      CHARS(string);
+#undef node
+	      node->value = (mds_kbdc_tree_t*)subnode;
+	      END;
+	      LEAF;
+	    }
+	  else
+	    {
+	      /* TODO */
+	    }
+	}
       else if (!strcmp(line, "have"))
 	{
 	  NEW_NODE(assumption_have, ASSUMPTION_HAVE);
