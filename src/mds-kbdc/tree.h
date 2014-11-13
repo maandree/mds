@@ -153,7 +153,7 @@
 /**
  * Keyboard layout syntax tree
  */
-union mds_kbdc_tree __attribute__((transparent));
+union mds_kbdc_tree __attribute__((transparent_union));
 
 /**
  * Keyboard layout syntax tree
