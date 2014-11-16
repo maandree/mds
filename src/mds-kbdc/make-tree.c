@@ -210,6 +210,16 @@
 
 
 /**
+ * Suppress the next `line += strlen(line)`
+ */
+#define NO_JUMP			\
+  *end = prev_end_char;		\
+  end = line;			\
+  prev_end_char = *end;		\
+  *end = '\0'
+
+
+/**
  * Take next parameter, which should be a string or numeral,
  * and store it in the current node
  * 
@@ -518,18 +528,16 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 		  in_array = 0;
 		  break;
 		}
-	      end = strchrnul(line, ' ');
-	      prev_end_char = *end;
-	      *end = '\0';
 	      {
 #define node subnode
 		NEW_NODE(string, STRING);
-		fail_if ((node->string = strdup(line)) == NULL);
+		NO_JUMP;
+		CHARS(string);
 		LEAF;
+		*end = prev_end_char;
+		line = end;
 #undef node
 	      }
-	      *end = prev_end_char;
-	      line = end;
 	    }
 	  if (*line == '\0')
 	    continue;
@@ -676,9 +684,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    {
 #define node subnode
 	      NEW_NODE(string, STRING);
-	      end = line;
-	      prev_end_char = *end;
-	      *end = '\0';
+	      NO_JUMP;
 	      CHARS(string);
 #undef node
 	      node->value = (mds_kbdc_tree_t*)subnode;
