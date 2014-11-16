@@ -676,6 +676,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    {
 #define node subnode
 	      NEW_NODE(string, STRING);
+	      end = line;
+	      prev_end_char = *end;
+	      *end = '\0';
 	      CHARS(string);
 #undef node
 	      node->value = (mds_kbdc_tree_t*)subnode;
