@@ -431,6 +431,99 @@
   while (0)
 
 
+/**
+ * Parse a sequence in a mapping
+ */
+#define SEQUENCE											\
+  do /* for(;;) */											\
+    {													\
+      while (*line && (*line == ' '))									\
+	line++;												\
+      if ((*line == '\0') || (*line == ':'))								\
+	break;												\
+      if (*line == '(')											\
+	{												\
+	  NEW_NODE(unordered, UNORDERED);								\
+	  node->loc_end = node->loc_start + 1;								\
+	  BRANCH(")");											\
+	  line++;											\
+	}												\
+      else if (*line == '[')										\
+	{												\
+	  NEW_NODE(alternation, ALTERNATION);								\
+	  node->loc_end = node->loc_start + 1;								\
+	  BRANCH("]");											\
+	  line++;											\
+	}												\
+      else if (*line == '.')										\
+	{												\
+	  NEW_NODE(nothing, NOTHING);									\
+	  node->loc_end = node->loc_start + 1;								\
+	  LEAF;												\
+	  line++;											\
+	}												\
+      else if (strchr("])", *line))									\
+	{												\
+	  end = line + 1;										\
+	  prev_end_char = *end, *end = '\0';								\
+	  if (stack_ptr == stack_orig)									\
+	    {												\
+	      NEW_ERROR(1, ERROR, "runaway ‘%s’", line);						\
+	    }												\
+	  else												\
+	    {												\
+	      stack_ptr--;										\
+	      if (strcmp(line, keyword_stack[stack_ptr]))						\
+		{											\
+		  NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);	\
+		}											\
+	      tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);				\
+	    }												\
+	  *end = prev_end_char;										\
+	  line++;											\
+	}												\
+      else if (*line == '<')										\
+	{												\
+	  NEW_NODE(keys, KEYS);										\
+	  NO_JUMP;											\
+	  /* TODO (keys); */										\
+	  LEAF;												\
+	  node->loc_end = (size_t)(line - source_code.lines[line_i]);					\
+	}												\
+      else												\
+	{												\
+	  NEW_NODE(string, STRING);									\
+	  NO_JUMP;											\
+	  CHARS(string);										\
+	  LEAF;												\
+	  node->loc_end = (size_t)(line - source_code.lines[line_i]);					\
+	}												\
+    }													\
+  while (1)
+
+
+/**
+ * Change the scopes created in `SEQUENCE` has all been popped
+ * 
+ * @param  stack_orig:size_t  The size of the stack when `SEQUENCE` was called
+ */
+#define SEQUENCE_FULLY_POPPED(stack_orig)						\
+  do											\
+    {											\
+      if (stack_ptr == stack_orig)							\
+	break;										\
+      end = line + 1;									\
+      NEW_ERROR(1, ERROR, "premature end of sequence");					\
+      for (; stack_ptr > stack_orig; stack_ptr--)					\
+	{										\
+	  NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);	\
+	  error->start = tree_stack[stack_ptr][0]->loc_start;				\
+	  error->end   = tree_stack[stack_ptr][0]->loc_end;				\
+	}										\
+    }											\
+  while (0)
+
+
 
 /**
  * Parse a file into a syntex tree
@@ -490,8 +583,20 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   /* TODO '\t':s should be expanded into ' ':s. */
   
   /* Allocate stacks needed to parse the tree. */
-  fail_if (xmalloc(keyword_stack, source_code.line_count, const char*));
-  fail_if (xmalloc(tree_stack, source_code.line_count + 1, mds_kbdc_tree_t**));
+  {
+    /* The maxium line-length is needed because lines can have there own stacking,
+     * like sequence mapping lines, additionally, let statements can have one array. */
+    size_t max_line_length = 0, cur_line_length;
+    for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
+      {
+	cur_line_length = strlen(source_code.lines[line_i]);
+	if (max_line_length < cur_line_length)
+	  max_line_length = cur_line_length;
+      }
+    
+    fail_if (xmalloc(keyword_stack, source_code.line_count + max_line_length, const char*));
+    fail_if (xmalloc(tree_stack, source_code.line_count + max_line_length + 1, mds_kbdc_tree_t**));
+  }
   /* Create a node-slot for the tree root. */
   *tree_stack = result;
   
@@ -752,7 +857,34 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
 	}
       else if (strchr("\"<([", *line) || strchr(line, '('))
-	; /* TODO */
+	{
+	  size_t stack_orig = stack_ptr + 1;
+#define node supernode
+#define inner sequence
+	  NEW_NODE(map, MAP);
+	  BRANCH(":");
+#undef inner
+#undef node
+	  SEQUENCE;
+	  SEQUENCE_FULLY_POPPED(stack_orig);
+	  stack_ptr--;
+	  *end = prev_end_char;
+	  if (*line++ != ':')
+	    continue;
+#define node supernode
+#define inner result
+	  BRANCH(":");
+#undef inner
+#undef node
+	  SEQUENCE;
+	  SEQUENCE_FULLY_POPPED(stack_orig);
+	  stack_ptr--;
+	  *end = prev_end_char;
+	  if (*line == '\0')
+	    continue;
+	  end = line + strlen(line), prev_end_char = *end;
+	  NEW_ERROR(1, ERROR, "too many parameters");
+	}
       else if (strchr("}", *line))
 	{
 	  NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
