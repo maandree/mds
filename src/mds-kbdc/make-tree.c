@@ -101,10 +101,13 @@
  * @param  LOWERCASE:identifier  The keyword, for the node type, in lower case
  * @param  UPPERCASE:identifier  The keyword, for the node type, in upper case
  */
-#define NEW_NODE(LOWERCASE, UPPERCASE)				\
-  mds_kbdc_tree_##LOWERCASE##_t* node;				\
-  fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));	\
-  node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE
+#define NEW_NODE(LOWERCASE, UPPERCASE)					\
+  mds_kbdc_tree_##LOWERCASE##_t* node;					\
+  fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));		\
+  node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE;				\
+  node->loc_line  = line_i;						\
+  node->loc_start = (size_t)(line - source_code.lines[line_i]);		\
+  node->loc_end   = (size_t)(end  - source_code.lines[line_i])
 
 
 /**
@@ -696,6 +699,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      NEW_NODE(array, ARRAY);
 #define inner elements
 	      BRANCH("}");
+	      node->loc_end = node->loc_start + 1;
 #undef inner
 #undef node
 	      in_array = 1;
@@ -765,15 +769,19 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       char* end = NULL;
       NEW_ERROR(0, ERROR, "premature end of file");
       while (stack_ptr--)
-	/* TODO from where? */
-	if (!strcmp(keyword_stack[stack_ptr], "}"))
-	  {
-	    NEW_ERROR(0, NOTE, "missing ‘%s’", keyword_stack[stack_ptr]);
-	  }
-	else
-	  {
-	    NEW_ERROR(0, NOTE, "missing ‘end %s’", keyword_stack[stack_ptr]);
-	  }
+	{
+	  line_i = tree_stack[stack_ptr][0]->loc_line;
+	  line = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_start;
+	  end  = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_end;
+	  if (!strcmp(keyword_stack[stack_ptr], "}"))
+	    {
+	      NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
+	    }
+	  else
+	    {
+	      NEW_ERROR(1, NOTE, "missing associated ‘end %s’", keyword_stack[stack_ptr]);
+	    }
+	}
     }
   
   free(pathname);

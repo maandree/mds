@@ -170,8 +170,16 @@ typedef union mds_kbdc_tree mds_kbdc_tree_t;
  * It defines:
  * -  int type;            -- Integer that specifies which structure is used
  * -  mds_kbdc_tree_t*;    -- The next node in the tree, at the same level; a sibling
+ * -  loc_line;            -- The line in the source code where this is found
+ * -  loc_start;           -- The first byte in the source code where this is found, inclusive
+ * -  loc_end;             -- The last byte in the source code where this is found, exclusive
  */
-#define MDS_KBDC_TREE_COMMON  int type; mds_kbdc_tree_t* next
+#define MDS_KBDC_TREE_COMMON  \
+  int type;		      \
+  mds_kbdc_tree_t* next;      \
+  size_t loc_line;	      \
+  size_t loc_start;	      \
+  size_t loc_end
 
 /**
  * This macro is used in this header file, and is then
