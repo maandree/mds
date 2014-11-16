@@ -45,6 +45,7 @@ int main(int argc_, char** argv_)
   argv = argv_;
   
   fail_if (parse_to_tree(argv[1], &tree, &parse_errors) < 0);
+  mds_kbdc_tree_print(tree, stderr);
   if (parse_errors != NULL)
     {
       mds_kbdc_parse_error_t** errors = parse_errors;
@@ -57,7 +58,7 @@ int main(int argc_, char** argv_)
 	}
       mds_kbdc_parse_error_free_all(parse_errors);
       if (fatal)
-	return mds_kbdc_tree_print(tree, stderr), mds_kbdc_tree_free(tree), 1;
+	return mds_kbdc_tree_free(tree), 1;
     }
   
   mds_kbdc_tree_free(tree);

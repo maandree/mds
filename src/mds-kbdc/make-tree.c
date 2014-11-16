@@ -935,6 +935,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #define node supernode
 #define inner sequence
 	  NEW_NODE(map, MAP); /* FIXME memory leak */
+	  node->loc_end = node->loc_start;
 	  BRANCH(":");
 #undef inner
 #undef node
