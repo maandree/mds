@@ -539,8 +539,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef node
 	      }
 	    }
-	  if (*line == '\0')
-	    continue;
+	  continue;
 	}
       else if (!strcmp(line, "information"))
 	{
