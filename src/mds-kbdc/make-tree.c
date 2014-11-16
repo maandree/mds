@@ -440,7 +440,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   const char** keyword_stack = NULL;
   mds_kbdc_tree_t*** tree_stack = NULL;
   size_t stack_ptr = 0;
-  int saved_errno;
+  int saved_errno, in_array = 0;
   
   *result = NULL;
   *errors = NULL;
@@ -499,7 +499,42 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       *end = '\0';
       original = line;
       
-      if (!strcmp(line, "information"))
+    redo:
+      if (in_array)
+	{
+	  for (;;)
+	    {
+	      while (*line && (*line == ' '))
+		line++;
+	      if (*line == '\0')
+		break;
+	      if (*line == '}')
+		{
+		  line++;
+		  end = line + strlen(line);
+		  END;
+		  line = end, prev_end_char = '\0';
+		  stack_ptr--;
+		  in_array = 0;
+		  break;
+		}
+	      end = strchrnul(line, ' ');
+	      prev_end_char = *end;
+	      *end = '\0';
+	      {
+#define node subnode
+		NEW_NODE(string, STRING);
+		fail_if ((node->string = strdup(line)) == NULL);
+		LEAF;
+#undef node
+	      }
+	      *end = prev_end_char;
+	      line = end;
+	    }
+	  if (*line == '\0')
+	    continue;
+	}
+      else if (!strcmp(line, "information"))
 	{
 	  NEW_NODE(information, INFORMATION);
 	  NO_PARAMETERS("information");
@@ -649,7 +684,15 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    }
 	  else
 	    {
-	      /* TODO */
+#define node subnode
+	      NEW_NODE(array, ARRAY);
+#define inner elements
+	      BRANCH("}");
+#undef inner
+#undef node
+	      in_array = 1;
+	      line++;
+	      goto redo;
 	    }
 	}
       else if (!strcmp(line, "have"))
@@ -714,10 +757,15 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       char* end = NULL;
       NEW_ERROR(0, ERROR, "premature end of file");
       while (stack_ptr--)
-	{
-	  NEW_ERROR(0, NOTE, "missing ‘end %s’", keyword_stack[stack_ptr]);
-	  /* TODO from where? */
-	}
+	/* TODO from where? */
+	if (!strcmp(keyword_stack[stack_ptr], "}"))
+	  {
+	    NEW_ERROR(0, NOTE, "missing ‘%s’", keyword_stack[stack_ptr]);
+	  }
+	else
+	  {
+	    NEW_ERROR(0, NOTE, "missing ‘end %s’", keyword_stack[stack_ptr]);
+	  }
     }
   
   free(pathname);
