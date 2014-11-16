@@ -753,6 +753,10 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	}
       else if (strchr("\"<([", *line) || strchr(line, '('))
 	; /* TODO */
+      else if (strchr("}", *line))
+	{
+	  NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
+	}
       else
 	{
 	  NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
