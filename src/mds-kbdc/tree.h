@@ -20,6 +20,8 @@
 
 
 #include <stddef.h>
+#include <stdio.h>
+#include <unistd.h>
 
 
 
@@ -705,6 +707,15 @@ void mds_kbdc_tree_destroy(mds_kbdc_tree_t* restrict this);
  * @param  this  The tree node
  */
 void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this);
+
+
+/**
+ * Print a tree into a file
+ * 
+ * @param  this    The tree node
+ * @param  output  The output file
+ */
+void mds_kbdc_tree_print(mds_kbdc_tree_t* restrict this, FILE* output);
 
 
 

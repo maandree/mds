@@ -455,6 +455,56 @@
 
 
 /**
+ * Take next parameter, which should be a key combination,
+ * and store it in the current node
+ * 
+ * @param  var:identifier  The name of the member variable, for the current
+ *                         node, where the parameter should be stored
+ */
+#define PURE_KEYS(var)									\
+  do											\
+    {											\
+      if (too_few)									\
+	break;										\
+      line += strlen(line);								\
+      *end = prev_end_char, prev_end_char = '\0';					\
+      while (*line && (*line == ' '))							\
+	line++;										\
+      if (*line == '\0')								\
+	{										\
+	  line = original, end = line + strlen(line);					\
+	  NEW_ERROR(1, ERROR, "too few parameters");					\
+	  line = end, too_few = 1;							\
+	}										\
+      else										\
+	{										\
+	  char* arg_end = line;								\
+	  char* call_end = arg_end;							\
+	  int escape = 0, quote = 0, triangle = (*arg_end == '<');			\
+	  while (*arg_end)								\
+	    {										\
+	      char c = *arg_end++                ;					\
+	      if      (escape)                   escape = 0;				\
+	      else if (arg_end <= call_end)      ;					\
+	      else if (c == '\\')							\
+		{									\
+		  escape = 0;								\
+		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));	\
+		}									\
+	      else if (quote)                    quote = (c != '"');			\
+	      else if (c == '\"')                quote = 1;				\
+	      else if (c == '>')                 triangle = 0;				\
+	      else if ((c == ' ') && !triangle)  break;					\
+	    }										\
+	  prev_end_char = *arg_end, *arg_end = '\0';					\
+	  fail_if ((node->var = strdup(line)) == NULL);					\
+	  end = line = arg_end;				       				\
+	}										\
+    }											\
+  while (0)
+
+
+/**
  * Parse a sequence in a mapping
  */
 #define SEQUENCE											\
@@ -509,7 +559,7 @@
 	{												\
 	  NEW_NODE(keys, KEYS);										\
 	  NO_JUMP;											\
-	  /* TODO (keys); */										\
+	  PURE_KEYS(keys);										\
 	  LEAF;												\
 	  node->loc_end = (size_t)(line - source_code.lines[line_i]);					\
 	}												\
@@ -802,6 +852,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  NEW_NODE(let, LET);
 	  CHARS(variable);
 	  TEST_FOR_KEYWORD(":");
+	  LEAF;
 	  *end = prev_end_char;
 	  while (*line && (*line == ' '))
 	    line++;
@@ -809,7 +860,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    {
 	      line = original, end = line + strlen(line), prev_end_char = '\0';
 	      NEW_ERROR(1, ERROR, "too few parameters");
-	      LEAF;
 	    }
 	  else if (*line != '{')
 	    {
@@ -820,12 +870,11 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef node
 	      node->value = (mds_kbdc_tree_t*)subnode;
 	      END;
-	      LEAF;
 	    }
 	  else
 	    {
 #define node subnode
-	      NEW_NODE(array, ARRAY);
+	      NEW_NODE(array, ARRAY); /* FIXME memory leak */
 #define inner elements
 	      BRANCH("}");
 	      node->loc_end = node->loc_start + 1;
@@ -885,7 +934,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  size_t stack_orig = stack_ptr + 1;
 #define node supernode
 #define inner sequence
-	  NEW_NODE(map, MAP);
+	  NEW_NODE(map, MAP); /* FIXME memory leak */
 	  BRANCH(":");
 #undef inner
 #undef node
@@ -964,6 +1013,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 
 
 
+#undef SEQUENCE_FULLY_POPPED
+#undef SEQUENCE
+#undef PURE_KEYS
 #undef KEYS
 #undef TEST_FOR_KEYWORD
 #undef QUOTES_1
@@ -979,4 +1031,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef is_name_char
 #undef in_range
 #undef xasprintf
+#undef PRINT_STACK
+#undef DEBUG_PROC
 
