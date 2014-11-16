@@ -30,6 +30,29 @@
 #include <stdio.h>
 
 
+#ifndef DEBUG
+# define DEBUG_PROC(statements)
+#else
+# define DEBUG_PROC(statements)  statements
+#endif
+
+
+/**
+ * Print the current keyword stack, this is intended to
+ * as a compiler debugging feature and should be used from
+ * inside `DEBUG_PROC`
+ */
+#define PRINT_STACK					\
+  do							\
+    {							\
+      size_t i = stack_ptr;				\
+      fprintf(stderr, "stack {\n");			\
+      while (i--)					\
+	fprintf(stderr, "  %s\n", keyword_stack[i]);	\
+      fprintf(stderr, "}\n");				\
+    }							\
+  while (0)
+
 
 /**
  * Wrapper around `asprintf` that makes sure that first
@@ -514,8 +537,9 @@
 	break;										\
       end = line + 1;									\
       NEW_ERROR(1, ERROR, "premature end of sequence");					\
-      for (; stack_ptr > stack_orig; stack_ptr--)					\
+      while (stack_ptr > stack_orig)							\
 	{										\
+	  stack_ptr--;									\
 	  NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);	\
 	  error->start = tree_stack[stack_ptr][0]->loc_start;				\
 	  error->end   = tree_stack[stack_ptr][0]->loc_end;				\
