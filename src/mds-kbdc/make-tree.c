@@ -318,7 +318,7 @@
 	      else if (arg_end <= call_end)  ;						\
 	      else if (c == '\\')							\
 		{									\
-		  escape = 0;								\
+		  escape = 1;								\
 		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end)); 	\
 		}									\
 	      else if (quote)                quote = (c != '"');			\
@@ -462,7 +462,7 @@
 	      else if (arg_end <= call_end)      ;					\
 	      else if (c == '\\')							\
 		{									\
-		  escape = 0;								\
+		  escape = 1;								\
 		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));	\
 		}									\
 	      else if (quote)                    quote = (c != '"');			\
@@ -523,7 +523,7 @@
 	      else if (arg_end <= call_end)      ;					\
 	      else if (c == '\\')							\
 		{									\
-		  escape = 0;								\
+		  escape = 1;								\
 		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));	\
 		}									\
 	      else if (quote)                    quote = (c != '"');			\
