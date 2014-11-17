@@ -93,7 +93,7 @@
 /**
  * Pointer to the beginning of the current line
  */
-#define LINE  \
+#define LINE			\
   (source_code.lines[line_i])
 
 
@@ -101,7 +101,7 @@
  * Update the tip of the stack to point to the address
  * of the current stack's tip's `next`-member
  */
-#define NEXT  \
+#define NEXT							\
   tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next)
 
 
