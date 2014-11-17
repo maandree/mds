@@ -73,7 +73,8 @@ void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FIL
   
   /* Convert bytes count to character count for the code position */
   for (i = 0, n = this->start; i < n; i++)
-    start++;
+    if ((code[i] & 0xC0) != 0x80)
+      start++;
   for (n = this->end; i < n; i++)
     if ((code[i] & 0xC0) != 0x80)
       end++;
