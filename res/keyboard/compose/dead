@@ -886,8 +886,8 @@ composite("⇧" "^" "⇮")
 <dead compose> ("o" "∬") : "∯"
 <dead compose> ("o" "∭") : "∰"
 <dead compose> (["→" "-"] "∫") : "∱"
-<dead compose> ("<" "∮" : "∲")
-<dead compose> (">" "∮" : "∳")
+<dead compose> ("<" "∮") : "∲"
+<dead compose> (">" "∮") : "∳"
 <dead compose> ("/" ":") : "∴"
 <dead compose> ("\\" ":") : "∵"
 <dead compose> ":" <space> : "∶"
