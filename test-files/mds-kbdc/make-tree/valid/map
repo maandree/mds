@@ -1,0 +1,112 @@
+"a"
+"b" : "c"
+"1" : "2" "3"
+"x" "y" : "X" "Y"
+"z" : "V" "W"
+<dead compose> "f" "s" : "ſ"
+<dead compose> ("<" "=") : "≤"
+<dead compose> "N" ["G" "g"] : "Ŋ"
+<dead compose> (["a" "b" .] "c") : "d"
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 0-3) ‘"a"’)
+#   )
+#   (.result nil)
+# )
+# (map (@ 2 0-0)
+#   (.sequence
+#     (string (@ 2 0-3) ‘"b"’)
+#   )
+#   (.result
+#     (string (@ 2 6-9) ‘"c"’)
+#   )
+# )
+# (map (@ 3 0-0)
+#   (.sequence
+#     (string (@ 3 0-3) ‘"1"’)
+#   )
+#   (.result
+#     (string (@ 3 6-9) ‘"2"’)
+#     (string (@ 3 10-13) ‘"3"’)
+#   )
+# )
+# (map (@ 4 0-0)
+#   (.sequence
+#     (string (@ 4 0-3) ‘"x"’)
+#     (string (@ 4 4-7) ‘"y"’)
+#   )
+#   (.result
+#     (string (@ 4 10-13) ‘"X"’)
+#     (string (@ 4 14-17) ‘"Y"’)
+#   )
+# )
+# (map (@ 5 0-0)
+#   (.sequence
+#     (string (@ 5 0-3) ‘"z"’)
+#   )
+#   (.result
+#     (string (@ 5 6-9) ‘"V"’)
+#     (string (@ 5 10-13) ‘"W"’)
+#   )
+# )
+# (map (@ 6 0-0)
+#   (.sequence
+#     (keys (@ 6 0-14) ‘<dead compose>’)
+#     (string (@ 6 15-18) ‘"f"’)
+#     (string (@ 6 19-22) ‘"s"’)
+#   )
+#   (.result
+#     (string (@ 6 25-29) ‘"ſ"’)
+#   )
+# )
+# (map (@ 7 0-0)
+#   (.sequence
+#     (keys (@ 7 0-14) ‘<dead compose>’)
+#     (unordered (@ 7 15-16)
+#       (.inner
+#         (string (@ 7 16-19) ‘"<"’)
+#         (string (@ 7 20-23) ‘"="’)
+#       )
+#     )
+#   )
+#   (.result
+#     (string (@ 7 27-32) ‘"≤"’)
+#   )
+# )
+# (map (@ 8 0-0)
+#   (.sequence
+#     (keys (@ 8 0-14) ‘<dead compose>’)
+#     (string (@ 8 15-18) ‘"N"’)
+#     (alternation (@ 8 19-20)
+#       (.inner
+#         (string (@ 8 20-23) ‘"G"’)
+#         (string (@ 8 24-27) ‘"g"’)
+#       )
+#     )
+#   )
+#   (.result
+#     (string (@ 8 31-35) ‘"Ŋ"’)
+#   )
+# )
+# (map (@ 9 0-0)
+#   (.sequence
+#     (keys (@ 9 0-14) ‘<dead compose>’)
+#     (unordered (@ 9 15-16)
+#       (.inner
+#         (alternation (@ 9 16-17)
+#           (.inner
+#             (string (@ 9 17-20) ‘"a"’)
+#             (string (@ 9 21-24) ‘"b"’)
+#             (nothing (@ 9 25-26))
+#           )
+#         )
+#         (string (@ 9 28-31) ‘"c"’)
+#       )
+#     )
+#   )
+#   (.result
+#     (string (@ 9 35-38) ‘"d"’)
+#   )
+# )
+

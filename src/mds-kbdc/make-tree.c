@@ -261,6 +261,15 @@
 
 
 /**
+ * Check whether a character ends a strings, whilst not being being a quote
+ * 
+ * @param  c:char  The character
+ */
+#define IS_END(c)		\
+  strchr("([{< >}])", c)
+
+
+/**
  * Take next parameter, which should be a string or numeral,
  * and store it in the current node
  * 
@@ -298,7 +307,7 @@
 		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end)); 	\
 		}									\
 	      else if (quote)                quote = (c != '"');			\
-	      else if (c == ' ')             { arg_end--; break; }			\
+	      else if (IS_END(c))            { arg_end--; break; }			\
 	      else                           quote = (c == '"');			\
 	    }										\
 	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
@@ -444,7 +453,7 @@
 	      else if (quote)                    quote = (c != '"');			\
 	      else if (c == '\"')                quote = 1;				\
 	      else if (c == '>')                 triangle = 0;				\
-	      else if ((c == ' ') && !triangle)  { arg_end--; break; }			\
+	      else if (IS_END(c) && !triangle)  { arg_end--; break; }			\
 	    }										\
 	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
 	  if (*line == '<')								\
@@ -521,6 +530,7 @@
 #define SEQUENCE											\
   do /* for(;;) */											\
     {													\
+      *end = prev_end_char;										\
       while (*line && (*line == ' '))									\
 	line++;												\
       if ((*line == '\0') || (*line == ':'))								\
@@ -972,21 +982,24 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  size_t stack_orig = stack_ptr + 1;
 #define node supernode
 #define inner sequence
-	  NEW_NODE(map, MAP); /* FIXME memory leak */
+	  NEW_NODE(map, MAP);
 	  node->loc_end = node->loc_start;
 	  BRANCH(":");
 #undef inner
 #undef node
 	  SEQUENCE;
 	  SEQUENCE_FULLY_POPPED(stack_orig);
+#define node supernode
+#define inner result
 	  stack_ptr--;
 	  *end = prev_end_char;
 	  while (*line && (*line == ' '))
 	    line++;
 	  if (*line++ != ':')
-	    continue; /* Not an error in macros. */
-#define node supernode
-#define inner result
+	    {
+	      LEAF;
+	      continue; /* Not an error in macros. */
+	    }
 	  BRANCH(":");
 #undef inner
 #undef node
@@ -996,6 +1009,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  *end = prev_end_char;
 	  while (*line && (*line == ' '))
 	    line++;
+#define node supernode
+	  LEAF;
+#undef node
 	  if (*line == '\0')
 	    continue;
 	  end = line + strlen(line), prev_end_char = *end;
@@ -1072,6 +1088,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef QUOTES
 #undef END
 #undef CHARS
+#undef IS_END
+#undef NO_JUMP
 #undef NAMES_1
 #undef NO_PARAMETERS
 #undef LEAF
