@@ -63,6 +63,7 @@ Texts. A copy of the license is included in the section entitled
 * libmdsserver::                    Overview of @command{libmdsserver}.
 * mds-base.o::                      Overview of @file{mds-base.o}.
 * Keyboard Codes::                  Scancodes and keycodes.
+* Keyboard Layouts::                Writing and compiling keyboard layouts.
 * Discussion::                      Discussion on display server-architecture.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
@@ -2415,7 +2416,7 @@ Front (historical)
 @item greek
 Greek (historical)
 @item compose
-Compose (rare, it is usally a dead key)
+Compose (rare, it is usually a dead key)
 @end table
 Any key that has been locked should be prefix with
 @code{+}, if the key has been locked by nullified
@@ -2499,12 +2500,12 @@ Front (historical)
 @item greek
 Greek (historical)
 @item compose
-Compose (usally a dead key)
+Compose (usually a dead key)
 @item hexcompose
-Hex-Compose (usally a dead key)
+Hex-Compose (usually a dead key)
 (Used to create aribitrary characters.)
 @item longhexcompose
-Long Hex-Compose (usally a dead key)
+Long Hex-Compose (usually a dead key)
 (Variant of hexcompose for longer codepoints.)
 @item modelock
 Mode Lock
@@ -5115,6 +5116,216 @@ Right @kbd{super} key
 
 
 
+@node Keyboard Layouts
+@chapter Keyboard Layouts
+
+Keyboard layouts as compiled from one or more files.
+When compiling a layout from multiple files, it is
+important that the files are specified in the correct
+order. The general rule is that the layout file,
+for example the Swedish QWERTY-keyboard, is specified
+first and is followed by add-ons such as the compose
+table and layout modifiers. @command{mds-kbdc} is
+used to compile layouts.
+
+Installed keyboard layout files are located in
+@file{/usr/share/mds/keyboard}.@footnote{If you are
+hacking in the source tree, you will find this under
+@file{res/keyboard}.} Layouts are located in the
+subdirectory @file{layout}, modifiers are located in
+the subdirectory @file{mods} and compose tables are
+located in the subdirectory @file{compose}.
+@command{mds-kbdc} prefixes @file{/usr/share/mds/keyboard}
+unless the specifed files starts with @file{/}, @file{./}
+or @file{../}. Dead keys are implemented by compose tables
+and not in the layouts.
+
+@menu
+* Keyboard Layout Syntax::                    How to write your how layouts.
+@end menu
+
+
+
+@node Keyboard Layout Syntax
+@section Keyboard Layout Syntax
+
+Similar to the C programming language, keyboard layout
+files are parsed from the top down. This means that any
+function or macro can only be used from lines beload
+the definition of said callable. However, the order of
+the mapping statements themself, in respect to each
+other, does not matter. Additionally, the layout files
+are parsed line by line, and leading whitespace is ignored.
+Comment can be started with a #-character and end at the
+end of the line. It is important to know that modifiers
+like @kbd{shift} and @kbd{control} needs to be mapped from
+a keycode, this and similar that many keyboards have in
+common, except dead key composition and compose sequences,
+is already available in the @file{layout/common} directory
+and can be included from the layout file. Compositions are
+implement in the @file{compose} directory and should be
+selected by the user at compile-time. Keyboard layout files
+must be written in UTF-8 (without UTF-8 BOM) and with
+line feeds for new lines.
+
+@menu
+* Mapping Statements::                        Mapping keycodes to logical keys and text.
+* Sequence Mapping::                          Implementing dead keys and compositions.
+@end menu
+
+
+
+@node Mapping Statements
+@subsection Mapping Statements
+
+The most fundamental part of the layout files are mapping
+statements. These specify which keycode the keys have
+and what happens when certain keys pressed, combined or
+pressed and a sequence. If we want to map keycode 57 to be
+space key we write
+
+@example
+<keycode 57> : <space>
+@end example
+
+but then we also want the space key to product a blank
+space when we are writting so we add
+
+@example
+<space> : " "
+@end example
+
+giving us
+
+@example
+<keycode 57> : <space>
+<space> : " "
+@end example
+
+Because the order of the mapping statements does not
+matter we can just as well write
+
+@example
+<space> : " "
+<keycode 57> : <space>
+@end example
+
+@code{" "} represents a text string with one blank
+space, but it is possible to have multiple characters.
+
+We want to extend this to @kbd{altgr+space} producing
+a no-break space, we can add either of the lines
+
+@example
+<altgr space> : "\u00A0" # no-break space (# comment)
+<altgr keycode 57> : "\u00A0" # no-break space
+@end example
+
+However, we also need a mapping to @kbd{altgr}:
+
+@example
+<keycode 100> : <altgr>
+@end example
+
+If we want to add a mapping to @kbd{ultra} from
+@kbd{altgr+menu} we can write
+
+@example
+<keycode 127> : <menu>
+<altgr menu> : <-altgr ultra>
+@end example
+
+@code{-altgr} means that @kbd{altgr} should
+not be reported as held down.
+
+As can be seen in these examples it is not
+possible to distinguish between modifiers
+and keys. It is up to the keyboard layout
+server and keyboard layout compiler to
+know this. However, it is defined in the
+keyboard layout files whether modifiers keys
+are lock keys or not. To map the keycode
+58 to @kbd{caps lock} write
+
+@example
+<keycode 58> : <caps lock>
+@end example
+
+But if you do not want it be a lock key,
+but instead be required to be held down,
+similar to how is normal for @kbd{shift},
+instead write
+
+@example
+<keycode 58> : <caps>
+@end example
+
+Any modifier may be a lock key.
+
+Another, just as important, use of mappings
+to is map letter keys. Unlike control keys
+like space and shift, there are no predefined
+letters@footnote{With letters with mean any
+character other than space.}. Therefore the
+letter is prefixed with the word `letter'.
+For example:
+
+@example
+<keycode 16> : <letter q>     # The Q-key has keycode 16 (on QWERTY)
+<letter q> : "q"              # The Q-key should produce a `q'
+<shift letter q> : "Q"        # but `Q' when shift is used
+<caps q> : "Q"                # or when caps is used
+<shift caps letter q> : "q"   # but not when both are used
+@end example
+
+Special characters like simple double quotes,
+backspace and, in @code{<>}-notation, greater than
+sign must be escaped with a prepending backslash.
+
+Many keyboard layouts also have dead keys.
+Dead keys are keys that affect the next key-press.
+For example, `´' followed by `e' may product `é'.
+@kbd{compose} may be a dead key, just like it is in X.org,
+but it can also be a modifer.
+
+To define @kbd{´}, with keycode 13, @kbd{compose}, with
+keycode 125, as a dead keys write
+
+@example
+<keycode 13> : <dead letter ´>
+<keycode 125> : <dead compose>
+@end example
+
+Some may appear on multiple locations on the keyboard,
+for example, there may be a left and a right shift key,
+and a normal return key and one on the keypad:
+
+@example
+<keycode 42> : <left shift>
+<keycode 54> : <right shift>
+<keycode 28> : <return>
+<keycode 96> : <keypad return>
+@end example
+
+Because @code{<left>} and @code{<right>} are
+valid keys --- they are arrow keys --- it is
+importatn to place them directly before the
+key, and not after. For instance @code{<left shift>}
+denotes the left @kbd{shift} key, whilst
+@code{<shift left>} denotes the left-arrow key
+with a @kbd{shift} key held down. Modifiers
+goes first.
+
+
+
+@node Sequence Mapping
+@subsection Sequence Mapping
+
+TODO
+
+
+
+
 @node Discussion
 @chapter Discussion
 
@@ -5127,7 +5338,6 @@ Right @kbd{super} key
 
 @node Server Architecture
 @section Server Architecture
-
 
 This chapter aims to enumerate advantages and
 disadvantages with micro-display servers,
