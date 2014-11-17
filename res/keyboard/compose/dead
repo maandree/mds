@@ -2464,7 +2464,7 @@ composite("∅" "°" "⦲")
 <dead compose> "⇨" "⇨" : "\u2B95"
 <dead compose> ("⇦" "⬅") : "⮘"
 <dead compose> ("⇧" "⬆") : "⮙"
-<dead compose> ("⇨" : "\u2B95") : "⮚"
+<dead compose> ("⇨" "\u2B95") : "⮚"
 <dead compose> ("⇩" "⬇") : "⮛"
 <dead compose> "⮘" "⮘" : "⮜"
 <dead compose> "⮙" "⮙" : "⮝"
