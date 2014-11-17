@@ -69,8 +69,6 @@
 <altgr shift down> : "⇓"
 
 <keycode 69> : <num lock>
-<keycode 96> : <keypad return>
-
 <keycode 71> : <keypad home>
 <keycode 72> : <keypad up>
 <keycode 73> : <keypad pgup>
