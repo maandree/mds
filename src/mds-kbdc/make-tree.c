@@ -769,7 +769,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	continue;
       prev_end_char = *end, *end = '\0';
       original = line;
-      fprintf(stderr, ":: %zu\n", line_i);
       
     redo:
       if (in_array)
