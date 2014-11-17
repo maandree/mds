@@ -1071,7 +1071,7 @@ composite("⇧" "^" "⇮")
 <dead compose> "⟜" "⟜" : "⊸"
 <dead compose> ("⊶" "⊷") : "⊸"
 <shift dead compose> "-" ["|" "¦"] "-" : "⊹"
-<dead compose> <m> <T> : "⊺"
+<dead compose> "m" "T" : "⊺"
 <dead compose> ("_" "∨") : "⊻"
 <dead compose> ("/" ["∧" "&"]) : "⊼"
 <dead compose> ("/" "∨") : "⊽"
