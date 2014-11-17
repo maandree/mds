@@ -30,8 +30,6 @@
 <keycode 119> : <break>
 
 <keycode 14> : <backspace>
-<altgr keycode 14> : " "
-<altgr shift keycode 14> : "\u202F" # Narrow no-break space
 <keycode 28> : <return>
 <keycode 54> : <right shift>
 <keycode 97> : <right ctrl>
@@ -41,6 +39,8 @@
 <keycode 100> : <altgr>
 <keycode 57> : <space>
 <space> : " "
+<altgr space> : " "
+<altgr shift space> : "\u202F" # Narrow no-break space
 <keycode 56> : <alt>
 <keycode 125> : <dead compose>
 <keycode 29> : <left ctrl>
