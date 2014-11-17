@@ -1,0 +1,17 @@
+for 0 to 9 as \1
+  <letter \add(\1, "0")> : \add(\1, "0")
+end for
+
+# (for (@ 1 0-3) ‘0’ ‘9’ (.variable ‘\1’)
+#   (.inner
+#     (map (@ 2 2-2)
+#       (.sequence
+#         (keys (@ 2 2-24) ‘<letter \add(\1, "0")>’)
+#       )
+#       (.result
+#         (string (@ 2 27-40) ‘\add(\1, "0")’)
+#       )
+#     )
+#   )
+# )
+

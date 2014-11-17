@@ -717,20 +717,23 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 		  end = line + strlen(line);
 		  END;
 		  line = end, prev_end_char = '\0';
-		  stack_ptr--;
 		  in_array = 0;
+		  stack_ptr -= 2;
+		  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
 		  break;
 		}
-	      {
+	      else
+		{
 #define node subnode
-		NEW_NODE(string, STRING);
-		NO_JUMP;
-		CHARS(string);
-		LEAF;
-		*end = prev_end_char;
-		line = end;
+		  NEW_NODE(string, STRING);
+		  NO_JUMP;
+		  CHARS(string);
+		  LEAF;
+		  node->loc_end = (size_t)(end - source_code.lines[line_i]);
+		  *end = prev_end_char;
+		  line = end;
 #undef node
-	      }
+		}
 	    }
 	  continue;
 	}
@@ -877,10 +880,19 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  NEW_NODE(let, LET);
 	  CHARS(variable);
 	  TEST_FOR_KEYWORD(":");
-	  LEAF;
 	  *end = prev_end_char;
 	  while (*line && (*line == ' '))
 	    line++;
+	  if (*line == '{')
+	    {
+#define inner value
+	      BRANCH(NULL);
+#undef inner
+	    }
+	  else
+	    {
+	      LEAF;
+	    }
 	  if (*line == '\0')
 	    {
 	      line = original, end = line + strlen(line), prev_end_char = '\0';
@@ -892,6 +904,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      NEW_NODE(string, STRING);
 	      NO_JUMP;
 	      CHARS(string);
+	      node->loc_end = (size_t)(end - source_code.lines[line_i]);
 #undef node
 	      node->value = (mds_kbdc_tree_t*)subnode;
 	      END;
@@ -899,8 +912,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  else
 	    {
 #define node subnode
-	      NEW_NODE(array, ARRAY); /* FIXME memory leak */
 #define inner elements
+	      NEW_NODE(array, ARRAY);
 	      BRANCH("}");
 	      node->loc_end = node->loc_start + 1;
 #undef inner
@@ -1006,21 +1019,26 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
     {
       char* line = NULL;
       char* end = NULL;
-      NEW_ERROR(0, ERROR, "premature end of file");
-      while (stack_ptr--)
+      while (stack_ptr && keyword_stack[stack_ptr - 1] == NULL)
+	stack_ptr--;
+      if (stack_ptr)
 	{
-	  if (keyword_stack[stack_ptr] == NULL)
-	    continue;
-	  line_i = tree_stack[stack_ptr][0]->loc_line;
-	  line = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_start;
-	  end  = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_end;
-	  if (!strcmp(keyword_stack[stack_ptr], "}"))
+	  NEW_ERROR(0, ERROR, "premature end of file");
+	  while (stack_ptr--)
 	    {
-	      NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
-	    }
-	  else
-	    {
-	      NEW_ERROR(1, NOTE, "missing associated ‘end %s’", keyword_stack[stack_ptr]);
+	      if (keyword_stack[stack_ptr] == NULL)
+		continue;
+	      line_i = tree_stack[stack_ptr][0]->loc_line;
+	      line = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_start;
+	      end  = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_end;
+	      if (!strcmp(keyword_stack[stack_ptr], "}"))
+		{
+		  NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
+		}
+	      else
+		{
+		  NEW_ERROR(1, NOTE, "missing associated ‘end %s’", keyword_stack[stack_ptr]);
+		}
 	    }
 	}
     }
