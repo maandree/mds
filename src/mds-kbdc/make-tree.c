@@ -112,25 +112,29 @@
  * @param  SEVERITY:identifier   * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
  * @param  ...:const char*, ...  Error description format string and arguments
  */
-#define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)					\
-  if (errors_ptr + 1 >= errors_size)							\
-    {											\
-      errors_size = errors_size ? (errors_size << 1) : 2;				\
-      fail_if (xxrealloc(old_errors, *errors, errors_size, mds_kbdc_parse_error_t*));	\
-    }											\
-  fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));					\
-  (*errors)[errors_ptr + 0] = error;							\
-  (*errors)[errors_ptr + 1] = NULL;							\
-  errors_ptr++;										\
-  error->line  = line_i;								\
-  error->severity = MDS_KBDC_PARSE_ERROR_##SEVERITY;					\
-  error->error_is_in_file = ERROR_IS_IN_FILE;						\
-  error->start = (size_t)(line - LINE);							\
-  error->end   = (size_t)(end  - LINE);							\
-  fail_if ((error->pathname = strdup(pathname)) == NULL);				\
-  if (ERROR_IS_IN_FILE)									\
-    fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
-  fail_if (xasprintf(error->description, __VA_ARGS__))
+#define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)						\
+  do												\
+    {												\
+      if (errors_ptr + 1 >= errors_size)							\
+	{											\
+	  errors_size = errors_size ? (errors_size << 1) : 2;					\
+	  fail_if (xxrealloc(old_errors, *errors, errors_size, mds_kbdc_parse_error_t*));	\
+	}											\
+      fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));					\
+      (*errors)[errors_ptr + 0] = error;							\
+      (*errors)[errors_ptr + 1] = NULL;								\
+      errors_ptr++;										\
+      error->line  = line_i;									\
+      error->severity = MDS_KBDC_PARSE_ERROR_##SEVERITY;					\
+      error->error_is_in_file = ERROR_IS_IN_FILE;						\
+      error->start = (size_t)(line - LINE);							\
+      error->end   = (size_t)(end  - LINE);							\
+      fail_if ((error->pathname = strdup(pathname)) == NULL);					\
+      if (ERROR_IS_IN_FILE)									\
+	fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
+      fail_if (xasprintf(error->description, __VA_ARGS__));					\
+    }												\
+   while (0)
 
 
 /**
@@ -174,9 +178,9 @@
  * @param  KEYWORD:const char*  The keyword for the current node's type
  */
 #define BRANCH(KEYWORD)					\
-  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;	\
-  tree_stack[stack_ptr + 1] = &(node->inner);		\
-  keyword_stack[stack_ptr++] = KEYWORD
+  (*(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node,	\
+   tree_stack[stack_ptr + 1] = &(node->inner),		\
+   keyword_stack[stack_ptr++] = KEYWORD)
 
 
 /**
@@ -188,8 +192,8 @@
  * created and should be added to the result tree
  */
 #define LEAF						\
-  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;	\
-  NEXT
+  (*(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node,	\
+   NEXT)
 
 
 /**
@@ -208,15 +212,17 @@
  * @param  KEYWORD:const char*  The keyword,
  */
 #define NO_PARAMETERS(KEYWORD)						\
-  line += strlen(line);							\
-  *end = prev_end_char, prev_end_char = '\0';				\
-  SKIP_SPACES(line);							\
   do									\
-    if (*line)								\
-      {									\
-	end = line + strlen(line);					\
-	NEW_ERROR(1, ERROR, "extra token after ‘%s’", KEYWORD);		\
-      }									\
+    {									\
+      line += strlen(line);						\
+      *end = prev_end_char, prev_end_char = '\0';			\
+      SKIP_SPACES(line);						\
+      if (*line)							\
+	{								\
+	  end = line + strlen(line);					\
+	  NEW_ERROR(1, ERROR, "extra token after ‘%s’", KEYWORD);	\
+	}								\
+    }									\
   while (0)
 
 
@@ -227,48 +233,50 @@
  * @param  var:identifier  The name of the member variable, for the current
  *                         node, where the parameter should be stored
  */
-#define NAMES_1(var)								\
-  line += strlen(line);								\
-  *end = prev_end_char, prev_end_char = '\0';					\
-  SKIP_SPACES(line);								\
-  do										\
-    if (*line == '\0')								\
-      {										\
-	line = original, end = line + strlen(line);				\
-	NEW_ERROR(1, ERROR, "a name is expected");				\
-      }										\
-    else									\
-      {										\
-	char* name_end = line;							\
-	char* test;								\
-	int stray_char = 0;							\
-	while (*name_end && is_name_char(*name_end))				\
-	  name_end++;								\
-	if (*name_end && (*name_end != ' '))					\
-	  {									\
-	    char* end_end = name_end + 1;					\
-	    while ((*end_end & 0xC0) == 0x80)					\
-	      end_end++;							\
-	    prev_end_char = *end_end, *end_end = '\0';				\
-	    NEW_ERROR(1, ERROR, "stray ‘%s’ character", name_end);		\
-	    error->start = (size_t)(name_end - LINE);				\
-	    error->end   = (size_t)(end_end  - LINE);				\
-	    *end_end = prev_end_char;						\
-	    stray_char = 1;							\
-	  }									\
-	test = name_end;							\
-	SKIP_SPACES(test);							\
-	if (*test && !stray_char)						\
-	  {									\
-	    NEW_ERROR(1, ERROR, "too many parameters");				\
-	    error->start = (size_t)(test - LINE);				\
-	    error->end   = strlen(LINE);					\
-	  }									\
-	end = name_end;								\
-	prev_end_char = *end;							\
-	*end = '\0';								\
-	fail_if ((node->var = strdup(line)) == NULL);				\
-      }										\
+#define NAMES_1(var)							\
+  do									\
+    {									\
+      line += strlen(line);						\
+      *end = prev_end_char, prev_end_char = '\0';			\
+      SKIP_SPACES(line);						\
+      if (*line == '\0')						\
+	{								\
+	  line = original, end = line + strlen(line);			\
+	  NEW_ERROR(1, ERROR, "a name is expected");			\
+	}								\
+      else								\
+	{								\
+	  char* name_end = line;					\
+	  char* test;							\
+	  int stray_char = 0;						\
+	  while (*name_end && is_name_char(*name_end))			\
+	    name_end++;							\
+	  if (*name_end && (*name_end != ' '))				\
+	    {								\
+	      char* end_end = name_end + 1;				\
+	      while ((*end_end & 0xC0) == 0x80)				\
+		end_end++;						\
+	      prev_end_char = *end_end, *end_end = '\0';		\
+	    NEW_ERROR(1, ERROR, "stray ‘%s’ character", name_end);	\
+	    error->start = (size_t)(name_end - LINE);			\
+	    error->end   = (size_t)(end_end  - LINE);			\
+	    *end_end = prev_end_char;					\
+	    stray_char = 1;						\
+	    }								\
+	  test = name_end;						\
+	  SKIP_SPACES(test);						\
+	  if (*test && !stray_char)					\
+	    {								\
+	      NEW_ERROR(1, ERROR, "too many parameters");		\
+	      error->start = (size_t)(test - LINE);			\
+	      error->end   = strlen(LINE);				\
+	    }								\
+	  end = name_end;						\
+	  prev_end_char = *end;						\
+	  *end = '\0';							\
+	  fail_if ((node->var = strdup(line)) == NULL);			\
+	}								\
+    }									\
   while (0)
 
 
@@ -276,10 +284,10 @@
  * Suppress the next `line += strlen(line)`
  */
 #define NO_JUMP			\
-  *end = prev_end_char;		\
-  end = line;			\
-  prev_end_char = *end;		\
-  *end = '\0'
+  (*end = prev_end_char,	\
+   end = line,			\
+   prev_end_char = *end,	\
+   *end = '\0')
 
 
 /**
@@ -343,13 +351,15 @@
  * Test that there are no more parameters
  */
 #define END							\
-  SKIP_SPACES(line);						\
   do								\
-    if (*line)							\
-      {								\
-	NEW_ERROR(1, ERROR, "too many parameters");		\
-	error->end = strlen(LINE);				\
-      }								\
+    {								\
+      SKIP_SPACES(line);					\
+      if (*line)						\
+	{							\
+	  NEW_ERROR(1, ERROR, "too many parameters");		\
+	  error->end = strlen(LINE);				\
+	}							\
+    }								\
   while (0)
 
 
@@ -384,9 +394,13 @@
  *                         node, where the parameter should be stored
  */
 #define QUOTES_1(var)	\
-  QUOTES;		\
-  CHARS(var);		\
-  END
+  do			\
+    {			\
+      QUOTES;		\
+      CHARS(var);	\
+      END;		\
+    }			\
+  while (0)
 
 
 /**
@@ -632,6 +646,26 @@
   while (0)
 
 
+#define MAKE_LEAF(LOWERCASE, UPPERCASE, PARSE)		\
+  do							\
+    {							\
+      NEW_NODE(LOWERCASE, UPPERCASE);			\
+      PARSE;						\
+      LEAF;						\
+    }							\
+  while (0)
+
+
+#define MAKE_BRANCH(LOWERCASE, UPPERCASE, PARSE)	\
+  do							\
+    {							\
+      NEW_NODE(LOWERCASE, UPPERCASE);			\
+      PARSE;						\
+      BRANCH(#LOWERCASE);				\
+    }							\
+  while (0)
+
+
 
 /**
  * Parse a file into a syntex tree
@@ -717,11 +751,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       int too_few = 0;
       
       SKIP_SPACES(line);
-      end = strchrnul(line, ' ');
-      if (end == line)
+      if (end = strchrnul(line, ' '), end == line)
 	continue;
-      prev_end_char = *end;
-      *end = '\0';
+      prev_end_char = *end, *end = '\0';
       original = line;
       
     redo:
@@ -732,7 +764,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      SKIP_SPACES(line);
 	      if (*line == '\0')
 		break;
-	      if (*line == '}')
+	      else if (*line == '}')
 		{
 		  line++;
 		  end = line + strlen(line);
@@ -758,79 +790,23 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    }
 	  continue;
 	}
-      else if (!strcmp(line, "information"))
-	{
-	  NEW_NODE(information, INFORMATION);
-	  NO_PARAMETERS("information");
-	  BRANCH("information");
-	}
-      else if (!strcmp(line, "assumption"))
-	{
-	  NEW_NODE(assumption, ASSUMPTION);
-	  NO_PARAMETERS("assumption");
-	  BRANCH("assumption");
-	}
-      else if (!strcmp(line, "return"))
-	{
-	  NEW_NODE(return, RETURN);
-	  NO_PARAMETERS("return");
-	  LEAF;
-	}
-      else if (!strcmp(line, "continue"))
-	{
-	  NEW_NODE(continue, CONTINUE);
-	  NO_PARAMETERS("continue");
-	  LEAF;
-	}
-      else if (!strcmp(line, "break"))
-	{
-	  NEW_NODE(break, BREAK);
-	  NO_PARAMETERS("break");
-	  LEAF;
-	}
-      else if (!strcmp(line, "language"))
-	{
-	  NEW_NODE(information_language, INFORMATION_LANGUAGE);
-	  QUOTES_1(data);
-	  LEAF;
-	}
-      else if (!strcmp(line, "country"))
-	{
-	  NEW_NODE(information_country, INFORMATION_COUNTRY);
-	  QUOTES_1(data);
-	  LEAF;
-	}
-      else if (!strcmp(line, "variant"))
-	{
-	  NEW_NODE(information_variant, INFORMATION_VARIANT);
-	  QUOTES_1(data);
-	  LEAF;
-	}
-      else if (!strcmp(line, "include"))
-	{
-	  NEW_NODE(include, INCLUDE);
-	  QUOTES_1(filename);
-	  LEAF;
-	}
-      else if (!strcmp(line, "function"))
-	{
-	  NEW_NODE(function, FUNCTION);
-	  NAMES_1(name);
-	  BRANCH("function");
-	}
-      else if (!strcmp(line, "macro"))
-	{
-	  NEW_NODE(macro, MACRO);
-	  NAMES_1(name);
-	  BRANCH("macro");
-	}
-      else if (!strcmp(line, "if"))
-	{
-	  NEW_NODE(if, IF);
-	  CHARS(condition);
-	  END;
-	  BRANCH("if");
-	}
+      else if (!strcmp(line, "have_chars"))
+	MAKE_LEAF(assumption_have_chars, ASSUMPTION_HAVE_CHARS, QUOTES_1(chars));
+      else if (!strcmp(line, "have_range"))
+	MAKE_LEAF(assumption_have_range, ASSUMPTION_HAVE_RANGE, CHARS(first); CHARS(last); END);
+      else if (!strcmp(line, "have")) MAKE_LEAF(assumption_have, ASSUMPTION_HAVE, KEYS(data); END);
+      else if (!strcmp(line, "information")) MAKE_BRANCH(information, INFORMATION, NO_PARAMETERS("information"));
+      else if (!strcmp(line, "assumption")) MAKE_BRANCH(assumption, ASSUMPTION, NO_PARAMETERS("assumption"));
+      else if (!strcmp(line, "return")) MAKE_LEAF(return, RETURN, NO_PARAMETERS("return"));
+      else if (!strcmp(line, "continue")) MAKE_LEAF(continue, CONTINUE, NO_PARAMETERS("continue"));
+      else if (!strcmp(line, "break")) MAKE_LEAF(break, BREAK, NO_PARAMETERS("break"));
+      else if (!strcmp(line, "language")) MAKE_LEAF(information_language, INFORMATION_LANGUAGE, QUOTES_1(data));
+      else if (!strcmp(line, "country")) MAKE_LEAF(information_country, INFORMATION_COUNTRY, QUOTES_1(data));
+      else if (!strcmp(line, "variant")) MAKE_LEAF(information_variant, INFORMATION_VARIANT, QUOTES_1(data));
+      else if (!strcmp(line, "include")) MAKE_LEAF(include, INCLUDE, QUOTES_1(filename));
+      else if (!strcmp(line, "function")) MAKE_BRANCH(function, FUNCTION, NAMES_1(name));
+      else if (!strcmp(line, "macro")) MAKE_BRANCH(macro, MACRO, NAMES_1(name));
+      else if (!strcmp(line, "if")) MAKE_BRANCH(if, IF, CHARS(condition); END);
       else if (!strcmp(line, "else"))
 	{
 	  size_t i;
@@ -903,15 +879,11 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  *end = prev_end_char;
 	  SKIP_SPACES(line);
 	  if (*line == '{')
-	    {
 #define inner value
-	      BRANCH(NULL);
+	    BRANCH(NULL);
 #undef inner
-	    }
 	  else
-	    {
-	      LEAF;
-	    }
+	    LEAF;
 	  if (*line == '\0')
 	    {
 	      line = original, end = line + strlen(line), prev_end_char = '\0';
@@ -942,27 +914,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      goto redo;
 	    }
 	}
-      else if (!strcmp(line, "have"))
-	{
-	  NEW_NODE(assumption_have, ASSUMPTION_HAVE);
-	  KEYS(data);
-	  END;
-	  LEAF;
-	}
-      else if (!strcmp(line, "have_chars"))
-	{
-	  NEW_NODE(assumption_have_chars, ASSUMPTION_HAVE_CHARS);
-	  QUOTES_1(chars);
-	  LEAF;
-	}
-      else if (!strcmp(line, "have_range"))
-	{
-	  NEW_NODE(assumption_have_range, ASSUMPTION_HAVE_RANGE);
-	  CHARS(first);
-	  CHARS(last);
-	  END;
-	  LEAF;
-	}
       else if (!strcmp(line, "end"))
 	{
 	  if (stack_ptr == 0)
@@ -980,9 +931,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      NEW_ERROR(1, ERROR, "expecting a keyword after ‘end’");
 	    }
 	  else if (strcmp(line, keyword_stack[stack_ptr]))
-	    {
-	      NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
-	    }
+	    NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
 	  NEXT;
 	}
       else if (strchr("\"<([0123456789", *line))
@@ -1080,13 +1029,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  end = old_end;
 	  prev_end_char = old_prev_end_char;
 	  if (strchr("}", *line))
-	    {
-	      NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
-	    }
+	    NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
 	  else
-	    {
-	      NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
-	    }
+	    NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
 	}
       
     next:
@@ -1111,13 +1056,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      line = LINE + tree_stack[stack_ptr][0]->loc_start;
 	      end  = LINE + tree_stack[stack_ptr][0]->loc_end;
 	      if (!strcmp(keyword_stack[stack_ptr], "}"))
-		{
-		  NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
-		}
+		NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
 	      else
-		{
-		  NEW_ERROR(1, NOTE, "missing associated ‘end %s’", keyword_stack[stack_ptr]);
-		}
+		NEW_ERROR(1, NOTE, "missing associated ‘end %s’", keyword_stack[stack_ptr]);
 	    }
 	}
     }
@@ -1142,6 +1083,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 
 
 
+#undef MAKE_BRANCH
+#undef MAKE_LEAF
 #undef SEQUENCE_FULLY_POPPED
 #undef SEQUENCE
 #undef PURE_KEYS
