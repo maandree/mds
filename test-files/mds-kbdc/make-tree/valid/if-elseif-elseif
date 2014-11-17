@@ -2,6 +2,8 @@ if \1
   <letter \1> : "\1"
 else if \2
   <letter \2> : "\2"
+else if \3
+  <letter \3> : "\3"
 end if
 <letter a> : "a"
 
@@ -28,16 +30,30 @@ end if
 #           )
 #         )
 #       )
-#       (.otherwise nil)
+#       (.otherwise
+#         (if (@ 5 3-7) ‘\3’
+#           (.inner
+#             (map (@ 6 4-4)
+#               (.sequence
+#                 (keys (@ 6 4-15) ‘<letter \3>’)
+#               )
+#               (.result
+#                 (string (@ 6 18-22) ‘"\3"’)
+#               )
+#             )
+#           )
+#           (.otherwise nil)
+#         )
+#       )
 #     )
 #   )
 # )
-# (map (@ 6 0-0)
+# (map (@ 8 0-0)
 #   (.sequence
-#     (keys (@ 6 0-10) ‘<letter a>’)
+#     (keys (@ 8 0-10) ‘<letter a>’)
 #   )
 #   (.result
-#     (string (@ 6 13-16) ‘"a"’)
+#     (string (@ 8 13-16) ‘"a"’)
 #   )
 # )
 

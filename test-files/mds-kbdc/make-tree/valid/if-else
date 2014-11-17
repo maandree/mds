@@ -3,6 +3,7 @@ if \1
 else
   <letter \2> : "\2"
 end if
+<letter a> : "a"
 
 # (if (@ 1 0-2) ‘\1’
 #   (.inner
@@ -24,6 +25,14 @@ end if
 #         (string (@ 4 16-20) ‘"\2"’)
 #       )
 #     )
+#   )
+# )
+# (map (@ 6 0-0)
+#   (.sequence
+#     (keys (@ 6 0-10) ‘<letter a>’)
+#   )
+#   (.result
+#     (string (@ 6 13-16) ‘"a"’)
 #   )
 # )
 

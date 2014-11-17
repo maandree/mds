@@ -809,6 +809,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	}
       else if (!strcmp(line, "else"))
 	{
+	  size_t i;
 	  if (stack_ptr == 0)
 	    {
 	      NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
@@ -817,35 +818,47 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  line += strlen(line);
 	  *end = prev_end_char, prev_end_char = '\0';
 	  end = line + strlen(line);
-	  stack_ptr--;
 	  while (*line && (*line == ' '))
 	    line++;
-	  if (strcmp(keyword_stack[stack_ptr], "if"))
+	  i = stack_ptr - 1;
+	  while (keyword_stack[i] == NULL)
+	    i--;
+	  if (strcmp(keyword_stack[i], "if"))
 	    {
+	      stack_ptr--;
 	      line = original, end = line + strlen(line);
 	      NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
 	    }
 	  else if (*line == '\0')
 	    {
 	      /* else */
-	      mds_kbdc_tree_if_t* node = &(tree_stack[stack_ptr][0]->if_);
-	      tree_stack[stack_ptr + 1] = &(node->otherwise);
-	      keyword_stack[stack_ptr++] = "if";
+	      mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
+	      if (supernode->otherwise)
+		{
+		  line = strstr(source_code.lines[line_i], "else");
+		  end = line + 4, prev_end_char = *end;
+		  NEW_ERROR(1, ERROR, "multiple ‘else’ statements");
+		  mds_kbdc_tree_free(supernode->otherwise);
+		  supernode->otherwise = NULL;
+		}
+	      tree_stack[stack_ptr] = &(supernode->otherwise);
 	    }
 	  else if ((strstr(line, "if") == line) && ((line[2] == ' ') || (line[2] == '\0')))
 	    {
 	      /* else if */
+	      mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
 	      NEW_NODE(if, IF);
 	      node->loc_end = node->loc_start + 2;
-	      tree_stack[stack_ptr][0]->if_.otherwise = (mds_kbdc_tree_t*)node;
 	      end = line += 2, prev_end_char = *end, *end = '\0';
 	      CHARS(condition);
 	      END;
-	      BRANCH("if");
+	      tree_stack[stack_ptr] = &(supernode->otherwise);
+	      BRANCH(NULL);
 	    }
 	  else
 	    {
 	      NEW_ERROR(1, ERROR, "expecting nothing or ‘if’");
+	      stack_ptr--;
 	    }
 	}
       else if (!strcmp(line, "for"))
@@ -927,9 +940,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    }
 	  line += strlen(line);
 	  *end = prev_end_char, prev_end_char = '\0';
-	  stack_ptr--;
 	  while (*line && (*line == ' '))
 	    line++;
+	  while (keyword_stack[--stack_ptr] == NULL);
 	  if (*line == '\0')
 	    {
 	      line = original, end = line + strlen(line);
@@ -996,6 +1009,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       NEW_ERROR(0, ERROR, "premature end of file");
       while (stack_ptr--)
 	{
+	  if (keyword_stack[stack_ptr] == NULL)
+	    continue;
 	  line_i = tree_stack[stack_ptr][0]->loc_line;
 	  line = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_start;
 	  end  = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_end;
