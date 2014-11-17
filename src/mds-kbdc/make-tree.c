@@ -977,7 +977,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    }
 	  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
 	}
-      else if (strchr("\"<([", *line) || strchr(line, '('))
+      else if (strchr("\"<([", *line) || strchr(line, '(')) /* TODO macro calls */
 	{
 	  size_t stack_orig = stack_ptr + 1;
 #define node supernode
