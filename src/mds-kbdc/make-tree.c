@@ -193,6 +193,16 @@
 
 
 /**
+ * Skip all blank spaces
+ * 
+ * @param  var:const char*  The variable
+ */
+#define SKIP_SPACES(var)		\
+  while (*var && (*var == ' '))		\
+    var++
+
+
+/**
  * Check that there are no tokens after a keyword
  * 
  * @param  KEYWORD:const char*  The keyword,
@@ -200,8 +210,7 @@
 #define NO_PARAMETERS(KEYWORD)						\
   line += strlen(line);							\
   *end = prev_end_char, prev_end_char = '\0';				\
-  while (*line && (*line == ' '))					\
-    line++;								\
+  SKIP_SPACES(line);							\
   do									\
     if (*line)								\
       {									\
@@ -221,8 +230,7 @@
 #define NAMES_1(var)								\
   line += strlen(line);								\
   *end = prev_end_char, prev_end_char = '\0';					\
-  while (*line && (*line == ' '))						\
-    line++;									\
+  SKIP_SPACES(line);								\
   do										\
     if (*line == '\0')								\
       {										\
@@ -249,8 +257,7 @@
 	    stray_char = 1;							\
 	  }									\
 	test = name_end;							\
-	while (*test && (*test == ' '))						\
-	  test++;								\
+	SKIP_SPACES(test);							\
 	if (*test && !stray_char)						\
 	  {									\
 	    NEW_ERROR(1, ERROR, "too many parameters");				\
@@ -298,8 +305,7 @@
 	break;										\
       line += strlen(line);								\
       *end = prev_end_char, prev_end_char = '\0';					\
-      while (*line && (*line == ' '))							\
-	line++;										\
+      SKIP_SPACES(line);								\
       if (*line == '\0')								\
 	{										\
 	  line = original, end = line + strlen(line);					\
@@ -337,8 +343,7 @@
  * Test that there are no more parameters
  */
 #define END							\
-  while (*line && (*line == ' '))				\
-    line++;							\
+  SKIP_SPACES(line);						\
   do								\
     if (*line)							\
       {								\
@@ -357,13 +362,11 @@
       char* line_ = line;						\
       line += strlen(line);						\
       *end = prev_end_char;						\
-      while (*line && (*line == ' '))					\
-	line++;								\
+      SKIP_SPACES(line);						\
       if (*line && (*line != '"'))					\
 	{								\
 	  char* arg_end = line;						\
-	  while (*arg_end && (*arg_end != ' '))				\
-	    arg_end++;							\
+	  SKIP_SPACES(arg_end);						\
 	  NEW_ERROR(1, ERROR, "parameter must be in quotes");		\
 	  error->end = (size_t)(arg_end - LINE);			\
 	}								\
@@ -398,8 +401,7 @@
 	break;										\
       line += strlen(line);								\
       *end = prev_end_char, prev_end_char = '\0';					\
-      while (*line && (*line == ' '))							\
-	line++;										\
+      SKIP_SPACES(line);								\
       if (*line == '\0')								\
 	{										\
 	  line = original, end = line + strlen(line);					\
@@ -419,8 +421,7 @@
 	    }										\
 	  line -= strlen(KEYWORD);							\
 	  end = line;									\
-	  while (*end && (*end != ' '))							\
-	    end++;									\
+	  SKIP_SPACES(end);								\
 	  prev_end_char = *end, *end = '\0';						\
 	  NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", KEYWORD);			\
 	}										\
@@ -442,8 +443,7 @@
 	break;										\
       line += strlen(line);								\
       *end = prev_end_char, prev_end_char = '\0';					\
-      while (*line && (*line == ' '))							\
-	line++;										\
+      SKIP_SPACES(line);								\
       if (*line == '\0')								\
 	{										\
 	  line = original, end = line + strlen(line);					\
@@ -503,8 +503,7 @@
 	break;										\
       line += strlen(line);								\
       *end = prev_end_char, prev_end_char = '\0';					\
-      while (*line && (*line == ' '))							\
-	line++;										\
+      SKIP_SPACES(line);								\
       if (*line == '\0')								\
 	{										\
 	  line = original, end = line + strlen(line);					\
@@ -546,8 +545,7 @@
   do /* for(;;) */											\
     {													\
       *end = prev_end_char;										\
-      while (*line && (*line == ' '))									\
-	line++;												\
+      SKIP_SPACES(line);										\
       if ((*line == '\0') || (*line == ':'))								\
 	break;												\
       if (*line == '(')											\
@@ -718,8 +716,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
       char* original;
       int too_few = 0;
       
-      while (*line && (*line == ' '))
-	line++;
+      SKIP_SPACES(line);
       end = strchrnul(line, ' ');
       if (end == line)
 	continue;
@@ -732,8 +729,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	{
 	  for (;;)
 	    {
-	      while (*line && (*line == ' '))
-		line++;
+	      SKIP_SPACES(line);
 	      if (*line == '\0')
 		break;
 	      if (*line == '}')
@@ -846,8 +842,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  line += strlen(line);
 	  *end = prev_end_char, prev_end_char = '\0';
 	  end = line + strlen(line);
-	  while (*line && (*line == ' '))
-	    line++;
+	  SKIP_SPACES(line);
 	  i = stack_ptr - 1;
 	  while (keyword_stack[i] == NULL)
 	    i--;
@@ -906,8 +901,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  CHARS(variable);
 	  TEST_FOR_KEYWORD(":");
 	  *end = prev_end_char;
-	  while (*line && (*line == ' '))
-	    line++;
+	  SKIP_SPACES(line);
 	  if (*line == '{')
 	    {
 #define inner value
@@ -978,8 +972,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    }
 	  line += strlen(line);
 	  *end = prev_end_char, prev_end_char = '\0';
-	  while (*line && (*line == ' '))
-	    line++;
+	  SKIP_SPACES(line);
 	  while (keyword_stack[--stack_ptr] == NULL);
 	  if (*line == '\0')
 	    {
@@ -1008,8 +1001,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #define inner result
 	  stack_ptr--;
 	  *end = prev_end_char;
-	  while (*line && (*line == ' '))
-	    line++;
+	  SKIP_SPACES(line);
 	  if (*line++ != ':')
 	    {
 	      LEAF;
@@ -1022,8 +1014,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  SEQUENCE_FULLY_POPPED(stack_orig);
 	  stack_ptr--;
 	  *end = prev_end_char;
-	  while (*line && (*line == ' '))
-	    line++;
+	  SKIP_SPACES(line);
 #define node supernode
 	  LEAF;
 #undef node
@@ -1051,8 +1042,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      for (;;)
 		{
 		  *end = prev_end_char;
-		  while (*line && (*line == ' '))
-		    line++;
+		  SKIP_SPACES(line);
 		  if (*line == '\0')
 		    {
 		      NEW_ERROR(1, ERROR, "missing ‘)’");
@@ -1063,8 +1053,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 		  else if (*line == ')')
 		    {
 		      line++;
-		      while (*line && (*line == ' '))
-			line++;
+		      SKIP_SPACES(line);
 		      if (*line)
 			{
 			  NEW_ERROR(1, ERROR, "extra token after macro call");
@@ -1166,6 +1155,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef NO_JUMP
 #undef NAMES_1
 #undef NO_PARAMETERS
+#undef SKIP_SPACES
 #undef LEAF
 #undef BRANCH
 #undef NEW_NODE
