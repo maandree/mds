@@ -281,7 +281,7 @@
  * @param  c:char  The character
  */
 #define IS_END(c)		\
-  strchr("([{< >}])", c)
+  strchr(" >}])", c)
 
 
 /**
