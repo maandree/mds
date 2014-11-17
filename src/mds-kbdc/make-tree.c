@@ -646,6 +646,13 @@
   while (0)
 
 
+/**
+ * Create new leaf and update the stack accordingly
+ * 
+ * @param  LOWERCASE:identifier  The keyword, for the node type, in lower case
+ * @param  UPPERCASE:identifier  The keyword, for the node type, in upper case
+ * @param  PARSE:expression      Statement, without final semicolon, to retrieve members
+ */
 #define MAKE_LEAF(LOWERCASE, UPPERCASE, PARSE)		\
   do							\
     {							\
@@ -656,6 +663,13 @@
   while (0)
 
 
+/**
+ * Create new branch and update the stack accordingly
+ * 
+ * @param  LOWERCASE:identifier  The keyword, for the node type, in lower case
+ * @param  UPPERCASE:identifier  The keyword, for the node type, in upper case
+ * @param  PARSE:expression      Statement, without final semicolon, to retrieve members
+ */
 #define MAKE_BRANCH(LOWERCASE, UPPERCASE, PARSE)	\
   do							\
     {							\
