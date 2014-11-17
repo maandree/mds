@@ -91,6 +91,21 @@
 
 
 /**
+ * Pointer to the beginning of the current line
+ */
+#define LINE  \
+  (source_code.lines[line_i])
+
+
+/**
+ * Update the tip of the stack to point to the address
+ * of the current stack's tip's `next`-member
+ */
+#define NEXT  \
+  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next)
+
+
+/**
  * Add an error the to error list
  * 
  * @param  ERROR_IS_IN_FILE:int  Whether the error is in the layout code
@@ -110,8 +125,8 @@
   error->line  = line_i;								\
   error->severity = MDS_KBDC_PARSE_ERROR_##SEVERITY;					\
   error->error_is_in_file = ERROR_IS_IN_FILE;						\
-  error->start = (size_t)(line - source_code.lines[line_i]);				\
-  error->end   = (size_t)(end  - source_code.lines[line_i]);				\
+  error->start = (size_t)(line - LINE);							\
+  error->end   = (size_t)(end  - LINE);							\
   fail_if ((error->pathname = strdup(pathname)) == NULL);				\
   if (ERROR_IS_IN_FILE)									\
     fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
@@ -124,13 +139,13 @@
  * @param  LOWERCASE:identifier  The keyword, for the node type, in lower case
  * @param  UPPERCASE:identifier  The keyword, for the node type, in upper case
  */
-#define NEW_NODE(LOWERCASE, UPPERCASE)					\
-  mds_kbdc_tree_##LOWERCASE##_t* node;					\
-  fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));		\
-  node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE;				\
-  node->loc_line  = line_i;						\
-  node->loc_start = (size_t)(line - source_code.lines[line_i]);		\
-  node->loc_end   = (size_t)(end  - source_code.lines[line_i])
+#define NEW_NODE(LOWERCASE, UPPERCASE)				\
+  mds_kbdc_tree_##LOWERCASE##_t* node;				\
+  fail_if (xcalloc(node, 1, mds_kbdc_tree_##LOWERCASE##_t));	\
+  node->type = MDS_KBDC_TREE_TYPE_##UPPERCASE;			\
+  node->loc_line  = line_i;					\
+  node->loc_start = (size_t)(line - LINE);			\
+  node->loc_end   = (size_t)(end  - LINE)
 
 
 /**
@@ -144,8 +159,8 @@
   fail_if (xcalloc(subnode, 1, mds_kbdc_tree_##LOWERCASE##_t));		\
   subnode->type = MDS_KBDC_TREE_TYPE_##UPPERCASE;			\
   subnode->loc_line  = line_i;						\
-  subnode->loc_start = (size_t)(line - source_code.lines[line_i]);	\
-  subnode->loc_end   = (size_t)(end  - source_code.lines[line_i])
+  subnode->loc_start = (size_t)(line - LINE);				\
+  subnode->loc_end   = (size_t)(end  - LINE)
 
 
 /**
@@ -172,9 +187,9 @@
  * This is what should be done when a leaf node has been
  * created and should be added to the result tree
  */
-#define LEAF							\
-  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;		\
-  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next)
+#define LEAF						\
+  *(tree_stack[stack_ptr]) = (mds_kbdc_tree_t*)node;	\
+  NEXT
 
 
 /**
@@ -228,8 +243,8 @@
 	      end_end++;							\
 	    prev_end_char = *end_end, *end_end = '\0';				\
 	    NEW_ERROR(1, ERROR, "stray ‘%s’ character", name_end);		\
-	    error->start = (size_t)(name_end - source_code.lines[line_i]);	\
-	    error->end   = (size_t)(end_end  - source_code.lines[line_i]);	\
+	    error->start = (size_t)(name_end - LINE);				\
+	    error->end   = (size_t)(end_end  - LINE);				\
 	    *end_end = prev_end_char;						\
 	    stray_char = 1;							\
 	  }									\
@@ -239,8 +254,8 @@
 	if (*test && !stray_char)						\
 	  {									\
 	    NEW_ERROR(1, ERROR, "too many parameters");				\
-	    error->start = (size_t)(test - source_code.lines[line_i]);		\
-	    error->end   = strlen(source_code.lines[line_i]);			\
+	    error->start = (size_t)(test - LINE);				\
+	    error->end   = strlen(LINE);					\
 	  }									\
 	end = name_end;								\
 	prev_end_char = *end;							\
@@ -328,7 +343,7 @@
     if (*line)							\
       {								\
 	NEW_ERROR(1, ERROR, "too many parameters");		\
-	error->end = strlen(source_code.lines[line_i]);		\
+	error->end = strlen(LINE);				\
       }								\
   while (0)
 
@@ -350,7 +365,7 @@
 	  while (*arg_end && (*arg_end != ' '))				\
 	    arg_end++;							\
 	  NEW_ERROR(1, ERROR, "parameter must be in quotes");		\
-	  error->end = (size_t)(arg_end - source_code.lines[line_i]);	\
+	  error->end = (size_t)(arg_end - LINE);			\
 	}								\
       *end = '\0';							\
       line = line_;							\
@@ -571,7 +586,7 @@
 		{											\
 		  NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);	\
 		}											\
-	      tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);				\
+	      NEXT;											\
 	    }												\
 	  *end = prev_end_char;										\
 	  line++;											\
@@ -582,7 +597,7 @@
 	  NO_JUMP;											\
 	  PURE_KEYS(keys);										\
 	  LEAF;												\
-	  node->loc_end = (size_t)(line - source_code.lines[line_i]);					\
+	  node->loc_end = (size_t)(line - LINE);							\
 	}												\
       else												\
 	{												\
@@ -590,7 +605,7 @@
 	  NO_JUMP;											\
 	  CHARS(string);										\
 	  LEAF;												\
-	  node->loc_end = (size_t)(line - source_code.lines[line_i]);					\
+	  node->loc_end = (size_t)(line - LINE);							\
 	}												\
     }													\
   while (1)
@@ -684,7 +699,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
     size_t max_line_length = 0, cur_line_length;
     for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
       {
-	cur_line_length = strlen(source_code.lines[line_i]);
+	cur_line_length = strlen(LINE);
 	if (max_line_length < cur_line_length)
 	  max_line_length = cur_line_length;
       }
@@ -697,7 +712,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   
   for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
     {
-      char* line = source_code.lines[line_i];
+      char* line = LINE;
       char* end;
       char prev_end_char;
       char* original;
@@ -729,7 +744,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 		  line = end, prev_end_char = '\0';
 		  in_array = 0;
 		  stack_ptr -= 2;
-		  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
+		  NEXT;
 		  break;
 		}
 	      else
@@ -739,7 +754,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 		  NO_JUMP;
 		  CHARS(string);
 		  LEAF;
-		  node->loc_end = (size_t)(end - source_code.lines[line_i]);
+		  node->loc_end = (size_t)(end - LINE);
 		  *end = prev_end_char;
 		  line = end;
 #undef node
@@ -848,7 +863,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
 	      if (supernode->otherwise)
 		{
-		  line = strstr(source_code.lines[line_i], "else");
+		  line = strstr(LINE, "else");
 		  end = line + 4, prev_end_char = *end;
 		  NEW_ERROR(1, ERROR, "multiple ‘else’ statements");
 		  mds_kbdc_tree_free(supernode->otherwise);
@@ -914,7 +929,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      NEW_NODE(string, STRING);
 	      NO_JUMP;
 	      CHARS(string);
-	      node->loc_end = (size_t)(end - source_code.lines[line_i]);
+	      node->loc_end = (size_t)(end - LINE);
 #undef node
 	      node->value = (mds_kbdc_tree_t*)subnode;
 	      END;
@@ -975,9 +990,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	    {
 	      NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
 	    }
-	  tree_stack[stack_ptr] = &(tree_stack[stack_ptr][0]->next);
+	  NEXT;
 	}
-      else if (strchr("\"<([", *line) || strchr(line, '(')) /* TODO macro calls */
+      else if (strchr("\"<([0123456789", *line))
 	{
 	  size_t stack_orig = stack_ptr + 1;
 #define node supernode
@@ -1017,13 +1032,72 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  end = line + strlen(line), prev_end_char = *end;
 	  NEW_ERROR(1, ERROR, "too many parameters");
 	}
-      else if (strchr("}", *line))
-	{
-	  NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
-	}
       else
 	{
-	  NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
+	  char* old_end = end;
+	  char old_prev_end_char = prev_end_char;
+	  *end = prev_end_char;
+	  end = strchrnul(line, '(');
+	  prev_end_char = *end, *end = '\0';
+	  if (prev_end_char)
+	    {
+	      NEW_NODE(macro_call, MACRO_CALL);
+	      NO_JUMP;
+	      CHARS(name);
+#define inner arguments
+	      BRANCH(NULL);
+#undef inner
+	      line++;
+	      for (;;)
+		{
+		  *end = prev_end_char;
+		  while (*line && (*line == ' '))
+		    line++;
+		  if (*line == '\0')
+		    {
+		      NEW_ERROR(1, ERROR, "missing ‘)’");
+		      error->start = (size_t)(strchr(LINE, '(') - LINE);
+		      error->end   = error->start + 1;
+		      break;
+		    }
+		  else if (*line == ')')
+		    {
+		      line++;
+		      while (*line && (*line == ' '))
+			line++;
+		      if (*line)
+			{
+			  NEW_ERROR(1, ERROR, "extra token after macro call");
+			  error->end = strlen(LINE);
+			}
+		      break;
+		    }
+		  else
+		    {
+#define node subnode
+		      NEW_NODE(string, STRING);
+		      NO_JUMP;
+		      CHARS(string);
+		      LEAF;
+		      node->loc_end = (size_t)(line - LINE);
+#undef node
+		    }
+		}
+	      stack_ptr--;
+	      NEXT;
+	      goto next;
+	    }
+	  *old_end = '\0';
+	  end = old_end;
+	  prev_end_char = old_prev_end_char;
+	  if (strchr("}", *line))
+	    {
+	      NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
+	    }
+	  else
+	    {
+	      NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
+	    }
 	}
       
     next:
@@ -1045,8 +1119,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      if (keyword_stack[stack_ptr] == NULL)
 		continue;
 	      line_i = tree_stack[stack_ptr][0]->loc_line;
-	      line = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_start;
-	      end  = source_code.lines[line_i] + tree_stack[stack_ptr][0]->loc_end;
+	      line = LINE + tree_stack[stack_ptr][0]->loc_start;
+	      end  = LINE + tree_stack[stack_ptr][0]->loc_end;
 	      if (!strcmp(keyword_stack[stack_ptr], "}"))
 		{
 		  NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
@@ -1096,6 +1170,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef BRANCH
 #undef NEW_NODE
 #undef NEW_ERROR
+#undef NEXT
+#undef LINE
 #undef is_name_char
 #undef in_range
 #undef xasprintf

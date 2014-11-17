@@ -1,0 +1,27 @@
+mac0()
+mac1(0)
+mac2(1 "a")
+mac3("x" "y" "z")
+
+# (macro_call (@ 1 0-4) ‘mac0’
+#   (.arguments nil)
+# )
+# (macro_call (@ 2 0-4) ‘mac1’
+#   (.arguments
+#     (string (@ 2 5-6) ‘0’)
+#   )
+# )
+# (macro_call (@ 3 0-4) ‘mac2’
+#   (.arguments
+#     (string (@ 3 5-6) ‘1’)
+#     (string (@ 3 7-10) ‘"a"’)
+#   )
+# )
+# (macro_call (@ 4 0-4) ‘mac3’
+#   (.arguments
+#     (string (@ 4 5-8) ‘"x"’)
+#     (string (@ 4 9-12) ‘"y"’)
+#     (string (@ 4 13-16) ‘"z"’)
+#   )
+# )
+

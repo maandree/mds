@@ -60,7 +60,6 @@ int main(int argc_, char** argv_)
       if (fatal)
 	return mds_kbdc_tree_free(tree), 1;
     }
-  
   mds_kbdc_tree_free(tree);
   return 0;
   
