@@ -482,7 +482,7 @@
 	      else if (quote)                    quote = (c != '"');			\
 	      else if (c == '\"')                quote = 1;				\
 	      else if (c == '>')                 triangle = 0;				\
-	      else if (IS_END(c) && !triangle)  { arg_end--; break; }			\
+	      else if (IS_END(c) && !triangle)   { arg_end--; break; }			\
 	    }										\
 	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
 	  if (*line == '<')								\
