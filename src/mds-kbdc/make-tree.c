@@ -554,15 +554,18 @@
 
 /**
  * Parse a sequence in a mapping
+ * 
+ * @param  mapseq:int  Whether this is a mapping sequence, otherwise
+ *                     it is treated as macro call arguments
  */
-#define SEQUENCE											\
+#define SEQUENCE(mapseq)										\
   do /* for(;;) */											\
     {													\
       *end = prev_end_char;										\
       SKIP_SPACES(line);										\
-      if ((*line == '\0') || (*line == ':'))								\
+      if ((*line == '\0') || (*line == (mapseq ? ':' : ')')))						\
 	break;												\
-      if (*line == '(')											\
+      if (mapseq && (*line == '('))									\
 	{												\
 	  NEW_NODE(unordered, UNORDERED);								\
 	  node->loc_end = node->loc_start + 1;								\
@@ -958,7 +961,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  BRANCH(":");
 #undef inner
 #undef node
-	  SEQUENCE;
+	  SEQUENCE(1);
 	  SEQUENCE_FULLY_POPPED(stack_orig);
 #define node supernode
 #define inner result
@@ -973,7 +976,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  BRANCH(":");
 #undef inner
 #undef node
-	  SEQUENCE;
+	  SEQUENCE(1);
 	  SEQUENCE_FULLY_POPPED(stack_orig);
 	  stack_ptr--;
 	  *end = prev_end_char;
@@ -990,57 +993,47 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	{
 	  char* old_end = end;
 	  char old_prev_end_char = prev_end_char;
+	  size_t stack_orig = stack_ptr + 1;
 	  *end = prev_end_char;
 	  end = strchrnul(line, '(');
 	  prev_end_char = *end, *end = '\0';
 	  if (prev_end_char)
 	    {
+#define node supernode
+#define inner arguments
 	      NEW_NODE(macro_call, MACRO_CALL);
 	      old_end = end, old_prev_end_char = prev_end_char;
 	      NO_JUMP;
 	      *old_end = '\0';
 	      CHARS(name);
-#define inner arguments
 	      BRANCH(NULL);
-#undef inner
 	      end = old_end, prev_end_char = old_prev_end_char;
 	      line++;
-	      for (;;)
-		{
-		  *end = prev_end_char;
-		  SKIP_SPACES(line);
-		  if (*line == '\0')
-		    {
-		      NEW_ERROR(1, ERROR, "missing ‘)’");
-		      error->start = (size_t)(strchr(LINE, '(') - LINE);
-		      error->end   = error->start + 1;
-		      break;
-		    }
-		  else if (*line == ')')
-		    {
-		      line++;
-		      SKIP_SPACES(line);
-		      if (*line)
-			{
-			  NEW_ERROR(1, ERROR, "extra token after macro call");
-			  error->end = strlen(LINE);
-			}
-		      break;
-		    }
-		  else
-		    {
-#define node subnode
-		      NEW_NODE(string, STRING);
-		      NO_JUMP;
-		      CHARS(string);
-		      LEAF;
-		      node->loc_end = (size_t)(line - LINE);
+#undef inner
 #undef node
+	      SEQUENCE(0);
+	      SEQUENCE_FULLY_POPPED(stack_orig);
+#define node supernode
+	      if (*line == ')')
+		{
+		  line++;
+		  SKIP_SPACES(line);
+		  if (*line)
+		    {
+		      NEW_ERROR(1, ERROR, "extra token after macro call");
+		      error->end = strlen(LINE);
 		    }
+		}
+	      else
+		{
+		  NEW_ERROR(1, ERROR, "missing ‘)’");
+		  error->start = (size_t)(strchr(LINE, '(') - LINE);
+		  error->end   = error->start + 1;
 		}
 	      stack_ptr--;
 	      NEXT;
 	      goto next;
+#undef node
 	    }
 	  *old_end = '\0';
 	  end = old_end;

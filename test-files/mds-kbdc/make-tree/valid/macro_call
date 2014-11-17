@@ -2,6 +2,7 @@ mac0()
 mac1(0)
 mac2(1 "a")
 mac3("x" "y" "z")
+mac0(.)
 
 # (macro_call (@ 1 0-4) ‘mac0’
 #   (.arguments nil)
@@ -22,6 +23,11 @@ mac3("x" "y" "z")
 #     (string (@ 4 5-8) ‘"x"’)
 #     (string (@ 4 9-12) ‘"y"’)
 #     (string (@ 4 13-16) ‘"z"’)
+#   )
+# )
+# (macro_call (@ 5 0-4) ‘mac0’
+#   (.arguments
+#     (nothing (@ 5 5-6))
 #   )
 # )
 

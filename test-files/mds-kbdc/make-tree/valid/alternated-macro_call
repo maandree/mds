@@ -1,0 +1,20 @@
+amac(["1" "2"] ["." .] "a")
+
+# (macro_call (@ 1 0-4) ‘amac’
+#   (.arguments
+#     (alternation (@ 1 5-6)
+#       (.inner
+#         (string (@ 1 6-9) ‘"1"’)
+#         (string (@ 1 10-13) ‘"2"’)
+#       )
+#     )
+#     (alternation (@ 1 15-16)
+#       (.inner
+#         (string (@ 1 16-19) ‘"."’)
+#         (nothing (@ 1 20-21))
+#       )
+#     )
+#     (string (@ 1 23-26) ‘"a"’)
+#   )
+# )
+
