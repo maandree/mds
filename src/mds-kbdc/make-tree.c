@@ -295,7 +295,7 @@
  * 
  * @param  c:char  The character
  */
-#define IS_END(c)		\
+#define IS_END(c)	\
   strchr(" >}])", c)
 
 
@@ -350,39 +350,39 @@
 /**
  * Test that there are no more parameters
  */
-#define END							\
-  do								\
-    {								\
-      SKIP_SPACES(line);					\
-      if (*line)						\
-	{							\
-	  NEW_ERROR(1, ERROR, "too many parameters");		\
-	  error->end = strlen(LINE);				\
-	}							\
-    }								\
+#define END						\
+  do							\
+    {							\
+      SKIP_SPACES(line);				\
+      if (*line)					\
+	{						\
+	  NEW_ERROR(1, ERROR, "too many parameters");	\
+	  error->end = strlen(LINE);			\
+	}						\
+    }							\
   while (0)
 
 
 /**
  * Test that the next parameter is in quotes
  */
-#define QUOTES								\
-  do									\
-    {									\
-      char* line_ = line;						\
-      line += strlen(line);						\
-      *end = prev_end_char;						\
-      SKIP_SPACES(line);						\
-      if (*line && (*line != '"'))					\
-	{								\
-	  char* arg_end = line;						\
-	  SKIP_SPACES(arg_end);						\
-	  NEW_ERROR(1, ERROR, "parameter must be in quotes");		\
-	  error->end = (size_t)(arg_end - LINE);			\
-	}								\
-      *end = '\0';							\
-      line = line_;							\
-    }									\
+#define QUOTES							\
+  do								\
+    {								\
+      char* line_ = line;					\
+      line += strlen(line);					\
+      *end = prev_end_char;					\
+      SKIP_SPACES(line);					\
+      if (*line && (*line != '"'))				\
+	{							\
+	  char* arg_end = line;					\
+	  SKIP_SPACES(arg_end);					\
+	  NEW_ERROR(1, ERROR, "parameter must be in quotes");	\
+	  error->end = (size_t)(arg_end - LINE);		\
+	}							\
+      *end = '\0';						\
+      line = line_;						\
+    }								\
   while (0)
 
 
@@ -408,38 +408,38 @@
  * 
  * @parma  KEYWORD:const char*  The keyword
  */
-#define TEST_FOR_KEYWORD(KEYWORD)							\
-  do											\
-    {											\
-      if (too_few)									\
-	break;										\
-      line += strlen(line);								\
-      *end = prev_end_char, prev_end_char = '\0';					\
-      SKIP_SPACES(line);								\
-      if (*line == '\0')								\
-	{										\
-	  line = original, end = line + strlen(line);					\
-	  NEW_ERROR(1, ERROR, "too few parameters");					\
-	  line = end, too_few = 1;							\
-	}										\
-      else										\
-	{										\
-	  int ok = (strstr(line, KEYWORD) == line);					\
-	  line += strlen(KEYWORD);							\
-	  ok = ok && ((*line == '\0') || (*line == ' '));				\
-	  if (ok)									\
-	    {										\
-	      end = line;								\
-	      prev_end_char = *end, *end = '\0';					\
-	      break;									\
-	    }										\
-	  line -= strlen(KEYWORD);							\
-	  end = line;									\
-	  SKIP_SPACES(end);								\
-	  prev_end_char = *end, *end = '\0';						\
-	  NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", KEYWORD);			\
-	}										\
-    }											\
+#define TEST_FOR_KEYWORD(KEYWORD)					\
+  do									\
+    {									\
+      if (too_few)							\
+	break;								\
+      line += strlen(line);						\
+      *end = prev_end_char, prev_end_char = '\0';			\
+      SKIP_SPACES(line);						\
+      if (*line == '\0')						\
+	{								\
+	  line = original, end = line + strlen(line);			\
+	  NEW_ERROR(1, ERROR, "too few parameters");			\
+	  line = end, too_few = 1;					\
+	}								\
+      else								\
+	{								\
+	  int ok = (strstr(line, KEYWORD) == line);			\
+	  line += strlen(KEYWORD);					\
+	  ok = ok && ((*line == '\0') || (*line == ' '));		\
+	  if (ok)							\
+	    {								\
+	      end = line;						\
+	      prev_end_char = *end, *end = '\0';			\
+	      break;							\
+	    }								\
+	  line -= strlen(KEYWORD);					\
+	  end = line;							\
+	  SKIP_SPACES(end);						\
+	  prev_end_char = *end, *end = '\0';				\
+	  NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", KEYWORD);	\
+	}								\
+    }									\
   while (0)
 
 
