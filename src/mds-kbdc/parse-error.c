@@ -82,7 +82,7 @@ void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FIL
   /* Print error information. */
   fprintf(output, "\033[01m%s\033[21m:", this->pathname); /* TODO should be relative to the current dir */
   if (this->error_is_in_file)
-    fprintf(output, "%zu:%zu–%zu:", this->line + 1, start + 1, end + 1);
+    fprintf(output, "%zu:%zu–%zu:", this->line + 1, start, end);
   switch (this->severity)
     {
     case MDS_KBDC_PARSE_ERROR_NOTE:            fprintf(output, " \033[01;36mnote:\033[00m ");            break;

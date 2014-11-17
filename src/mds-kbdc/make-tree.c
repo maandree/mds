@@ -134,6 +134,21 @@
 
 
 /**
+ * Create a new node named `subnode`
+ * 
+ * @param  LOWERCASE:identifier  The keyword, for the node type, in lower case
+ * @param  UPPERCASE:identifier  The keyword, for the node type, in upper case
+ */
+#define NEW_SUBNODE(LOWERCASE, UPPERCASE)				\
+  mds_kbdc_tree_##LOWERCASE##_t* subnode;				\
+  fail_if (xcalloc(subnode, 1, mds_kbdc_tree_##LOWERCASE##_t));		\
+  subnode->type = MDS_KBDC_TREE_TYPE_##UPPERCASE;			\
+  subnode->loc_line  = line_i;						\
+  subnode->loc_start = (size_t)(line - source_code.lines[line_i]);	\
+  subnode->loc_end   = (size_t)(end  - source_code.lines[line_i])
+
+
+/**
  * Update the tip of the tree stack with the current node
  * and change the pointer at the tip to the pointer to the
  * current node's down pointer
@@ -283,12 +298,12 @@
 		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end)); 	\
 		}									\
 	      else if (quote)                quote = (c != '"');			\
-	      else if (c == ' ')             break;					\
+	      else if (c == ' ')             { arg_end--; break; }			\
 	      else                           quote = (c == '"');			\
 	    }										\
-	  prev_end_char = *arg_end, *arg_end = '\0';					\
+	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
 	  fail_if ((node->var = strdup(line)) == NULL);					\
-	  end = line = arg_end;								\
+	  line = end;									\
 	}										\
     }											\
   while (0)
@@ -429,26 +444,22 @@
 	      else if (quote)                    quote = (c != '"');			\
 	      else if (c == '\"')                quote = 1;				\
 	      else if (c == '>')                 triangle = 0;				\
-	      else if ((c == ' ') && !triangle)  break;					\
+	      else if ((c == ' ') && !triangle)  { arg_end--; break; }			\
 	    }										\
-	  prev_end_char = *arg_end, *arg_end = '\0';					\
+	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
 	  if (*line == '<')								\
 	    {										\
-	      mds_kbdc_tree_keys_t* subnode;						\
-	      fail_if (xcalloc(subnode, 1, mds_kbdc_tree_keys_t));			\
-	      subnode->type = MDS_KBDC_TREE_TYPE_KEYS;					\
+	      NEW_SUBNODE(keys, KEYS);							\
 	      node->var = (mds_kbdc_tree_t*)subnode;					\
 	      fail_if ((subnode->keys = strdup(line)) == NULL);				\
 	    }										\
 	  else										\
 	    {										\
-	      mds_kbdc_tree_string_t* subnode;						\
-	      fail_if (xcalloc(subnode, 1, mds_kbdc_tree_string_t));			\
-	      subnode->type = MDS_KBDC_TREE_TYPE_STRING;				\
+	      NEW_SUBNODE(string, STRING);						\
 	      node->var = (mds_kbdc_tree_t*)subnode;					\
 	      fail_if ((subnode->string = strdup(line)) == NULL);			\
 	    }										\
-	  end = line = arg_end;								\
+	  line = end;									\
 	}										\
     }											\
   while (0)
@@ -494,11 +505,11 @@
 	      else if (quote)                    quote = (c != '"');			\
 	      else if (c == '\"')                quote = 1;				\
 	      else if (c == '>')                 triangle = 0;				\
-	      else if ((c == ' ') && !triangle)  break;					\
+	      else if ((c == ' ') && !triangle)  { arg_end--; break; }			\
 	    }										\
 	  prev_end_char = *arg_end, *arg_end = '\0';					\
 	  fail_if ((node->var = strdup(line)) == NULL);					\
-	  end = line = arg_end;				       				\
+	  end = arg_end, line = end;							\
 	}										\
     }											\
   while (0)
@@ -821,12 +832,13 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	      tree_stack[stack_ptr + 1] = &(node->otherwise);
 	      keyword_stack[stack_ptr++] = "if";
 	    }
-	  else if ((strstr(line, "if") == line) && ((line[3] == ' ') || (line[3] == '\0')))
+	  else if ((strstr(line, "if") == line) && ((line[2] == ' ') || (line[2] == '\0')))
 	    {
 	      /* else if */
 	      NEW_NODE(if, IF);
+	      node->loc_end = node->loc_start + 2;
 	      tree_stack[stack_ptr][0]->if_.otherwise = (mds_kbdc_tree_t*)node;
-	      line += 2;
+	      end = line += 2, prev_end_char = *end, *end = '\0';
 	      CHARS(condition);
 	      END;
 	      BRANCH("if");
@@ -943,8 +955,10 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  SEQUENCE_FULLY_POPPED(stack_orig);
 	  stack_ptr--;
 	  *end = prev_end_char;
+	  while (*line && (*line == ' '))
+	    line++;
 	  if (*line++ != ':')
-	    continue;
+	    continue; /* Not an error in macros. */
 #define node supernode
 #define inner result
 	  BRANCH(":");
@@ -954,6 +968,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  SEQUENCE_FULLY_POPPED(stack_orig);
 	  stack_ptr--;
 	  *end = prev_end_char;
+	  while (*line && (*line == ' '))
+	    line++;
 	  if (*line == '\0')
 	    continue;
 	  end = line + strlen(line), prev_end_char = *end;

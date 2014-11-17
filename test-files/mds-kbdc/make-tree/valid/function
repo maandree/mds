@@ -1,0 +1,15 @@
+function add/3
+  \add(\1 \add(\2 \3))
+end function
+
+# (function (@ 1 0-8) ‘add/3’
+#   (.inner
+#     (map (@ 2 2-2)
+#       (.sequence
+#         (keys (@ 2 2-22) ‘\add(\1 \add(\2 \3))’)
+#       )
+#       (.result nil)
+#     )
+#   )
+# )
+

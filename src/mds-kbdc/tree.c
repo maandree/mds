@@ -232,7 +232,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
   node = (mds_kbdc_tree_##LOWERCASE##_t*)this;				\
   fprintf(output, "%*.s(\033[01m%s\033[00m", indent, "", NOTATION);	\
   fprintf(output, " \033[36m(@ %zu %zu-%zu)\033[00m",			\
-	  node->loc_line, node->loc_start, node->loc_end)
+	  node->loc_line + 1, node->loc_start, node->loc_end)
 
 
 /**
@@ -360,7 +360,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 #define NOTHING(NOTATION)						\
   fprintf(output, "%*.s(\033[01m%s\033[00m", indent, "", NOTATION);	\
   fprintf(output, " \033[36m(@ %zu %zu-%zu)\033[00m",			\
-	  this->loc_line, this->loc_start, this->loc_end);		\
+	  this->loc_line + 1, this->loc_start, this->loc_end);		\
   fprintf(output, ")\n");						\
   break
 

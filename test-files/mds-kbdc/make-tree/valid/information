@@ -1,0 +1,7 @@
+information
+end information
+
+# (information (@ 1 0-11)
+#   (.inner nil)
+# )
+

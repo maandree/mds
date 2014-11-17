@@ -1,0 +1,14 @@
+information
+  language "Language"       # test that the quotes ends where it should
+  country "Country"
+  variant "Variant"
+end information
+
+# (information (@ 1 0-11)
+#   (.inner
+#     (language (@ 2 2-10) ‘"Language"’)
+#     (country (@ 3 2-9) ‘"Country"’)
+#     (variant (@ 4 2-9) ‘"Variant"’)
+#   )
+# )
+

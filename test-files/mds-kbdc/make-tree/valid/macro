@@ -1,0 +1,17 @@
+macro identity/1
+  <letter \1> : "\1"
+end macro
+
+# (macro (@ 1 0-5) ‘identity/1’
+#   (.inner
+#     (map (@ 2 2-2)
+#       (.sequence
+#         (keys (@ 2 2-13) ‘<letter \1>’)
+#       )
+#       (.result
+#         (string (@ 2 16-20) ‘"\1"’)
+#       )
+#     )
+#   )
+# )
+

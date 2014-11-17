@@ -473,7 +473,11 @@ typedef struct mds_kbdc_tree_let
 /**
  * Tree structure for mapping a (possible single element)
  * sequence of key combinations or strings to another
- * combination or string or sequence there of
+ * combination or string or sequence thereof
+ * 
+ * Inside functions this can be used for the return value,
+ * in such case `sequence` should not be `NULL` but
+ * `sequence.next` and `result` should be `NULL`
  */
 typedef struct mds_kbdc_tree_map
 {

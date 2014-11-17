@@ -1,0 +1,7 @@
+assumption
+end assumption
+
+# (assumption (@ 1 0-10)
+#   (.inner nil)
+# )
+

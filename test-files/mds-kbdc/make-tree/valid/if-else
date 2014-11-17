@@ -1,0 +1,29 @@
+if \1
+  <letter \1> : "\1"
+else
+  <letter \2> : "\2"
+end if
+
+# (if (@ 1 0-2) ‘\1’
+#   (.inner
+#     (map (@ 2 2-2)
+#       (.sequence
+#         (keys (@ 2 2-13) ‘<letter \1>’)
+#       )
+#       (.result
+#         (string (@ 2 16-20) ‘"\1"’)
+#       )
+#     )
+#   )
+#   (.otherwise nil
+#     (map (@ 4 2-2)
+#       (.sequence
+#         (keys (@ 4 2-13) ‘<letter \2>’)
+#       )
+#       (.result
+#         (string (@ 4 16-20) ‘"\2"’)
+#       )
+#     )
+#   )
+# )
+
