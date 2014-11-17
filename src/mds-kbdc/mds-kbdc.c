@@ -55,6 +55,7 @@ int main(int argc_, char** argv_)
 	  if ((*errors)->severity >= MDS_KBDC_PARSE_ERROR_ERROR)
 	    fatal = 1;
 	  mds_kbdc_parse_error_print(*errors++, stderr);
+	  errors++;
 	}
       mds_kbdc_parse_error_free_all(parse_errors);
       if (fatal)

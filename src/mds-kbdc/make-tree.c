@@ -542,7 +542,7 @@
 	      else if (quote)                    quote = (c != '"');			\
 	      else if (c == '\"')                quote = 1;				\
 	      else if (c == '>')                 triangle = 0;				\
-	      else if ((c == ' ') && !triangle)  { arg_end--; break; }			\
+	      else if (IS_END(c) && !triangle)  { arg_end--; break; }			\
 	    }										\
 	  prev_end_char = *arg_end, *arg_end = '\0';					\
 	  fail_if ((node->var = strdup(line)) == NULL);					\
@@ -769,6 +769,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	continue;
       prev_end_char = *end, *end = '\0';
       original = line;
+      fprintf(stderr, ":: %zu\n", line_i);
       
     redo:
       if (in_array)
@@ -996,11 +997,14 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	  if (prev_end_char)
 	    {
 	      NEW_NODE(macro_call, MACRO_CALL);
+	      old_end = end, old_prev_end_char = prev_end_char;
 	      NO_JUMP;
+	      *old_end = '\0';
 	      CHARS(name);
 #define inner arguments
 	      BRANCH(NULL);
 #undef inner
+	      end = old_end, prev_end_char = old_prev_end_char;
 	      line++;
 	      for (;;)
 		{
