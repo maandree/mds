@@ -5619,6 +5619,31 @@ letter("ö" "Ö")
 @code{\add( )} and @code{\sub( )} are calls to two
 built-in functions named `add/2' and `sub/2'.
 
+Alternation can be used to invoke a macro:
+
+@example
+letter(["a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"])
+letter(["n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"])
+@end example
+
+You may use `.' in an alternation, in that case
+macro is called once with the argument, casing it
+to invoke for example `letter/0' instead of
+`letter/1'.
+
+A related issue are for-loops. If we for
+example want to call the macro `letter/2' for
+all letters betweeh and including `a' and `z'
+we can just write
+
+@example
+for "a" to "z" as \1
+  letter(\1)
+end for
+@end example
+
+instead of using the alternation-trick.
+
 
 
 
