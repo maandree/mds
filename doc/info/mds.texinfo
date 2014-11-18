@@ -5171,6 +5171,8 @@ line feeds for new lines.
 @menu
 * Mapping Statements::                        Mapping keycodes to logical keys and text.
 * Sequence Mapping::                          Implementing dead keys and compositions.
+* Keyboard Layout Identification::            Specifing the layout language, country and variant.
+* Layout Assumptions::                        Making assumption about the keyboard layout.
 @end menu
 
 
@@ -5407,6 +5409,116 @@ you can write
 
 @example
 <dead compose> "|" ["|" .] "S" : "$"
+@end example
+
+
+
+@node Keyboard Layout Identification
+@subsection Keyboard Layout Identification
+
+Whilst it is possible to write a comment
+that states what keyboard layout a file
+implements, there is a standardise way
+to do this in code. The intention with
+this is to make it possible for graphical
+tools to easily list the layouts and
+easy to understand descriptions.
+
+There are three things a keyboard layout
+file should specify: the language, the
+country where it is used, and the variant.
+
+For example the Swedish QWERTY layout used
+in Sweden would have the code.
+
+@example
+information
+  language "Swedish"
+  country "Sweden"
+  variant "QWERTY"
+end information
+@end example
+
+If the layout is used multiple countries,
+or even for multiple lanuages, @code{country}
+and @code{language} may be specified on
+multiple lines. For example:
+
+@example
+information
+  language "Spanish"
+  country "Argentina"
+  country "Bolivia, Plurinational State of"
+  country "Chile"
+  country "Colombia"
+  country "Costa Rica"
+  country "Cuba"
+  country "Dominican Republic"
+  country "Ecuador"
+  country "El Salvador"
+  country "Guatemala"
+  country "Haiti"
+  country "Honduras"
+  country "Mexico"
+  country "Nicaragua"
+  country "Panama"
+  country "Paraguay"
+  country "Peru"
+  country "Puerto Rico"
+  country "Uruguay"
+  country "Venezuela, Bolivarian Republic of"
+  variant "Latin American, QWERTY"
+end information
+@end example
+
+or
+
+@example
+information
+  language "Norwegian"
+  language "Bokmål"
+  language "Nynorks"
+  country "Norway"
+  variant "QWERTY"
+end information
+@end example
+
+
+
+@node Layout Assumptions
+@subsection Layout Assumptions
+
+When writing generic compose tables it can be helpful
+to let the compiler assume that a certain set of keys
+will be provided by the layout file and not making
+other assumptions. This is helpful because if you want
+to make an compose table that can compose all characters
+given only the ASCII letters, modifiers and a compose
+key, rather than written a phony layout file and select
+it each time you compile to compose table you can state
+in the compose table file that the compiler should as
+that those keys are provided when the compose table file
+is compile by itself. If this is done, the compiler can
+warn when one of the compositions cannot be reached from
+those basic keys.
+
+If we want to make the compiler assume that @kbd{compose}
+is available as a dead key, that @kbd{shift}, @kbd{altgr}
+and @kbd{space} are available and that the ASCII letter,
+digits and some basic special characters are available we
+can write.
+
+@example
+assumption
+  have <dead compose>
+  have <shift>
+  have <altgr>
+  have <space>
+  have_range "0" "9"
+  have_range "a" "z"
+  have_range "A" "Z"
+  have_chars "!\"@@#$%&/@{([)]=@}?\\^~*'<>|,;.:-_"
+end assumption
 @end example
 
 
