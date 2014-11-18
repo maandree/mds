@@ -5364,6 +5364,51 @@ The other way is to write
 This also requires that @kbd{compose} is not
 released between the key-presses.
 
+The compose table is filled with compositions
+where it does not matter in which order you
+press some of the keys. For example, instead of
+
+@example
+<dead compose> "S" "|" : "$"
+<dead compose> "|" "S" : "$"
+@end example
+
+you can write
+
+@example
+<dead compose> ("S" "|") : "$"
+@end example
+
+@code{( )} denotes an unordered subsequence.
+You can also use @code{[ ]} for alternation.
+For example, instead of
+
+@example
+<dead compose> ("S" "|") : "$"
+<dead compose> ("s" "|") : "$"
+@end example
+
+you can write
+
+@example
+<dead compose> (["S" "s"] "|") : "$"
+@end example
+
+Inside an alternation you can use a dot
+for specify that no key press is needed.
+For example, instead of
+
+@example
+<dead compose> "|" "S" : "$"
+<dead compose> "|" "|" "S" : "$"
+@end example
+
+you can write
+
+@example
+<dead compose> "|" ["|" .] "S" : "$"
+@end example
+
 
 
 @node Discussion
