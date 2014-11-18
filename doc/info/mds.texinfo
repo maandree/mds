@@ -5337,7 +5337,7 @@ another sequence:
 @end example
 
 Of course, the input does not need to be
-a sequnce:
+a sequence:
 
 @example
 <ultra tab> : <tab> <tab> <tab> <tab>
