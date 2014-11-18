@@ -5142,6 +5142,7 @@ and not in the layouts.
 
 @menu
 * Keyboard Layout Syntax::                    How to write your how layouts.
+* Builtin Functions::                         Functions provided by the compiler.
 @end menu
 
 
@@ -5175,7 +5176,6 @@ line feeds for new lines.
 * Layout Assumptions::                        Making assumption about the keyboard layout.
 * Include Statement::                         Including base files.
 * Layout Macros and Functions::               Reducing repetition.
-* Builtin Functions::                         Functions provided by the compiler.
 @end menu
 
 
@@ -5790,7 +5790,7 @@ or function takes.
 
 
 @node Builtin Functions
-@subsection Builtin Functions
+@section Builtin Functions
 
 
 
