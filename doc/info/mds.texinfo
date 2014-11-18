@@ -5340,7 +5340,7 @@ Of course, the input does not need to be
 a sequence:
 
 @example
-<ultra tab> : <tab> <tab> <tab> <tab>
+<super tab> : <tab> <tab> <tab> <tab>
 @end example
 
 En alternative to @kbd{compose} as a dead key,
