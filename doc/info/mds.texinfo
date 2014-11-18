@@ -5174,6 +5174,7 @@ line feeds for new lines.
 * Keyboard Layout Identification::            Specifing the layout language, country and variant.
 * Layout Assumptions::                        Making assumption about the keyboard layout.
 * Include Statement::                         Including base files.
+* Layout Macros::                             Reducing repetition.
 @end menu
 
 
@@ -5184,8 +5185,8 @@ line feeds for new lines.
 The most fundamental part of the layout files are mapping
 statements. These specify which keycode the keys have
 and what happens when certain keys pressed, combined or
-pressed and a sequence. If we want to map keycode 57 to be
-space key we write
+pressed and a sequence. If we want to map keycode 57 to
+the space key we write
 
 @example
 <keycode 57> : <space>
@@ -5545,6 +5546,79 @@ statements to implement its basics:
 include "../common/qwerty"
 include "../common/base"
 @end example
+
+
+
+@node Layout Macros
+@subsection Layout Macros
+
+There is a lot of repetitive work in layouts, for instance
+all letters need mapping for any combination of use of
+@kbd{shift} and @kbd{compose}. To reduce this, you can
+define macros.
+
+For example instead of writing
+
+@example
+<letter a> : "a"
+<shift letter a> : "A"
+<caps letter a> : "A"
+<shift caps letter a> : "a"
+
+<letter b> : "b"
+<shift letter b> : "B"
+<caps letter b> : "B"
+<shift caps letter b> : "b"
+
+# and so on ...
+@end example
+
+you can use a macro and write
+
+@example
+macro letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+
+letter("a" "A")
+letter("b" "B")
+# and so on ...
+@end example
+
+The name of this macro is ``letter/2'',
+but it is called with the name ``letter''
+and two arguments. The ``/2'' suffix means
+that it is invoked with exactly two arguments.
+You can use this do define multiple version
+of the same macro, with the same invocation
+name but with different number of arguments.
+For example:
+
+@example
+macro letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+macro letter/1
+  letter(\1 \add(\sub(\1 "a") "A"))
+end macro
+
+letter("a")
+letter("b")
+# and so on ...
+letter("å" "Å")
+letter("ä" "Ä")
+letter("ö" "Ö")
+@end example
+
+@code{\add( )} and @code{\sub( )} are calls to two
+built-in functions named ``add/2'' and ``sub/2''.
+
 
 
 
