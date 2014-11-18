@@ -5739,11 +5739,12 @@ can equivalently be writen using @code{let} as
 
 @example
 macro latter/1
-  let \2 : 1
   if \not(\greater(\1 "z"))
     let \2 : \sub("a" "A")
   else if \not(\greater(\1 "þ"))
     let \2 : \sub("à" "À")
+  else
+    let \2 : 1
   end if
   letter(\1 \sub(\1 \2))
 end macro
