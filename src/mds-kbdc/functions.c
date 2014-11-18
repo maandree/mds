@@ -257,7 +257,7 @@ static char32_t* function_builtin_less_2(va_list args)
 }
 
 
-/* static char32_t* function_builtin_set_2(va_list args);  (variable index value) */
+/* static char32_t* function_builtin_set_3(va_list args);  (variable index value) */
 /* static char32_t* function_builtin_get_2(va_list args);  (variable index) */
 
 
