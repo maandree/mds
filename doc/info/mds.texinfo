@@ -5321,8 +5321,48 @@ goes first.
 @node Sequence Mapping
 @subsection Sequence Mapping
 
-TODO
+Compose tables use mapping statements to map
+key sequences. For example the compose key
+followed by two `s':es makes an `ß':
 
+@example
+<dead compose> "s" "s" : "ß"
+@end example
+
+It is also possible to map a sequence to
+another sequence:
+
+@example
+<dead compose> <tab> : <tab> <tab> <tab> <tab>
+@end example
+
+Of course, the input does not need to be
+a sequnce:
+
+@example
+<ultra tab> : <tab> <tab> <tab> <tab>
+@end example
+
+En alternative to @kbd{compose} as a dead key,
+is @kbd{compose} as a modifier. If you use this,
+the compose table need to be written for just
+that. There two ways do this this. Either you
+can write for example
+
+@example
+<compose "s"> <compose "s"> : "ß"
+@end example
+
+This maps two `s':es to a `ß', but requires that
+@kbd{compose} is held down during both key-presses.
+The other way is to write
+
+@example
+<compose "s", "s"> : "ß" # Note the `,'
+@end example
+
+This also requires that @kbd{compose} is not
+released between the key-presses.
 
 
 
