@@ -5632,7 +5632,7 @@ to invoke for example `letter/0' instead of
 `letter/1'.
 
 A related issue are for-loops. If we for
-example want to call the macro `letter/2' for
+example want to call the macro `letter/1' for
 all letters betweeh and including `a' and `z'
 we can just write
 
