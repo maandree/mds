@@ -5478,7 +5478,7 @@ or
 information
   language "Norwegian"
   language "Bokmål"
-  language "Nynorks"
+  language "Nynorsk"
   country "Norway"
   variant "QWERTY"
 end information
