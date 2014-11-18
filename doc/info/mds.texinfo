@@ -5176,6 +5176,7 @@ line feeds for new lines.
 * Layout Assumptions::                        Making assumption about the keyboard layout.
 * Include Statement::                         Including base files.
 * Layout Macros and Functions::               Reducing repetition.
+* Escaping::                                  Backslashes have so many uses.
 @end menu
 
 
@@ -5786,6 +5787,53 @@ not start with `0'--`9'. Additionally, when declared
 macro and function names must be suffixed with `/'
 follwed by the exact number of arguments the macro
 or function takes.
+
+
+
+@node Escaping
+@subsection Escaping
+
+Similar to most, if not all, programming language, a
+backslash inside quotes can be used to parse the next
+character with special meaning. For instance, `\"' is
+parsed as a literal `"', and `\\' is parsed as a literal
+`\'. `\>' is too parsed as a literal `>', for example
+you may need to write @code{<letter \>>}. The characters
+`(', `)', `[', `]', `@{', `@}', `<' and `,' also follow
+this rule to make those character accesible inside
+a @code{< >}. But `\' can also be used to specify
+characters by their code point, for example if you want
+an `æ' you can write @code{"\u00E6"} or @code{"\uE6"},
+instead of @code{"æ"}. You can also write @code{"\0346"},
+the difference between `\0' and `\u' is that `\0' uses
+octal whereas `\u' uses hexadecimal.
+
+`\' can also be used to access variables and parameters.
+For example `\1' in
+
+@example
+macro letter/2
+  <letter \1> : "\1"
+  <shift letter \1> : "\2"
+  <caps letter \1> : "\2"
+  <shift caps letter \1> : "\1"
+end macro
+letter("å" "Å")
+@end example
+
+is expanded to an `å', where as `\2' is expanded to an `Å'.
+
+`\' is also used to call functions, for example if
+you want to call the function `f/0' you write
+@code{\f()}.
+
+Because numerical (possibly prefixed with an `u') are of
+variable length, it is possible to specify the escape's
+termination point with a dot. For instance, if you
+want the value of the first variable (\1) followed by
+two zeroes, you do not write `\100' as that would expand
+to the value of the hundredth variable. Instead you
+write `\1.00'.
 
 
 
