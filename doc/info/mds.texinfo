@@ -5173,6 +5173,7 @@ line feeds for new lines.
 * Sequence Mapping::                          Implementing dead keys and compositions.
 * Keyboard Layout Identification::            Specifing the layout language, country and variant.
 * Layout Assumptions::                        Making assumption about the keyboard layout.
+* Include Statement::                         Including base files.
 @end menu
 
 
@@ -5519,6 +5520,30 @@ assumption
   have_range "A" "Z"
   have_chars "!\"@@#$%&/@{([)]=@}?\\^~*'<>|,;.:-_"
 end assumption
+@end example
+
+
+
+@node Include Statement
+@subsection Include Statement
+
+Writing layout files from scratch is probably something
+you want to avoid. For instance you would we need to
+create mappings for `A' to `Z' and `0' to `9' (assuming
+its a latin-based language), and map up all specific key,
+like modifiers, space, arrow keys, and the keypad. And
+you would have to make sure do only that the keys are
+mapped but that they are mapped to the text the should
+product and that they word correcly with the modifiers.
+These are things most keyboards have in common with many
+other layouts.
+
+For instance @file{layout/sv/qwerty} has two include
+statements to implement its basics:
+
+@example
+include "../common/qwerty"
+include "../common/base"
 @end example
 
 
