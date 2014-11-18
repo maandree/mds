@@ -5840,6 +5840,70 @@ write `\1.00'.
 @node Builtin Functions
 @section Builtin Functions
 
+To help you write meaningful functions in your keyboard
+layout files, the compiler defines an almost minimal set
+of basic functions:
+
+@table @code
+@item add/2
+The code points in \1 plus the code points of the
+corresponding characters in \2. If \1 and \2 are
+not of the same length, the returned string will
+be of the length of the longer of the parameters,
+and modulo is used to map to the corresponing
+character.
+@item sub/2
+Like `add/2' but subtraction.
+@item mul/2
+Like `add/2' but multiplication.
+@item div/2
+Like `add/2' but division.
+@item mod/2
+Like `add/2' but modulo.
+@item rsh/2
+Like `add/2' but rightward bitwise shift.
+If a character in \2 is has a code point
+greater than 30, undefined behaviour is
+invoked.
+@item lsh/2
+Like `add/2' but leftward bitwise shift.
+If a character in \2 is has a code point
+greater than 30, undefined behaviour is
+invoked.
+@item or/2
+Like `add/2' but bitwise OR.
+@item and/2
+Like `add/2' but bitwise AND.
+@item xor/2
+Like `add/2' but bitwise XOR.
+@item not/1
+For each character in \1, evaluate to
+zero if the character is not zero, and
+one if the character is zero.
+@item equals/2
+For each character, evalute to one if
+the characters in \1 and \2 are equal
+and zero otherwise.
+@item greater/2
+Like `equals/2' but \1 greater than \2
+rather than \1 equals \2.
+@item less/2
+Like `equals/2' but \1 less than \2
+rather than \1 equals \2.
+@item set/3
+Set the element with index \2, in the
+array with variable index \1, to \3,
+and return \3.
+For example @code{\set(1 0 4)} sets the
+first element in \1 to 4.
+@item get/2
+Return the element with index \2 in the
+array with variable index \1.
+For example after @code{\set(1 0 4)} or
+@code{let \1 : @{ 4 3 2 1 0 @}} has been
+used, @code{\get(1 0)} evaluates to 4.
+@end table
+
 
 
 @node Discussion
