@@ -5627,7 +5627,7 @@ letter(["n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"])
 @end example
 
 You may use `.' in an alternation, in that case
-macro is called once with the argument, casing it
+macro is called once with the argument, causing it
 to invoke for example `letter/0' instead of
 `letter/1'.
 
