@@ -5174,7 +5174,7 @@ line feeds for new lines.
 * Keyboard Layout Identification::            Specifing the layout language, country and variant.
 * Layout Assumptions::                        Making assumption about the keyboard layout.
 * Include Statement::                         Including base files.
-* Layout Macros::                             Reducing repetition.
+* Layout Macros and Functions::               Reducing repetition.
 @end menu
 
 
@@ -5549,8 +5549,8 @@ include "../common/base"
 
 
 
-@node Layout Macros
-@subsection Layout Macros
+@node Layout Macros and Functions
+@subsection Layout Macros and Functions
 
 There is a lot of repetitive work in layouts, for instance
 all letters need mapping for any combination of use of
@@ -5644,6 +5644,110 @@ end for
 
 instead of using the alternation-trick.
 
+You call also use if-statments. For example
+
+@example
+for "à" to "þ" as \1
+  # times sign is not upper case of division sign
+  if \not(\equals(\a "\u00F7"))
+    letter(\1 \add(\sub(\1 "à") "À"))
+  end if
+end for
+@end example
+
+or equivalently
+
+@example
+for "à" to "þ" as \1
+  if \equals(\a "\u00F7")
+    continue # times sign is not upper case of division sign
+  end if
+  letter(\1 \add(\sub(\1 "à") "À"))
+end for
+@end example
+
+@code{continue} can be used to stop the iteration of
+the innermost for-loop and skip to the next iteration.
+You can also use @code{break}, but it also has the
+effect to stop the entire loop. Similarly, @code{return}
+can be used to break an entire macro call, or function
+call.
+
+You can also use @code{if} for more example things,
+and use @code{else if} and @code{else if}:
+
+@example
+macro latter/1
+  if \not(\greater(\1 "z"))
+    letter(\1 \add(\sub(\1 "a") "A"))
+  else if \not(\greater(\1 "þ"))
+    letter(\1 \add(\sub(\1 "à") "À"))
+  else
+    letter(\1 \sub(\1 1))
+  end if
+end macro
+@end example
+
+Note that there is no quotes around the `a'
+in @code{letter(\1 \sub(\1 1))}. This means
+that the argument will be than value 1 rather
+than the code point of the character `1'. Note
+however that values lower than zero or equals
+to or greater than 2 to the power of 31 not
+allowed and can either cause compile-time
+error or erroneous compiled files.
+
+Functions are similar to function macros,
+the difference is that a function is called
+inline and is prefixed with slash, and rather
+than inline the code inside it, the evalutes
+to the last value it evaluted before it returned.
+
+For example instead of @code{\not(\greater(\1 "z"))}
+you can write @code{\less_eq(\1 "z")} after you
+have defined the function `less_eq/2' with the
+following code:
+
+@example
+function less_eq/2
+  \not(\greater(\1 \2))
+end function
+@end example
+
+A final constract to make layout code less
+repetitive is let-statements. This can be
+used to assign values to variables, and
+declar variables in undefined. Variable names
+can only be numerical and most not start with
+a zero. @code{\0} is not valid variable name.
+
+The code
+
+@example
+macro latter/1
+  if \not(\greater(\1 "z"))
+    letter(\1 \add(\sub(\1 "a") "A"))
+  else if \not(\greater(\1 "þ"))
+    letter(\1 \add(\sub(\1 "à") "À"))
+  else
+    letter(\1 \sub(\1 1))
+  end if
+end macro
+@end example
+
+can equivalently be writen using @code{let} as
+
+@example
+macro latter/1
+  let \2 : 1
+  if \not(\greater(\1 "z"))
+    let \2 : \sub("a" "A")
+  else if \not(\greater(\1 "þ"))
+    let \2 : \sub("à" "À")
+  end if
+  letter(\1 \sub(\1 \2))
+end macro
+@end example
 
 
 
