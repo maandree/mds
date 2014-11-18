@@ -5588,9 +5588,9 @@ letter("b" "B")
 # and so on ...
 @end example
 
-The name of this macro is ``letter/2'',
-but it is called with the name ``letter''
-and two arguments. The ``/2'' suffix means
+The name of this macro is `letter/2',
+but it is called with the name `letter'
+and two arguments. The `/2'-suffix means
 that it is invoked with exactly two arguments.
 You can use this do define multiple version
 of the same macro, with the same invocation
@@ -5617,7 +5617,7 @@ letter("ö" "Ö")
 @end example
 
 @code{\add( )} and @code{\sub( )} are calls to two
-built-in functions named ``add/2'' and ``sub/2''.
+built-in functions named `add/2' and `sub/2'.
 
 
 
