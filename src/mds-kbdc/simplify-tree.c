@@ -21,6 +21,27 @@
 
 
 /**
+ * Wrapper around `asprintf` that makes sure that first
+ * argument gets set to `NULL` on error and that zero is
+ * returned on success rather than the number of printed
+ * characters
+ * 
+ * @param   VAR:char**            The output parameter for the string
+ * @param   ...:const char*, ...  The format string and arguments
+ * @return  :int                  Zero on success, -1 on error
+ */
+#define xasprintf(VAR, ...)					\
+  (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
+
+
+/**
+ * Pointer to the beginning of the current line
+ */
+#define LINE			\
+  (source_code.lines[line_i])
+
+
+/**
  * Add an error the to error list
  * 
  * @param  ERROR_IS_IN_FILE:int  Whether the error is in the layout code
@@ -74,4 +95,6 @@ int simplify_tree(mds_kbdc_tree_t** restrict tree, mds_kbdc_parse_error_t*** res
 
 
 #undef NEW_ERROR
+#undef LINE
+#undef xasprintf
 
