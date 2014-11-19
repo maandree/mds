@@ -19,7 +19,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
+
+
+#define C(t)  MDS_KBDC_TREE_TYPE_##t
 
 
 /**
@@ -72,78 +76,78 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
   
   switch (this->type)
     {
-    case MDS_KBDC_TREE_TYPE_INFORMATION:
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION:
-    case MDS_KBDC_TREE_TYPE_ALTERNATION:
-    case MDS_KBDC_TREE_TYPE_UNORDERED:
+    case C(INFORMATION):
+    case C(ASSUMPTION):
+    case C(ALTERNATION):
+    case C(UNORDERED):
       xdestroy(struct mds_kbdc_tree_nesting*, inner);
       break;
       
-    case MDS_KBDC_TREE_TYPE_INFORMATION_LANGUAGE:
-    case MDS_KBDC_TREE_TYPE_INFORMATION_COUNTRY:
-    case MDS_KBDC_TREE_TYPE_INFORMATION_VARIANT:
+    case C(INFORMATION_LANGUAGE):
+    case C(INFORMATION_COUNTRY):
+    case C(INFORMATION_VARIANT):
       xfree(struct mds_kbdc_tree_information_data*, data);
       break;
       
-    case MDS_KBDC_TREE_TYPE_FUNCTION:
-    case MDS_KBDC_TREE_TYPE_MACRO:
+    case C(FUNCTION):
+    case C(MACRO):
       xfree(struct mds_kbdc_tree_callable*, name);
       xdestroy(struct mds_kbdc_tree_callable*, inner);
       break;
       
-    case MDS_KBDC_TREE_TYPE_INCLUDE:
+    case C(INCLUDE):
       xfree(mds_kbdc_tree_include_t*, filename);
       break;
       
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE:
+    case C(ASSUMPTION_HAVE):
       xdestroy(mds_kbdc_tree_assumption_have_t*, data);
       break;
       
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_CHARS:
+    case C(ASSUMPTION_HAVE_CHARS):
       xfree(mds_kbdc_tree_assumption_have_chars_t*, chars);
       break;
       
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_RANGE:
+    case C(ASSUMPTION_HAVE_RANGE):
       xfree(mds_kbdc_tree_assumption_have_range_t*, first);
       xfree(mds_kbdc_tree_assumption_have_range_t*, last);
       break;
       
-    case MDS_KBDC_TREE_TYPE_FOR:
+    case C(FOR):
       xfree(mds_kbdc_tree_for_t*, first);
       xfree(mds_kbdc_tree_for_t*, last);
       xfree(mds_kbdc_tree_for_t*, variable);
       xdestroy(mds_kbdc_tree_for_t*, inner);
       break;
       
-    case MDS_KBDC_TREE_TYPE_IF:
+    case C(IF):
       xfree(mds_kbdc_tree_if_t*, condition);
       xdestroy(mds_kbdc_tree_if_t*, inner);
       xdestroy(mds_kbdc_tree_if_t*, otherwise);
       break;
       
-    case MDS_KBDC_TREE_TYPE_LET:
+    case C(LET):
       xfree(mds_kbdc_tree_let_t*, variable);
       xdestroy(mds_kbdc_tree_let_t*, value);
       break;
       
-    case MDS_KBDC_TREE_TYPE_MAP:
+    case C(MAP):
       xdestroy(mds_kbdc_tree_map_t*, sequence);
       xdestroy(mds_kbdc_tree_map_t*, result);
       break;
       
-    case MDS_KBDC_TREE_TYPE_ARRAY:
+    case C(ARRAY):
       xdestroy(mds_kbdc_tree_array_t*, elements);
       break;
       
-    case MDS_KBDC_TREE_TYPE_KEYS:
+    case C(KEYS):
       xfree(mds_kbdc_tree_keys_t*, keys);
       break;
       
-    case MDS_KBDC_TREE_TYPE_STRING:
+    case C(STRING):
       xfree(mds_kbdc_tree_string_t*, string);
       break;
       
-    case MDS_KBDC_TREE_TYPE_MACRO_CALL:
+    case C(MACRO_CALL):
       xfree(mds_kbdc_tree_macro_call_t*, name);
       xdestroy(mds_kbdc_tree_macro_call_t*, arguments);
       break;
@@ -217,6 +221,108 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
   mds_kbdc_tree_destroy(this);
   free(this);
 }
+
+
+
+/**
+ * Duplicate a subtree and goto `fail` on failure
+ * 
+ * @param  member:identifer  The member in the tree to duplicate
+ */
+#define T(member)								\
+  if (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL)  goto fail
+
+
+/**
+ * Duplicate a string and goto `fail` on failure
+ * 
+ * @param  member:identifer  The member in the tree to duplicate
+ */
+#define S(member)							\
+  if (n->member = strdup(t->member), n->member == NULL)  goto fail
+
+
+/**
+ * Cast the trees to a specialised subtype
+ * 
+ * @param  LOWERCASE:identifer   The name of subtype
+ */
+#define NODE(LOWERCASE)								\
+  mds_kbdc_tree_##LOWERCASE##_t* n = (mds_kbdc_tree_##LOWERCASE##_t*)node;	\
+  mds_kbdc_tree_##LOWERCASE##_t* t = (mds_kbdc_tree_##LOWERCASE##_t*)this
+
+
+/**
+ * Create a duplicate of a tree node and its children
+ * 
+ * @param   this  The tree node
+ * @return        A duplicate of `this`, `NULL` on error
+ */
+mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
+{
+  typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_nesting_t;
+  typedef struct mds_kbdc_tree_callable mds_kbdc_tree_callable_t;
+  typedef struct mds_kbdc_tree_information_data mds_kbdc_tree_information_data_t;
+  mds_kbdc_tree_t* node = calloc(1, sizeof(mds_kbdc_tree_t));
+  int saved_errno;
+  
+  if (node == NULL)
+    return NULL;
+  
+  node->type = this->type;
+  node->loc_line = this->loc_line;
+  node->loc_start = this->loc_start;
+  node->loc_end = this->loc_end;
+  node->next = mds_kbdc_tree_dup(this->next);
+  if (node->next == NULL)  goto fail;
+  
+  switch (this->type)
+    {
+    case C(INFORMATION):
+    case C(ASSUMPTION):
+    case C(ALTERNATION):
+    case C(UNORDERED):              { NODE(nesting); T(inner);                          }  break;
+    case C(FUNCTION):
+    case C(MACRO):                  { NODE(callable); S(name);T(inner);                 }  break;
+    case C(ASSUMPTION_HAVE):        { NODE(assumption_have); T(data);                   }  break;
+    case C(ARRAY):                  { NODE(array); T(elements);                         }  break;
+    case C(LET):                    { NODE(let); S(variable);T(value);                  }  break;
+    case C(MACRO_CALL):             { NODE(macro_call); S(name);T(arguments);           }  break;
+    case C(INFORMATION_LANGUAGE):
+    case C(INFORMATION_COUNTRY):
+    case C(INFORMATION_VARIANT):    { NODE(information_data); S(data);                  }  break;
+    case C(INCLUDE):                { NODE(include); S(filename);                       }  break;
+    case C(ASSUMPTION_HAVE_CHARS):  { NODE(assumption_have_chars); S(chars);            }  break;
+    case C(KEYS):                   { NODE(keys); S(keys);                              }  break;
+    case C(STRING):                 { NODE(string); S(string);                          }  break;
+    case C(ASSUMPTION_HAVE_RANGE):  { NODE(assumption_have_range); S(first);S(last);    }  break;
+    case C(FOR):                    { NODE(for); S(first);S(last);S(variable);T(inner); }  break;
+    case C(IF):                     { NODE(if); S(condition);T(inner);T(otherwise);     }  break;
+    case C(MAP):                    { NODE(map); T(sequence);T(result);                 }  break;
+      
+    case C(NOTHING):
+    case C(RETURN):
+    case C(BREAK):
+    case C(CONTINUE):
+      break;
+      
+    default:
+      abort();
+      break;
+    }
+  
+  return node;
+ fail:
+  saved_errno = errno;
+  mds_kbdc_tree_free(node);
+  errno = saved_errno;
+  return NULL;
+}
+
+
+#undef NODE
+#undef S
+#undef T
 
 
 
@@ -365,6 +471,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
   break
 
 
+
 /**
  * Print a tree into a file
  * 
@@ -381,30 +488,30 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
   switch (this->type)
     {
       /* These have their break built into their macro. */
-    case MDS_KBDC_TREE_TYPE_INFORMATION:            NESTING(information, "information", inner);
-    case MDS_KBDC_TREE_TYPE_INFORMATION_LANGUAGE:   SIMPLEX(information_language, "language", data);
-    case MDS_KBDC_TREE_TYPE_INFORMATION_COUNTRY:    SIMPLEX(information_country, "country", data);
-    case MDS_KBDC_TREE_TYPE_INFORMATION_VARIANT:    SIMPLEX(information_variant, "variant", data);
-    case MDS_KBDC_TREE_TYPE_INCLUDE:                SIMPLEX(include, "include", filename);
-    case MDS_KBDC_TREE_TYPE_FUNCTION:               NAMED_NESTING(function, "function", name, inner);
-    case MDS_KBDC_TREE_TYPE_MACRO:                  NAMED_NESTING(macro, "macro", name, inner);
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION:             NESTING(assumption, "assumption", inner);
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE:        NESTING(assumption_have, "have", data);
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_CHARS:  SIMPLEX(assumption_have_chars, "have_chars", chars);
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION_HAVE_RANGE:  DUPLEX(assumption_have_range, "have_range", first, last);
-    case MDS_KBDC_TREE_TYPE_LET:                    NAMED_NESTING(let, "let", variable, value);
-    case MDS_KBDC_TREE_TYPE_ARRAY:                  NESTING(array, "array", elements);
-    case MDS_KBDC_TREE_TYPE_KEYS:                   SIMPLEX(keys, "keys", keys);
-    case MDS_KBDC_TREE_TYPE_STRING:                 SIMPLEX(string, "string", string);
-    case MDS_KBDC_TREE_TYPE_NOTHING:                NOTHING("nothing");
-    case MDS_KBDC_TREE_TYPE_ALTERNATION:            NESTING(alternation, "alternation", inner);
-    case MDS_KBDC_TREE_TYPE_UNORDERED:              NESTING(unordered, "unordered", inner);
-    case MDS_KBDC_TREE_TYPE_MACRO_CALL:             NAMED_NESTING(macro_call, "macro_call", name, arguments);
-    case MDS_KBDC_TREE_TYPE_RETURN:                 NOTHING("return");
-    case MDS_KBDC_TREE_TYPE_BREAK:                  NOTHING("break");
-    case MDS_KBDC_TREE_TYPE_CONTINUE:               NOTHING("continue");
+    case C(INFORMATION):            NESTING(information, "information", inner);
+    case C(INFORMATION_LANGUAGE):   SIMPLEX(information_language, "language", data);
+    case C(INFORMATION_COUNTRY):    SIMPLEX(information_country, "country", data);
+    case C(INFORMATION_VARIANT):    SIMPLEX(information_variant, "variant", data);
+    case C(INCLUDE):                SIMPLEX(include, "include", filename);
+    case C(FUNCTION):               NAMED_NESTING(function, "function", name, inner);
+    case C(MACRO):                  NAMED_NESTING(macro, "macro", name, inner);
+    case C(ASSUMPTION):             NESTING(assumption, "assumption", inner);
+    case C(ASSUMPTION_HAVE):        NESTING(assumption_have, "have", data);
+    case C(ASSUMPTION_HAVE_CHARS):  SIMPLEX(assumption_have_chars, "have_chars", chars);
+    case C(ASSUMPTION_HAVE_RANGE):  DUPLEX(assumption_have_range, "have_range", first, last);
+    case C(LET):                    NAMED_NESTING(let, "let", variable, value);
+    case C(ARRAY):                  NESTING(array, "array", elements);
+    case C(KEYS):                   SIMPLEX(keys, "keys", keys);
+    case C(STRING):                 SIMPLEX(string, "string", string);
+    case C(NOTHING):                NOTHING("nothing");
+    case C(ALTERNATION):            NESTING(alternation, "alternation", inner);
+    case C(UNORDERED):              NESTING(unordered, "unordered", inner);
+    case C(MACRO_CALL):             NAMED_NESTING(macro_call, "macro_call", name, arguments);
+    case C(RETURN):                 NOTHING("return");
+    case C(BREAK):                  NOTHING("break");
+    case C(CONTINUE):               NOTHING("continue");
       
-    case MDS_KBDC_TREE_TYPE_FOR:
+    case C(FOR):
       {
 	NODE(for, "for");
 	STRING(first);
@@ -417,7 +524,7 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
       }
       break;
       
-    case MDS_KBDC_TREE_TYPE_IF:
+    case C(IF):
       {
 	NODE(if, "if");
 	STRING(condition);
@@ -427,7 +534,7 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
       }
       break;
       
-    case MDS_KBDC_TREE_TYPE_MAP:
+    case C(MAP):
       {
 	NODE(map, "map");
 	BRANCH(sequence);
@@ -468,4 +575,6 @@ void mds_kbdc_tree_print(mds_kbdc_tree_t* restrict this, FILE* output)
 #undef COMPLEX
 #undef BRANCH
 #undef NODE
+
+#undef C
 

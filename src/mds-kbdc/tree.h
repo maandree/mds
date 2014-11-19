@@ -714,6 +714,16 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this);
 
 
 /**
+ * Create a duplicate of a tree node and
+ * its children
+ * 
+ * @param   this  The tree node
+ * @return        A duplicate of `this`, `NULL` on error
+ */
+mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this);
+
+
+/**
  * Print a tree into a file
  * 
  * @param  this    The tree node
