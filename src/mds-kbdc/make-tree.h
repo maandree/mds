@@ -24,7 +24,7 @@
 
 
 /**
- * Parse a file into a syntex tree
+ * Parse a file into a syntax tree
  * 
  * @param   filename  The filename of the file to parse
  * @param   result    Output parameter for the root of the tree, `NULL` if -1 is returned
