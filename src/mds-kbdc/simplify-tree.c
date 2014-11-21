@@ -55,6 +55,7 @@
 	{											\
 	  errors_size = errors_size ? (errors_size << 1) : 2;					\
 	  fail_if (xxrealloc(old_errors, *errors, errors_size, mds_kbdc_parse_error_t*));	\
+	  old_errors = NULL;									\
 	}											\
       fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));					\
       (*errors)[errors_ptr + 0] = error;							\
@@ -75,22 +76,105 @@
 
 
 /**
+ * Temporary storage variable for the new error,
+ * it is made available so that it is easy to
+ * make adjustments to the error after calling
+ * `NEW_ERROR`
+ */
+static mds_kbdc_parse_error_t* error = NULL;
+
+/**
+ * The number of elements allocated for `*errors`
+ */
+static size_t errors_size = 0;
+
+/**
+ * The number of elements stored in `*errors`
+ */
+static size_t errors_ptr = 0;
+
+/**
+ * Pointer to the list of errors
+ */
+static mds_kbdc_parse_error_t*** errors;
+
+/**
+ * The old `*errors` used temporary when reallocating `*errors`
+ */
+static mds_kbdc_parse_error_t** old_errors = NULL;
+
+
+
+/**
+ * Simplify a subtree
+ * 
+ * @param   tree  The tree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify(mds_kbdc_tree_t* restrict tree)
+{
+#define s(expr)  if ((r = simplify(tree->expr)))  return r;
+  int r;
+ again:
+  if (tree == NULL)
+    return 0;
+  
+  switch (tree->type)
+    {
+    case MDS_KBDC_TREE_TYPE_INFORMATION:  s (information.inner);  break;
+    case MDS_KBDC_TREE_TYPE_FUNCTION:     s (function.inner);     break;
+    case MDS_KBDC_TREE_TYPE_MACRO:        s (macro.inner);        break;
+    case MDS_KBDC_TREE_TYPE_ASSUMPTION:   s (assumption.inner);   break;
+    case MDS_KBDC_TREE_TYPE_FOR:          s (for_.inner);         break;
+    case MDS_KBDC_TREE_TYPE_IF:
+      s (if_.inner);
+      s (if_.otherwise);
+      break;
+      
+    case MDS_KBDC_TREE_TYPE_MAP:
+      break;
+      
+    case MDS_KBDC_TREE_TYPE_ALTERNATION:
+      break;
+      
+    case MDS_KBDC_TREE_TYPE_UNORDERED:
+      break;
+      
+    case MDS_KBDC_TREE_TYPE_MACRO_CALL:
+      break;
+      
+    default:
+      break;
+    }
+    
+  tree = tree->next;
+  goto again;
+#undef s
+}
+
+
+/**
  * Simplify a tree and generate related warnings in the process
  * 
- * @param   tree    The tree, it may be modified
- * @param   errors  `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
- * @return          -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
+ * @param   tree     The tree, it may be modified
+ * @param   errors_  `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
+ * @return           -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
  */
-int simplify_tree(mds_kbdc_tree_t** restrict tree, mds_kbdc_parse_error_t*** restrict errors)
+int simplify_tree(mds_kbdc_tree_t* restrict tree, mds_kbdc_parse_error_t*** restrict errors_)
 {
-  mds_kbdc_parse_error_t* error;
-  mds_kbdc_parse_error_t** old_errors = NULL;
-  size_t errors_size = 0;
-  size_t errors_ptr = 0;
+  int r, saved_errno;
   
+  errors = errors_;
   *errors = NULL;
   
-  return 0;
+  if (r = simplify(tree), !r)
+    return 0;
+  
+  saved_errno = errno;
+  mds_kbdc_parse_error_free_all(old_errors);
+  mds_kbdc_parse_error_free_all(*errors), *errors = NULL;
+  errno = saved_errno;
+  return r;
 }
 
 

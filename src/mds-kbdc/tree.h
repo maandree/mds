@@ -98,57 +98,57 @@
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_map_t`
  */
-#define MDS_KBDC_TREE_TYPE_MAP  15
+#define MDS_KBDC_TREE_TYPE_MAP  14
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_array_t`
  */
-#define MDS_KBDC_TREE_TYPE_ARRAY  16
+#define MDS_KBDC_TREE_TYPE_ARRAY  15
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_keys_t`
  */
-#define MDS_KBDC_TREE_TYPE_KEYS  17
+#define MDS_KBDC_TREE_TYPE_KEYS  16
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_string_t`
  */
-#define MDS_KBDC_TREE_TYPE_STRING  18
+#define MDS_KBDC_TREE_TYPE_STRING  17
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_nothing_t`
  */
-#define MDS_KBDC_TREE_TYPE_NOTHING  19
+#define MDS_KBDC_TREE_TYPE_NOTHING  18
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_alternation_t`
  */
-#define MDS_KBDC_TREE_TYPE_ALTERNATION  20
+#define MDS_KBDC_TREE_TYPE_ALTERNATION  19
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_unordered_t`
  */
-#define MDS_KBDC_TREE_TYPE_UNORDERED  21
+#define MDS_KBDC_TREE_TYPE_UNORDERED  20
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_macro_call_t`
  */
-#define MDS_KBDC_TREE_TYPE_MACRO_CALL  22
+#define MDS_KBDC_TREE_TYPE_MACRO_CALL  21
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_return_t`
  */
-#define MDS_KBDC_TREE_TYPE_RETURN  23
+#define MDS_KBDC_TREE_TYPE_RETURN  22
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_break_t`
  */
-#define MDS_KBDC_TREE_TYPE_BREAK  24
+#define MDS_KBDC_TREE_TYPE_BREAK  23
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_continue_t`
  */
-#define MDS_KBDC_TREE_TYPE_CONTINUE  25
+#define MDS_KBDC_TREE_TYPE_CONTINUE  24
 
 
 
@@ -326,7 +326,7 @@ typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_assumption_t;
 
 
 /**
- * Treeu structure for making the assumption
+ * Tree structure for making the assumption
  * that there is a mapping to a key or string
  */
 typedef struct mds_kbdc_tree_assumption_have
