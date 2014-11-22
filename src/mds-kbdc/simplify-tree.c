@@ -19,6 +19,9 @@
 
 #include <libmdsserver/macros.h>
 
+#include <stdlib.h>
+#include <string.h>
+
 
 /**
  * Wrapper around `asprintf` that makes sure that first
@@ -35,20 +38,13 @@
 
 
 /**
- * Pointer to the beginning of the current line
- */
-#define LINE			\
-  (source_code.lines[line_i])
-
-
-/**
  * Add an error the to error list
  * 
- * @param  ERROR_IS_IN_FILE:int  Whether the error is in the layout code
- * @param  SEVERITY:identifier   * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
- * @param  ...:const char*, ...  Error description format string and arguments
+ * @param  NODE:const mds_kbdc_tree_t*  The node the triggered the error
+ * @param  SEVERITY:identifier          * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
+ * @param  ...:const char*, ...         Error description format string and arguments
  */
-#define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)						\
+#define NEW_ERROR(NODE, SEVERITY, ...)								\
   do												\
     {												\
       if (errors_ptr + 1 >= errors_size)							\
@@ -61,14 +57,13 @@
       (*errors)[errors_ptr + 0] = error;							\
       (*errors)[errors_ptr + 1] = NULL;								\
       errors_ptr++;										\
-      error->line  = line_i;									\
+      error->line  = (NODE)->loc_line;								\
       error->severity = MDS_KBDC_PARSE_ERROR_##SEVERITY;					\
-      error->error_is_in_file = ERROR_IS_IN_FILE;						\
-      error->start = (size_t)(line - LINE);							\
-      error->end   = (size_t)(end  - LINE);							\
+      error->error_is_in_file = 1;								\
+      error->start = (NODE)->loc_start;								\
+      error->end   = (NODE)->loc_end;								\
       fail_if ((error->pathname = strdup(pathname)) == NULL);					\
-      if (ERROR_IS_IN_FILE)									\
-	fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
+      fail_if ((error->code = strdup(source_code.real_lines[error->line])) == NULL);		\
       fail_if (xasprintf(error->description, __VA_ARGS__));					\
     }												\
    while (0)
@@ -81,17 +76,17 @@
  * make adjustments to the error after calling
  * `NEW_ERROR`
  */
-static mds_kbdc_parse_error_t* error = NULL;
+static mds_kbdc_parse_error_t* error;
 
 /**
  * The number of elements allocated for `*errors`
  */
-static size_t errors_size = 0;
+static size_t errors_size;
 
 /**
  * The number of elements stored in `*errors`
  */
-static size_t errors_ptr = 0;
+static size_t errors_ptr;
 
 /**
  * Pointer to the list of errors
@@ -101,8 +96,54 @@ static mds_kbdc_parse_error_t*** errors;
 /**
  * The old `*errors` used temporary when reallocating `*errors`
  */
-static mds_kbdc_parse_error_t** old_errors = NULL;
+static mds_kbdc_parse_error_t** old_errors;
 
+/**
+ * The pathname of the file that have been parsed
+ */
+static char* pathname;
+
+
+
+/**
+ * Simplify a subtree
+ * 
+ * @param   tree  The tree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify(mds_kbdc_tree_t* restrict tree);
+
+
+/**
+ * Simplify a macro call-subtree
+ * 
+ * @param   tree  The macro call-subtree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
+{
+  mds_kbdc_tree_t* argument = tree->arguments;
+  mds_kbdc_tree_t** here;
+  
+  /* Simplify arguments. */
+  for (argument = tree->arguments; argument; argument = argument->next)
+    simplify(argument);
+  
+  /* Remove ‘.’:s. */
+  for (here = &(tree->arguments); *here; here = &((*here)->next))
+    while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
+      {
+	mds_kbdc_tree_t* temp = (*here)->next;
+	(*here)->next = NULL;
+	NEW_ERROR(*here, WARNING, "‘.’ outside alternation has no effect");
+	mds_kbdc_tree_free(*here);
+	*here = temp;
+      }
+  
+  return 0;
+ pfail:
+  return -1;
+}
 
 
 /**
@@ -132,15 +173,20 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
       break;
       
     case MDS_KBDC_TREE_TYPE_MAP:
+      /* TODO */
       break;
       
     case MDS_KBDC_TREE_TYPE_ALTERNATION:
+      /* TODO find alternations inside alternations */
       break;
       
     case MDS_KBDC_TREE_TYPE_UNORDERED:
+      /* TODO find unordered and nothing inside unordered */
       break;
       
     case MDS_KBDC_TREE_TYPE_MACRO_CALL:
+      if ((r = simplify_macro_call(&(tree->macro_call))))
+	return r;
       break;
       
     default:
@@ -156,21 +202,33 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
 /**
  * Simplify a tree and generate related warnings in the process
  * 
- * @param   tree     The tree, it may be modified
- * @param   errors_  `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
- * @return           -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
+ * @param   filename  The filename of the tree that have been parsed
+ * @param   tree      The tree, it may be modified
+ * @param   errors_   `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
+ * @return            -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
  */
-int simplify_tree(mds_kbdc_tree_t* restrict tree, mds_kbdc_parse_error_t*** restrict errors_)
+int simplify_tree(const char* restrict filename, mds_kbdc_tree_t* restrict tree,
+		  mds_kbdc_parse_error_t*** restrict errors_)
 {
   int r, saved_errno;
   
+  error = NULL;
+  errors_size = errors_ptr = 0;
   errors = errors_;
   *errors = NULL;
+  old_errors = NULL;
+  
+  /* Get a non-relative pathname for the file, relative filenames
+   * can be misleading as the program can have changed working
+   * directroy to be able to resolve filenames. */
+  fail_if ((pathname = realpath(filename, NULL), pathname == NULL));
   
   if (r = simplify(tree), !r)
     return 0;
   
+ pfail:
   saved_errno = errno;
+  free(pathname);
   mds_kbdc_parse_error_free_all(old_errors);
   mds_kbdc_parse_error_free_all(*errors), *errors = NULL;
   errno = saved_errno;
@@ -180,6 +238,5 @@ int simplify_tree(mds_kbdc_tree_t* restrict tree, mds_kbdc_parse_error_t*** rest
 
 
 #undef NEW_ERROR
-#undef LINE
 #undef xasprintf
 

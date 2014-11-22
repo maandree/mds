@@ -33,11 +33,11 @@
 
 
 /**
- * Initialise a `source_code_t*`
+ * Initialise a `mds_kbdc_source_code_t*`
  * 
- * @param  this  The `source_code_t*`
+ * @param  this  The `mds_kbdc_source_code_t*`
  */
-void source_code_initialise(source_code_t* restrict this)
+void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this)
 {
   this->lines        = NULL;
   this->real_lines   = NULL;
@@ -48,11 +48,11 @@ void source_code_initialise(source_code_t* restrict this)
 
 
 /**
- * Release all data in a `source_code_t*`
+ * Release all data in a `mds_kbdc_source_code_t*`
  * 
- * @param  this  The `source_code_t*`
+ * @param  this  The `mds_kbdc_source_code_t*`
  */
-void source_code_destroy(source_code_t* restrict this)
+void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this)
 {
   free(this->lines),        this->lines        = NULL;
   free(this->real_lines),   this->real_lines   = NULL;
@@ -62,11 +62,11 @@ void source_code_destroy(source_code_t* restrict this)
 
 
 /**
- * Release all data in a `source_code_t*`, and free it
+ * Release all data in a `mds_kbdc_source_code_t*`, and free it
  * 
- * @param  this  The `source_code_t*`
+ * @param  this  The `mds_kbdc_source_code_t*`
  */
-void source_code_free(source_code_t* restrict this)
+void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this)
 {
   free(this->lines);
   free(this->real_lines);
@@ -316,7 +316,7 @@ static char** line_split(char* content, size_t length)
  * @param   source_code  Output parameter for read data
  * @return               Zero on success, -1 on error
  */
-int read_source_lines(const char* restrict pathname, source_code_t* restrict source_code)
+int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* restrict source_code)
 {
   char* content = NULL;
   char* real_content = NULL;

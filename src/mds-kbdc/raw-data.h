@@ -25,7 +25,7 @@
 /**
  * Source code by lines, with and without comments
  */
-typedef struct source_code
+typedef struct mds_kbdc_source_code
 {
   /**
    * Source code by lines without comments,
@@ -55,29 +55,29 @@ typedef struct source_code
    */
   size_t line_count;
   
-} source_code_t;
+} mds_kbdc_source_code_t;
 
 
 /**
- * Initialise a `source_code_t*`
+ * Initialise a `mds_kbdc_source_code_t*`
  * 
- * @param  this  The `source_code_t*`
+ * @param  this  The `mds_kbdc_source_code_t*`
  */
-void source_code_initialise(source_code_t* restrict this);
+void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this);
 
 /**
- * Release all data in a `source_code_t*`
+ * Release all data in a `mds_kbdc_source_code_t*`
  * 
- * @param  this  The `source_code_t*`
+ * @param  this  The `mds_kbdc_source_code_t*`
  */
-void source_code_destroy(source_code_t* restrict this);
+void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this);
 
 /**
- * Release all data in a `source_code_t*`, and free it
+ * Release all data in a `mds_kbdc_source_code_t*`, and free it
  * 
- * @param  this  The `source_code_t*`
+ * @param  this  The `mds_kbdc_source_code_t*`
  */
-void source_code_free(source_code_t* restrict this);
+void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this);
 
 
 /**
@@ -101,7 +101,7 @@ size_t get_end_of_call(char* restrict content, size_t offset, size_t size) __att
  * @param   source_code  Output parameter for read data
  * @return               Zero on success, -1 on error
  */
-int read_source_lines(const char* restrict pathname, source_code_t* restrict source_code);
+int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* restrict source_code);
 
 
 #endif

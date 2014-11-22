@@ -55,20 +55,6 @@
 
 
 /**
- * Wrapper around `asprintf` that makes sure that first
- * argument gets set to `NULL` on error and that zero is
- * returned on success rather than the number of printed
- * characters
- * 
- * @param   VAR:char**            The output parameter for the string
- * @param   ...:const char*, ...  The format string and arguments
- * @return  :int                  Zero on success, -1 on error
- */
-#define xasprintf(VAR, ...)					\
-  (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
-
-
-/**
  * Check whether a value is inside a closed range
  * 
  * @param   LOWER:¿T?  The lower bound, inclusive
@@ -698,7 +684,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   mds_kbdc_parse_error_t* error;
   mds_kbdc_parse_error_t** old_errors = NULL;
   char* pathname;
-  source_code_t source_code;
+  mds_kbdc_source_code_t source_code;
   size_t errors_size = 0;
   size_t errors_ptr = 0;
   size_t line_i, line_n;
@@ -709,11 +695,11 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   
   *result = NULL;
   *errors = NULL;
-  source_code_initialise(&source_code);
+  mds_kbdc_source_code_initialise(&source_code);
   
   /* Get a non-relative pathname for the file, relative filenames
    * can be misleading as the program can have changed working
-   * directroy to be able to resolve filenames. */
+   * directory to be able to resolve filenames. */
   pathname = realpath(filename, NULL);
   fail_if (pathname == NULL);
   
@@ -1076,7 +1062,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   free(pathname);
   free(keyword_stack);
   free(tree_stack);
-  source_code_destroy(&source_code);
+  mds_kbdc_source_code_destroy(&source_code);
   return 0;
   
  pfail:
@@ -1084,7 +1070,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
   free(pathname);
   free(keyword_stack);
   free(tree_stack);
-  source_code_destroy(&source_code);
+  mds_kbdc_source_code_destroy(&source_code);
   mds_kbdc_parse_error_free_all(old_errors);
   mds_kbdc_parse_error_free_all(*errors), *errors = NULL;
   mds_kbdc_tree_free(*result), *result = NULL;
@@ -1117,7 +1103,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 #undef LINE
 #undef is_name_char
 #undef in_range
-#undef xasprintf
 #undef PRINT_STACK
 #undef DEBUG_PROC
 

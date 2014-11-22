@@ -38,6 +38,19 @@
 
 
 /**
+ * Wrapper around `asprintf` that makes sure that first
+ * argument gets set to `NULL` on error and that zero is
+ * returned on success rather than the number of printed
+ * characters
+ * 
+ * @param   VAR:char**            The output parameter for the string
+ * @param   ...:const char*, ...  The format string and arguments
+ * @return  :int                  Zero on success, -1 on error
+ */
+#define xasprintf(VAR, ...)					\
+  (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
+
+/**
  * Wrapper for `snprintf` that allows you to forget about the buffer size
  * 
  * @param   buffer:char[]  The buffer, must be of the type `char[]` and not `char*`
