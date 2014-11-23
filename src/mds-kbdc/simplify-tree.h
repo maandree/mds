@@ -19,20 +19,16 @@
 #define MDS_MDS_KBDC_SIMPLIFY_TREE_H
 
 
-#include "tree.h"
-#include "parse-error.h"
+#include "parsed.h"
 
 
 /**
  * Simplify a tree and generate related warnings in the process
  * 
- * @param   filename  The filename of the tree that have been parsed
- * @param   tree      The tree, it may be modified
- * @param   errors    `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
- * @return            -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
+ * @param   result  `result` from `parse_to_tree`, same sematics, will be updated
+ * @return          -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int simplify_tree(const char* restrict filename, mds_kbdc_tree_t* restrict tree,
-		  mds_kbdc_parse_error_t*** restrict errors);
+int simplify_tree(mds_kbdc_parsed_t* restrict result);
 
 
 #endif

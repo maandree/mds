@@ -49,6 +49,18 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
 
 
 /**
+ * Check whether a fatal errors has occurred
+ * 
+ * @param   this  The parsing result
+ * @return        Whether a fatal errors has occurred
+ */
+int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this)
+{
+  return this->severest_error_level >= MDS_KBDC_PARSE_ERROR_ERROR;
+}
+
+
+/**
  * Print all encountered errors
  * 
  * @param  this    The parsing result
@@ -57,8 +69,9 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
 void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t* restrict this, FILE* output)
 {
   mds_kbdc_parse_error_t** errors = this->errors;
-  while (*errors)
-    mds_kbdc_parse_error_print(*errors++, output);
+  if (errors)
+    while (*errors)
+      mds_kbdc_parse_error_print(*errors++, output);
 }
 
 
@@ -77,7 +90,8 @@ mds_kbdc_parse_error_t* mds_kbdc_parsed_new_error(mds_kbdc_parsed_t* restrict th
 						  int error_is_in_file, size_t line, size_t start, size_t end)
 {
   mds_kbdc_parse_error_t* error = NULL;
-  int saved_errno, old_errors_ptr = this->errors_ptr;
+  size_t old_errors_ptr = this->errors_ptr;
+  int saved_errno;
   
   if (this->errors_ptr + 1 >= this->errors_size)
     {
@@ -105,7 +119,7 @@ mds_kbdc_parse_error_t* mds_kbdc_parsed_new_error(mds_kbdc_parsed_t* restrict th
       error->line = line;
       error->start = start;
       error->end = end;
-      error->code = strdup(this->source_code.real_lines[line]);
+      error->code = strdup(this->source_code->real_lines[line]);
       fail_if (error->code == NULL);
     }
   

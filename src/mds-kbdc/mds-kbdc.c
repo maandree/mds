@@ -38,33 +38,23 @@
  */
 int main(int argc_, char** argv_)
 {
-  mds_kbdc_parse_error_t** parse_errors;
-  mds_kbdc_tree_t* tree;
+  mds_kbdc_parsed_t result;
+  int fatal;
   
   argc = argc_;
   argv = argv_;
   
-  fail_if (parse_to_tree(argv[1], &tree, &parse_errors) < 0);
-  mds_kbdc_tree_print(tree, stderr);
-  if (parse_errors != NULL)
-    {
-      mds_kbdc_parse_error_t** errors = parse_errors;
-      int fatal = 0;
-      while (*errors)
-	{
-	  if ((*errors)->severity >= MDS_KBDC_PARSE_ERROR_ERROR)
-	    fatal = 1;
-	  mds_kbdc_parse_error_print(*errors++, stderr);
-	}
-      mds_kbdc_parse_error_free_all(parse_errors);
-      if (fatal)
-	return mds_kbdc_tree_free(tree), 1;
-    }
-  mds_kbdc_tree_free(tree);
-  return 0;
+  mds_kbdc_parsed_initialise(&result);
+  fail_if (parse_to_tree(argv[1], &result) < 0);
+  fatal = mds_kbdc_parsed_is_fatal(&result);
+  mds_kbdc_tree_print(result.tree, stderr);
+  mds_kbdc_parsed_print_errors(&result, stderr);
+  mds_kbdc_parsed_destroy(&result);
+  return fatal;
   
  pfail:
   xperror(*argv);
+  mds_kbdc_parsed_destroy(&result);
   return 1;
 }
 

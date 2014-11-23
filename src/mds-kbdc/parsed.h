@@ -37,16 +37,18 @@
  * @param  LINE:size_t                    The line where the error occurred, zero-based
  * @param  START:size_t                   The byte where the error started, on the line, inclusive, zero-based
  * @param  END:size_t                     The byte where the error ended, on the line, exclusive, zero-based
+ * @param  WITH_DESCRIPTION:int           Whether a description should be stored
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR_(RESULT, SEVERITY, ERROR_IS_IN_FILE, LINE, START, END, ...)			\
-  do												\
-    {												\
-      error = mds_kbdc_parsed_new_error(RESULT, SEVERITY, ERROR_IS_IN_FILE, LINE, START, END);	\
-      fail_if (error == NULL);									\
-      fail_if (xasprintf(error->description, __VA_ARGS__));					\
-    }												\
+#define NEW_ERROR_(RESULT, SEVERITY, ERROR_IS_IN_FILE, LINE, START, END, WITH_DESCRIPTION, ...)		\
+  do													\
+    {													\
+      error = mds_kbdc_parsed_new_error(RESULT, MDS_KBDC_PARSE_ERROR_##SEVERITY,			\
+					ERROR_IS_IN_FILE, LINE, START, END);				\
+      fail_if (error == NULL);										\
+      fail_if (WITH_DESCRIPTION && xasprintf(error->description, __VA_ARGS__));				\
+    }													\
   while (0)
 
 
@@ -115,6 +117,14 @@ void mds_kbdc_parsed_initialise(mds_kbdc_parsed_t* restrict this);
  * @param  this  The `mds_kbdc_parsed_t*`
  */
 void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this);
+
+/**
+ * Check whether a fatal errors has occurred
+ * 
+ * @param   this  The parsing result
+ * @return        Whether a fatal errors has occurred
+ */
+int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this) __attribute__((pure));
 
 /**
  * Print all encountered errors

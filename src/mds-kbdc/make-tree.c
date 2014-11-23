@@ -17,10 +17,6 @@
  */
 #include "make-tree.h"
 
-#include "raw-data.h"
-
-#include <libmdsserver/macros.h>
-
 #include <limits.h>
 #include <stdlib.h>
 #include <libgen.h>
@@ -80,7 +76,7 @@
  * Pointer to the beginning of the current line
  */
 #define LINE			\
-  (source_code.lines[line_i])
+  (result->source_code->lines[line_i])
 
 
 /**
@@ -94,33 +90,14 @@
 /**
  * Add an error the to error list
  * 
- * @param  ERROR_IS_IN_FILE:int  Whether the error is in the layout code
- * @param  SEVERITY:identifier   * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
- * @param  ...:const char*, ...  Error description format string and arguments
+ * @param  ERROR_IS_IN_FILE:int           Whether the error is in the layout code
+ * @param  SEVERITY:identifier            * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
+ * @param  ...:const char*, ...           Error description format string and arguments
+ * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)						\
-  do												\
-    {												\
-      if (errors_ptr + 1 >= errors_size)							\
-	{											\
-	  errors_size = errors_size ? (errors_size << 1) : 2;					\
-	  fail_if (xxrealloc(old_errors, *errors, errors_size, mds_kbdc_parse_error_t*));	\
-	}											\
-      fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));					\
-      (*errors)[errors_ptr + 0] = error;							\
-      (*errors)[errors_ptr + 1] = NULL;								\
-      errors_ptr++;										\
-      error->line  = line_i;									\
-      error->severity = MDS_KBDC_PARSE_ERROR_##SEVERITY;					\
-      error->error_is_in_file = ERROR_IS_IN_FILE;						\
-      error->start = (size_t)(line - LINE);							\
-      error->end   = (size_t)(end  - LINE);							\
-      fail_if ((error->pathname = strdup(pathname)) == NULL);					\
-      if (ERROR_IS_IN_FILE)									\
-	fail_if ((error->code = strdup(source_code.real_lines[line_i])) == NULL);		\
-      fail_if (xasprintf(error->description, __VA_ARGS__));					\
-    }												\
-   while (0)
+#define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)				\
+  NEW_ERROR_(result, SEVERITY, ERROR_IS_IN_FILE, line_i,			\
+	     (size_t)(line - LINE), (size_t)(end - LINE), 1, __VA_ARGS__)
 
 
 /**
@@ -674,57 +651,39 @@
  * Parse a file into a syntax tree
  * 
  * @param   filename  The filename of the file to parse
- * @param   result    Output parameter for the root of the tree, `NULL` if -1 is returned
- * @param   errors    `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
- * @return            -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
+ * @param   result    Output parameter for the parsing result
+ * @return            -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict result,
-		  mds_kbdc_parse_error_t*** restrict errors)
+int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result)
 {
   mds_kbdc_parse_error_t* error;
-  mds_kbdc_parse_error_t** old_errors = NULL;
-  char* pathname;
-  mds_kbdc_source_code_t source_code;
-  size_t errors_size = 0;
-  size_t errors_ptr = 0;
   size_t line_i, line_n;
   const char** keyword_stack = NULL;
   mds_kbdc_tree_t*** tree_stack = NULL;
   size_t stack_ptr = 0;
   int saved_errno, in_array = 0;
   
-  *result = NULL;
-  *errors = NULL;
-  mds_kbdc_source_code_initialise(&source_code);
+  fail_if (xmalloc(result->source_code, 1, mds_kbdc_source_code_t));
+  mds_kbdc_source_code_initialise(result->source_code);
   
   /* Get a non-relative pathname for the file, relative filenames
    * can be misleading as the program can have changed working
    * directory to be able to resolve filenames. */
-  pathname = realpath(filename, NULL);
-  fail_if (pathname == NULL);
+  result->pathname = realpath(filename, NULL);
+  fail_if (result->pathname == NULL);
   
   /* Check that the file exists and can be read. */
-  if (access(pathname, R_OK) < 0)
+  if (access(result->pathname, R_OK) < 0)
     {
       saved_errno = errno;
-      fail_if (xmalloc(*errors, 2, mds_kbdc_parse_error_t*));
-      fail_if (xmalloc(**errors, 1, mds_kbdc_parse_error_t));
-      (*errors)[1] = NULL;
-      
-      (**errors)->severity = MDS_KBDC_PARSE_ERROR_ERROR;
-      (**errors)->error_is_in_file = 0;
-      (**errors)->pathname = pathname, pathname = NULL;
-      (**errors)->line = 0;
-      (**errors)->start = 0;
-      (**errors)->end = 0;
-      (**errors)->code = NULL;
-      (**errors)->description = strdup(strerror(saved_errno));
-      fail_if ((**errors)->description == NULL);
+      NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 0, NULL);
+      error->description = strdup(strerror(saved_errno));
+      fail_if (error->description == NULL);
       return 0;
     }
   
   /* Read the file and simplify it a bit. */
-  fail_if (read_source_lines(pathname, &source_code) < 0);
+  fail_if (read_source_lines(result->pathname, result->source_code) < 0);
   /* TODO '\t':s should be expanded into ' ':s. */
   
   /* Allocate stacks needed to parse the tree. */
@@ -732,20 +691,20 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
     /* The maxium line-length is needed because lines can have there own stacking,
      * like sequence mapping lines, additionally, let statements can have one array. */
     size_t max_line_length = 0, cur_line_length;
-    for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
+    for (line_i = 0, line_n = result->source_code->line_count; line_i < line_n; line_i++)
       {
 	cur_line_length = strlen(LINE);
 	if (max_line_length < cur_line_length)
 	  max_line_length = cur_line_length;
       }
     
-    fail_if (xmalloc(keyword_stack, source_code.line_count + max_line_length, const char*));
-    fail_if (xmalloc(tree_stack, source_code.line_count + max_line_length + 1, mds_kbdc_tree_t**));
+    fail_if (xmalloc(keyword_stack, result->source_code->line_count + max_line_length, const char*));
+    fail_if (xmalloc(tree_stack, result->source_code->line_count + max_line_length + 1, mds_kbdc_tree_t**));
   }
   /* Create a node-slot for the tree root. */
-  *tree_stack = result;
+  *tree_stack = &(result->tree);
   
-  for (line_i = 0, line_n = source_code.line_count; line_i < line_n; line_i++)
+  for (line_i = 0, line_n = result->source_code->line_count; line_i < line_n; line_i++)
     {
       char* line = LINE;
       char* end;
@@ -1059,21 +1018,14 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict resu
 	}
     }
   
-  free(pathname);
   free(keyword_stack);
   free(tree_stack);
-  mds_kbdc_source_code_destroy(&source_code);
   return 0;
   
  pfail:
   saved_errno = errno;
-  free(pathname);
   free(keyword_stack);
   free(tree_stack);
-  mds_kbdc_source_code_destroy(&source_code);
-  mds_kbdc_parse_error_free_all(old_errors);
-  mds_kbdc_parse_error_free_all(*errors), *errors = NULL;
-  mds_kbdc_tree_free(*result), *result = NULL;
   return errno = saved_errno, -1;
 }
 

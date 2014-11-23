@@ -19,20 +19,17 @@
 #define MDS_MDS_KBDC_MAKE_TREE_H
 
 
-#include "tree.h"
-#include "parse-error.h"
+#include "parsed.h"
 
 
 /**
  * Parse a file into a syntax tree
  * 
  * @param   filename  The filename of the file to parse
- * @param   result    Output parameter for the root of the tree, `NULL` if -1 is returned
- * @param   errors    `NULL`-terminated list of found error, `NULL` if no errors were found or if -1 is returned
- * @return            -1 if an error occursed that cannot be stored in `*errors`, zero otherwise
+ * @param   result    Output parameter for the parsing result
+ * @return            -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int parse_to_tree(const char* restrict filename, mds_kbdc_tree_t** restrict result,
-		  mds_kbdc_parse_error_t*** restrict errors);
+int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result);
 
 
 #endif
