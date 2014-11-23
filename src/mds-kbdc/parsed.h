@@ -30,7 +30,6 @@
 
 
 
-
 /**
  * @param  RESULT:mds_kbdc_parsed_t*      The parsing result
  * @param  SEVERITY:int                   * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
