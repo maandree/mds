@@ -5415,6 +5415,15 @@ you can write
 <dead compose> "|" ["|" .] "S" : "$"
 @end example
 
+It is undefined in which order alternations
+and unordered subsequences are expanded;
+neither sequencewise or levelwise.
+Thus, there should not side-effects where
+either one is used, nor does it make since
+to nest the two constructs in any other
+way than alternation inside unordered
+subsequence.
+
 
 
 @node Keyboard Layout Identification
