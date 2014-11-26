@@ -154,7 +154,7 @@ int __attribute__((weak)) parse_cmdline(void)
       eprint("re-exec performed.");
     }
   
-  /* Check that manditory arguments have been specified. */
+  /* Check that mandatory arguments have been specified. */
   if (server_characteristics.require_respawn_info)
     {
       exit_if (is_respawn < 0,

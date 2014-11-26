@@ -113,7 +113,7 @@ int preinitialise_server(void)
     }
   unparsed_args[unparsed_args_ptr] = NULL;
   
-  /* Check that manditory arguments have been specified. */
+  /* Check that mandatory arguments have been specified. */
   exit_if (socket_fd < 0,
 	   eprint("missing socket file descriptor argument."););
   
