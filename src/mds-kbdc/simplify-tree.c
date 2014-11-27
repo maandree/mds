@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 
 
 
@@ -65,8 +66,17 @@ static int simplify(mds_kbdc_tree_t* restrict tree);
  */
 static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
-  mds_kbdc_tree_t* argument = tree->arguments;
+  mds_kbdc_tree_t* argument;
+  mds_kbdc_tree_t* alternative;
+  mds_kbdc_tree_t* next_statement;
+  mds_kbdc_tree_t* next_alternative;
+  mds_kbdc_tree_t* first;
+  mds_kbdc_tree_t* last;
+  mds_kbdc_tree_t* new_tree;
+  mds_kbdc_tree_t* new_argument;
+  mds_kbdc_tree_t* dup_argument;
   mds_kbdc_tree_t** here;
+  size_t i, argument_index = 0;
   
   /* Simplify arguments. */
   for (argument = tree->arguments; argument; argument = argument->next)
@@ -82,6 +92,124 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 	mds_kbdc_tree_free(*here);
 	*here = temp;
       }
+  
+  /* Copy arguments. */
+  if (tree->arguments == NULL)
+    return 0;
+  if (dup_argument = mds_kbdc_tree_dup(tree->arguments), dup_argument == NULL)
+    return -1;
+  
+  /* Eliminate alterations. */
+  for (argument = dup_argument; argument; argument = argument->next, argument_index++)
+    {
+      if (argument->type != MDS_KBDC_TREE_TYPE_ALTERNATION)
+	continue;
+      
+      next_statement = tree->next, tree->next = NULL;
+      alternative = argument->alternation.inner, argument->alternation.inner = NULL;
+      for (first = last = NULL; alternative; alternative = next_alternative)
+	{
+	  /* Duplicate statement. */
+	  if (new_tree = mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree), new_tree == NULL)
+	    {
+	      int saved_errno = errno;
+	      argument->alternation.inner = alternative;
+	      tree->next = next_statement;
+	      mds_kbdc_tree_free(dup_argument);
+	      return errno = saved_errno, -1;
+	    }
+	  /* Join trees. */
+	  if (last)
+	    last->next = new_tree;
+	  last = new_tree;
+	  first = first ? first : new_tree;
+	  /* Jump to the alternation. */
+	  here = &(new_tree->macro_call.arguments);
+	  for (new_argument = *here, i = 0; i < argument_index; i++, here = &((*here)->next))
+	    new_argument = new_argument->next;
+	  /* Detach alternative. */
+	  next_alternative = alternative->next;
+	  /* Right-join alternative. */
+	  alternative->next = new_argument->next, new_argument->next = NULL;
+	  mds_kbdc_tree_free(new_argument);
+	  /* Left-join alternative. */
+	  *here = alternative;
+	}
+      mds_kbdc_tree_destroy((mds_kbdc_tree_t*)tree);
+      memcpy(tree, first, sizeof(mds_kbdc_tree_t));
+      tree->next = first;
+      last->next = next_statement;
+    }
+  
+  mds_kbdc_tree_free(dup_argument);
+  
+  /* Example of what will happend:
+   * 
+   *   my_macro([1 2] [1 2] [1 2]) ## call 1
+   * 
+   *   simplify_macro_call on call 1
+   *     after processing argument 1
+   *       my_macro(1 [1 2] [1 2]) ## call 1
+   *       my_macro(2 [1 2] [1 2]) ## call 5
+   *     after processing argument 2
+   *       my_macro(1 1 [1 2]) ## call 1
+   *       my_macro(1 2 [1 2]) ## call 3
+   *       my_macro(2 [1 2] [1 2]) ## call 5
+   *     after processing argument 3
+   *       my_macro(1 1 1) ## call 1
+   *       my_macro(1 1 2) ## call 2
+   *       my_macro(1 2 [1 2]) ## call 3
+   *       my_macro(2 [1 2] [1 2]) ## call 5
+   * 
+   *   no difference after simplify_macro_call on call 2
+   * 
+   *   simplify_macro_call on call 3
+   *     no difference after processing argument 1
+   *     no difference after processing argument 2
+   *     after processing argument 3
+   *       my_macro(1 1 1) ## (call 1)
+   *       my_macro(1 1 2) ## (call 2)
+   *       my_macro(1 2 1) ## call 3
+   *       my_macro(1 2 1) ## call 4
+   *       my_macro(2 [1 2] [1 2]) ## call 5
+   * 
+   *   no difference after simplify_macro_call on call 4
+   * 
+   *   simplify_macro_call on call 5
+   *     no difference after processing argument 1
+   *     after processing argument 2
+   *       my_macro(1 1 1) ## (call 1)
+   *       my_macro(1 1 2) ## (call 2)
+   *       my_macro(1 2 1) ## (call 3)
+   *       my_macro(1 2 2) ## (call 4)
+   *       my_macro(2 1 [1 2]) ## call 5
+   *       my_macro(2 2 [1 2]) ## call 7
+   *     after processing argument 3
+   *       my_macro(1 1 1) ## (call 1)
+   *       my_macro(1 1 2) ## (call 2)
+   *       my_macro(1 2 1) ## (call 3)
+   *       my_macro(1 2 2) ## (call 4)
+   *       my_macro(2 1 1) ## call 5
+   *       my_macro(2 1 2) ## call 6
+   *       my_macro(2 2 [1 2]) ## call 7
+   * 
+   *   no difference after simplify_macro_call on call 6
+   * 
+   *   simplify_macro_call on call 7
+   *     no difference after processing argument 1
+   *     no difference after processing argument 2
+   *     after processing argument 3
+   *       my_macro(1 1 1) ## (call 1)
+   *       my_macro(1 1 2) ## (call 2)
+   *       my_macro(1 2 1) ## (call 3)
+   *       my_macro(1 2 2) ## (call 4)
+   *       my_macro(2 1 1) ## (call 5)
+   *       my_macro(2 1 2) ## (call 6)
+   *       my_macro(2 2 1) ## call 7
+   *       my_macro(2 2 2) ## call 8
+   * 
+   *   no difference after simplify_macro_call on call 8
+   */
   
   return 0;
  pfail:
@@ -120,11 +248,11 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
       break;
       
     case MDS_KBDC_TREE_TYPE_ALTERNATION:
-      /* TODO find alternations inside alternations */
+      /* TODO find alternation and unordered, find singletons, error if empty */
       break;
       
     case MDS_KBDC_TREE_TYPE_UNORDERED:
-      /* TODO find unordered and nothing inside unordered */
+      /* TODO find alternation, unordered and nothing, find singletons, error if empty */
       break;
       
     case MDS_KBDC_TREE_TYPE_MACRO_CALL:
@@ -143,7 +271,7 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
 
 
 /**
- * Simplify a tree and generate related warnings in the process
+ * Simplify a tree and generate related warnings and errors in the process
  * 
  * @param   result_  `result` from `parse_to_tree`, same sematics, will be updated
  * @return           -1 if an error occursed that cannot be stored in `result`, zero otherwise

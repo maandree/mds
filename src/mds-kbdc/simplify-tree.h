@@ -23,7 +23,7 @@
 
 
 /**
- * Simplify a tree and generate related warnings in the process
+ * Simplify a tree and generate related warnings and errors in the process
  * 
  * @param   result  `result` from `parse_to_tree`, same sematics, will be updated
  * @return          -1 if an error occursed that cannot be stored in `result`, zero otherwise
