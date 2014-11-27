@@ -248,11 +248,11 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
       break;
       
     case MDS_KBDC_TREE_TYPE_ALTERNATION:
-      /* TODO find alternation and unordered, find singletons, error if empty */
+      /* TODO find alternation and unordered, find singletons, multiple nothings, error if empty */
       break;
       
     case MDS_KBDC_TREE_TYPE_UNORDERED:
-      /* TODO find alternation, unordered and nothing, find singletons, error if empty */
+      /* TODO find alternation, unordered and nothing, find singletons, multiple nothings, error if empty */
       break;
       
     case MDS_KBDC_TREE_TYPE_MACRO_CALL:
