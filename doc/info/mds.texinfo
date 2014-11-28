@@ -5949,6 +5949,16 @@ If a key is press three times without any intermediate
 keys, and is a modifier, that key released until it is
 pressed again.
 
+Note that @command{mds-keystick} is not aware of which
+keys are considered modifiers by @command{mds-keytrans},
+but it is affected of remappings in @command{mds-kbd}
+and @command{mds-kkbd}, therefore it is better to swap,
+for example, @kbd{control} and @kbd{caps lock} in the
+keyboard servers than in@command{mds-keytrans}. Doing
+so means that you do not have to configure
+@command{mds-keystick} to know the original @kbd{caps lock}
+is a modifier but the original @kbd{control} is not.
+
 For greater accessibility you can, in @command{mds-keytrans},
 replace a key with the @kbd{mode lock}-key. If this is done,
 pressing a sequence of modifiers and then the
@@ -5959,7 +5969,6 @@ the second @kbd{mode lock} will stay locked. The action of
 @kbd{mode lock} is to release all modifiers it is locked and
 the lock those that are currently held down; active stickly keys
 are artificially held down and thus included.
-
 
 
 @node Bounce Keys
