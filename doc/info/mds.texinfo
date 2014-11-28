@@ -5456,7 +5456,10 @@ Thus, there should not be side-effects where
 either one is used, nor does it make since
 to nest the two constructs in any other
 way than alternation or unordered subsequence
-inside unordered subsequence.
+inside unordered subsequence. The compiler
+may however choose to discourage unordered
+subsequence inside unordered subsequence
+because of readability issues.
 
 
 

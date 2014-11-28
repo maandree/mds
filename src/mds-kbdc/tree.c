@@ -80,6 +80,7 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
     case C(ASSUMPTION):
     case C(ALTERNATION):
     case C(UNORDERED):
+    case C(ORDERED):
       xdestroy(struct mds_kbdc_tree_nesting*, inner);
       break;
       
@@ -285,7 +286,8 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
     case C(INFORMATION):
     case C(ASSUMPTION):
     case C(ALTERNATION):
-    case C(UNORDERED):              { NODE(nesting); T(inner);                          }  break;
+    case C(UNORDERED):
+    case C(ORDERED):                { NODE(nesting); T(inner);                          }  break;
     case C(FUNCTION):
     case C(MACRO):                  { NODE(callable); S(name);T(inner);                 }  break;
     case C(ASSUMPTION_HAVE):        { NODE(assumption_have); T(data);                   }  break;
@@ -510,6 +512,7 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
     case C(NOTHING):                NOTHING("nothing");
     case C(ALTERNATION):            NESTING(alternation, "alternation", inner);
     case C(UNORDERED):              NESTING(unordered, "unordered", inner);
+    case C(ORDERED):                NESTING(ordered, "ordered", inner);
     case C(MACRO_CALL):             NAMED_NESTING(macro_call, "macro_call", name, arguments);
     case C(RETURN):                 NOTHING("return");
     case C(BREAK):                  NOTHING("break");

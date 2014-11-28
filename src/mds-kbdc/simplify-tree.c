@@ -286,7 +286,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
     else if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
       {
 	/* Alternation nesting. */
-	NEW_ERROR(argument, WARNING, "alternation inside alternation is unnecessary");
+	NEW_ERROR(argument, WARNING, "alternation inside alternation is unnessary");
 	if (simplify_alternation(&(argument->alternation)))
 	  return -1;
 	if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
@@ -310,7 +310,59 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	redo = 1;
       }
   
-  /* TODO unordered */
+  /* TODO unordered (warn: discouraged) */
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Simplify an unordered subsequence-subtree
+ * 
+ * @param   tree  The unordered subsequence-subtree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
+{
+  mds_kbdc_tree_t* argument;
+  mds_kbdc_tree_t* temp;
+  mds_kbdc_tree_t** here;
+  
+  /* Test emptyness. */
+  if (tree->inner == NULL)
+    {
+      NEW_ERROR(tree, ERROR, "empty unordered subsequence");
+      tree->type = MDS_KBDC_TREE_TYPE_NOTHING;
+      tree->processed = PROCESS_LEVEL;
+      return 0;
+    }
+  
+  /* Test singletonness. */
+  if (tree->inner->next == NULL)
+    {
+      temp = tree->inner;
+      NEW_ERROR(tree, WARNING, "singleton unordered subsequence");
+      memcpy(tree, temp, sizeof(mds_kbdc_tree_t));
+      free(temp);
+      return simplify((mds_kbdc_tree_t*)tree);
+    }
+  
+  /* Remove ‘.’:s. */
+  for (here = &(tree->inner); *here;)
+    if ((*here)->type != MDS_KBDC_TREE_TYPE_NOTHING)
+      here = &((*here)->next);
+    else
+      while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
+	{
+	  argument = (*here)->next, (*here)->next = NULL;
+	  NEW_ERROR(*here, WARNING, "‘.’ inside unordered subsequences has no effect");
+	  mds_kbdc_tree_free(*here);
+	  *here = argument;
+	}
+  
+  /* TODO alternation, unordered (warn: unreadable) */
   
   return 0;
  pfail:
@@ -326,7 +378,8 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
  */
 static int simplify(mds_kbdc_tree_t* restrict tree)
 {
-#define s(expr)  if ((r = simplify(tree->expr)))  return r;
+#define s(expr)  if ((r = simplify(tree->expr)))  return r
+#define S(type)  if ((r = simplify_##type(&(tree->type))))  return r
   int r;
  again:
   if (tree == NULL)
@@ -339,29 +392,11 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
     case MDS_KBDC_TREE_TYPE_MACRO:        s (macro.inner);        break;
     case MDS_KBDC_TREE_TYPE_ASSUMPTION:   s (assumption.inner);   break;
     case MDS_KBDC_TREE_TYPE_FOR:          s (for_.inner);         break;
-    case MDS_KBDC_TREE_TYPE_IF:
-      s (if_.inner);
-      s (if_.otherwise);
-      break;
-      
-    case MDS_KBDC_TREE_TYPE_MAP:
-      /* TODO */
-      break;
-      
-    case MDS_KBDC_TREE_TYPE_ALTERNATION:
-      if ((r = simplify_alternation(&(tree->alternation))))
-	return r;
-      break;
-      
-    case MDS_KBDC_TREE_TYPE_UNORDERED:
-      /* TODO find alternation and nothing, find singletons, error if empty, unordered */
-      break;
-      
-    case MDS_KBDC_TREE_TYPE_MACRO_CALL:
-      if ((r = simplify_macro_call(&(tree->macro_call))))
-	return r;
-      break;
-      
+    case MDS_KBDC_TREE_TYPE_IF:           s (if_.inner);          s (if_.otherwise);  break;
+    case MDS_KBDC_TREE_TYPE_MAP:          /* TODO */              break;
+    case MDS_KBDC_TREE_TYPE_ALTERNATION:  S (alternation);        break;
+    case MDS_KBDC_TREE_TYPE_UNORDERED:    S (unordered);          break;
+    case MDS_KBDC_TREE_TYPE_MACRO_CALL:   S (macro_call);         break;
     default:
       break;
     }
@@ -369,6 +404,7 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
   tree = tree->next;
   goto again;
 #undef s
+#undef S
 }
 
 

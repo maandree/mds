@@ -131,24 +131,29 @@
 #define MDS_KBDC_TREE_TYPE_UNORDERED  20
 
 /**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_ordered_t`
+ */
+#define MDS_KBDC_TREE_TYPE_ORDERED  21
+
+/**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_macro_call_t`
  */
-#define MDS_KBDC_TREE_TYPE_MACRO_CALL  21
+#define MDS_KBDC_TREE_TYPE_MACRO_CALL  22
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_return_t`
  */
-#define MDS_KBDC_TREE_TYPE_RETURN  22
+#define MDS_KBDC_TREE_TYPE_RETURN  23
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_break_t`
  */
-#define MDS_KBDC_TREE_TYPE_BREAK  23
+#define MDS_KBDC_TREE_TYPE_BREAK  24
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_continue_t`
  */
-#define MDS_KBDC_TREE_TYPE_CONTINUE  24
+#define MDS_KBDC_TREE_TYPE_CONTINUE  25
 
 
 
@@ -576,6 +581,14 @@ typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_alternation_t;
  */
 typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_unordered_t;
 
+/**
+ * Tree structure for an ordered sequence
+ * 
+ * This is intended has an auxiliary type for
+ * simplifying trees
+ */
+typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_ordered_t;
+
 
 /**
  * Tree structure for a macro call
@@ -653,6 +666,7 @@ union mds_kbdc_tree
   mds_kbdc_tree_nothing_t nothing;
   mds_kbdc_tree_alternation_t alternation;
   mds_kbdc_tree_unordered_t unordered;
+  mds_kbdc_tree_ordered_t ordered;
   mds_kbdc_tree_macro_call_t macro_call;
   mds_kbdc_tree_return_t return_;
   mds_kbdc_tree_break_t break_;
