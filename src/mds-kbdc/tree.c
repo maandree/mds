@@ -17,9 +17,19 @@
  */
 #include "tree.h"
 
+#include <libmdsserver/macros.h>
+#undef xfree
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
+
+
+/* Helper `typedef`:s */
+typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_nesting_t;
+typedef struct mds_kbdc_tree_callable mds_kbdc_tree_callable_t;
+typedef struct mds_kbdc_tree_information_data mds_kbdc_tree_information_data_t;
 
 
 
@@ -233,8 +243,8 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define T(member)										\
-  if (t->member && (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL))  goto fail
+#define T(member)									\
+  fail_if (t->member && (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL))
 
 
 /**
@@ -242,8 +252,8 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define S(member)									\
-  if (t->member && (n->member = strdup(t->member), n->member == NULL))  goto fail
+#define S(member)								\
+  fail_if (t->member && (n->member = strdup(t->member), n->member == NULL))
 
 
 /**
@@ -264,25 +274,18 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  */
 mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
 {
-  typedef struct mds_kbdc_tree_nesting mds_kbdc_tree_nesting_t;
-  typedef struct mds_kbdc_tree_callable mds_kbdc_tree_callable_t;
-  typedef struct mds_kbdc_tree_information_data mds_kbdc_tree_information_data_t;
-  mds_kbdc_tree_t* node = calloc(1, sizeof(mds_kbdc_tree_t));
+  mds_kbdc_tree_t* node = NULL;
   int saved_errno;
   
-  if (node == NULL)
-    return NULL;
+  fail_if ((this == NULL) || xcalloc(node, 1, sizeof(mds_kbdc_tree_t)));
   
   node->type = this->type;
   node->loc_line = this->loc_line;
   node->loc_start = this->loc_start;
   node->loc_end = this->loc_end;
   node->processed = this->processed;
-  if (this->next)
-    {
-      node->next = mds_kbdc_tree_dup(this->next);
-      if (node->next == NULL)  goto fail;
-    }
+  node->next = mds_kbdc_tree_dup(this->next);
+  fail_if (this->next && (node->next == NULL));
   
   switch (this->type)
     {
@@ -308,24 +311,15 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
     case C(FOR):                    { NODE(for); S(first);S(last);S(variable);T(inner); }  break;
     case C(IF):                     { NODE(if); S(condition);T(inner);T(otherwise);     }  break;
     case C(MAP):                    { NODE(map); T(sequence);T(result);                 }  break;
-      
-    case C(NOTHING):
-    case C(RETURN):
-    case C(BREAK):
-    case C(CONTINUE):
-      break;
-      
     default:
-      abort();
       break;
     }
   
   return node;
- fail:
+ pfail:
   saved_errno = errno;
   mds_kbdc_tree_free(node);
-  errno = saved_errno;
-  return NULL;
+  return errno = saved_errno, NULL;
 }
 
 
