@@ -62,6 +62,15 @@ static mds_kbdc_parsed_t* restrict result;
  */
 static int simplify(mds_kbdc_tree_t* restrict tree);
 
+/**
+ * Simplify an unordered subsequence-subtree
+ * 
+ * @param   tree  The unordered subsequence-subtree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree);
+
+
 
 /**
  * Simplify a macro call-subtree
@@ -286,7 +295,8 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
     else if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
       {
 	/* Alternation nesting. */
-	NEW_ERROR(argument, WARNING, "alternation inside alternation is unnessary");
+	if (argument->processed != PROCESS_LEVEL)
+	  NEW_ERROR(argument, WARNING, "alternation inside alternation is unnessary");
 	if (simplify_alternation(&(argument->alternation)))
 	  return -1;
 	if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
@@ -309,8 +319,16 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	  }
 	redo = 1;
       }
-  
-  /* TODO unordered (warn: discouraged) */
+    else if (argument->type == MDS_KBDC_TREE_TYPE_UNORDERED)
+      {
+	/* Nesting unordered subsequence,
+	   simplifies to alternation of ordered subsequence. */
+	NEW_ERROR(argument, WARNING, "unorderd subsequence inside alternation is discouraged");
+	if (simplify_unordered(&(argument->unordered)))
+	  return -1;
+	argument->processed = PROCESS_LEVEL;
+	redo = 1;
+      }
   
   return 0;
  pfail:
