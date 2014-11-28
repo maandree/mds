@@ -5922,7 +5922,7 @@ used, @code{\get(1 0)} evaluates to 4.
 @menu
 * Sticky Keys::                               Ephemeral key-locking.
 * Bounce Keys::                               Key repetition-elimination.
-* Delayed Keys::                              Key press-acceptance delay.
+* Slow Keys::                                 Key press-acceptance delay.
 * Loud Keys::                                 Keyboard tiggered sound cues.
 * Mouse Keys::                                Controlling the mouse with the keyboard.
 @end menu
@@ -5932,8 +5932,8 @@ used, @code{\get(1 0)} evaluates to 4.
 @node Sticky Keys
 @section Sticky Keys
 
-Sticky keys as an accessibility that lets the user
-process modifier keys instead of holding them down.
+Sticky keys is an accessibility feature that lets the
+user process modifier keys instead of holding them down.
 Sticky keys is implemented by the @command{mds-keystick}
 server.
 
@@ -5979,8 +5979,8 @@ TODO
 
 
 
-@node Delayed Keys
-@section Delayed Keys
+@node Slow Keys
+@section Slow Keys
 
 TODO
 
