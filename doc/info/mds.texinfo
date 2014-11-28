@@ -5964,11 +5964,12 @@ replace a key with the @kbd{mode lock}-key. If this is done,
 pressing a sequence of modifiers and then the
 @kbd{mode lock}-key will caused those modifiers to be locked
 until the next time you press @kbd{mode lock}. Any modifier
-pressed directly before, optionally with intermediate modifiers,
-the second @kbd{mode lock} will stay locked. The action of
-@kbd{mode lock} is to release all modifiers it is locked and
-the lock those that are currently held down; active stickly keys
-are artificially held down and thus included.
+pressed directly before, optionally with intermediate
+modifiers, the second @kbd{mode lock} will stay locked. The
+action of @kbd{mode lock} is to release all modifiers it is
+locked and the lock those that are currently held down; active
+stickly keys are artificially held down and thus included.
+
 
 
 @node Bounce Keys
