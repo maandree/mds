@@ -28,12 +28,59 @@
  * 
  * @param  this    The error structure
  * @param  output  The output file
+ * @parma  desc    The description of the error
+ */
+static void print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict output, const char* restrict desc)
+{
+  size_t i, n, start = 0, end = 0;
+  const char* restrict code = this->code;
+  
+  /* Convert bytes count to character count for the code position. */
+  for (i = 0, n = this->start; i < n; i++)
+    if ((code[i] & 0xC0) != 0x80)
+      start++;
+  for (n = this->end; i < n; i++)
+    if ((code[i] & 0xC0) != 0x80)
+      end++;
+  end += start;
+  
+  /* Print error information. */
+  fprintf(output, "\033[01m%s\033[21m:", this->pathname); /* TODO should be relative to the current dir */
+  if (this->error_is_in_file)
+    fprintf(output, "%zu:%zu–%zu:", this->line + 1, start, end);
+  switch (this->severity)
+    {
+    case MDS_KBDC_PARSE_ERROR_NOTE:            fprintf(output, " \033[01;36mnote:\033[00m ");            break;
+    case MDS_KBDC_PARSE_ERROR_WARNING:         fprintf(output, " \033[01;35mwarning:\033[00m ");         break;
+    case MDS_KBDC_PARSE_ERROR_ERROR:           fprintf(output, " \033[01;31merror:\033[00m ");           break;
+    case MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR:  fprintf(output, " \033[01;31minternal error:\033[00m ");  break;
+    default:
+      abort();
+      break;
+    }
+  if (this->error_is_in_file)
+    {
+      fprintf(output, "%s\n %s\n \033[01;32m", desc, code);
+      i = 0;
+      for (n = start; i < n; i++)  fputc(' ', output);
+      for (n = end;   i < n; i++)  fputc('^', output);
+    }
+  else
+    fprintf(output, "%s\n", desc);
+  fprintf(output, "\033[00m\n");
+}
+
+
+/**
+ * Print information about a parsing error
+ * 
+ * @param  this    The error structure
+ * @param  output  The output file
  */
 void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict output)
 {
-  size_t i, n, start = 0, end = 0;
   ssize_t m;
-  const char* restrict code = this->code;
+  size_t n;
   char* desc;
   char* dend = this->description + strlen(this->description);
   char* dstart;
@@ -71,39 +118,8 @@ void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FIL
     }
   *dptr = '\0';
   
-  /* Convert bytes count to character count for the code position. */
-  for (i = 0, n = this->start; i < n; i++)
-    if ((code[i] & 0xC0) != 0x80)
-      start++;
-  for (n = this->end; i < n; i++)
-    if ((code[i] & 0xC0) != 0x80)
-      end++;
-  end += start;
-  
-  /* Print error information. */
-  fprintf(output, "\033[01m%s\033[21m:", this->pathname); /* TODO should be relative to the current dir */
-  if (this->error_is_in_file)
-    fprintf(output, "%zu:%zu–%zu:", this->line + 1, start, end);
-  switch (this->severity)
-    {
-    case MDS_KBDC_PARSE_ERROR_NOTE:            fprintf(output, " \033[01;36mnote:\033[00m ");            break;
-    case MDS_KBDC_PARSE_ERROR_WARNING:         fprintf(output, " \033[01;35mwarning:\033[00m ");         break;
-    case MDS_KBDC_PARSE_ERROR_ERROR:           fprintf(output, " \033[01;31merror:\033[00m ");           break;
-    case MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR:  fprintf(output, " \033[01;31minternal error:\033[00m ");  break;
-    default:
-      abort();
-      break;
-    }
-  if (this->error_is_in_file)
-    {
-      fprintf(output, "%s\n %s\n \033[01;32m", desc, code);
-      i = 0;
-      for (n = start; i < n; i++)  fputc(' ', output);
-      for (n = end;   i < n; i++)  fputc('^', output);
-    }
-  else
-    fprintf(output, "%s\n", desc);
-  fprintf(output, "\033[00m\n");
+  /* Print the error. */
+  print(this, output, desc);
 }
 
 
