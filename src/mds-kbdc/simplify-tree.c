@@ -143,6 +143,70 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree);
 
 
 /**
+ * Eliminiate an alternation
+ * 
+ * @param   tree            The statement where the alternation is found
+ * @param   argument        The argument to eliminate
+ * @param   argument_index  The index of the argument to eliminate
+ * @return                  Zero on sucess, -1 on error
+ */
+static int eliminate_alternation(mds_kbdc_tree_t* tree, mds_kbdc_tree_t* argument, size_t argument_index)
+{
+  mds_kbdc_tree_t** here;
+  mds_kbdc_tree_t* first;
+  mds_kbdc_tree_t* last;
+  mds_kbdc_tree_t* new_tree;
+  mds_kbdc_tree_t* alternative;
+  mds_kbdc_tree_t* next_statement;
+  mds_kbdc_tree_t* next_alternative;
+  mds_kbdc_tree_t* new_argument;
+  size_t i;
+  
+  /* Detach next statement, we do not want to duplicate all following statements. */
+  next_statement = tree->next, tree->next = NULL;
+  /* Detach alternation, we replace it in all duplcates,
+     no need to duplicate all alternatives. */
+  alternative = argument->alternation.inner, argument->alternation.inner = NULL;
+  /* Eliminate. */
+  for (first = last = NULL; alternative; alternative = next_alternative)
+    {
+      /* Duplicate statement. */
+      if (new_tree = mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree), new_tree == NULL)
+	{
+	  int saved_errno = errno;
+	  argument->alternation.inner = alternative;
+	  tree->next = next_statement;
+	  return errno = saved_errno, -1;
+	}
+      /* Join trees. */
+      if (last)
+	last->next = new_tree;
+      last = new_tree;
+      first = first ? first : new_tree;
+      /* Jump to the alternation. */
+      here = &(new_tree->macro_call.arguments);
+      for (new_argument = *here, i = 0; i < argument_index; i++, here = &((*here)->next))
+	new_argument = new_argument->next;
+      /* Detach alternative. */
+      next_alternative = alternative->next;
+      /* Right-join alternative. */
+      alternative->next = new_argument->next, new_argument->next = NULL;
+      mds_kbdc_tree_free(new_argument);
+      /* Left-join alternative. */
+      *here = alternative;
+    }
+  /* Replace the statement with the first generated statement without the alternation. */
+  mds_kbdc_tree_destroy((mds_kbdc_tree_t*)tree);
+  memcpy(tree, first, sizeof(mds_kbdc_tree_t));
+  if (first == last)  last = (mds_kbdc_tree_t*)tree;
+  free(first);
+  /* Reattach the statement that followed to the last generated statement. */
+  last->next = next_statement;
+  return 0;
+}
+
+
+/**
  * Simplify a macro call-subtree
  * 
  * @param   tree  The macro call-subtree
@@ -151,16 +215,10 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree);
 static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
   mds_kbdc_tree_t* argument;
-  mds_kbdc_tree_t* alternative;
-  mds_kbdc_tree_t* next_statement;
-  mds_kbdc_tree_t* next_alternative;
-  mds_kbdc_tree_t* first;
-  mds_kbdc_tree_t* last;
-  mds_kbdc_tree_t* new_tree;
-  mds_kbdc_tree_t* new_argument;
-  mds_kbdc_tree_t* dup_arguments;
+  mds_kbdc_tree_t* dup_arguments = NULL;
   mds_kbdc_tree_t** here;
-  size_t i, argument_index = 0;
+  size_t argument_index = 0;
+  int saved_errno;
   
   /* Simplify arguments. */
   for (argument = tree->arguments; argument; argument = argument->next)
@@ -176,54 +234,10 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   
   /* Eliminate alterations. */
   for (argument = dup_arguments; argument; argument = argument->next, argument_index++)
-    {
-      if (argument->type != C(ALTERNATION))
-	continue;
-      
-      /* Detach next statement, we do not want to duplicate all following statements. */
-      next_statement = tree->next, tree->next = NULL;
-      /* Detach alternation, we replace it in all duplcates,
-	 no need to duplicate all alternatives. */
-      alternative = argument->alternation.inner, argument->alternation.inner = NULL;
-      /* Eliminate. */
-      for (first = last = NULL; alternative; alternative = next_alternative)
-	{
-	  /* Duplicate statement. */
-	  if (new_tree = mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree), new_tree == NULL)
-	    {
-	      int saved_errno = errno;
-	      argument->alternation.inner = alternative;
-	      tree->next = next_statement;
-	      mds_kbdc_tree_free(dup_arguments);
-	      return errno = saved_errno, -1;
-	    }
-	  /* Join trees. */
-	  if (last)
-	    last->next = new_tree;
-	  last = new_tree;
-	  first = first ? first : new_tree;
-	  /* Jump to the alternation. */
-	  here = &(new_tree->macro_call.arguments);
-	  for (new_argument = *here, i = 0; i < argument_index; i++, here = &((*here)->next))
-	    new_argument = new_argument->next;
-	  /* Detach alternative. */
-	  next_alternative = alternative->next;
-	  /* Right-join alternative. */
-	  alternative->next = new_argument->next, new_argument->next = NULL;
-	  mds_kbdc_tree_free(new_argument);
-	  /* Left-join alternative. */
-	  *here = alternative;
-	}
-      /* Replace the statement with the first generated statement without the alternation. */
-      mds_kbdc_tree_destroy((mds_kbdc_tree_t*)tree);
-      memcpy(tree, first, sizeof(mds_kbdc_tree_t));
-      if (first == last)  last = (mds_kbdc_tree_t*)tree;
-      free(first);
-      /* Reattach the statement that followed to the last generated statement. */
-      last->next = next_statement;
-    }
+    if (argument->type == C(ALTERNATION))
+      fail_if (eliminate_alternation((mds_kbdc_tree_t*)tree, argument, argument_index));
   
-  mds_kbdc_tree_free(dup_arguments);
+  mds_kbdc_tree_free(dup_arguments), dup_arguments = NULL;
   
   /* Example of what will happend:
    * 
@@ -297,7 +311,9 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   
   return 0;
  pfail:
-  return -1;
+  saved_errno = errno;
+  mds_kbdc_tree_free(dup_arguments);
+  return errno = saved_errno, -1;
 }
 
 
@@ -311,9 +327,10 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
 {
   mds_kbdc_tree_t* argument;
   mds_kbdc_tree_t** here;
-  mds_kbdc_tree_t* dup_sequence;
+  mds_kbdc_tree_t* dup_sequence = NULL;
   mds_kbdc_tree_t* temp;
-  int redo = 0;
+  size_t argument_index = 0;
+  int redo = 0, saved_errno;
   
   /* Check for bad things in the result. */
   for (argument = tree->result; argument; argument = argument->next)
@@ -334,9 +351,11 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   
   /* Eliminate alterations, remember, unordered subsequences have
      been simplified to alternations of ordered subsequences. */
-  /* TODO */
+  for (argument = dup_sequence; argument; argument = argument->next, argument_index++)
+    if (argument->type == C(ALTERNATION))
+      fail_if (eliminate_alternation((mds_kbdc_tree_t*)tree, argument, argument_index));
   
-  mds_kbdc_tree_free(dup_sequence);
+  mds_kbdc_tree_free(dup_sequence), dup_sequence = NULL;
   
   /* Eliminated ordered subsequences. */
   for (here = &(tree->sequence); (argument = *here); redo ? (redo = 0) : (here = &(argument->next), 0))
@@ -411,7 +430,9 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   
   return 0;
  pfail:
-  return -1;
+  saved_errno = errno;
+  mds_kbdc_tree_free(dup_sequence);
+  return errno = saved_errno, -1;
 }
 
 
@@ -567,7 +588,7 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   mds_kbdc_tree_t** here;
   int allow_long = 0;
   size_t argument_count;
-  int argv_force = 0; /* TODO globals.h */
+  int argv_force = 1; /* TODO globals.h */
   
   /* Test for ‘(( ))’. */
   if (tree->inner && (tree->inner->next == NULL) && (tree->inner->type == C(UNORDERED)))
