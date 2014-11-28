@@ -51,6 +51,68 @@
 
 
 /**
+ * Remove ‘.’:s
+ * 
+ * @param  START:identifier           The member of `tree` that is cleaned from ‘.’:s
+ * @scope  tree:mds_kbdc_tree_t*      The tree from where the ‘.’:s are being removed
+ * @scope  here:mds_kbdc_tree_t**     Help variable that must be available for use
+ * @scope  argument:mds_kbdc_tree_t*  Help variable that must be available for use
+ */
+#define REMOVE_NOTHING(START)									\
+  do												\
+    {												\
+      long processed = tree->processed;								\
+      tree->processed = PROCESS_LEVEL;								\
+      for (here = &(tree->START); *here;)							\
+	if ((*here)->type != C(NOTHING))							\
+	  here = &((*here)->next);								\
+	else											\
+	  while (*here && (*here)->type == C(NOTHING))						\
+	    {											\
+	      argument = (*here)->next, (*here)->next = NULL;					\
+	      if ((processed != PROCESS_LEVEL) && ((*here)->processed != PROCESS_LEVEL))	\
+		NEW_ERROR(*here, WARNING, "‘.’ outside alternation has no effect");		\
+	      mds_kbdc_tree_free(*here);							\
+	      *here = argument;									\
+	    }											\
+    }												\
+  while (0)
+
+
+
+/**
+ * Flatten an alternation of orderered subsequence, that is,
+ * insert its interior in place of it and move its next
+ * sibling to the next of the interior
+ * 
+ * @param  argument:mds_kbdc_tree_t*  The argument to flatten
+ * @scope  here:mds_kbdc_tree_t**     Pointer to the space where the argument was found
+ * @scope  temp:mds_kbdc_tree_t*      Help variable that must be available for use
+ */
+#define FLATTEN(argument)								\
+  do											\
+    {											\
+      /* Remember the alternation/subsequence and the argument that follows it. */	\
+      mds_kbdc_tree_t* eliminated_argument = argument;					\
+      temp = argument->next;								\
+      /* Find the last alternative/element. */						\
+      for (argument->next = argument->ordered.inner; argument->next;)			\
+	argument = argument->next;							\
+      /* Attach the argument that was after the alternation/subsequence to the */	\
+      /* end of the alternation/subsequence, that is, flatten the right side. */	\
+      argument->next = temp;								\
+      /* Flatten the left side. */							\
+      *here = eliminated_argument->next;						\
+      /* Free the memory of the alternation/subsequence. */				\
+      eliminated_argument->ordered.inner = NULL;					\
+      eliminated_argument->next = NULL;							\
+      mds_kbdc_tree_free(eliminated_argument);						\
+    }											\
+  while (0)
+
+
+
+/**
  * Variable whether the latest created error is stored
  */
 static mds_kbdc_parse_error_t* error;
@@ -96,38 +158,24 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   mds_kbdc_tree_t* last;
   mds_kbdc_tree_t* new_tree;
   mds_kbdc_tree_t* new_argument;
-  mds_kbdc_tree_t* dup_argument;
+  mds_kbdc_tree_t* dup_arguments;
   mds_kbdc_tree_t** here;
   size_t i, argument_index = 0;
-  long processed;
   
   /* Simplify arguments. */
   for (argument = tree->arguments; argument; argument = argument->next)
-    simplify(argument);
+    fail_if (simplify(argument));
   
   /* Remove ‘.’:s. */
-  processed = tree->processed, tree->processed = PROCESS_LEVEL;
-  for (here = &(tree->arguments); *here;)
-    if ((*here)->type != C(NOTHING))
-      here = &((*here)->next);
-    else
-      while (*here && (*here)->type == C(NOTHING))
-	{
-	  argument = (*here)->next, (*here)->next = NULL;
-	  if ((processed != PROCESS_LEVEL) && ((*here)->processed != PROCESS_LEVEL))
-	    NEW_ERROR(*here, WARNING, "‘.’ outside alternation has no effect");
-	  mds_kbdc_tree_free(*here);
-	  *here = argument;
-	}
+  REMOVE_NOTHING(arguments);
   
   /* Copy arguments. */
   if (tree->arguments == NULL)
     return 0;
-  if (dup_argument = mds_kbdc_tree_dup(tree->arguments), dup_argument == NULL)
-    return -1;
+  fail_if ((dup_arguments = mds_kbdc_tree_dup(tree->arguments), dup_arguments == NULL));
   
   /* Eliminate alterations. */
-  for (argument = dup_argument; argument; argument = argument->next, argument_index++)
+  for (argument = dup_arguments; argument; argument = argument->next, argument_index++)
     {
       if (argument->type != C(ALTERNATION))
 	continue;
@@ -146,7 +194,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 	      int saved_errno = errno;
 	      argument->alternation.inner = alternative;
 	      tree->next = next_statement;
-	      mds_kbdc_tree_free(dup_argument);
+	      mds_kbdc_tree_free(dup_arguments);
 	      return errno = saved_errno, -1;
 	    }
 	  /* Join trees. */
@@ -175,7 +223,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
       last->next = next_statement;
     }
   
-  mds_kbdc_tree_free(dup_argument);
+  mds_kbdc_tree_free(dup_arguments);
   
   /* Example of what will happend:
    * 
@@ -254,6 +302,120 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 
 
 /**
+ * Simplify a mapping-subtree
+ * 
+ * @param   tree  The mapping-subtree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
+{
+  mds_kbdc_tree_t* argument;
+  mds_kbdc_tree_t** here;
+  mds_kbdc_tree_t* dup_sequence;
+  mds_kbdc_tree_t* temp;
+  int redo = 0;
+  
+  /* Check for bad things in the result. */
+  for (argument = tree->result; argument; argument = argument->next)
+    if ((argument->type != C(KEYS)) && (argument->type != C(STRING)))
+      NEW_ERROR(argument, ERROR, "not allowed in mapping output");
+  
+  /* Simplify sequence. */
+  for (argument = tree->sequence; argument; argument = argument->next)
+    fail_if (simplify(argument));
+  
+  /* Remove ‘.’:s. */
+  REMOVE_NOTHING(sequence);
+  
+  /* Copy sequence. */
+  if (tree->sequence == NULL)
+    return 0;
+  fail_if ((dup_sequence = mds_kbdc_tree_dup(tree->sequence), dup_sequence == NULL));
+  
+  /* Eliminate alterations, remember, unordered subsequences have
+     been simplified to alternations of ordered subsequences. */
+  /* TODO */
+  
+  mds_kbdc_tree_free(dup_sequence);
+  
+  /* Eliminated ordered subsequences. */
+  for (here = &(tree->sequence); (argument = *here); redo ? (redo = 0) : (here = &(argument->next), 0))
+    if (argument->type == C(ORDERED))
+      {
+	FLATTEN(argument);
+	redo = 1;
+      }
+  
+  /* Mapping statements are simplified in a manner similar
+   * to how macro calls are simplified. However mapping
+   * statements can also contain unordered subsequences,
+   * there are translated into alternations of ordered
+   * subsequences. Thus after the elimination of alternations,
+   * ordered subsequences are eliminated too.
+   * 
+   * Example of what will happen, ‘{ }’ presents an
+   * ordered subsequence:
+   * 
+   *   (1 2) (3 4) : 0 ## mapping 1
+   * 
+   *   simplify_map on mapping 1
+   *     after simplification
+   *       [{1 2} {2 1}] [{3 4} {4 3}] ## mapping 1
+   *     after alternation elimination on argument 1
+   *       {1 2} [{3 4} {4 3}] ## mapping 1
+   *       {2 1} [{3 4} {4 3}] ## mapping 3
+   *     after alternation elimination on argument 2
+   *       {1 2} {3 4} ## mapping 1
+   *       {1 2} {4 3} ## mapping 2
+   *       {2 1} [{3 4} {4 3}] ## mapping 3
+   *     after ordered subsequence elimination
+   *       1 2 3 4 ## mapping 1
+   *       {1 2} {4 3} ## mapping 2
+   *       {2 1} [{3 4} {4 3}] ## mapping 3
+   * 
+   *   simplify_map on mapping 2
+   *     no difference after simplification
+   *     no difference after alternation elimination on argument 1
+   *     no difference after alternation elimination on argument 2
+   *     after ordered subsequence elimination
+   *       1 2 3 4 ## (mapping 1)
+   *       1 2 4 3 ## mapping 2
+   *       {2 1} [{3 4} {4 3}] ## mapping 3
+   * 
+   *   simplify_map on mapping 3
+   *     no difference after simplification
+   *     no difference after alternation elimination on argument 1
+   *     after alternation elimination on argument 2
+   *       1 2 3 4 ## (mapping 1)
+   *       1 2 4 3 ## (mapping 2)
+   *       {2 1} {3 4} ## mapping 3
+   *       {2 1} {4 3} ## mapping 4
+   *     after ordered subsequence elimination
+   *       1 2 3 4 ## (mapping 1)
+   *       1 2 4 3 ## (mapping 2)
+   *       2 1 3 4 ## mapping 3
+   *       {2 1} {4 3} ## mapping 4
+   * 
+   *   simplify_map on mapping 4
+   *     no difference after simplification
+   *     no difference after alternation elimination on argument 1
+   *     no difference after alternation elimination on argument 2
+   *     after ordered subsequence elimination
+   *       1 2 3 4 ## (mapping 1)
+   *       1 2 4 3 ## (mapping 2)
+   *       2 1 3 4 ## (mapping 3)
+   *       2 1 4 3 ## mapping 4
+   * 
+   * Nothings (‘.’) are removed before processing the alternations.
+   */
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
  * Simplify an alternation-subtree
  * 
  * @param   tree  The alternation-subtree
@@ -262,7 +424,6 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 {
   mds_kbdc_tree_t* argument;
-  mds_kbdc_tree_t* eliminated_argument;
   mds_kbdc_tree_t* first_nothing = NULL;
   mds_kbdc_tree_t* temp;
   mds_kbdc_tree_t** here;
@@ -305,26 +466,9 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	/* Alternation nesting. */
 	if (argument->processed != PROCESS_LEVEL)
 	  NEW_ERROR(argument, WARNING, "alternation inside alternation is unnessary");
-	if (simplify_alternation(&(argument->alternation)))
-	  return -1;
+	fail_if (simplify_alternation(&(argument->alternation)));
 	if (argument->type == C(ALTERNATION))
-	  {
-	    /* Remember the alternation and the argument that follows it. */
-	    eliminated_argument = argument;
-	    temp = argument->next;
-	    /* Find the last alternative. */
-	    for (argument->next = argument->alternation.inner; argument->next;)
-	      argument = argument->next;
-	    /* Attach the argument that was after the alternation to the end of the alternation,
-	       that is, flatten the right side. */
-	    argument->next = temp;
-	    /* Flatten the left side.  */
-	    *here = eliminated_argument->next;
-	    /* Free the memory of the alternation. */
-	    eliminated_argument->alternation.inner = NULL;
-	    eliminated_argument->next = NULL;
-	    mds_kbdc_tree_free(eliminated_argument);
-	  }
+	  FLATTEN(argument);
 	redo = 1;
       }
     else if (argument->type == C(UNORDERED))
@@ -332,8 +476,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	/* Nesting unordered subsequence,
 	   simplifies to alternation of ordered subsequence, or simpler. */
 	NEW_ERROR(argument, WARNING, "unordered subsequence inside alternation is discouraged");
-	if (simplify_unordered(&(argument->unordered)))
-	  return -1;
+	fail_if (simplify_unordered(&(argument->unordered)));
 	redo = 1;
       }
   
@@ -456,31 +599,19 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
     }
   
   /* Remove ‘.’:s. */
-  for (here = &(tree->inner); *here;)
-    if ((*here)->type != C(NOTHING))
-      here = &((*here)->next);
-    else
-      while (*here && (*here)->type == C(NOTHING))
-	{
-	  argument = (*here)->next, (*here)->next = NULL;
-	  NEW_ERROR(*here, WARNING, "‘.’ inside unordered subsequences has no effect");
-	  mds_kbdc_tree_free(*here);
-	  *here = argument;
-	}
+  REMOVE_NOTHING(inner);
   
   /* Simplify. */
   for (argument = tree->inner, argument_count = 0; argument; argument = argument->next, argument_count++)
     if (argument->type == C(ALTERNATION))
       {
-	if (simplify_alternation(&(argument->alternation)))
-	  return -1;
+	fail_if (simplify_alternation(&(argument->alternation)));
 	argument->processed = PROCESS_LEVEL;
       }
     else if (argument->type == C(UNORDERED))
       {
 	NEW_ERROR(argument, WARNING, "unordered subsequence inside unordered subsequence is discouraged");
-	if (simplify_unordered(&(argument->unordered)))
-	  return -1;
+	fail_if (simplify_unordered(&(argument->unordered)));
 	argument->processed = PROCESS_LEVEL;
       }
   
@@ -532,7 +663,7 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
     case C(ASSUMPTION):   s (assumption.inner);   break;
     case C(FOR):          s (for_.inner);         break;
     case C(IF):           s (if_.inner);          s (if_.otherwise);  break;
-    case C(MAP):          /* TODO */              break;
+    case C(MAP):          S (map);                break;
     case C(ALTERNATION):  S (alternation);        break;
     case C(UNORDERED):    S (unordered);          break;
     case C(MACRO_CALL):   S (macro_call);         break;
@@ -561,6 +692,8 @@ int simplify_tree(mds_kbdc_parsed_t* restrict result_)
 
 
 
+#undef FLATTEN
+#undef REMOVE_NOTHING
 #undef NEW_ERROR
 #undef C
 #undef PROCESS_LEVEL
