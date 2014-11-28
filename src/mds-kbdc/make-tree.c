@@ -671,7 +671,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   /* Get a non-relative pathname for the file, relative filenames
    * can be misleading as the program can have changed working
    * directory to be able to resolve filenames. */
-  result->pathname = realpath(filename, NULL);
+  result->pathname = realpath(filename, NULL); /* XXX use absolute path */
   fail_if (result->pathname == NULL);
   
   /* Check that the file exists and can be read. */
