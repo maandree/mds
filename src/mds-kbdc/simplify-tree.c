@@ -299,7 +299,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	  }
       }
   
-  /* TODO find unordered */
+  /* TODO unordered */
   
   return 0;
  pfail:
@@ -343,7 +343,7 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
       break;
       
     case MDS_KBDC_TREE_TYPE_UNORDERED:
-      /* TODO find alternation, unordered and nothing, find singletons, error if empty */
+      /* TODO find alternation and nothing, find singletons, error if empty, unordered */
       break;
       
     case MDS_KBDC_TREE_TYPE_MACRO_CALL:
