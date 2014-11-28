@@ -1236,6 +1236,9 @@ actually a server.
 * mds-kbd::                         The @command{mds-kbd} server.
 * mds-keytrans::                    The @command{mds-keytrans} server.
 * mds-keystick::                    The @command{mds-keystick} server.
+* mds-keybounce::                   The @command{mds-keybounce} server.
+* mds-slowkey::                     The @command{mds-slowkey} server.
+* mds-keycue::                      The @command{mds-keycue} server.
 * mds-kbdbind::                     The @command{mds-kbdbind} server.
 * mds-multikey::                    The @command{mds-multikey} server.
 * mds-rat::                         The @command{mds-rat} server.
@@ -1407,7 +1410,36 @@ modifiers, letters, other symbols, dead keys and compose.
 @section @command{mds-keystick}
 
 @command{mds-keystick} is a server that can be used
-to enable sticky keys.
+to enable sticky keys. See @ref{Sticky Keys} for more
+information.
+
+
+
+@node mds-keybounce
+@section @command{mds-keybounce}
+
+@command{mds-keybounce} is a server that can be used
+to enable bounce keys. See @ref{Bounce Keys} for more
+information.
+
+
+
+@node mds-slowkey
+@section @command{mds-slowkey}
+
+@command{mds-slowkey} is a server that can be used
+to enable slow keys. See @ref{Slow Keys} for more
+information.
+
+
+
+@node mds-keycue
+@section @command{mds-keycue}
+
+@command{mds-keycue} is a server that can be used
+to enable loud keys. See @ref{Loud Keys} for more
+information.
+
 
 
 
@@ -1482,6 +1514,7 @@ messages without the display server to move the
 rat cursor and click on rat buttons. @code{mds-kbdbind}
 could be used to do this, but @command{mds-kbd2rat}
 will not spawn a new process for each action.
+For more information see @ref{Mouse Keys}.
 
 
 
@@ -5954,7 +5987,7 @@ keys are considered modifiers by @command{mds-keytrans},
 but it is affected of remappings in @command{mds-kbd}
 and @command{mds-kkbd}, therefore it is better to swap,
 for example, @kbd{control} and @kbd{caps lock} in the
-keyboard servers than in@command{mds-keytrans}. Doing
+keyboard servers than in @command{mds-keytrans}. Doing
 so means that you do not have to configure
 @command{mds-keystick} to know the original @kbd{caps lock}
 is a modifier but the original @kbd{control} is not.
@@ -5975,21 +6008,31 @@ stickly keys are artificially held down and thus included.
 @node Bounce Keys
 @section Bounce Keys
 
-TODO
+Bounce keys is an accessibility feature that filters out
+rapidly repeated key strokes. Bounce keys is implemented
+by the @command{mds-keybounce} server.
 
 
 
 @node Slow Keys
 @section Slow Keys
 
-TODO
+Slow keys is an accessibility feature that filters out
+brief key strokes. Slow keys is implemented by the
+@command{mds-slowkey} server.
 
 
 
 @node Loud Keys
 @section Loud Keys
 
-TODO
+Loud keys is an accessibility feature that can emulate
+key clicking sounds when a key is pressed or generate
+tones when certain keys are pressed. For example if
+@kbd{caps lock} is actived by a key stroke a high-pitched
+tone can be generated when when it is deactived by a key
+stroke a low-pitched tone can be generated. Loud keys is
+implemented by the @command{mds-keycue} server.
 
 
 

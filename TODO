@@ -15,7 +15,7 @@ Extra servers:
 	decorator	tile		stack		workspace
 	tray		retro-crt	kbd2rat		multikey
 	keystick	posmem		nest		mds
-	meta
+	meta		keybounce	slowkey		keycue
 	some server that hides the cursor when appropriate, such
 	as when the user starts typing
 
