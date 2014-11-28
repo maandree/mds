@@ -115,8 +115,12 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
       if (argument->type != MDS_KBDC_TREE_TYPE_ALTERNATION)
 	continue;
       
+      /* Detach next statement, we do not want to duplicate all following statements. */
       next_statement = tree->next, tree->next = NULL;
+      /* Detach alternation, we replace it in all duplcates,
+	 no need to duplicate all alternatives. */
       alternative = argument->alternation.inner, argument->alternation.inner = NULL;
+      /* Eliminate. */
       for (first = last = NULL; alternative; alternative = next_alternative)
 	{
 	  /* Duplicate statement. */
@@ -145,10 +149,13 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 	  /* Left-join alternative. */
 	  *here = alternative;
 	}
+      /* Replace the statement with the first generated statement without the alternation. */
       mds_kbdc_tree_destroy((mds_kbdc_tree_t*)tree);
       memcpy(tree, first, sizeof(mds_kbdc_tree_t));
-      last->next = next_statement;
+      if (first == last)  last = (mds_kbdc_tree_t*)tree;
       free(first);
+      /* Reattach the statement that followed to the last generated statement. */
+      last->next = next_statement;
     }
   
   mds_kbdc_tree_free(dup_argument);
@@ -279,24 +286,28 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
     else if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
       {
 	/* Alternation nesting. */
-	temp = argument->next;
 	NEW_ERROR(argument, WARNING, "alternation inside alternation is unnecessary");
 	if (simplify_alternation(&(argument->alternation)))
 	  return -1;
-	*here = argument, redo = 1;
-	if (argument->type != MDS_KBDC_TREE_TYPE_ALTERNATION)
-	  argument->next = temp;
-	else
+	if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
 	  {
+	    /* Remember the alternation and the argument that follows it. */
 	    eliminated_argument = argument;
+	    temp = argument->next;
+	    /* Find the last alternative. */
 	    for (argument->next = argument->alternation.inner; argument->next;)
 	      argument = argument->next;
+	    /* Attach the argument that was after the alternation to the end of the alternation,
+	       that is, flatten the right side. */
 	    argument->next = temp;
-	    eliminated_argument->alternation.inner = NULL;
+	    /* Flatten the left side.  */
 	    *here = eliminated_argument->next;
+	    /* Free the memory of the alternation. */
+	    eliminated_argument->alternation.inner = NULL;
 	    eliminated_argument->next = NULL;
 	    mds_kbdc_tree_free(eliminated_argument);
 	  }
+	redo = 1;
       }
   
   /* TODO unordered */
