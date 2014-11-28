@@ -656,6 +656,8 @@
  */
 int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result)
 {
+  /* TODO make this function less complex */
+  
   mds_kbdc_parse_error_t* error;
   size_t line_i, line_n;
   const char** keyword_stack = NULL;
