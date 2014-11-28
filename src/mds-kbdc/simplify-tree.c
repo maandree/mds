@@ -77,21 +77,26 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   mds_kbdc_tree_t* dup_argument;
   mds_kbdc_tree_t** here;
   size_t i, argument_index = 0;
+  long processed;
   
   /* Simplify arguments. */
   for (argument = tree->arguments; argument; argument = argument->next)
     simplify(argument);
   
   /* Remove ‘.’:s. */
-  for (here = &(tree->arguments); *here; here = &((*here)->next))
-    while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
-      {
-	mds_kbdc_tree_t* temp = (*here)->next;
-	(*here)->next = NULL;
-	NEW_ERROR(*here, WARNING, "‘.’ outside alternation has no effect");
-	mds_kbdc_tree_free(*here);
-	*here = temp;
-      }
+  processed = tree->processed, tree->processed = 2;
+  for (here = &(tree->arguments); *here;)
+    if ((*here)->type != MDS_KBDC_TREE_TYPE_NOTHING)
+      here = &((*here)->next);
+    else
+      while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
+	{
+	  argument = (*here)->next, (*here)->next = NULL;
+	  if (processed != 2)
+	    NEW_ERROR(*here, WARNING, "‘.’ outside alternation has no effect");
+	  mds_kbdc_tree_free(*here);
+	  *here = argument;
+	}
   
   /* Copy arguments. */
   if (tree->arguments == NULL)
@@ -137,8 +142,8 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 	}
       mds_kbdc_tree_destroy((mds_kbdc_tree_t*)tree);
       memcpy(tree, first, sizeof(mds_kbdc_tree_t));
-      tree->next = first;
       last->next = next_statement;
+      free(first);
     }
   
   mds_kbdc_tree_free(dup_argument);
@@ -209,6 +214,8 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
    *       my_macro(2 2 2) ## call 8
    * 
    *   no difference after simplify_macro_call on call 8
+   * 
+   * Nothings (‘.’) are removed before processing the alternations.
    */
   
   return 0;
@@ -252,7 +259,7 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
       break;
       
     case MDS_KBDC_TREE_TYPE_UNORDERED:
-      /* TODO find alternation, unordered and nothing, find singletons, multiple nothings, error if empty */
+      /* TODO find alternation, unordered and nothing, find singletons, error if empty */
       break;
       
     case MDS_KBDC_TREE_TYPE_MACRO_CALL:

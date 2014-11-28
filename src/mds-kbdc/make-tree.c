@@ -896,7 +896,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
 	    NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
 	  NEXT;
 	}
-      else if (strchr("\"<([0123456789", *line))
+      else if (strchr("\\\"<([0123456789", *line))
 	{
 	  size_t stack_orig = stack_ptr + 1;
 #define node supernode

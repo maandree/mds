@@ -1,0 +1,12 @@
+my_macro()
+my_macro(1)
+
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments nil)
+# )
+# (macro_call (@ 2 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 2 9-10) ‘1’)
+#   )
+# )
+

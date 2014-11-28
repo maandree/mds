@@ -42,6 +42,7 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
 {
   mds_kbdc_tree_free(this->tree);
   mds_kbdc_source_code_destroy(this->source_code);
+  free(this->source_code);
   free(this->pathname);
   mds_kbdc_parse_error_free_all(this->errors);
   memset(this, 0, sizeof(mds_kbdc_parsed_t));

@@ -1,0 +1,4 @@
+When testing these files it is important to
+`goto stop;` after `simplify_tree` been called
+in `mds-kbdc.c`.
+

@@ -5418,11 +5418,11 @@ you can write
 It is undefined in which order alternations
 and unordered subsequences are expanded;
 neither sequencewise or levelwise.
-Thus, there should not side-effects where
+Thus, there should not be side-effects where
 either one is used, nor does it make since
 to nest the two constructs in any other
-way than alternation inside unordered
-subsequence.
+way than alternation or unordered subsequence
+inside unordered subsequence.
 
 
 

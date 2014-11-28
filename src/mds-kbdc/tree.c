@@ -229,8 +229,8 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define T(member)								\
-  if (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL)  goto fail
+#define T(member)										\
+  if (t->member && (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL))  goto fail
 
 
 /**
@@ -238,8 +238,8 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define S(member)							\
-  if (n->member = strdup(t->member), n->member == NULL)  goto fail
+#define S(member)									\
+  if (t->member && (n->member = strdup(t->member), n->member == NULL))  goto fail
 
 
 /**
@@ -273,8 +273,12 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
   node->loc_line = this->loc_line;
   node->loc_start = this->loc_start;
   node->loc_end = this->loc_end;
-  node->next = mds_kbdc_tree_dup(this->next);
-  if (node->next == NULL)  goto fail;
+  node->processed = this->processed;
+  if (this->next)
+    {
+      node->next = mds_kbdc_tree_dup(this->next);
+      if (node->next == NULL)  goto fail;
+    }
   
   switch (this->type)
     {
