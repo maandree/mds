@@ -22,6 +22,11 @@
 #include <alloca.h>
 
 
+/**
+ * This processes value for `mds_kbdc_tree_t.processed`
+ */
+#define PROCESS_LEVEL  2
+
 
 /**
  * Add an error the to error list
@@ -84,7 +89,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
     simplify(argument);
   
   /* Remove ‘.’:s. */
-  processed = tree->processed, tree->processed = 2;
+  processed = tree->processed, tree->processed = PROCESS_LEVEL;
   for (here = &(tree->arguments); *here;)
     if ((*here)->type != MDS_KBDC_TREE_TYPE_NOTHING)
       here = &((*here)->next);
@@ -92,7 +97,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
       while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
 	{
 	  argument = (*here)->next, (*here)->next = NULL;
-	  if (processed != 2)
+	  if ((processed != PROCESS_LEVEL) && ((*here)->processed != PROCESS_LEVEL))
 	    NEW_ERROR(*here, WARNING, "‘.’ outside alternation has no effect");
 	  mds_kbdc_tree_free(*here);
 	  *here = argument;
@@ -225,6 +230,84 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 
 
 /**
+ * Simplify an alternation-subtree
+ * 
+ * @param   tree  The alternation-subtree
+ * @return        Zero on success, -1 on error
+ */
+static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
+{
+  mds_kbdc_tree_t* argument;
+  mds_kbdc_tree_t* eliminated_argument;
+  mds_kbdc_tree_t* first_nothing = NULL;
+  mds_kbdc_tree_t* temp;
+  mds_kbdc_tree_t** here;
+  int redo = 0;
+  
+  /* Test emptyness. */
+  if (tree->inner == NULL)
+    {
+      NEW_ERROR(tree, ERROR, "empty alternation");
+      tree->type = MDS_KBDC_TREE_TYPE_NOTHING;
+      tree->processed = PROCESS_LEVEL;
+      return 0;
+    }
+  
+  /* Test singletonness. */
+  if (tree->inner->next == NULL)
+    {
+      temp = tree->inner;
+      NEW_ERROR(tree, WARNING, "singleton alternation");
+      memcpy(tree, temp, sizeof(mds_kbdc_tree_t));
+      free(temp);
+      return simplify((mds_kbdc_tree_t*)tree);
+    }
+  
+  /* Simplify. */
+  for (here = &(tree->inner); (argument = *here); redo ? (redo = 0) : (here = &(argument->next), 0))
+    if ((argument->type == MDS_KBDC_TREE_TYPE_NOTHING) && (argument->processed != PROCESS_LEVEL))
+      {
+	/* Test multiple nothings. */
+	if (first_nothing == NULL)
+	  first_nothing = argument;
+	else
+	  {
+	    NEW_ERROR(argument, WARNING, "multiple ‘.’ inside an alternation");
+	    NEW_ERROR(first_nothing, NOTE, "first ‘.’ was here");
+	  }
+      }
+    else if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
+      {
+	/* Alternation nesting. */
+	temp = argument->next;
+	NEW_ERROR(argument, WARNING, "alternation inside alternation is unnecessary");
+	if (simplify_alternation(&(argument->alternation)))
+	  return -1;
+	*here = argument, redo = 1;
+	if (argument->type != MDS_KBDC_TREE_TYPE_ALTERNATION)
+	  argument->next = temp;
+	else
+	  {
+	    eliminated_argument = argument;
+	    for (argument->next = argument->alternation.inner; argument->next;)
+	      argument = argument->next;
+	    argument->next = temp;
+	    eliminated_argument->alternation.inner = NULL;
+	    *here = eliminated_argument->next;
+	    eliminated_argument->next = NULL;
+	    mds_kbdc_tree_free(eliminated_argument);
+	  }
+      }
+  
+  /* TODO find unordered */
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
  * Simplify a subtree
  * 
  * @param   tree  The tree
@@ -255,7 +338,8 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
       break;
       
     case MDS_KBDC_TREE_TYPE_ALTERNATION:
-      /* TODO find alternation and unordered, find singletons, multiple nothings, error if empty */
+      if ((r = simplify_alternation(&(tree->alternation))))
+	return r;
       break;
       
     case MDS_KBDC_TREE_TYPE_UNORDERED:
@@ -292,4 +376,5 @@ int simplify_tree(mds_kbdc_parsed_t* restrict result_)
 
 
 #undef NEW_ERROR
+#undef PROCESS_LEVEL
 

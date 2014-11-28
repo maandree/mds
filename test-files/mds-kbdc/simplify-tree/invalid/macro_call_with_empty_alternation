@@ -1,0 +1,8 @@
+my_macro([])
+
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments nil)
+# )
+# :1:9–10: error: empty alternation
+#  my_macro([])
+

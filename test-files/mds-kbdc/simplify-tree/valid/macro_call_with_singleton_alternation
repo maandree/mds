@@ -1,0 +1,10 @@
+my_macro([1])
+
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 10-11) ‘1’)
+#   )
+# )
+# :1:9–10: warning: singleton alternation
+#  my_macro([1])
+

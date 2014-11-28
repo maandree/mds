@@ -1,0 +1,34 @@
+my_macro([1 . . . 2])
+
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 10-11) ‘1’)
+#   )
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments nil)
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments nil)
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments nil)
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 18-19) ‘2’)
+#   )
+# )
+# :1:14–15: warning: multiple ‘.’ inside an alternation
+#  my_macro([1 . . . 2])
+#                ^
+# :1:12–13: note: first ‘.’ was here
+#  my_macro([1 . . . 2])
+#              ^
+# :1:16–17: warning: multiple ‘.’ inside an alternation
+#  my_macro([1 . . . 2])
+#                  ^
+# :1:12–13: note: first ‘.’ was here
+#  my_macro([1 . . . 2])
+#              ^
+

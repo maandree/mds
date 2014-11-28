@@ -1,0 +1,29 @@
+my_macro([[1 2] [3 4]])
+
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 11-12) ‘1’)
+#   )
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 13-14) ‘2’)
+#   )
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 17-18) ‘3’)
+#   )
+# )
+# (macro_call (@ 1 0-8) ‘my_macro’
+#   (.arguments
+#     (string (@ 1 19-20) ‘4’)
+#   )
+# )
+# :1:10–11: warning: alternation inside alternation is unnecessary
+#  my_macro([[1 2] [3 4]])
+#            ^
+# :1:16–17: warning: alternation inside alternation is unnecessary
+#  my_macro([[1 2] [3 4]])
+#                  ^
+
