@@ -372,7 +372,7 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
    * subsequences. Thus after the elimination of alternations,
    * ordered subsequences are eliminated too.
    * 
-   * Example of what will happen, ‘{ }’ presents an
+   * Example of what will happen, ‘{ }’ represents an
    * ordered subsequence:
    * 
    *   (1 2) (3 4) : 0 ## mapping 1
