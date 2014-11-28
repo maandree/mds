@@ -322,7 +322,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
     else if (argument->type == MDS_KBDC_TREE_TYPE_UNORDERED)
       {
 	/* Nesting unordered subsequence,
-	   simplifies to alternation of ordered subsequence. */
+	   simplifies to alternation of ordered subsequence, or simpler. */
 	NEW_ERROR(argument, WARNING, "unorderd subsequence inside alternation is discouraged");
 	if (simplify_unordered(&(argument->unordered)))
 	  return -1;
