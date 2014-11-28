@@ -5461,6 +5461,25 @@ may however choose to discourage unordered
 subsequence inside unordered subsequence
 because of readability issues.
 
+Unordered subsequences longer than 5 elements
+cannot compile under normal circumstances. This
+is eliminiation of unordered subsequences grows
+superexponentially, and thus is probably an error
+than can cause memory exhaustion and unrealistic
+compilation-time. Therefore, if an unordered
+subsequences longer than 5 elements is used the
+compiler required that the @option{--force} flag
+is used and that the unordered subsequences uses
+double brackets:
+
+@example
+<dead compose> ("1" "2" "3" "4" "5") : "120"
+<dead compose> (("1" "2" "3" "4" "5" "6")) : "720"
+<dead compose> (("1" "2" "3" "4" "5" "6" "7")) : "5040"
+<dead compose> (("1" "2" "3" "4" "5" "6" "7" "8")) : "40320"
+<dead compose> (("1" "2" "3" "4" "5" "6" "7" "8" "9")) : "362880"
+@end example
+
 
 
 @node Keyboard Layout Identification

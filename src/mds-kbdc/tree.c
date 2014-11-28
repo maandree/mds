@@ -23,6 +23,9 @@
 
 
 
+/**
+ * Tree type constant shortener
+ */
 #define C(t)  MDS_KBDC_TREE_TYPE_##t
 
 

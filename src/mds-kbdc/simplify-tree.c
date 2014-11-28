@@ -16,16 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "simplify-tree.h"
+#include "globals.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <alloca.h>
 
 
+
 /**
  * This processes value for `mds_kbdc_tree_t.processed`
  */
 #define PROCESS_LEVEL  2
+
+
+/**
+ * Tree type constant shortener
+ */
+#define C(TYPE)  MDS_KBDC_TREE_TYPE_##TYPE
 
 
 /**
@@ -100,10 +108,10 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Remove ‘.’:s. */
   processed = tree->processed, tree->processed = PROCESS_LEVEL;
   for (here = &(tree->arguments); *here;)
-    if ((*here)->type != MDS_KBDC_TREE_TYPE_NOTHING)
+    if ((*here)->type != C(NOTHING))
       here = &((*here)->next);
     else
-      while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
+      while (*here && (*here)->type == C(NOTHING))
 	{
 	  argument = (*here)->next, (*here)->next = NULL;
 	  if ((processed != PROCESS_LEVEL) && ((*here)->processed != PROCESS_LEVEL))
@@ -121,7 +129,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Eliminate alterations. */
   for (argument = dup_argument; argument; argument = argument->next, argument_index++)
     {
-      if (argument->type != MDS_KBDC_TREE_TYPE_ALTERNATION)
+      if (argument->type != C(ALTERNATION))
 	continue;
       
       /* Detach next statement, we do not want to duplicate all following statements. */
@@ -264,7 +272,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
   if (tree->inner == NULL)
     {
       NEW_ERROR(tree, ERROR, "empty alternation");
-      tree->type = MDS_KBDC_TREE_TYPE_NOTHING;
+      tree->type = C(NOTHING);
       tree->processed = PROCESS_LEVEL;
       return 0;
     }
@@ -281,7 +289,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
   
   /* Simplify. */
   for (here = &(tree->inner); (argument = *here); redo ? (redo = 0) : (here = &(argument->next), 0))
-    if ((argument->type == MDS_KBDC_TREE_TYPE_NOTHING) && (argument->processed != PROCESS_LEVEL))
+    if ((argument->type == C(NOTHING)) && (argument->processed != PROCESS_LEVEL))
       {
 	/* Test multiple nothings. */
 	if (first_nothing == NULL)
@@ -292,14 +300,14 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	    NEW_ERROR(first_nothing, NOTE, "first ‘.’ was here");
 	  }
       }
-    else if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
+    else if (argument->type == C(ALTERNATION))
       {
 	/* Alternation nesting. */
 	if (argument->processed != PROCESS_LEVEL)
 	  NEW_ERROR(argument, WARNING, "alternation inside alternation is unnessary");
 	if (simplify_alternation(&(argument->alternation)))
 	  return -1;
-	if (argument->type == MDS_KBDC_TREE_TYPE_ALTERNATION)
+	if (argument->type == C(ALTERNATION))
 	  {
 	    /* Remember the alternation and the argument that follows it. */
 	    eliminated_argument = argument;
@@ -319,20 +327,86 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
 	  }
 	redo = 1;
       }
-    else if (argument->type == MDS_KBDC_TREE_TYPE_UNORDERED)
+    else if (argument->type == C(UNORDERED))
       {
 	/* Nesting unordered subsequence,
 	   simplifies to alternation of ordered subsequence, or simpler. */
-	NEW_ERROR(argument, WARNING, "unorderd subsequence inside alternation is discouraged");
+	NEW_ERROR(argument, WARNING, "unordered subsequence inside alternation is discouraged");
 	if (simplify_unordered(&(argument->unordered)))
 	  return -1;
-	argument->processed = PROCESS_LEVEL;
 	redo = 1;
       }
   
   return 0;
  pfail:
   return -1;
+}
+
+
+/**
+ * Create a chain of ordered subsequence covering all
+ * permutations of a set of subtrees
+ * 
+ * @param   elements  The subtrees, chained
+ * @return            Chain of ordered subsequence, `NULL` on error
+ */
+static mds_kbdc_tree_t* create_permutations(mds_kbdc_tree_t* elements)
+{
+  mds_kbdc_tree_t* first = NULL;
+  mds_kbdc_tree_t** here = &first;
+  mds_kbdc_tree_t** previous_next = &elements;
+  mds_kbdc_tree_t* argument;
+  mds_kbdc_tree_t* temp;
+  mds_kbdc_tree_t* subperms = NULL;
+  mds_kbdc_tree_t* perm;
+  mds_kbdc_tree_t ordered;
+  int saved_errno, no_perms;
+  
+  for (previous_next = &elements; (argument = *previous_next); previous_next = &((*previous_next)->next))
+    {
+      /* Created ordered alternative for a permutation prototype. */
+      mds_kbdc_tree_initialise(&ordered, C(ORDERED));
+      /* Select the first element. */
+      temp = argument->next, argument->next = NULL;
+      ordered.ordered.inner = mds_kbdc_tree_dup(argument);
+      argument->next = temp;
+      fail_if (ordered.ordered.inner == NULL);
+      /* Create subpermutations. */
+      *previous_next = argument->next;
+      argument->next = NULL;
+      no_perms = (elements == NULL);
+      subperms = create_permutations(elements);
+      argument->next = *previous_next;
+      *previous_next = argument;
+      fail_if (no_perms ? 0 : subperms == NULL);
+      /* Join first element with subpermutations. */
+      while (subperms)
+	{
+	  /* Join. */
+	  fail_if ((perm = mds_kbdc_tree_dup(&ordered), perm == NULL));
+	  perm->ordered.inner = subperms->ordered.inner;
+	  /* Add the permutation to the chain. */
+	  *here = perm;
+	  here = &(perm->next);
+	  /* Select next permutation. */
+	  temp = subperms;
+	  subperms = subperms->next;
+	  temp->next = NULL;
+	  mds_kbdc_tree_free(temp);
+	}
+      /* Destroy prototype. */
+      mds_kbdc_tree_destroy(&ordered);
+    }
+  
+  return first;
+  
+ pfail:
+  saved_errno = errno;
+  mds_kbdc_tree_free(first);
+  mds_kbdc_tree_free(subperms);
+  mds_kbdc_tree_destroy(&ordered);
+  errno = saved_errno;
+  return NULL;
 }
 
 
@@ -344,15 +418,29 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
  */
 static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
 {
+  mds_kbdc_tree_t* arguments;
   mds_kbdc_tree_t* argument;
   mds_kbdc_tree_t* temp;
   mds_kbdc_tree_t** here;
+  int allow_long = 0;
+  size_t argument_count;
+  int argv_force = 0; /* TODO globals.h */
+  
+  /* Test for ‘(( ))’. */
+  if (tree->inner && (tree->inner->next == NULL) && (tree->inner->type == C(UNORDERED)))
+    {
+      temp = tree->inner;
+      tree->inner = tree->inner->unordered.inner;
+      temp->unordered.inner = NULL;
+      mds_kbdc_tree_free(temp);
+      allow_long = 1;
+    }
   
   /* Test emptyness. */
   if (tree->inner == NULL)
     {
       NEW_ERROR(tree, ERROR, "empty unordered subsequence");
-      tree->type = MDS_KBDC_TREE_TYPE_NOTHING;
+      tree->type = C(NOTHING);
       tree->processed = PROCESS_LEVEL;
       return 0;
     }
@@ -369,10 +457,10 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   
   /* Remove ‘.’:s. */
   for (here = &(tree->inner); *here;)
-    if ((*here)->type != MDS_KBDC_TREE_TYPE_NOTHING)
+    if ((*here)->type != C(NOTHING))
       here = &((*here)->next);
     else
-      while (*here && (*here)->type == MDS_KBDC_TREE_TYPE_NOTHING)
+      while (*here && (*here)->type == C(NOTHING))
 	{
 	  argument = (*here)->next, (*here)->next = NULL;
 	  NEW_ERROR(*here, WARNING, "‘.’ inside unordered subsequences has no effect");
@@ -380,7 +468,40 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
 	  *here = argument;
 	}
   
-  /* TODO alternation, unordered (warn: unreadable) */
+  /* Simplify. */
+  for (argument = tree->inner, argument_count = 0; argument; argument = argument->next, argument_count++)
+    if (argument->type == C(ALTERNATION))
+      {
+	if (simplify_alternation(&(argument->alternation)))
+	  return -1;
+	argument->processed = PROCESS_LEVEL;
+      }
+    else if (argument->type == C(UNORDERED))
+      {
+	NEW_ERROR(argument, WARNING, "unordered subsequence inside unordered subsequence is discouraged");
+	if (simplify_unordered(&(argument->unordered)))
+	  return -1;
+	argument->processed = PROCESS_LEVEL;
+      }
+  
+  /* Check the size of the subsequence. */
+  if ((argument_count > 5) && (allow_long * argv_force == 0))
+    {
+      if (allow_long == 0)
+	NEW_ERROR(argument, ERROR, "unordered subsequence longer than 5 elements need double brackets");
+      else if (argv_force == 0)
+	NEW_ERROR(argument, ERROR, "unordered subsequence of size %zu found, requires ‘--force’ to compile",
+		  argument_count);
+      return 0;
+    }
+  
+  /* Generate permutations. */
+  tree->type = C(ALTERNATION);
+  tree->processed = PROCESS_LEVEL;
+  arguments = tree->inner;
+  if (tree->inner = create_permutations(arguments), tree->inner == NULL)
+    return tree->inner = arguments, -1;
+  mds_kbdc_tree_free(arguments);
   
   return 0;
  pfail:
@@ -405,16 +526,16 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
   
   switch (tree->type)
     {
-    case MDS_KBDC_TREE_TYPE_INFORMATION:  s (information.inner);  break;
-    case MDS_KBDC_TREE_TYPE_FUNCTION:     s (function.inner);     break;
-    case MDS_KBDC_TREE_TYPE_MACRO:        s (macro.inner);        break;
-    case MDS_KBDC_TREE_TYPE_ASSUMPTION:   s (assumption.inner);   break;
-    case MDS_KBDC_TREE_TYPE_FOR:          s (for_.inner);         break;
-    case MDS_KBDC_TREE_TYPE_IF:           s (if_.inner);          s (if_.otherwise);  break;
-    case MDS_KBDC_TREE_TYPE_MAP:          /* TODO */              break;
-    case MDS_KBDC_TREE_TYPE_ALTERNATION:  S (alternation);        break;
-    case MDS_KBDC_TREE_TYPE_UNORDERED:    S (unordered);          break;
-    case MDS_KBDC_TREE_TYPE_MACRO_CALL:   S (macro_call);         break;
+    case C(INFORMATION):  s (information.inner);  break;
+    case C(FUNCTION):     s (function.inner);     break;
+    case C(MACRO):        s (macro.inner);        break;
+    case C(ASSUMPTION):   s (assumption.inner);   break;
+    case C(FOR):          s (for_.inner);         break;
+    case C(IF):           s (if_.inner);          s (if_.otherwise);  break;
+    case C(MAP):          /* TODO */              break;
+    case C(ALTERNATION):  S (alternation);        break;
+    case C(UNORDERED):    S (unordered);          break;
+    case C(MACRO_CALL):   S (macro_call);         break;
     default:
       break;
     }
@@ -441,5 +562,6 @@ int simplify_tree(mds_kbdc_parsed_t* restrict result_)
 
 
 #undef NEW_ERROR
+#undef C
 #undef PROCESS_LEVEL
 
