@@ -6134,6 +6134,45 @@ If multiple direction keys@footnote{@kbd{1},
 @kbd{7}, @kbd{8} and @kbd{9}} are used, the
 average direction is used.
 
+@command{mds-kbd2rat} is five parameters that
+control with which speed it moves the cursor:
+
+@table @asis
+@item delay
+The delay it takes before the first time a
+mouse event is repeated when a key is held
+down. The default is for the server to wait
+for the keyboard to send another key press.
+
+@item interval
+The time it takes before a mouse event is
+repeated since its previous repear when a
+key is held down. The default is for the
+server to wait for the keyboard to send
+another key press.
+
+@item max speed
+The maximum speed with which the cursor can move.
+
+@item time to max speed
+The time a key has to be held down before
+the maximum speed is reached. The cursor
+accelerate with each mouse event repeat.
+
+@item curve
+Ramp used to reach pointer speed.
+@end table
+
+The pointer's speed, not taking caps into consideration,
+is calculated by
+
+@iftex
+@math{max~speed \left ( hold~down~time ~-~ delay \over time~to~max~speed \right)^{1 ~+~ curve}}
+@end iftex
+@ifnottex
+max speed ((hold down time - delay) / time to max speed)^(1 + curve)
+@end ifnottex
+
 
 
 @node Discussion
