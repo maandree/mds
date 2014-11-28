@@ -6039,7 +6039,95 @@ implemented by the @command{mds-keycue} server.
 @node Mouse Keys
 @section Mouse Keys
 
-TODO
+Rat keys (also known as mouse keys) is an accessibility
+and usability feature that lets the user use the keyboard
+as a pointing device. This feature is implemented by the
+@command{mds-kbd2rat} server, and this section covers the
+details of that server.
+
+If @command{mds-kbd2rat} is used, the keypad acts as a
+pointing device when @kbd{num lock} is not active. It
+is also possible to configure @command{mds-kbd2rat} to
+disregard @kbd{num lock} and always be active, until
+it receives a signal to toggle its state. For example,
+if @command{mds-kbd2rat} is configured to disregard
+@kbd{num lock}, @command{mds-kbdtrans} can be configured
+to send to fauxkey @kbd{rat} when @kbd{alt+shift+num}
+is pressed, and this key can be caught by
+@command{mds-keybind} that sends a signal to
+@command{mds-kbd2rat} to toggle.
+
+When @command{mds-kbd2rat} is active, it maps the
+keypad to the rat according to the following table:
+
+@table @kbd
+@item division
+Right-hand left (primary) rat button.
+
+@item multiplication
+Middle (modifier) rat button.
+
+@item subtraction
+Right-hand (alternate) right rat button.
+
+@item addition
+Scroll up.
+
+@item return
+Scroll down.
+
+@item comma
+Cancel actions waiting by @kbd{0} and
+@kbd{5}.
+
+@item 0
+Hold down the next selected rat button
+until that rat button is selected again.
+This is a dead key, that is, you do not
+have to hold it down.
+
+@item 1
+Cursor left down.
+
+@item 2
+Cursor down.
+
+@item 3
+Cursor right down.
+
+@item 4
+Cursor left.
+
+@item 5
+Double click with the next selected
+rat button. This is a dead key, that is,
+you do not have to hold it down.
+If pressed twice, a triple click triggered
+instead, and so on. If this key is prefixed
+by @kbd{0}, the last click will be replaced
+by hold down action.
+
+@item 6
+Cursor right.
+
+@item 7
+Cursor left up.
+
+@item 8
+Cursor up.
+
+@item 9
+Cursor right up.
+@end table
+
+This table is not affected by mappings in
+@command{mds-keytrans}, but it is affected
+by remappings in @command{mds-kbd} and
+@command{mds-kkbd}.
+
+@command{mds-kbd2rat} can be configured to
+permute the rat button keys. It is independent
+of permutations in @command{mds-rat}.
 
 
 
