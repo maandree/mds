@@ -444,8 +444,8 @@ int handle_message(void)
   size_t i;
   int level;
   
-#define __get_header(storage, header)  \
-  (startswith(received.headers[i], header))  \
+#define __get_header(storage, header)			\
+  (startswith(received.headers[i], header))		\
     storage = received.headers[i] + strlen(header)
   
   for (i = 0; i < received.header_count; i++)
