@@ -1,4 +1,28 @@
 (1 2)
 
-# TODO
-
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 1-2) ‘1’)
+#     (string (@ 1 3-4) ‘2’)
+#   )
+#   (.result nil)
+# )
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 3-4) ‘2’)
+#     (string (@ 1 1-2) ‘1’)
+#   )
+#   (.result nil)
+# )
+# :1:0–1: warning: use of sequence in value statement is discouraged
+#  (1 2)
+#  ^
+# :1:0–1: warning: alternated value statement is undefined unless the alternatives are identical
+#  (1 2)
+#  ^
+# :1:3–4: error: more the one value in value statement
+#  (1 2)
+#     ^
+# :1:1–2: error: more the one value in value statement
+#  (1 2)
+#   ^

@@ -319,18 +319,14 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 
 
 /**
- * Check for bad things in a value statement
+ * Check for bad things in a value statement for before the simplification process
  * 
  * @param   tree  The value statement-tree
  * @return        Zero on success, -1 on error
  */
-static int check_value_statement(mds_kbdc_tree_map_t* restrict tree)
+static int check_value_statement_before_simplification(mds_kbdc_tree_map_t* restrict tree)
 {
  again:
-  /* Check that there is only one value. */
-  if (tree->sequence->next)
-    NEW_ERROR(tree->sequence->next, ERROR, "more the one value in value statement");
-  
   /* Check for alternation. */
   if ((tree->sequence->type == C(ALTERNATION)) && (tree->processed != PROCESS_LEVEL))
     NEW_ERROR(tree->sequence, WARNING,
@@ -350,6 +346,28 @@ static int check_value_statement(mds_kbdc_tree_map_t* restrict tree)
   return -1;
 }
 
+
+/**
+ * Check for bad things in a value statement for after the simplification process
+ * 
+ * @param   tree  The value statement-tree
+ * @return        Zero on success, -1 on error
+ */
+static int check_value_statement_after_simplification(mds_kbdc_tree_map_t* restrict tree)
+{
+  /* Check that there is only one value. */
+  if (tree->sequence->next)
+    NEW_ERROR(tree->sequence->next, ERROR, "more the one value in value statement");
+  
+  /* Check the type of the value */
+  if (tree->sequence->type != C(STRING))
+    NEW_ERROR(tree->sequence, ERROR, "bad value type");
+  
+  return 0;
+ pfail:
+  return -1;
+}
+  
 
 /**
  * Simplify a mapping-subtree
@@ -373,7 +391,7 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   
   /* Valid value properties. */
   if (tree->result == NULL)
-    fail_if(check_value_statement(tree));
+    fail_if(check_value_statement_before_simplification(tree));
   
   /* Simplify sequence. */
   for (argument = tree->sequence; argument; argument = argument->next)
@@ -384,7 +402,12 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
     if (argument->type != C(NOTHING))
       goto will_not_be_empty;
   if (tree->sequence->processed != PROCESS_LEVEL)
-    NEW_ERROR(tree->sequence, ERROR, "mapping of null sequence");
+    {
+      if (tree->result)
+	NEW_ERROR(tree->sequence, ERROR, "mapping of null sequence");
+      else
+	NEW_ERROR(tree->sequence, ERROR, "nothing in value statement");
+    }
   /* The tree parsing process will not allow a mapping statement
    * to start with a ‘.’. Thus if we select to highlight it we
    * know that it is either an empty alternation, an empty
@@ -420,6 +443,10 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
 	FLATTEN(argument);
 	redo = 1;
       }
+  
+  /* Valid value properties. */
+  if (tree->result == NULL)
+    fail_if(check_value_statement_after_simplification(tree));
   
   /* Mapping statements are simplified in a manner similar
    * to how macro calls are simplified. However mapping

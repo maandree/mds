@@ -1,0 +1,12 @@
+<key>
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (keys (@ 1 0-5) ‘<key>’)
+#   )
+#   (.result nil)
+# )
+# :1:0–5: error: bad value type
+#  <key>
+#  ^^^^^
+
