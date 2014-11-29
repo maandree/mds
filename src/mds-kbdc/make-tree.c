@@ -901,6 +901,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
       else if (strchr("\\\"<([0123456789", *line))
 	{
 	  size_t stack_orig = stack_ptr + 1;
+	  char* colon;
 #define node supernode
 #define inner sequence
 	  NEW_NODE(map, MAP);
@@ -915,10 +916,10 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
 	  stack_ptr--;
 	  *end = prev_end_char;
 	  SKIP_SPACES(line);
-	  if (*line++ != ':')
+	  if (colon = line, *line++ != ':')
 	    {
 	      LEAF;
-	      continue; /* Not an error in macros. */
+	      continue; /* Not an error in functions. */
 	    }
 	  BRANCH(":");
 #undef inner
@@ -931,6 +932,12 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
 #define node supernode
 	  LEAF;
 #undef node
+	  if (supernode->result == NULL)
+	    {
+	      NEW_ERROR(1, ERROR, "output missing");
+	      error->start = (size_t)(colon - LINE);
+	      error->end = error->start + 1;
+	    }
 	  if (*line == '\0')
 	    continue;
 	  end = line + strlen(line), prev_end_char = *end;
