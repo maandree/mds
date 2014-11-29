@@ -381,8 +381,8 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_t** here;
   mds_kbdc_tree_t* dup_sequence = NULL;
   mds_kbdc_tree_t* temp;
-  size_t argument_index = 0;
-  int redo = 0, saved_errno;
+  size_t argument_index;
+  int redo = 0, need_reelimination, saved_errno;
   
   /* Check for bad things in the result. */
   for (argument = tree->result; argument; argument = argument->next)
@@ -425,24 +425,32 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   /* Remove ‘.’:s. */
   REMOVE_NOTHING(sequence);
   
-  /* Copy sequence. */
-  fail_if ((dup_sequence = mds_kbdc_tree_dup(tree->sequence), dup_sequence == NULL));
-  
-  /* Eliminate alterations, remember, unordered subsequences have
-     been simplified to alternations of ordered subsequences. */
-  for (argument = dup_sequence; argument; argument = argument->next, argument_index++)
-    if (argument->type == C(ALTERNATION))
-      fail_if (eliminate_alternation((mds_kbdc_tree_t*)tree, argument, argument_index));
-  
-  mds_kbdc_tree_free(dup_sequence), dup_sequence = NULL;
-  
-  /* Eliminated ordered subsequences. */
-  for (here = &(tree->sequence); (argument = *here); redo ? (redo = 0) : (here = &(argument->next), 0))
-    if (argument->type == C(ORDERED))
-      {
-	FLATTEN(argument);
-	redo = 1;
-      }
+  /* Because unordered are simplified to alternations of ordered subsequences, which
+     in turn can contain alternations, possibiled from simplification of nested
+     unordered sequenceses, we need to reeliminated until there are not alternations. */
+  for (need_reelimination = 1; need_reelimination ? (need_reelimination = 0, 1) : 0; redo = 0)
+    {
+      /* Copy sequence. */
+      fail_if ((dup_sequence = mds_kbdc_tree_dup(tree->sequence), dup_sequence == NULL));
+      
+      /* Eliminate alterations, remember, unordered subsequences have
+	 been simplified to alternations of ordered subsequences. */
+      for (argument_index = 0, argument = dup_sequence; argument; argument = argument->next, argument_index++)
+	if (argument->type == C(ALTERNATION))
+	  fail_if (eliminate_alternation((mds_kbdc_tree_t*)tree, argument, argument_index));
+      
+      mds_kbdc_tree_free(dup_sequence), dup_sequence = NULL;
+      
+      /* Eliminated ordered subsequences. */
+      for (here = &(tree->sequence); (argument = *here); redo ? (redo = 0) : (here = &(argument->next), 0))
+	if (argument->type == C(ORDERED))
+	  {
+	    FLATTEN(argument);
+	    redo = 1;
+	  }
+	else if (argument->type == C(ALTERNATION))
+	  need_reelimination = 1;
+    }
   
   /* Valid value properties. */
   if (tree->result == NULL)

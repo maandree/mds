@@ -1,4 +1,39 @@
 (1 [2 3]) : 0
 
-# TODO
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 1-2) ‘1’)
+#     (string (@ 1 4-5) ‘2’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘0’)
+#   )
+# )
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 1-2) ‘1’)
+#     (string (@ 1 6-7) ‘3’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘0’)
+#   )
+# )
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 4-5) ‘2’)
+#     (string (@ 1 1-2) ‘1’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘0’)
+#   )
+# )
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 6-7) ‘3’)
+#     (string (@ 1 1-2) ‘1’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘0’)
+#   )
+# )
 
