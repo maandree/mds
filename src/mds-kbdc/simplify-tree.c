@@ -343,9 +343,8 @@ static int check_value_statement(mds_kbdc_tree_map_t* restrict tree)
     NEW_ERROR(tree->sequence, WARNING, "use of sequence in value statement is discouraged");
   
   /* Simplify argument and start over. */
-  //fail_if(simplify(tree->sequence));
-  //goto again;
-  return 0; /* TODO */
+  fail_if(simplify(tree->sequence));
+  goto again;
   
  pfail:
   return -1;
@@ -583,6 +582,18 @@ static mds_kbdc_tree_t* create_permutations(mds_kbdc_tree_t* elements)
   mds_kbdc_tree_t ordered;
   int saved_errno, no_perms;
   
+  /* Error case. */
+  if (elements == NULL)
+    return NULL;
+  
+  /* Base case. */
+  if (elements->next == NULL)
+    {
+      fail_if ((first = mds_kbdc_tree_create(C(ORDERED))) == NULL);
+      fail_if ((first->ordered.inner = mds_kbdc_tree_dup(elements)) == NULL);
+      return first;
+    }
+  
   for (previous_next = &elements; (argument = *previous_next); previous_next = &((*previous_next)->next))
     {
       /* Created ordered alternative for a permutation prototype. */
@@ -599,13 +610,14 @@ static mds_kbdc_tree_t* create_permutations(mds_kbdc_tree_t* elements)
       subperms = create_permutations(elements);
       argument->next = *previous_next;
       *previous_next = argument;
-      fail_if (no_perms ? 0 : subperms == NULL);
+      fail_if (no_perms ? 0 : (subperms == NULL));
       /* Join first element with subpermutations. */
       while (subperms)
 	{
 	  /* Join. */
 	  fail_if ((perm = mds_kbdc_tree_dup(&ordered), perm == NULL));
-	  perm->ordered.inner = subperms->ordered.inner;
+	  perm->ordered.inner->next = subperms->ordered.inner;
+	  subperms->ordered.inner = NULL;
 	  /* Add the permutation to the chain. */
 	  *here = perm;
 	  here = &(perm->next);
@@ -689,7 +701,7 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
       return 0;
     }
   
-  /* Simplify. */ /* TODO test */
+  /* Simplify. */
   for (argument = tree->inner, argument_count = 0; argument; argument = argument->next, argument_count++)
     if (argument->type == C(ALTERNATION))
       {
@@ -720,7 +732,17 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   tree->processed = PROCESS_LEVEL;
   arguments = tree->inner;
   if (tree->inner = create_permutations(arguments), tree->inner == NULL)
-    return tree->inner = arguments, -1;
+    {
+      if (errno == 0)
+	{
+	  /* `create_permutations` can return `NULL` without setting `errno`
+	   * if it does not list any permutations. */
+	  NEW_ERROR_(result, INTERNAL_ERROR, 0, 0, 0, 0, 1,
+		     "Fail to create permutations of an unordered sequence");
+	  errno = 0;
+	}
+      return tree->inner = arguments, -1;
+    }
   mds_kbdc_tree_free(arguments);
   
   return 0;
