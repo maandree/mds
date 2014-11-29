@@ -1,0 +1,9 @@
+"value statement"
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 0-17) ‘"value statement"’)
+#   )
+#   (.result nil)
+# )
+

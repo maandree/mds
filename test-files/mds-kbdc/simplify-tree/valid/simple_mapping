@@ -1,0 +1,11 @@
+<keycode 1> : <escape>
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (keys (@ 1 0-11) ‘<keycode 1>’)
+#   )
+#   (.result
+#     (keys (@ 1 14-22) ‘<escape>’)
+#   )
+# )
+

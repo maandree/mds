@@ -1,0 +1,13 @@
+<dead compose> <tab> : "    " "    "
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (keys (@ 1 0-14) ‘<dead compose>’)
+#     (keys (@ 1 15-20) ‘<tab>’)
+#   )
+#   (.result
+#     (string (@ 1 23-29) ‘"    "’)
+#     (string (@ 1 30-36) ‘"    "’)
+#   )
+# )
+

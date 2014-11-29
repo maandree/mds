@@ -1,0 +1,14 @@
+<tab> : .
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (keys (@ 1 0-5) ‘<tab>’)
+#   )
+#   (.result
+#     (nothing (@ 1 8-9))
+#   )
+# )
+# :1:8–9: error: not allowed in mapping output
+#  <tab> : .
+#          ^
+

@@ -1,0 +1,9 @@
+<my_key> : [1 2] (3 4)
+
+# :1:11–12: error: not allowed in mapping output
+#  <my_key> : [1 2] (3 4)
+#             ^
+# :1:17–18: error: not allowed in mapping output
+#  <my_key> : [1 2] (3 4)
+#                   ^
+
