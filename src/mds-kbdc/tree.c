@@ -277,7 +277,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
   mds_kbdc_tree_t* node = NULL;
   int saved_errno;
   
-  fail_if ((this == NULL) || xcalloc(node, 1, sizeof(mds_kbdc_tree_t)));
+  fail_if ((this == NULL) || xcalloc(node, 1, mds_kbdc_tree_t));
   
   node->type = this->type;
   node->loc_line = this->loc_line;
