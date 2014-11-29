@@ -1,0 +1,29 @@
+[1 2 .] 3 : 4
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 1-2) ‘1’)
+#     (string (@ 1 8-9) ‘3’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘4’)
+#   )
+# )
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 3-4) ‘2’)
+#     (string (@ 1 8-9) ‘3’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘4’)
+#   )
+# )
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 8-9) ‘3’)
+#   )
+#   (.result
+#     (string (@ 1 12-13) ‘4’)
+#   )
+# )
+

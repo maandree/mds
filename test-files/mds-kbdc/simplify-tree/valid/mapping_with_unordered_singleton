@@ -1,0 +1,14 @@
+(1) : 2
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 1-2) ‘1’)
+#   )
+#   (.result
+#     (string (@ 1 6-7) ‘2’)
+#   )
+# )
+# :1:0–1: warning: singleton unordered subsequence
+#  (1) : 2
+#  ^
+

@@ -1,0 +1,25 @@
+# Note this should pass if complied with --force
+
+( ( 1 2 3 4 5 6 ) ) : 0
+
+# (map (@ 3 0-0)
+#   (.sequence
+#     (unordered (@ 3 0-3)
+#       (.inner
+#         (string (@ 3 4-5) ‘1’)
+#         (string (@ 3 6-7) ‘2’)
+#         (string (@ 3 8-9) ‘3’)
+#         (string (@ 3 10-11) ‘4’)
+#         (string (@ 3 12-13) ‘5’)
+#         (string (@ 3 14-15) ‘6’)
+#       )
+#     )
+#   )
+#   (.result
+#     (string (@ 3 22-23) ‘0’)
+#   )
+# )
+# :3:4–5: error: unordered subsequence of size 6 found, requires ‘--force’ to compile
+#  ( ( 1 2 3 4 5 6 ) ) : 0
+#      ^
+

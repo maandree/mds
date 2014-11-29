@@ -500,6 +500,11 @@ typedef struct mds_kbdc_tree_map
    */
   mds_kbdc_tree_t* result;
   
+  /* 
+   * These are ordered so that `mds_kbdc_tree_t.macro_call.arguments`
+   * and `mds_kbdc_tree_t.map.sequence` have the same address.
+   */
+  
   MDS_KBDC_TREE_PADDING(2);
   
 } mds_kbdc_tree_map_t;
@@ -598,16 +603,21 @@ typedef struct mds_kbdc_tree_macro_call
   MDS_KBDC_TREE_COMMON;
   
   /**
-   * The name of the macro
-   */
-  char* name;
-  
-  /**
    * The first input argument for the
    * macro call, the second is accessed
    * using `.arguments.next`
    */
   mds_kbdc_tree_t* arguments;
+  
+  /**
+   * The name of the macro
+   */
+  char* name;
+  
+  /* 
+   * These are ordered so that `mds_kbdc_tree_t.macro_call.arguments`
+   * and `mds_kbdc_tree_t.map.sequence` have the same address.
+   */
   
   MDS_KBDC_TREE_PADDING(2);
   

@@ -171,7 +171,7 @@ static int eliminate_alternation(mds_kbdc_tree_t* tree, mds_kbdc_tree_t* argumen
   for (first = last = NULL; alternative; alternative = next_alternative)
     {
       /* Duplicate statement. */
-      if (new_tree = mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree), new_tree == NULL)
+      if (new_tree = mds_kbdc_tree_dup(tree), new_tree == NULL)
 	{
 	  int saved_errno = errno;
 	  argument->alternation.inner = alternative;
@@ -184,7 +184,8 @@ static int eliminate_alternation(mds_kbdc_tree_t* tree, mds_kbdc_tree_t* argumen
       last = new_tree;
       first = first ? first : new_tree;
       /* Jump to the alternation. */
-      here = &(new_tree->macro_call.arguments);
+      here = &(new_tree->macro_call.arguments);  /* `new_tree->macro_call.arguments` and
+						  * `new_tree->map.sequence` as the same address. */
       for (new_argument = *here, i = 0; i < argument_index; i++, here = &((*here)->next))
 	new_argument = new_argument->next;
       /* Detach alternative. */
@@ -318,6 +319,40 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 
 
 /**
+ * Check for bad things in a value statement
+ * 
+ * @param   tree  The value statement-tree
+ * @return        Zero on success, -1 on error
+ */
+static int check_value_statement(mds_kbdc_tree_map_t* restrict tree)
+{
+ again:
+  /* Check that there is only one value. */
+  if (tree->sequence->next)
+    NEW_ERROR(tree->sequence->next, ERROR, "more the one value in value statement");
+  
+  /* Check for alternation. */
+  if ((tree->sequence->type == C(ALTERNATION)) && (tree->processed != PROCESS_LEVEL))
+    NEW_ERROR(tree->sequence, WARNING,
+	      "alternated value statement is undefined unless the alternatives are identical");
+  
+  /* Check for unordered. */
+  if (tree->sequence->type != C(UNORDERED))
+    return 0;
+  if (tree->processed != PROCESS_LEVEL)
+    NEW_ERROR(tree->sequence, WARNING, "use of sequence in value statement is discouraged");
+  
+  /* Simplify argument and start over. */
+  //fail_if(simplify(tree->sequence));
+  //goto again;
+  return 0; /* TODO */
+  
+ pfail:
+  return -1;
+}
+
+
+/**
  * Simplify a mapping-subtree
  * 
  * @param   tree  The mapping-subtree
@@ -337,16 +372,38 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
     if ((argument->type != C(KEYS)) && (argument->type != C(STRING)))
       NEW_ERROR(argument, ERROR, "not allowed in mapping output");
   
+  /* Valid value properties. */
+  if (tree->result == NULL)
+    fail_if(check_value_statement(tree));
+  
   /* Simplify sequence. */
   for (argument = tree->sequence; argument; argument = argument->next)
     fail_if (simplify(argument));
+  
+  /* Test predicted emptyness. */
+  for (argument = tree->sequence; argument; argument = argument->next)
+    if (argument->type != C(NOTHING))
+      goto will_not_be_empty;
+  if (tree->sequence->processed != PROCESS_LEVEL)
+    NEW_ERROR(tree->sequence, ERROR, "mapping of null sequence");
+  /* The tree parsing process will not allow a mapping statement
+   * to start with a ‘.’. Thus if we select to highlight it we
+   * know that it is either an empty alternation, an empty
+   * unordered subsequence or a nothing inside an alternation.
+   * If it is already been processed by the simplifier, it is an
+   * error because it is an empty alternation or empty unordered
+   * subsequence, and there is not reason to print an additional
+   * error. If however it is a nothing inside an alternation we
+   * know that it is the cause of the error, however possibily
+   * in conjunction with additional such constructs, but those
+   * are harder to locate. */
+  return 0;
+ will_not_be_empty:
   
   /* Remove ‘.’:s. */
   REMOVE_NOTHING(sequence);
   
   /* Copy sequence. */
-  if (tree->sequence == NULL)
-    return 0;
   fail_if ((dup_sequence = mds_kbdc_tree_dup(tree->sequence), dup_sequence == NULL));
   
   /* Eliminate alterations, remember, unordered subsequences have
@@ -588,11 +645,12 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   mds_kbdc_tree_t** here;
   int allow_long = 0;
   size_t argument_count;
-  int argv_force = 1; /* TODO globals.h */
+  int argv_force = 0; /* TODO globals.h */
   
   /* Test for ‘(( ))’. */
   if (tree->inner && (tree->inner->next == NULL) && (tree->inner->type == C(UNORDERED)))
     {
+      tree->loc_end = tree->inner->loc_end;
       temp = tree->inner;
       tree->inner = tree->inner->unordered.inner;
       temp->unordered.inner = NULL;
@@ -622,7 +680,16 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   /* Remove ‘.’:s. */
   REMOVE_NOTHING(inner);
   
-  /* Simplify. */
+  /* Check that the sequnced contained anything else. */
+  if (tree->inner == NULL)
+    {
+      NEW_ERROR(tree, ERROR, "unordered subsequence contained nothing else than ‘.’");
+      tree->type = C(NOTHING);
+      tree->processed = PROCESS_LEVEL;
+      return 0;
+    }
+  
+  /* Simplify. */ /* TODO test */
   for (argument = tree->inner, argument_count = 0; argument; argument = argument->next, argument_count++)
     if (argument->type == C(ALTERNATION))
       {
@@ -640,10 +707,11 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   if ((argument_count > 5) && (allow_long * argv_force == 0))
     {
       if (allow_long == 0)
-	NEW_ERROR(argument, ERROR, "unordered subsequence longer than 5 elements need double brackets");
+	NEW_ERROR(tree->inner, ERROR,
+		  "unordered subsequence longer than 5 elements need double brackets");
       else if (argv_force == 0)
-	NEW_ERROR(argument, ERROR, "unordered subsequence of size %zu found, requires ‘--force’ to compile",
-		  argument_count);
+	NEW_ERROR(tree->inner, ERROR,
+		  "unordered subsequence of size %zu found, requires ‘--force’ to compile", argument_count);
       return 0;
     }
   

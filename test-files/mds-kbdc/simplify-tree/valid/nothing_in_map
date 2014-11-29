@@ -1,0 +1,18 @@
+1 . . 2 : 3
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 0-1) ‘1’)
+#     (string (@ 1 6-7) ‘2’)
+#   )
+#   (.result
+#     (string (@ 1 10-11) ‘3’)
+#   )
+# )
+# nothing_in_map:1:2–3: warning: ‘.’ outside alternation has no effect
+#  1 . . 2 : 3
+#    ^
+# nothing_in_map:1:4–5: warning: ‘.’ outside alternation has no effect
+#  1 . . 2 : 3
+#      ^
+

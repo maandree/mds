@@ -1,0 +1,26 @@
+() : 1
+[] : 2
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (nothing (@ 1 0-1))
+#   )
+#   (.result
+#     (string (@ 1 5-6) ‘1’)
+#   )
+# )
+# (map (@ 2 0-0)
+#   (.sequence
+#     (nothing (@ 2 0-1))
+#   )
+#   (.result
+#     (string (@ 2 5-6) ‘2’)
+#   )
+# )
+# :1:0–1: error: empty unordered subsequence
+#  () : 1
+#  ^
+# :2:0–1: error: empty alternation
+#  [] : 2
+#  ^
+

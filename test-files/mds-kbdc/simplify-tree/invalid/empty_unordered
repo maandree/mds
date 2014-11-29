@@ -1,0 +1,12 @@
+() : "a"
+
+# (map (@ 1 0-0)
+#   (.sequence nil)
+#   (.result
+#     (string (@ 1 5-8) ‘"a"’)
+#   )
+# )
+# :1:0–1: error: empty unordered subsequence
+#  () : "a"
+#  ^
+

@@ -1,0 +1,13 @@
+"a" "b"
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (string (@ 1 0-3) ‘"a"’)
+#     (string (@ 1 4-7) ‘"b"’)
+#   )
+#   (.result nil)
+# )
+# :1:4–7: error: more the one value in value statement
+#  "a" "b"
+#      ^^^
+
