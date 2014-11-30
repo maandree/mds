@@ -414,7 +414,6 @@ static char* encode_utf8(char* buffer, char32_t character)
 char* parse_raw_string(const char* restrict string)
 {
 #define r(cond, lower, upper)  ((cond) && ((lower) <= c) && (c <= (upper)))
-  
   char* rc;
   char* p;
   int escape = 0;
