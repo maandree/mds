@@ -86,7 +86,7 @@ static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_
   mds_kbdc_parse_error_t** errors = NULL;
   mds_kbdc_parse_error_t* suberror;
   size_t errors_ptr = 0;
-  int saved_errno;
+  int saved_errno, annotated = 0;
   
   /* Allocate temporary list for errors. */
   if (subresult->errors_ptr == 0)
@@ -99,16 +99,21 @@ static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_
       suberror = subresult->errors[subresult->errors_ptr];
       
       /* If it is more severe than a note, we want to say there it was included. */
-      if (suberror->severity > MDS_KBDC_PARSE_ERROR_NOTE)
+      if (annotated == 0)
 	{
 	  NEW_ERROR(tree, NOTE, "included from here");
 	  errors[errors_ptr++] = error;
 	  result->errors[--(result->errors_ptr)] = NULL;
+	  annotated = 1;
 	}
       
       /* Include error. */
       errors[errors_ptr++] = suberror;
       subresult->errors[subresult->errors_ptr] = NULL;
+      
+      /* Make sure when there are nested inclusions that the outermost inclusion * is annotated last. */
+      if (suberror->severity > MDS_KBDC_PARSE_ERROR_NOTE)
+	annotated = 0;
     }
   
   /* Append errors. */
