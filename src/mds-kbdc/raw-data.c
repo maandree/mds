@@ -413,12 +413,13 @@ static char* encode_utf8(char* buffer, char32_t character)
  */
 char* parse_raw_string(const char* restrict string)
 {
-#define r(lower, upper)  (((lower) <= c) && (c <= (upper)))
+#define r(cond, lower, upper)  ((cond) && ((lower) <= c) && (c <= (upper)))
   
   char* rc;
   char* p;
   int escape = 0;
-  char32_t buf;
+  char32_t buf = 0;
+  char c;
   
   /* We know that the output string can only be shorter because
    * it is surrounded by 2 quotes and escape can only be longer
@@ -430,46 +431,34 @@ char* parse_raw_string(const char* restrict string)
   if (rc == NULL)
     return NULL;
   
-  while (*string)
-    {
-      char c = *string++;
-      
-      if (escape > 1)
-	{
-	  if      ((escape ==  8) && r('0', '7'))  buf = (buf << 3) | (c & 15);
-	  else if ((escape == 16) && r('0', '9'))  buf = (buf << 4) | (c & 15);
-	  else if ((escape == 16) && r('a', 'f'))  buf = (buf << 4) | ((c & 15) + 9);
-	  else if ((escape == 16) && r('A', 'F'))  buf = (buf << 4) | ((c & 15) + 9);
-	  else
-	    goto end_of_escape;
-	  continue;
-	end_of_escape:
-	  escape = 0;
-	  p = encode_utf8(p, buf);
-	  if (p == NULL)
-	    goto fail;
-	  if (c != '.')
-	    *p++ = c;
-	}
-      else if (escape == 1)
-	{
-	  escape = 0, buf = 0;
-	  switch (c)
-	    {
-	    case '0':  escape = 8;   break;
-	    case 'u':  escape = 16;  break;
-	    default:   *p++ = c;     break;
-	    }
-	}
-      else if (c == '\\')
-	escape = 1;
-      else if (c != '\"')
-	*p++ = c;
-    }
+  while ((c = *string++))
+    if      (r(escape ==  8, '0', '7'))  buf = (buf << 3) | (c & 15);
+    else if (r(escape == 16, '0', '9'))  buf = (buf << 4) | (c & 15);
+    else if (r(escape == 16, 'a', 'f'))  buf = (buf << 4) | ((c & 15) + 9);
+    else if (r(escape == 16, 'A', 'F'))  buf = (buf << 4) | ((c & 15) + 9);
+    else if (escape > 1)
+      {
+	escape = 0;
+	fail_if ((p = encode_utf8(p, buf), p == NULL));
+	if (c != '.')
+	  *p++ = c;
+      }
+    else if (escape == 1)
+      {
+	escape = 0, buf = 0;
+	switch (c)
+	  {
+	  case '0':  escape = 8;   break;
+	  case 'u':  escape = 16;  break;
+	  default:   *p++ = c;     break;
+	  }
+      }
+    else if (c == '\\')  escape = 1;
+    else if (c != '\"')  *p++ = c;
   
   *p = '\0';
   return rc;
- fail:
+ pfail:
   free(rc);
   return NULL;
 #undef r
