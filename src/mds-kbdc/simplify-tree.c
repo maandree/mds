@@ -816,7 +816,7 @@ static int simplify(mds_kbdc_tree_t* restrict tree)
     default:
       break;
     }
-    
+  
   tree = tree->next;
   goto again;
 #undef s
