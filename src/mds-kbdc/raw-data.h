@@ -104,5 +104,14 @@ size_t get_end_of_call(char* restrict content, size_t offset, size_t size) __att
 int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* restrict source_code);
 
 
+/**
+ * Parse a quoted and escaped string that may not include function calls or variable dereferences
+ * 
+ * @param   string  The string
+ * @return          The string in machine-readable format, `NULL` on error
+ */
+char* parse_raw_string(const char* restrict string);
+
+
 #endif
 

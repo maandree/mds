@@ -1,0 +1,11 @@
+include "_empty"
+
+# (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/valid/_empty’
+#   (.inner nil)
+# )
+# .../test-files/mds-kbdc/process-includes/valid/_empty: warning: file is empty
+# 
+# .../test-files/mds-kbdc/process-includes/valid/include_empty_file:1:0–7: note: included from here
+#  include "_empty"
+#  ^^^^^^^
+

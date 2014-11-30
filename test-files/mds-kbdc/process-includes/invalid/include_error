@@ -1,0 +1,31 @@
+include "_error"
+
+# (include (@ 1 0-7) ‘/home/mattias/git/mds/test-files/mds-kbdc/process-includes/invalid/_error’
+#   (.inner
+#     (map (@ 1 0-0)
+#       (.sequence
+#         (nothing (@ 1 1-2))
+#       )
+#       (.result nil)
+#     )
+#   )
+# )
+# .../test-files/mds-kbdc/process-includes/invalid/_error:1:0–1: warning: alternated value statement is undefined unless the alternatives are identical
+#  [.]
+#  ^
+# .../test-files/mds-kbdc/process-includes/invalid/include_error:1:0–7: note: included from here
+#  include "_error"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_error:1:0–1: warning: singleton alternation
+#  [.]
+#  ^
+# .../test-files/mds-kbdc/process-includes/invalid/include_error:1:0–7: note: included from here
+#  include "_error"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_error:1:1–2: error: nothing in value statement
+#  [.]
+#   ^
+# .../test-files/mds-kbdc/process-includes/invalid/include_error:1:0–7: note: included from here
+#  include "_error"
+#  ^^^^^^^
+

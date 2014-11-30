@@ -1,0 +1,16 @@
+include "_mapping"
+
+# (include (@ 1 0-7) ‘/home/mattias/git/mds/test-files/mds-kbdc/process-includes/valid/_mapping’
+#   (.inner
+#     (map (@ 1 0-0)
+#       (.sequence
+#         (keys (@ 1 0-16) ‘<dead letter ´>’)
+#         (string (@ 1 17-20) ‘"e"’)
+#       )
+#       (.result
+#         (string (@ 1 23-27) ‘"é"’)
+#       )
+#     )
+#   )
+# )
+

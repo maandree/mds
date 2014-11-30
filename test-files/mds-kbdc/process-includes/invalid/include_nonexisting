@@ -1,0 +1,11 @@
+include "this file does not exist"
+
+# (include (@ 1 0-7) ‘this file does not exist’
+#   (.inner nil)
+# )
+# this file does not exist: error: no such file or directory in ‘.../test-files/mds-kbdc/process-includes/invalid’
+# 
+# .../test-files/mds-kbdc/process-includes/invalid/include_nonexisting:1:0–7: note: included from here
+#  include "this file does not exist"
+#  ^^^^^^^
+

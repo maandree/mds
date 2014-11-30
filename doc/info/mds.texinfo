@@ -5900,6 +5900,10 @@ two zeroes, you do not write `\100' as that would expand
 to the value of the hundredth variable. Instead you
 write `\1.00'.
 
+Use of function calls and variables inside
+@code{include}-statments invokes undefined behaviour.
+Escaped numerals greater than or equal to the 31th
+power of 2 also invoke undefined behaviour.
 
 
 @node Builtin Functions

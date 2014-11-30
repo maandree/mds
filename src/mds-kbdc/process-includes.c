@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "process-includes.h"
+/* TODO we need to deal with mutually recursive includes */
 
 #include "make-tree.h"
 #include "simplify-tree.h"
@@ -68,26 +69,34 @@ static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_
 {
   mds_kbdc_parse_error_t** errors = NULL;
   mds_kbdc_parse_error_t* suberror;
-  size_t errors_ptr = 0, i;
+  size_t errors_ptr = 0;
   int saved_errno;
   
-  /* List errors backwards, so that we can easily insert “included from here”-notes. */
+  /* Allocate temporary list for errors. */
+  if (subresult->errors_ptr == 0)
+    return 0;
   fail_if (xmalloc(errors, subresult->errors_ptr * 2, mds_kbdc_parse_error_t*));
+  
+  /* List errors backwards, so that we can easily handle errors and add “included from here”-note. */
   while (subresult->errors_ptr--)
     {
       suberror = subresult->errors[subresult->errors_ptr];
+      
+      /* If it is more severe than a note, we want to say there it was included. */
       if (suberror->severity > MDS_KBDC_PARSE_ERROR_NOTE)
 	{
 	  NEW_ERROR(tree, NOTE, "included from here");
 	  errors[errors_ptr++] = error;
 	  result->errors[--(result->errors_ptr)] = NULL;
 	}
+      
+      /* Include error. */
       errors[errors_ptr++] = suberror;
       subresult->errors[subresult->errors_ptr] = NULL;
     }
   
   /* Append errors. */
-  for (i = 0; i < errors_ptr; errors[i++] = NULL)
+  for (; errors_ptr--; errors[errors_ptr] = NULL)
     {
       if (result->errors_ptr + 1 >= result->errors_size)
 	{
@@ -98,8 +107,8 @@ static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_
 	  result->errors = new_errors;
 	  result->errors_size = new_errors_size;
 	}
-  
-      result->errors[result->errors_ptr++] = errors[i];
+      
+      result->errors[result->errors_ptr++] = errors[errors_ptr];
       result->errors[result->errors_ptr] = NULL;
     }
   
@@ -108,10 +117,7 @@ static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_
  pfail:
   saved_errno = errno;
   while (errors_ptr--)
-    if (errors[errors_ptr] == NULL)
-      break;
-    else
-      mds_kbdc_parse_error_free(errors[errors_ptr]);
+    mds_kbdc_parse_error_free(errors[errors_ptr]);
   free(errors);
   return errno = saved_errno, -1;
 }
@@ -150,7 +156,7 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
    * but we will not assume that glibc is used here. */
   for (;;)
     {
-      fail_if (!xxrealloc(old, cwd, cwd_size <<= 1, char));
+      fail_if (xxrealloc(old, cwd, cwd_size <<= 1, char));
       if (getcwd(cwd, cwd_size))
 	break;
       else
@@ -165,6 +171,10 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
   our_result = result;
   
   /* Process include. */
+  old = tree->filename, tree->filename = NULL;
+  tree->filename = parse_raw_string(old);
+  fail_if (tree->filename == NULL);
+  free(old), old = NULL;
   process (parse_to_tree(tree->filename, &subresult));
   process (simplify_tree(&subresult));
   process (process_includes(&subresult));

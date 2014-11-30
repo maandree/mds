@@ -662,6 +662,9 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   size_t line_i, line_n;
   const char** keyword_stack = NULL;
   mds_kbdc_tree_t*** tree_stack = NULL;
+  char* cwd = NULL;
+  char* old = NULL;
+  size_t cwd_size = 4096 >> 1;
   size_t stack_ptr = 0;
   int saved_errno, in_array = 0;
   
@@ -672,7 +675,29 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
    * can be misleading as the program can have changed working
    * directory to be able to resolve filenames. */
   result->pathname = realpath(filename, NULL); /* XXX use absolute path */
-  fail_if (result->pathname == NULL);
+  if (result->pathname == NULL)
+    {
+      fail_if (errno != ENOENT);
+      saved_errno = errno;
+      
+      /* Get the current working directory. */
+      /* glibc offers ways to do this in just one function call,
+       * but we will not assume that glibc is used here. */
+      for (;;)
+	{
+	  fail_if (xxrealloc(old, cwd, cwd_size <<= 1, char));
+	  if (getcwd(cwd, cwd_size))
+	    break;
+	  else
+	    fail_if (errno != ERANGE);
+	}
+      
+      result->pathname = strdup(filename);
+      fail_if (result->pathname == NULL);
+      NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
+      free(cwd);
+      return 0;
+    }
   
   /* Check that the file exists and can be read. */
   if (access(result->pathname, R_OK) < 0)
@@ -1043,6 +1068,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   saved_errno = errno;
   free(keyword_stack);
   free(tree_stack);
+  free(cwd);
+  free(old);
   return errno = saved_errno, -1;
 }
 

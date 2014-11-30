@@ -18,6 +18,7 @@
 #include "raw-data.h"
 
 #include "globals.h"
+#include "string.h"
 
 #include <libmdsserver/macros.h>
 
@@ -29,6 +30,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 
 
@@ -54,6 +56,8 @@ void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this)
  */
 void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this)
 {
+  if (this == NULL)
+    return;
   free(this->lines),        this->lines        = NULL;
   free(this->real_lines),   this->real_lines   = NULL;
   free(this->content),      this->content      = NULL;
@@ -68,6 +72,8 @@ void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this)
  */
 void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this)
 {
+  if (this == NULL)
+    return;
   free(this->lines);
   free(this->real_lines);
   free(this->content);
@@ -369,5 +375,103 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
   free(lines);
   free(real_lines);
   return -1;
+}
+
+
+/**
+ * Encode a character in UTF-8
+ * 
+ * @param   buffer     The buffer where the character should be stored
+ * @param   character  The character
+ * @return             The of the character in `buffer`, `NULL` on error
+ */
+static char* encode_utf8(char* buffer, char32_t character)
+{
+  char32_t text[2];
+  char* restrict str;
+  char* restrict str_;
+  
+  text[0] = character;
+  text[1] = -1;
+  
+  if (str_ = str = string_encode(text), str == NULL)
+    return NULL;
+  
+  while (*str)
+    *buffer++ = *str++;
+  
+  free(str_);
+  return buffer;
+}
+
+
+/**
+ * Parse a quoted and escaped string that may not include function calls or variable dereferences
+ * 
+ * @param   string  The string
+ * @return          The string in machine-readable format, `NULL` on error
+ */
+char* parse_raw_string(const char* restrict string)
+{
+#define r(lower, upper)  (((lower) <= c) && (c <= (upper)))
+  
+  char* rc;
+  char* p;
+  int escape = 0;
+  char32_t buf;
+  
+  /* We know that the output string can only be shorter because
+   * it is surrounded by 2 quotes and escape can only be longer
+   * then what they escape, for example \uA0, is four characters,
+   * but when parsed it generateds 2 bytes in UTF-8, and their
+   * is not code point whose UTF-8 encoding is longer than its
+   * hexadecimal representation. */
+  p = rc = malloc(strlen(string) * sizeof(char));
+  if (rc == NULL)
+    return NULL;
+  
+  while (*string)
+    {
+      char c = *string++;
+      
+      if (escape > 1)
+	{
+	  if      ((escape ==  8) && r('0', '7'))  buf = (buf << 3) | (c & 15);
+	  else if ((escape == 16) && r('0', '9'))  buf = (buf << 4) | (c & 15);
+	  else if ((escape == 16) && r('a', 'f'))  buf = (buf << 4) | ((c & 15) + 9);
+	  else if ((escape == 16) && r('A', 'F'))  buf = (buf << 4) | ((c & 15) + 9);
+	  else
+	    goto end_of_escape;
+	  continue;
+	end_of_escape:
+	  escape = 0;
+	  p = encode_utf8(p, buf);
+	  if (p == NULL)
+	    goto fail;
+	  if (c != '.')
+	    *p++ = c;
+	}
+      else if (escape == 1)
+	{
+	  escape = 0, buf = 0;
+	  switch (c)
+	    {
+	    case '0':  escape = 8;   break;
+	    case 'u':  escape = 16;  break;
+	    default:   *p++ = c;     break;
+	    }
+	}
+      else if (c == '\\')
+	escape = 1;
+      else if (c != '\"')
+	*p++ = c;
+    }
+  
+  *p = '\0';
+  return rc;
+ fail:
+  free(rc);
+  return NULL;
+#undef r
 }
 
