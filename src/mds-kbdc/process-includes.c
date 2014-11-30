@@ -59,6 +59,65 @@ static mds_kbdc_parsed_t* restrict result;
 
 
 /**
+ * Transfer errors from an included tree
+ * 
+ * @param  subresult  The results of the processed include
+ * @param  tree       The include statement
+ */
+static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_include_t* restrict tree)
+{
+  mds_kbdc_parse_error_t** errors = NULL;
+  mds_kbdc_parse_error_t* suberror;
+  size_t errors_ptr = 0, i;
+  int saved_errno;
+  
+  /* List errors backwards, so that we can easily insert “included from here”-notes. */
+  fail_if (xmalloc(errors, subresult->errors_ptr * 2, mds_kbdc_parse_error_t*));
+  while (subresult->errors_ptr--)
+    {
+      suberror = subresult->errors[subresult->errors_ptr];
+      if (suberror->severity > MDS_KBDC_PARSE_ERROR_NOTE)
+	{
+	  NEW_ERROR(tree, NOTE, "included from here");
+	  errors[errors_ptr++] = error;
+	  result->errors[--(result->errors_ptr)] = NULL;
+	}
+      errors[errors_ptr++] = suberror;
+      subresult->errors[subresult->errors_ptr] = NULL;
+    }
+  
+  /* Append errors. */
+  for (i = 0; i < errors_ptr; errors[i++] = NULL)
+    {
+      if (result->errors_ptr + 1 >= result->errors_size)
+	{
+	  size_t new_errors_size = result->errors_size ? (result->errors_size << 1) : 2;
+	  mds_kbdc_parse_error_t** new_errors = result->errors;
+	  
+	  fail_if (xrealloc(new_errors, new_errors_size, mds_kbdc_parse_error_t*));
+	  result->errors = new_errors;
+	  result->errors_size = new_errors_size;
+	}
+  
+      result->errors[result->errors_ptr++] = errors[i];
+      result->errors[result->errors_ptr] = NULL;
+    }
+  
+  free(errors);
+  return 0;
+ pfail:
+  saved_errno = errno;
+  while (errors_ptr--)
+    if (errors[errors_ptr] == NULL)
+      break;
+    else
+      mds_kbdc_parse_error_free(errors[errors_ptr]);
+  free(errors);
+  return errno = saved_errno, -1;
+}
+
+
+/**
  * Process an include-statement
  * 
  * @param   tree  The include-statement
@@ -126,7 +185,7 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
     result->severest_error_level = subresult.severest_error_level;
   
   /* Move over errors. */
-  /* TODO */
+  fail_if (transfer_errors(&subresult, tree));
   
   /* Release resources. */
   mds_kbdc_parsed_destroy(&subresult);
