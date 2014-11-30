@@ -1,0 +1,5 @@
+# prefectly_empty_file should yeild the same error message.
+
+# : warning: file is empty
+# 
+

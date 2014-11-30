@@ -1027,6 +1027,14 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
 	}
     }
   
+  /* Warn about empty files. */
+  if (result->tree == NULL)
+    {
+      char* line = NULL;
+      char* end = NULL;
+      NEW_ERROR(0, WARNING, "file is empty");
+    }
+  
   free(keyword_stack);
   free(tree_stack);
   return 0;

@@ -20,6 +20,7 @@
 #include "globals.h"
 #include "make-tree.h"
 #include "simplify-tree.h"
+#include "process-includes.h"
 
 #include <libmdsserver/macros.h>
 
@@ -52,8 +53,8 @@ int main(int argc_, char** argv_)
   
   mds_kbdc_parsed_initialise(&result);
   process (parse_to_tree(argv[1], &result));
-  //process (simplify_tree(&result));
-  //process (process_includes(&result));
+  process (simplify_tree(&result));
+  process (process_includes(&result));
   /* TODO process (validate_tree(&result)); */
   /* TODO process (eliminate_dead_code(&result)); */
   /* TODO process (compile_layout(&result)); */

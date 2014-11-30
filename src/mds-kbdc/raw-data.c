@@ -115,7 +115,8 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
     }
   
   /* Shrink the buffer so it is not excessively large. */
-  fail_if (xxrealloc(old, content, buf_ptr, char));
+  if (buf_ptr) /* Simplest way to handle empty files: let the have the initial allocation size.  */
+    fail_if (xxrealloc(old, content, buf_ptr, char));
   
   /* Close file decriptor for the file. */
   close(fd);
