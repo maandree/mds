@@ -61,7 +61,7 @@ static mds_kbdc_parsed_t* restrict result;
 /**
  * Stack of attributes of already included files
  */
-static struct stat* included;
+static struct stat* restrict included;
 
 /**
  * The number elements allocated for `included`
