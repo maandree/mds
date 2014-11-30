@@ -1,0 +1,22 @@
+include "_inclusion_circle"
+
+# (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/_inclusion_circle’
+#   (.inner
+#     (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/inclusion_circle’
+#       (.inner
+#         (include (@ 1 0-7) ‘"_inclusion_circle"’
+#           (.inner nil)
+#         )
+#       )
+#     )
+#   )
+# )
+# .../test-files/mds-kbdc/process-includes/invalid/inclusion_circle: error: resursive inclusion
+# 
+# .../test-files/mds-kbdc/process-includes/invalid/inclusion_circle:1:0–7: note: included from here
+#  include "_inclusion_circle"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_inclusion_circle:1:0–7: note: included from here
+#  include "inclusion_circle"
+#  ^^^^^^^
+

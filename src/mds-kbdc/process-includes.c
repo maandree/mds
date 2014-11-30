@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "process-includes.h"
-/* TODO we need to deal with mutually recursive includes */
 
 #include "make-tree.h"
 #include "simplify-tree.h"
@@ -25,6 +24,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 
 
@@ -56,6 +57,21 @@ static mds_kbdc_parse_error_t* error;
  * The parameter of `process_includes`
  */
 static mds_kbdc_parsed_t* restrict result;
+
+/**
+ * Stack of attributes of already included files
+ */
+static struct stat* included;
+
+/**
+ * The number elements allocated for `included`
+ */
+static size_t included_size = 0;
+
+/**
+ * The number elements stored in `included`
+ */
+static size_t included_ptr = 0;
 
 
 
@@ -256,8 +272,39 @@ static int process_includes_in_tree(mds_kbdc_tree_t* restrict tree)
  */
 int process_includes(mds_kbdc_parsed_t* restrict result_)
 {
+  int r, saved_errno;
+  struct stat attr;
+  size_t i;
+  
   result = result_;
-  return process_includes_in_tree(result_->tree);
+  
+  fail_if (stat(result->pathname, &attr));
+  
+  if (included_ptr == included_size)
+    {
+      struct stat* old;
+      if (xxrealloc(old, included, included_size += 4, struct stat))
+	return included = old, -1;
+    }
+  
+  for (i = 0; i < included_ptr; i++)
+    if ((included[i].st_dev == attr.st_dev) && (included[i].st_ino == attr.st_ino))
+      {
+	NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 1, "resursive inclusion");
+	return 0;
+      }
+  
+  included[included_ptr++] = attr;
+  
+  r = process_includes_in_tree(result_->tree);
+  saved_errno = errno;
+  
+  if (--included_ptr == 0)
+    free(included), included_size = 0;
+  
+  return errno = saved_errno, r;
+ pfail:
+  return -1;
 }
 
 

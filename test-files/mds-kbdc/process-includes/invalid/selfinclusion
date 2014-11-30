@@ -1,0 +1,15 @@
+include "selfinclusion"
+
+# (include (@ 1 0-7) ‘.../mds/test-files/mds-kbdc/process-includes/invalid/selfinclusion’
+#   (.inner
+#     (include (@ 1 0-7) ‘"selfinclusion"’
+#       (.inner nil)
+#     )
+#   )
+# )
+# .../test-files/mds-kbdc/process-includes/invalid/selfinclusion: error: resursive inclusion
+# 
+# .../test-files/mds-kbdc/process-includes/invalid/selfinclusion:1:0–7: note: included from here
+#  include "selfinclusion"
+#  ^^^^^^^
+

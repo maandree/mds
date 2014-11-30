@@ -1,0 +1,43 @@
+include "_inclusion_rho_1"
+
+# (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_1’
+#   (.inner
+#     (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_2’
+#       (.inner
+#         (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_3’
+#           (.inner
+#             (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_4’
+#               (.inner
+#                 (include (@ 1 0-7) ‘.../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_2’
+#                   (.inner
+#                     (include (@ 1 0-7) ‘"_inclusion_rho_3"’
+#                       (.inner nil)
+#                     )
+#                   )
+#                 )
+#               )
+#             )
+#           )
+#         )
+#       )
+#     )
+#   )
+# )
+# .../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_2: error: resursive inclusion
+# 
+# .../test-files/mds-kbdc/process-includes/invalid/inclusion_rho:1:0–7: note: included from here
+#  include "_inclusion_rho_1"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_1:1:0–7: note: included from here
+#  include "_inclusion_rho_2"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_2:1:0–7: note: included from here
+#  include "_inclusion_rho_3"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_3:1:0–7: note: included from here
+#  include "_inclusion_rho_4"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/process-includes/invalid/_inclusion_rho_4:1:0–7: note: included from here
+#  include "_inclusion_rho_2"
+#  ^^^^^^^
+
