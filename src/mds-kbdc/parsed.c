@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 
 
@@ -70,9 +71,20 @@ int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this)
 void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t* restrict this, FILE* output)
 {
   mds_kbdc_parse_error_t** errors = this->errors;
-  if (errors)
+  char* env = getenv("MDS_KBDC_ERRORS_ORDER");
+  if (errors == NULL)
+    return;
+  if (env && (strcasecmp(env, "reversed") || strcasecmp(env, "reverse")))
+    {
+      while (*errors)
+	errors++;
+      while (errors-- != this->errors)
+	mds_kbdc_parse_error_print(*errors, output);
+    }
+  else
     while (*errors)
       mds_kbdc_parse_error_print(*errors++, output);
+  
 }
 
 
