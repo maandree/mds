@@ -39,6 +39,11 @@
  */
 int main(int argc_, char** argv_)
 {
+#define process(expr)						\
+  fail_if ((expr) < 0);						\
+  if (fatal = mds_kbdc_parsed_is_fatal(&result), fatal)		\
+    goto stop;
+  
   mds_kbdc_parsed_t result;
   int fatal;
   
@@ -46,10 +51,12 @@ int main(int argc_, char** argv_)
   argv = argv_;
   
   mds_kbdc_parsed_initialise(&result);
-  fail_if (parse_to_tree(argv[1], &result) < 0);
-  if (fatal = mds_kbdc_parsed_is_fatal(&result), fatal)
-    goto stop;
-  fail_if (simplify_tree(&result) < 0);
+  process (parse_to_tree(argv[1], &result));
+  //process (simplify_tree(&result));
+  //process (process_includes(&result));
+  /* TODO process (validate_tree(&result)); */
+  /* TODO process (eliminate_dead_code(&result)); */
+  /* TODO process (compile_layout(&result)); */
  stop:
   mds_kbdc_tree_print(result.tree, stderr);
   mds_kbdc_parsed_print_errors(&result, stderr);
@@ -60,5 +67,6 @@ int main(int argc_, char** argv_)
   xperror(*argv);
   mds_kbdc_parsed_destroy(&result);
   return 1;
+#undef process
 }
 

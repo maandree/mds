@@ -94,23 +94,24 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
     case C(ALTERNATION):
     case C(UNORDERED):
     case C(ORDERED):
-      xdestroy(struct mds_kbdc_tree_nesting*, inner);
+      xdestroy(mds_kbdc_tree_nesting_t*, inner);
       break;
       
     case C(INFORMATION_LANGUAGE):
     case C(INFORMATION_COUNTRY):
     case C(INFORMATION_VARIANT):
-      xfree(struct mds_kbdc_tree_information_data*, data);
+      xfree(mds_kbdc_tree_information_data_t*, data);
       break;
       
     case C(FUNCTION):
     case C(MACRO):
-      xfree(struct mds_kbdc_tree_callable*, name);
-      xdestroy(struct mds_kbdc_tree_callable*, inner);
+      xfree(mds_kbdc_tree_callable_t*, name);
+      xdestroy(mds_kbdc_tree_callable_t*, inner);
       break;
       
     case C(INCLUDE):
       xfree(mds_kbdc_tree_include_t*, filename);
+      xdestroy(mds_kbdc_tree_include_t*, inner);
       break;
       
     case C(ASSUMPTION_HAVE):
@@ -303,7 +304,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
     case C(INFORMATION_LANGUAGE):
     case C(INFORMATION_COUNTRY):
     case C(INFORMATION_VARIANT):    { NODE(information_data); S(data);                  }  break;
-    case C(INCLUDE):                { NODE(include); S(filename);                       }  break;
+    case C(INCLUDE):                { NODE(include); S(filename);T(inner);              }  break;
     case C(ASSUMPTION_HAVE_CHARS):  { NODE(assumption_have_chars); S(chars);            }  break;
     case C(KEYS):                   { NODE(keys); S(keys);                              }  break;
     case C(STRING):                 { NODE(string); S(string);                          }  break;
@@ -495,7 +496,7 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
     case C(INFORMATION_LANGUAGE):   SIMPLEX(information_language, "language", data);
     case C(INFORMATION_COUNTRY):    SIMPLEX(information_country, "country", data);
     case C(INFORMATION_VARIANT):    SIMPLEX(information_variant, "variant", data);
-    case C(INCLUDE):                SIMPLEX(include, "include", filename);
+    case C(INCLUDE):                NAMED_NESTING(include, "include", filename, inner);
     case C(FUNCTION):               NAMED_NESTING(function, "function", name, inner);
     case C(MACRO):                  NAMED_NESTING(macro, "macro", name, inner);
     case C(ASSUMPTION):             NESTING(assumption, "assumption", inner);

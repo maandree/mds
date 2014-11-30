@@ -285,7 +285,12 @@ typedef struct mds_kbdc_tree_include
    */
   char* filename;
   
-  MDS_KBDC_TREE_PADDING(1);
+  /**
+   * The included layout code tree
+   */
+  mds_kbdc_tree_t* inner;
+  
+  MDS_KBDC_TREE_PADDING(2);
   
 } mds_kbdc_tree_include_t;
 
