@@ -338,10 +338,10 @@ static int validate_assumption(mds_kbdc_tree_assumption_t* restrict tree)
       NEW_ERROR_WITH_INCLUDES(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
-  information = tree;
+  assumption = tree;
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
-  return information = NULL, r;
+  return assumption = NULL, r;
  pfail:
   return -1;
 }
