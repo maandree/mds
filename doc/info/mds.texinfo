@@ -329,8 +329,8 @@ do not want their programs to remember their size
 and position. There is also a risk that your
 mechanism for implementing this does not account
 for the possibility that outputs may have been
-removed, resized or relocated. The
-@command{mds-posmem} be used if the user wants
+removed, resized or relocated.
+@command{mds-posmem} can be used if the user wants
 programs to start where they were closed the last
 time they were closed.
 @end itemize
