@@ -35,7 +35,7 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR(NODE, SEVERITY, ...)					\
+#define NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, ...)			\
   NEW_ERROR_(result, SEVERITY, 1, (NODE)->loc_line,			\
 	     (NODE)->loc_start, (NODE)->loc_end, 1, __VA_ARGS__)
 
@@ -56,10 +56,10 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, ...)	\
+#define NEW_ERROR(NODE, PTR, SEVERITY, ...)			\
   do								\
     {								\
-      NEW_ERROR(NODE, SEVERITY, __VA_ARGS__);			\
+      NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, __VA_ARGS__);	\
       DUMP_INCLUDE_STACK(PTR);					\
     }								\
   while (0)
@@ -72,7 +72,7 @@
 static mds_kbdc_parse_error_t* error;
 
 /**
- * The parameter of `process_includes`
+ * The parameter of `validate_tree`
  */
 static mds_kbdc_parsed_t* restrict result;
 
@@ -158,7 +158,7 @@ static int dump_include_stack(size_t ptr)
     {
       result->pathname = ptr ? includes[ptr - 1]->filename : original_pathname;
       result->source_code = ptr ? includes[ptr - 1]->source_code : original_source_code;
-      NEW_ERROR(includes[ptr], NOTE, "included from here");
+      NEW_ERROR_WITHOUT_INCLUDES(includes[ptr], NOTE, "included from here");
     }
   result->pathname = old_pathname;
   result->source_code = old_source_code;
@@ -206,26 +206,26 @@ static int validate_function(mds_kbdc_tree_function_t* restrict tree)
   int r;
   if (function)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "nested function definition");
-      NEW_ERROR_WITH_INCLUDES(function, def_includes_ptr, NOTE, "outer function defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "nested function definition");
+      NEW_ERROR(function, def_includes_ptr, NOTE, "outer function defined here");
       return 0;
     }
   else if (macro)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "function definition inside macro definition");
-      NEW_ERROR_WITH_INCLUDES(macro, def_includes_ptr, NOTE, "outer macro defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "function definition inside macro definition");
+      NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
   else if (information)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "function definition inside information clause");
-      NEW_ERROR_WITH_INCLUDES(information, def_includes_ptr, NOTE, "outer information clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "function definition inside information clause");
+      NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
   else if (assumption)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "function definition inside assumption clause");
-      NEW_ERROR_WITH_INCLUDES(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "function definition inside assumption clause");
+      NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
   function = tree;
@@ -248,26 +248,26 @@ static int validate_macro(mds_kbdc_tree_macro_t* restrict tree)
   int r;
   if (function)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "macro definition inside function definition");
-      NEW_ERROR_WITH_INCLUDES(function, def_includes_ptr, NOTE, "outer function definition defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "macro definition inside function definition");
+      NEW_ERROR(function, def_includes_ptr, NOTE, "outer function definition defined here");
       return 0;
     }
   else if (macro)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "nested macro definition");
-      NEW_ERROR_WITH_INCLUDES(macro, def_includes_ptr, NOTE, "outer macro defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "nested macro definition");
+      NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
   else if (information)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "macro definition inside information clause");
-      NEW_ERROR_WITH_INCLUDES(information, def_includes_ptr, NOTE, "outer information clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "macro definition inside information clause");
+      NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
   else if (assumption)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "macro definition inside assumption clause");
-      NEW_ERROR_WITH_INCLUDES(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "macro definition inside assumption clause");
+      NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
   macro = tree;
@@ -290,26 +290,26 @@ static int validate_information(mds_kbdc_tree_information_t* restrict tree)
   int r;
   if (function)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "information clause inside function definition");
-      NEW_ERROR_WITH_INCLUDES(function, def_includes_ptr, NOTE, "outer function definition defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "information clause inside function definition");
+      NEW_ERROR(function, def_includes_ptr, NOTE, "outer function definition defined here");
       return 0;
     }
   else if (macro)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "information clause inside macro definition");
-      NEW_ERROR_WITH_INCLUDES(macro, def_includes_ptr, NOTE, "outer macro defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "information clause inside macro definition");
+      NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
   else if (information)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "nested information clause");
-      NEW_ERROR_WITH_INCLUDES(information, def_includes_ptr, NOTE, "outer information clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "nested information clause");
+      NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
   else if (assumption)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "information clause inside assumption clause");
-      NEW_ERROR_WITH_INCLUDES(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "information clause inside assumption clause");
+      NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
   information = tree;
@@ -332,26 +332,26 @@ static int validate_assumption(mds_kbdc_tree_assumption_t* restrict tree)
   int r;
   if (function)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "assumption clause inside function definition");
-      NEW_ERROR_WITH_INCLUDES(function, def_includes_ptr, NOTE, "outer function definition defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "assumption clause inside function definition");
+      NEW_ERROR(function, def_includes_ptr, NOTE, "outer function definition defined here");
       return 0;
     }
   else if (macro)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "assumption clause inside macro definition");
-      NEW_ERROR_WITH_INCLUDES(macro, def_includes_ptr, NOTE, "outer macro defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "assumption clause inside macro definition");
+      NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
   else if (information)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "assumption clause inside information clause");
-      NEW_ERROR_WITH_INCLUDES(information, def_includes_ptr, NOTE, "outer information clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "assumption clause inside information clause");
+      NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
   else if (assumption)
     {
-      NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "nested assumption clause");
-      NEW_ERROR_WITH_INCLUDES(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
+      NEW_ERROR(tree, includes_ptr, ERROR, "nested assumption clause");
+      NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
   assumption = tree;
@@ -380,11 +380,11 @@ static int validate_map(mds_kbdc_tree_map_t* restrict tree)
      * value-statement is used correctly or not.
      */
   else if (information)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside information clause");
+    NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside information clause");
   else if (assumption)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside assumption clause");
+    NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside assumption clause");
   else if (function)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside function definition");
+    NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside function definition");
   return 0;
  pfail:
   return -1;
@@ -400,11 +400,11 @@ static int validate_map(mds_kbdc_tree_map_t* restrict tree)
 static int validate_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
   if (information)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "macro call inside information clause");
+    NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside information clause");
   else if (assumption)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "macro call inside assumption clause");
+    NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside assumption clause");
   else if (function)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "macro call inside function definition");
+    NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside function definition");
   return 0;
  pfail:
   return -1;
@@ -448,7 +448,7 @@ static int validate_if(mds_kbdc_tree_if_t* restrict tree)
 static int validate_return(mds_kbdc_tree_return_t* restrict tree)
 {
   if ((function == NULL) && (macro == NULL))
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "‘return’ outside function and macro definition");
+    NEW_ERROR(tree, includes_ptr, ERROR, "‘return’ outside function and macro definition");
   return 0;
  pfail:
   return -1;
@@ -464,7 +464,7 @@ static int validate_return(mds_kbdc_tree_return_t* restrict tree)
 static int validate_break(mds_kbdc_tree_break_t* restrict tree)
 {
   if (fors == 0)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "‘break’ outside ‘for’");
+    NEW_ERROR(tree, includes_ptr, ERROR, "‘break’ outside ‘for’");
   return 0;
  pfail:
   return -1;
@@ -480,7 +480,7 @@ static int validate_break(mds_kbdc_tree_break_t* restrict tree)
 static int validate_continue(mds_kbdc_tree_continue_t* restrict tree)
 {
   if (fors == 0)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "‘continue’ outside ‘for’");
+    NEW_ERROR(tree, includes_ptr, ERROR, "‘continue’ outside ‘for’");
   return 0;
  pfail:
   return -1;
@@ -496,7 +496,7 @@ static int validate_continue(mds_kbdc_tree_continue_t* restrict tree)
 static int validate_assumption_data(mds_kbdc_tree_t* restrict tree)
 {
   if (assumption == NULL)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "assumption outside assumption clause");
+    NEW_ERROR(tree, includes_ptr, ERROR, "assumption outside assumption clause");
   return 0;
  pfail:
   return -1;
@@ -512,7 +512,7 @@ static int validate_assumption_data(mds_kbdc_tree_t* restrict tree)
 static int validate_information_data(mds_kbdc_tree_t* restrict tree)
 {
   if (information == NULL)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "information outside information clause");
+    NEW_ERROR(tree, includes_ptr, ERROR, "information outside information clause");
   return 0;
  pfail:
   return -1;
@@ -595,9 +595,9 @@ int validate_tree(mds_kbdc_parsed_t* restrict result_)
 
 
 
-#undef NEW_ERROR_WITH_INCLUDES
-#undef DUMP_INCLUDE_STACK
 #undef NEW_ERROR
+#undef DUMP_INCLUDE_STACK
+#undef NEW_ERROR_WITHOUT_INCLUDES
 #undef C
 
  
