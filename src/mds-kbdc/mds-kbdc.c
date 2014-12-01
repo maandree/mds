@@ -55,9 +55,10 @@ int main(int argc_, char** argv_)
   process (parse_to_tree(argv[1], &result));
   process (simplify_tree(&result));
   process (process_includes(&result));
-  /* TODO process (validate_tree(&result)); */
+  process (validate_tree(&result));
   /* TODO process (eliminate_dead_code(&result)); */
   /* TODO process (compile_layout(&result)); */
+  /* TODO process (assemble_layout(&result)); */
  stop:
   mds_kbdc_tree_print(result.tree, stderr);
   mds_kbdc_parsed_print_errors(&result, stderr);

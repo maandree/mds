@@ -37,7 +37,7 @@
 
 
 /**
- * Add an error the to error list
+ * Add an error to the error list
  * 
  * @param  NODE:const mds_kbdc_tree_t*    The node the triggered the error
  * @param  SEVERITY:identifier            * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity

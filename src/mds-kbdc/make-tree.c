@@ -88,7 +88,7 @@
 
 
 /**
- * Add an error the to error list
+ * Add an error to the error list
  * 
  * @param  ERROR_IS_IN_FILE:int           Whether the error is in the layout code
  * @param  SEVERITY:identifier            * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
