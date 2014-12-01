@@ -104,9 +104,9 @@ static size_t includes_ptr = 0;
 
 
 /**
- * Validate that a part of the structure of the compilation unit
+ * Eliminate dead code in a subtree
  * 
- * @param   tree  The tree to validate
+ * @param   tree  The tree to reduce
  * @return        Zero on success, -1 on error
  */
 static int eliminate_subtree(mds_kbdc_tree_t* restrict tree);
@@ -165,6 +165,31 @@ static int eliminate_include(mds_kbdc_tree_include_t* restrict tree)
 
 
 /**
+ * Eliminate dead code in a for-loop
+ * 
+ * @param   tree  The tree to reduce
+ * @return        Zero on success, -1 on error
+ */
+static int eliminate_for(mds_kbdc_tree_for_t* restrict tree)
+{
+  return eliminate_subtree(tree->inner);
+}
+
+
+/**
+ * Eliminate dead code in an if-statement
+ * 
+ * @param   tree  The tree to reduce
+ * @return        Zero on success, -1 on error
+ */
+static int eliminate_if(mds_kbdc_tree_if_t* restrict tree)
+{
+  return -(eliminate_subtree(tree->inner) ||
+	   eliminate_subtree(tree->otherwise));
+}
+
+
+/**
  * Eliminate dead code in a subtree
  * 
  * @param   tree  The tree to reduce
@@ -181,7 +206,16 @@ static int eliminate_subtree(mds_kbdc_tree_t* restrict tree)
   
   switch (tree->type)
     {
+    case C(INFORMATION):
+    case C(FUNCTION):
+    case C(MACRO):
+    case C(ASSUMPTION):
+      if ((r = eliminate_subtree(tree->information.inner)))
+	return r;
+      break;
     case C(INCLUDE):  e(include);  break;
+    case C(FOR):      E(for);      break;
+    case C(IF):       E(if);       break;
     default:
       break;
     }
