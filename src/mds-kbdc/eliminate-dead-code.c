@@ -35,7 +35,7 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR(NODE, SEVERITY, ...)					\
+#define NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, ...)			\
   NEW_ERROR_(result, SEVERITY, 1, (NODE)->loc_line,			\
 	     (NODE)->loc_start, (NODE)->loc_end, 1, __VA_ARGS__)
 
@@ -56,10 +56,10 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, ...)	\
+#define NEW_ERROR(NODE, PTR, SEVERITY, ...)			\
   do								\
     {								\
-      NEW_ERROR(NODE, SEVERITY, __VA_ARGS__);			\
+      NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, __VA_ARGS__);	\
       DUMP_INCLUDE_STACK(PTR);					\
     }								\
   while (0)
@@ -127,7 +127,7 @@ static int dump_include_stack(size_t ptr)
     {
       result->pathname = ptr ? includes[ptr - 1]->filename : original_pathname;
       result->source_code = ptr ? includes[ptr - 1]->source_code : original_source_code;
-      NEW_ERROR(includes[ptr], NOTE, "included from here");
+      NEW_ERROR_WITHOUT_INCLUDES(includes[ptr], NOTE, "included from here");
     }
   result->pathname = old_pathname;
   result->source_code = old_source_code;
@@ -216,9 +216,9 @@ int eliminate_dead_code(mds_kbdc_parsed_t* restrict result_)
 
 
 
-#undef NEW_ERROR_WITH_INCLUDES
-#undef DUMP_INCLUDE_STACK
 #undef NEW_ERROR
+#undef DUMP_INCLUDE_STACK
+#undef NEW_ERROR_WITHOUT_INCLUDES
 #undef C
 
  
