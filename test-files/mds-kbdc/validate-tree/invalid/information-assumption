@@ -1,0 +1,19 @@
+information
+  assumption
+  end assumption
+end information
+
+# (information (@ 1 0-11)
+#   (.inner
+#     (assumption (@ 2 2-12)
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–12: error: assumption clause inside information clause
+#    assumption
+#    ^^^^^^^^^^
+# :1:0–11: note: outer information clause defined here
+#  information
+#  ^^^^^^^^^^^
+

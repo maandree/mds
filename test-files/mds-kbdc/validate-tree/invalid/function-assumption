@@ -1,0 +1,19 @@
+function f/0
+  assumption
+  end assumption
+end function
+
+# (function (@ 1 0-8) ‘f/0’
+#   (.inner
+#     (assumption (@ 2 2-12)
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–12: error: assumption clause inside function definition
+#    assumption
+#    ^^^^^^^^^^
+# :1:0–8: note: outer function definition defined here
+#  function f/0
+#  ^^^^^^^^
+

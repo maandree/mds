@@ -77,6 +77,16 @@ static mds_kbdc_parse_error_t* error;
 static mds_kbdc_parsed_t* restrict result;
 
 /**
+ * The original value of `result->pathname`
+ */
+static char* original_pathname;
+
+/**
+ * The original value of `result->source_code`
+ */
+static mds_kbdc_source_code_t* original_source_code;
+
+/**
  * Stack of visited include-statements
  */
 static mds_kbdc_tree_include_t** restrict includes = NULL;
@@ -152,10 +162,20 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree);
  */
 static int dump_include_stack(size_t ptr)
 {
+  char* old_pathname = result->pathname;
+  mds_kbdc_source_code_t* old_source_code = result->source_code;
   while (ptr--)
-    NEW_ERROR(includes[ptr], NOTE, "included from here");
+    {
+      result->pathname = ptr ? includes[ptr - 1]->filename : original_pathname;
+      result->source_code = ptr ? includes[ptr - 1]->source_code : original_source_code;
+      NEW_ERROR(includes[ptr], NOTE, "included from here");
+    }
+  result->pathname = old_pathname;
+  result->source_code = old_source_code;
   return 0;
  pfail:
+  result->pathname = old_pathname;
+  result->source_code = old_source_code;
   return -1;
 } 
 
@@ -169,12 +189,18 @@ static int dump_include_stack(size_t ptr)
 static int validate_include(mds_kbdc_tree_include_t* restrict tree)
 {
   mds_kbdc_tree_include_t** old;
+  char* pathname = result->pathname;
+  mds_kbdc_source_code_t* source_code = result->source_code;
   int r, saved_errno;
   if (includes_ptr == includes_size)
     if (xxrealloc(old, includes, includes_size += 4, mds_kbdc_tree_include_t*))
       return saved_errno = errno, free(old), errno = saved_errno, -1;
   includes[includes_ptr++] = tree;
+  result->pathname = tree->filename;
+  result->source_code = tree->source_code;
   r = validate_subtree(tree->inner);
+  result->pathname = pathname;
+  result->source_code = source_code;
   return includes_ptr--, r;
 }
 
@@ -569,8 +595,12 @@ int validate_tree(mds_kbdc_parsed_t* restrict result_)
 {
   int r, saved_errno;
   result = result_;
+  original_pathname = result_->pathname;
+  original_source_code = result_->source_code;
   r = validate_subtree(result_->tree);
   saved_errno = errno;
+  result_->pathname = original_pathname;
+  result_->source_code = original_source_code;
   free(includes), includes = NULL, includes_size = includes_ptr = 0;
   free(fors),     fors     = NULL,     fors_size =     fors_ptr = 0;
   return errno = saved_errno, r;

@@ -1,0 +1,26 @@
+include "information-information"
+
+# (include (@ 1 0-7) ‘.../test-files/mds-kbdc/validate-tree/invalid/information-information’
+#   (.inner
+#     (information (@ 1 0-11)
+#       (.inner
+#         (information (@ 2 2-13)
+#           (.inner nil)
+#         )
+#       )
+#     )
+#   )
+# )
+# .../test-files/mds-kbdc/validate-tree/invalid/information-information:2:2–13: error: nested information clause
+#    information
+#    ^^^^^^^^^^^
+# .../test-files/mds-kbdc/validate-tree/invalid/include_information-information:1:0–7: note: included from here
+#  include "information-information"
+#  ^^^^^^^
+# .../test-files/mds-kbdc/validate-tree/invalid/information-information:1:0–11: note: outer information clause defined here
+#  information
+#  ^^^^^^^^^^^
+# .../test-files/mds-kbdc/validate-tree/invalid/include_information-information:1:0–7: note: included from here
+#  include "information-information"
+#  ^^^^^^^
+

@@ -211,6 +211,7 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
   /* Move over data to our result. */
   free(tree->filename);
   tree->filename = subresult.pathname, subresult.pathname = NULL;
+  tree->source_code = subresult.source_code, subresult.source_code = NULL;
   tree->inner = subresult.tree, subresult.tree = NULL;
   if (result->severest_error_level < subresult.severest_error_level)
     result->severest_error_level = subresult.severest_error_level;

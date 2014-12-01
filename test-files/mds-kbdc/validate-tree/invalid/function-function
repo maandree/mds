@@ -1,0 +1,19 @@
+function f/0
+  function g/0
+  end function
+end function
+
+# (function (@ 1 0-8) ‘f/0’
+#   (.inner
+#     (function (@ 2 2-10) ‘g/0’
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–10: error: nested function definition
+#    function g/0
+#    ^^^^^^^^
+# :1:0–8: note: outer function defined here
+#  function f/0
+#  ^^^^^^^^
+

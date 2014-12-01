@@ -19,6 +19,8 @@
 #define MDS_MDS_KBDC_TREE_H
 
 
+#include "raw-data.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -290,7 +292,12 @@ typedef struct mds_kbdc_tree_include
    */
   mds_kbdc_tree_t* inner;
   
-  MDS_KBDC_TREE_PADDING(2);
+  /**
+   * The source code of the file included by this statement
+   */
+  mds_kbdc_source_code_t* source_code;
+  
+  MDS_KBDC_TREE_PADDING(3);
   
 } mds_kbdc_tree_include_t;
 

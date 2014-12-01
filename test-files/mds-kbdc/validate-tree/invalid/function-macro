@@ -1,0 +1,19 @@
+function f/0
+  macro m/0
+  end macro
+end function
+
+# (function (@ 1 0-8) ‘f/0’
+#   (.inner
+#     (macro (@ 2 2-7) ‘m/0’
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–7: error: macro definition inside function definition
+#    macro m/0
+#    ^^^^^
+# :1:0–8: note: outer function definition defined here
+#  function f/0
+#  ^^^^^^^^
+

@@ -112,6 +112,7 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
     case C(INCLUDE):
       xfree(mds_kbdc_tree_include_t*, filename);
       xdestroy(mds_kbdc_tree_include_t*, inner);
+      mds_kbdc_source_code_free(this->include.source_code);
       break;
       
     case C(ASSUMPTION_HAVE):
@@ -258,6 +259,15 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 
 
 /**
+ * Duplicate a source code structure and goto `fail` on failure
+ * 
+ * @param  member:identifer  The member in the tree to copied
+ */
+#define R(member)										\
+  fail_if (t->member && (n->member = mds_kbdc_source_code_dup(t->member), n->member == NULL))
+
+
+/**
  * Cast the trees to a specialised subtype
  * 
  * @param  LOWERCASE:identifer   The name of subtype
@@ -294,24 +304,24 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
     case C(ASSUMPTION):
     case C(ALTERNATION):
     case C(UNORDERED):
-    case C(ORDERED):                { NODE(nesting); T(inner);                          }  break;
+    case C(ORDERED):                { NODE(nesting); T(inner);                            }  break;
     case C(FUNCTION):
-    case C(MACRO):                  { NODE(callable); S(name);T(inner);                 }  break;
-    case C(ASSUMPTION_HAVE):        { NODE(assumption_have); T(data);                   }  break;
-    case C(ARRAY):                  { NODE(array); T(elements);                         }  break;
-    case C(LET):                    { NODE(let); S(variable);T(value);                  }  break;
-    case C(MACRO_CALL):             { NODE(macro_call); S(name);T(arguments);           }  break;
+    case C(MACRO):                  { NODE(callable); S(name);T(inner);                   }  break;
+    case C(ASSUMPTION_HAVE):        { NODE(assumption_have); T(data);                     }  break;
+    case C(ARRAY):                  { NODE(array); T(elements);                           }  break;
+    case C(LET):                    { NODE(let); S(variable);T(value);                    }  break;
+    case C(MACRO_CALL):             { NODE(macro_call); S(name);T(arguments);             }  break;
     case C(INFORMATION_LANGUAGE):
     case C(INFORMATION_COUNTRY):
-    case C(INFORMATION_VARIANT):    { NODE(information_data); S(data);                  }  break;
-    case C(INCLUDE):                { NODE(include); S(filename);T(inner);              }  break;
-    case C(ASSUMPTION_HAVE_CHARS):  { NODE(assumption_have_chars); S(chars);            }  break;
-    case C(KEYS):                   { NODE(keys); S(keys);                              }  break;
-    case C(STRING):                 { NODE(string); S(string);                          }  break;
-    case C(ASSUMPTION_HAVE_RANGE):  { NODE(assumption_have_range); S(first);S(last);    }  break;
-    case C(FOR):                    { NODE(for); S(first);S(last);S(variable);T(inner); }  break;
-    case C(IF):                     { NODE(if); S(condition);T(inner);T(otherwise);     }  break;
-    case C(MAP):                    { NODE(map); T(sequence);T(result);                 }  break;
+    case C(INFORMATION_VARIANT):    { NODE(information_data); S(data);                    }  break;
+    case C(INCLUDE):                { NODE(include); S(filename);T(inner);R(source_code); }  break;
+    case C(ASSUMPTION_HAVE_CHARS):  { NODE(assumption_have_chars); S(chars);              }  break;
+    case C(KEYS):                   { NODE(keys); S(keys);                                }  break;
+    case C(STRING):                 { NODE(string); S(string);                            }  break;
+    case C(ASSUMPTION_HAVE_RANGE):  { NODE(assumption_have_range); S(first);S(last);      }  break;
+    case C(FOR):                    { NODE(for); S(first);S(last);S(variable);T(inner);   }  break;
+    case C(IF):                     { NODE(if); S(condition);T(inner);T(otherwise);       }  break;
+    case C(MAP):                    { NODE(map); T(sequence);T(result);                   }  break;
     default:
       break;
     }
@@ -325,6 +335,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
 
 
 #undef NODE
+#undef R
 #undef S
 #undef T
 

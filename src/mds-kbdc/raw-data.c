@@ -46,6 +46,7 @@ void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this)
   this->content      = NULL;
   this->real_content = NULL;
   this->line_count   = 0;
+  this->duplicates   = 0;
 }
 
 
@@ -57,6 +58,8 @@ void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this)
 void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this)
 {
   if (this == NULL)
+    return;
+  if (this->duplicates--)
     return;
   free(this->lines),        this->lines        = NULL;
   free(this->real_lines),   this->real_lines   = NULL;
@@ -74,11 +77,25 @@ void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this)
 {
   if (this == NULL)
     return;
+  if (this->duplicates--)
+    return;
   free(this->lines);
   free(this->real_lines);
   free(this->content);
   free(this->real_content);
   free(this);
+}
+
+/**
+ * Create a duplicate of a `mds_kbdc_source_code_t*`
+ * 
+ * @param   this  The `mds_kbdc_source_code_t*`
+ * @return        `this` is returned
+ */
+mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restrict this)
+{
+  this->duplicates++;
+  return this;
 }
 
 

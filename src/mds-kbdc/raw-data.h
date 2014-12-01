@@ -55,6 +55,12 @@ typedef struct mds_kbdc_source_code
    */
   size_t line_count;
   
+  /**
+   * The number of duplicates there are of this
+   * structure that shared the memory
+   */
+  size_t duplicates;
+  
 } mds_kbdc_source_code_t;
 
 
@@ -78,6 +84,14 @@ void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this);
  * @param  this  The `mds_kbdc_source_code_t*`
  */
 void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this);
+
+/**
+ * Create a duplicate of a `mds_kbdc_source_code_t*`
+ * 
+ * @param   this  The `mds_kbdc_source_code_t*`
+ * @return        `this` is returned
+ */
+mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restrict this);
 
 
 /**

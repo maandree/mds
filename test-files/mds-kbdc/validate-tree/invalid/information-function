@@ -1,0 +1,19 @@
+information
+  function f/0
+  end function
+end information
+
+# (information (@ 1 0-11)
+#   (.inner
+#     (function (@ 2 2-10) ‘f/0’
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–10: error: function definition inside information clause
+#    function f/0
+#    ^^^^^^^^
+# :1:0–11: note: outer information clause defined here
+#  information
+#  ^^^^^^^^^^^
+

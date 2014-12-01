@@ -1,0 +1,19 @@
+information
+  macro m/0
+  end macro
+end information
+
+# (information (@ 1 0-11)
+#   (.inner
+#     (macro (@ 2 2-7) ‘m/0’
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–7: error: macro definition inside information clause
+#    macro m/0
+#    ^^^^^
+# :1:0–11: note: outer information clause defined here
+#  information
+#  ^^^^^^^^^^^
+
