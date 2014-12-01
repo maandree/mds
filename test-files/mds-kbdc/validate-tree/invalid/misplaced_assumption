@@ -1,0 +1,46 @@
+have <space>
+have_chars " "
+have_range "a" "z"
+information
+  have <space>
+  have_chars " "
+  have_range "a" "z"
+end information
+
+# (have (@ 1 0-4)
+#   (.data
+#     (keys (@ 1 5-12) ‘<space>’)
+#   )
+# )
+# (have_chars (@ 2 0-10) ‘" "’)
+# (have_range (@ 3 0-10) ‘"a"’ ‘"z"’)
+# (information (@ 4 0-11)
+#   (.inner
+#     (have (@ 5 2-6)
+#       (.data
+#         (keys (@ 5 7-14) ‘<space>’)
+#       )
+#     )
+#     (have_chars (@ 6 2-12) ‘" "’)
+#     (have_range (@ 7 2-12) ‘"a"’ ‘"z"’)
+#   )
+# )
+# :1:0–4: error: assumption outside assumption clause
+#  have <space>
+#  ^^^^
+# :2:0–10: error: assumption outside assumption clause
+#  have_chars " "
+#  ^^^^^^^^^^
+# :3:0–10: error: assumption outside assumption clause
+#  have_range "a" "z"
+#  ^^^^^^^^^^
+# :5:2–6: error: assumption outside assumption clause
+#    have <space>
+#    ^^^^
+# :6:2–12: error: assumption outside assumption clause
+#    have_chars " "
+#    ^^^^^^^^^^
+# :7:2–12: error: assumption outside assumption clause
+#    have_range "a" "z"
+#    ^^^^^^^^^^
+

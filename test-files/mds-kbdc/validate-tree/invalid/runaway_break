@@ -1,0 +1,7 @@
+break
+
+# (break (@ 1 0-5))
+# :1:0–5: error: ‘break’ outside ‘for’
+#  break
+#  ^^^^^
+

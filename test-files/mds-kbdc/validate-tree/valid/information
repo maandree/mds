@@ -1,0 +1,14 @@
+information
+  language ""
+  country ""
+  variant ""
+end information
+
+# (information (@ 1 0-11)
+#   (.inner
+#     (language (@ 2 2-10) ‘""’)
+#     (country (@ 3 2-9) ‘""’)
+#     (variant (@ 4 2-9) ‘""’)
+#   )
+# )
+

@@ -1,0 +1,10 @@
+macro m/0
+  return
+end macro
+
+# (macro (@ 1 0-5) ‘m/0’
+#   (.inner
+#     (return (@ 2 2-8))
+#   )
+# )
+

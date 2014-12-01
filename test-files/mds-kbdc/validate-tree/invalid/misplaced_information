@@ -1,0 +1,38 @@
+language ""
+country ""
+variant ""
+assumption
+  language ""
+  country ""
+  variant ""
+end assumption
+
+# (language (@ 1 0-8) ‘""’)
+# (country (@ 2 0-7) ‘""’)
+# (variant (@ 3 0-7) ‘""’)
+# (assumption (@ 4 0-10)
+#   (.inner
+#     (language (@ 5 2-10) ‘""’)
+#     (country (@ 6 2-9) ‘""’)
+#     (variant (@ 7 2-9) ‘""’)
+#   )
+# )
+# :1:0–8: error: information outside information clause
+#  language ""
+#  ^^^^^^^^
+# :2:0–7: error: information outside information clause
+#  country ""
+#  ^^^^^^^
+# :3:0–7: error: information outside information clause
+#  variant ""
+#  ^^^^^^^
+# :5:2–10: error: information outside information clause
+#    language ""
+#    ^^^^^^^^
+# :6:2–9: error: information outside information clause
+#    country ""
+#    ^^^^^^^
+# :7:2–9: error: information outside information clause
+#    variant ""
+#    ^^^^^^^
+

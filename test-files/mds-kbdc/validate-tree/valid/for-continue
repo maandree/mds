@@ -1,0 +1,10 @@
+for 1 to 9 as \1
+  continue
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘9’ (.variable ‘\1’)
+#   (.inner
+#     (continue (@ 2 2-10))
+#   )
+# )
+

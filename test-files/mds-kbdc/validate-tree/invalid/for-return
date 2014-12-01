@@ -1,0 +1,13 @@
+for 1 to 9 as \1
+  return
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘9’ (.variable ‘\1’)
+#   (.inner
+#     (return (@ 2 2-8))
+#   )
+# )
+# :2:2–8: error: ‘return’ outside function and macro definition
+#    return
+#    ^^^^^^
+

@@ -1,0 +1,10 @@
+function f/0
+  return
+end function
+
+# (function (@ 1 0-8) ‘f/0’
+#   (.inner
+#     (return (@ 2 2-8))
+#   )
+# )
+

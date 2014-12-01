@@ -102,19 +102,9 @@ static size_t includes_size = 0;
 static size_t includes_ptr = 0;
 
 /**
- * Stack of visited for-statements
+ * The number visited for-statements
  */
-static mds_kbdc_tree_for_t** restrict fors = NULL;
-
-/**
- * The number elements allocated for `fors`
- */
-static size_t fors_size = 0;
-
-/**
- * The number elements stored in `fors`
- */
-static size_t fors_ptr = 0;
+static size_t fors = 0;
 
 /**
  * The function definition that is currently being visited
@@ -429,14 +419,10 @@ static int validate_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
  */
 static int validate_for(mds_kbdc_tree_for_t* restrict tree)
 {
-  mds_kbdc_tree_for_t** old;
-  int r, saved_errno;
-  if (fors_ptr == fors_size)
-    if (xxrealloc(old, fors, fors_size += 4, mds_kbdc_tree_for_t*))
-      return saved_errno = errno, free(old), errno = saved_errno, -1;
-  fors[fors_ptr++] = tree;
+  int r;
+  fors++;
   r = validate_subtree(tree->inner);
-  return fors_ptr--, r;
+  return fors--, r;
 }
 
 
@@ -477,7 +463,7 @@ static int validate_return(mds_kbdc_tree_return_t* restrict tree)
  */
 static int validate_break(mds_kbdc_tree_break_t* restrict tree)
 {
-  if (fors_ptr == 0)
+  if (fors == 0)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "‘break’ outside ‘for’");
   return 0;
  pfail:
@@ -493,7 +479,7 @@ static int validate_break(mds_kbdc_tree_break_t* restrict tree)
  */
 static int validate_continue(mds_kbdc_tree_continue_t* restrict tree)
 {
-  if (fors_ptr == 0)
+  if (fors == 0)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "‘continue’ outside ‘for’");
   return 0;
  pfail:
@@ -601,8 +587,9 @@ int validate_tree(mds_kbdc_parsed_t* restrict result_)
   saved_errno = errno;
   result_->pathname = original_pathname;
   result_->source_code = original_source_code;
-  free(includes), includes = NULL, includes_size = includes_ptr = 0;
-  free(fors),     fors     = NULL,     fors_size =     fors_ptr = 0;
+  free(includes), includes = NULL;
+  includes_size = includes_ptr = 0;
+  fors = 0;
   return errno = saved_errno, r;
 }
 

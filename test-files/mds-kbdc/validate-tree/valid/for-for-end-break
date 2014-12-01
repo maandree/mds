@@ -1,0 +1,15 @@
+for 1 to 9 as \1
+  for 1 to 9 as \2
+  end for
+  break
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘9’ (.variable ‘\1’)
+#   (.inner
+#     (for (@ 2 2-5) ‘1’ ‘9’ (.variable ‘\2’)
+#       (.inner nil)
+#     )
+#     (break (@ 4 2-7))
+#   )
+# )
+
