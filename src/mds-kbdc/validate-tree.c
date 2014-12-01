@@ -524,18 +524,18 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
   
   switch (tree->type)
     {
-    case C(INFORMATION):            v(information);            break;
-    case C(INCLUDE):                v(include);                break;
-    case C(FUNCTION):               v(function);               break;
-    case C(MACRO):                  v(macro);                  break;
-    case C(ASSUMPTION):             v(assumption);             break;
-    case C(FOR):                    V(for);                    break;
-    case C(IF):                     V(if);                     break;
-    case C(MAP):                    v(map);                    break;
-    case C(MACRO_CALL):             v(macro_call);             break;
-    case C(RETURN):                 V(return);                 break;
-    case C(BREAK):                  V(break);                  break;
-    case C(CONTINUE):               V(continue);               break;
+    case C(INFORMATION):           v(information);  break;
+    case C(INCLUDE):               v(include);      break;
+    case C(FUNCTION):              v(function);     break;
+    case C(MACRO):                 v(macro);        break;
+    case C(ASSUMPTION):            v(assumption);   break;
+    case C(FOR):                   V(for);          break;
+    case C(IF):                    V(if);           break;
+    case C(MAP):                   v(map);          break;
+    case C(MACRO_CALL):            v(macro_call);   break;
+    case C(RETURN):                V(return);       break;
+    case C(BREAK):                 V(break);        break;
+    case C(CONTINUE):              V(continue);     break;
     case C(INFORMATION_LANGUAGE):
     case C(INFORMATION_COUNTRY):
     case C(INFORMATION_VARIANT):
