@@ -1,0 +1,19 @@
+macro m/0
+  <dead compose> "a" "e" : "æ"
+end macro
+
+# (macro (@ 1 0-5) ‘m/0’
+#   (.inner
+#     (map (@ 2 2-2)
+#       (.sequence
+#         (keys (@ 2 2-16) ‘<dead compose>’)
+#         (string (@ 2 17-20) ‘"a"’)
+#         (string (@ 2 21-24) ‘"e"’)
+#       )
+#       (.result
+#         (string (@ 2 27-31) ‘"æ"’)
+#       )
+#     )
+#   )
+# )
+

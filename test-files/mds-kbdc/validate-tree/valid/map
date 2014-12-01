@@ -1,0 +1,13 @@
+<dead compose> "a" "e" : "æ"
+
+# (map (@ 1 0-0)
+#   (.sequence
+#     (keys (@ 1 0-14) ‘<dead compose>’)
+#     (string (@ 1 15-18) ‘"a"’)
+#     (string (@ 1 19-22) ‘"e"’)
+#   )
+#   (.result
+#     (string (@ 1 25-29) ‘"æ"’)
+#   )
+# )
+

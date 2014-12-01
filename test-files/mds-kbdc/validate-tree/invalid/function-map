@@ -1,0 +1,22 @@
+function f/0
+  <dead compose> "a" "e" : "æ"
+end function
+
+# (function (@ 1 0-8) ‘f/0’
+#   (.inner
+#     (map (@ 2 2-2)
+#       (.sequence
+#         (keys (@ 2 2-16) ‘<dead compose>’)
+#         (string (@ 2 17-20) ‘"a"’)
+#         (string (@ 2 21-24) ‘"e"’)
+#       )
+#       (.result
+#         (string (@ 2 27-31) ‘"æ"’)
+#       )
+#     )
+#   )
+# )
+# :2:2–2: error: mapping-statement inside function definition
+#    <dead compose> "a" "e" : "æ"
+#    
+

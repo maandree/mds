@@ -1,0 +1,15 @@
+function f/0
+  m()
+end function
+
+# (function (@ 1 0-8) ‘f/0’
+#   (.inner
+#     (macro_call (@ 2 2-3) ‘m’
+#       (.arguments nil)
+#     )
+#   )
+# )
+# :2:2–3: error: macro call inside function definition
+#    m()
+#    ^
+

@@ -1,0 +1,6 @@
+m()
+
+# (macro_call (@ 1 0-1) ‘m’
+#   (.arguments nil)
+# )
+

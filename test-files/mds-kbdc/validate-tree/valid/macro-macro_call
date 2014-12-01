@@ -1,0 +1,12 @@
+macro m/0
+  n()
+end macro
+
+# (macro (@ 1 0-5) ‘m/0’
+#   (.inner
+#     (macro_call (@ 2 2-3) ‘n’
+#       (.arguments nil)
+#     )
+#   )
+# )
+
