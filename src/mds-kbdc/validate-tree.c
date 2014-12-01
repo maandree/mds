@@ -368,7 +368,7 @@ static int validate_map(mds_kbdc_tree_map_t* restrict tree)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside function definition");
   else if ((function == NULL) && is_value)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "value-statement outside function definition");
-    /* FIXME \set outside function definition must be supported */
+    /* FIXME \set outside function definition must be supported (warn if inside quotes) */
   return 0;
  pfail:
   return -1;
