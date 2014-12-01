@@ -476,6 +476,38 @@ static int validate_continue(mds_kbdc_tree_continue_t* restrict tree)
 
 
 /**
+ * Validate an assumption-statement
+ * 
+ * @param   tree  The tree to validate
+ * @return        Zero on success, -1 on error
+ */
+static int validate_assumption_data(mds_kbdc_tree_t* restrict tree)
+{
+  if (assumption == NULL)
+    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "assumption outside assumption clause");
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Validate an information-statement
+ * 
+ * @param   tree  The tree to validate
+ * @return        Zero on success, -1 on error
+ */
+static int validate_information_data(mds_kbdc_tree_t* restrict tree)
+{
+  if (information == NULL)
+    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "information outside information clause");
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
  * Validate that a part of the structure of the compilation unit
  * 
  * @param   tree  The tree to validate
@@ -493,16 +525,10 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
   switch (tree->type)
     {
     case C(INFORMATION):            v(information);            break;
-    //case C(INFORMATION_LANGUAGE):   v(information_language);   break;
-    //case C(INFORMATION_COUNTRY):    v(information_country);    break;
-    //case C(INFORMATION_VARIANT):    v(information_variant);    break;
     case C(INCLUDE):                v(include);                break;
     case C(FUNCTION):               v(function);               break;
     case C(MACRO):                  v(macro);                  break;
     case C(ASSUMPTION):             v(assumption);             break;
-    //case C(ASSUMPTION_HAVE):        v(assumption_have);        break;
-    //case C(ASSUMPTION_HAVE_CHARS):  v(assumption_have_chars);  break;
-    //case C(ASSUMPTION_HAVE_RANGE):  v(assumption_have_range);  break;
     case C(FOR):                    V(for);                    break;
     case C(IF):                     V(if);                     break;
     case C(MAP):                    v(map);                    break;
@@ -510,6 +536,18 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
     case C(RETURN):                 V(return);                 break;
     case C(BREAK):                  V(break);                  break;
     case C(CONTINUE):               V(continue);               break;
+    case C(INFORMATION_LANGUAGE):
+    case C(INFORMATION_COUNTRY):
+    case C(INFORMATION_VARIANT):
+      if ((r = validate_information_data(tree)))
+	return r;
+      break;
+    case C(ASSUMPTION_HAVE):
+    case C(ASSUMPTION_HAVE_CHARS):
+    case C(ASSUMPTION_HAVE_RANGE):
+      if ((r = validate_assumption_data(tree)))
+	return r;
+      break;
     default:
       break;
     }
