@@ -356,19 +356,19 @@ static int validate_assumption(mds_kbdc_tree_assumption_t* restrict tree)
 static int validate_map(mds_kbdc_tree_map_t* restrict tree)
 {
   int is_value = tree->result == NULL;
-  if (information && is_value)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "value-statement inside information clause");
+  if (is_value);
+    /* We do not want value-statments outside function
+     * definitions, however, we do want \set/3 to be usable,
+     * from anywhere, even indirectly, therefore we cannot,
+     * at this process level, determine whether a
+     * value-statement is used correctly or not.
+     */
   else if (information)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside information clause");
-  else if (assumption && is_value)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "value-statement inside assumption clause");
   else if (assumption)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside assumption clause");
-  else if (function && !is_value)
+  else if (function)
     NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "mapping-statement inside function definition");
-  else if ((function == NULL) && is_value)
-    NEW_ERROR_WITH_INCLUDES(tree, includes_ptr, ERROR, "value-statement outside function definition");
-    /* FIXME \set outside function definition must be supported (warn if inside quotes) */
   return 0;
  pfail:
   return -1;
