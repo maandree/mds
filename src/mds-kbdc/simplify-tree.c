@@ -25,7 +25,7 @@
 
 
 /**
- * This processes value for `mds_kbdc_tree_t.processed`
+ * This process's value for `mds_kbdc_tree_t.processed`
  */
 #define PROCESS_LEVEL  2
 
