@@ -21,6 +21,8 @@
 #include "make-tree.h"
 #include "simplify-tree.h"
 #include "process-includes.h"
+#include "validate-tree.h"
+#include "eliminate-dead-code.h"
 
 #include <libmdsserver/macros.h>
 
@@ -56,7 +58,7 @@ int main(int argc_, char** argv_)
   process (simplify_tree(&result));
   process (process_includes(&result));
   process (validate_tree(&result));
-  /* TODO process (eliminate_dead_code(&result)); */
+  process (eliminate_dead_code(&result));
   /* TODO process (compile_layout(&result)); */
   /* TODO process (assemble_layout(&result)); */
  stop:
