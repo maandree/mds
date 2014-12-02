@@ -101,6 +101,13 @@ static size_t includes_size = 0;
  */
 static size_t includes_ptr = 0;
 
+/**
+ * 2: Eliminating because of a return-statement
+ * 1: Eliminating because of a break- or continue-statement
+ * 0: Not eliminating
+ */
+static int elimination_level = 0;
+
 
 
 /**
@@ -165,18 +172,6 @@ static int eliminate_include(mds_kbdc_tree_include_t* restrict tree)
 
 
 /**
- * Eliminate dead code in a for-loop
- * 
- * @param   tree  The tree to reduce
- * @return        Zero on success, -1 on error
- */
-static int eliminate_for(mds_kbdc_tree_for_t* restrict tree)
-{
-  return eliminate_subtree(tree->inner);
-}
-
-
-/**
  * Eliminate dead code in an if-statement
  * 
  * @param   tree  The tree to reduce
@@ -184,8 +179,15 @@ static int eliminate_for(mds_kbdc_tree_for_t* restrict tree)
  */
 static int eliminate_if(mds_kbdc_tree_if_t* restrict tree)
 {
-  return -(eliminate_subtree(tree->inner) ||
-	   eliminate_subtree(tree->otherwise));
+  int elimination;
+  fail_if (eliminate_subtree(tree->inner));
+  elimination = elimination_level, elimination_level = 0;
+  fail_if (eliminate_subtree(tree->otherwise));
+  if (elimination > elimination_level)
+    elimination = elimination_level;
+  return 0;
+ pfail:
+  return -1;
 }
 
 
@@ -206,22 +208,37 @@ static int eliminate_subtree(mds_kbdc_tree_t* restrict tree)
   
   switch (tree->type)
     {
+    case C(INCLUDE):      e(include);  break;
+    case C(IF):           E(if);       break;
     case C(INFORMATION):
     case C(FUNCTION):
     case C(MACRO):
     case C(ASSUMPTION):
+    case C(FOR):
       if ((r = eliminate_subtree(tree->information.inner)))
 	return r;
+      if ((tree->type == C(FUNCTION)) || (tree->type == C(MACRO)))  elimination_level = 0;
+      else if ((tree->type == C(FOR)) && (elimination_level == 1))  elimination_level = 0;
       break;
-    case C(INCLUDE):  e(include);  break;
-    case C(FOR):      E(for);      break;
-    case C(IF):       E(if);       break;
+    case C(RETURN):
+    case C(BREAK):
+    case C(CONTINUE):
+      elimination_level = tree->type == C(RETURN) ? 2 : 1;
+      break;
     default:
       break;
     }
   
+  if (tree->next && elimination_level)
+    {
+      NEW_ERROR(tree->next, includes_ptr, WARNING, "statement is unreachable");
+      mds_kbdc_tree_free(tree->next), tree->next = NULL;
+    }
+  
   tree = tree->next;
   goto again;
+ pfail:
+  return -1;
 #undef E
 #undef e
 }
@@ -255,4 +272,3 @@ int eliminate_dead_code(mds_kbdc_parsed_t* restrict result_)
 #undef NEW_ERROR_WITHOUT_INCLUDES
 #undef C
 
- 

@@ -1,0 +1,14 @@
+for 1 to 2 as \1
+  break
+  break
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘2’ (.variable ‘\1’)
+#   (.inner
+#     (break (@ 2 2-7))
+#   )
+# )
+# :3:2–7: warning: statement is unreachable
+#    break
+#    ^^^^^
+

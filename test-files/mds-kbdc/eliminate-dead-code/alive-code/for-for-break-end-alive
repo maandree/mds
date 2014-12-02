@@ -1,0 +1,25 @@
+for 1 to 2 as \1
+  for 1 to 2 as \2
+    break
+  end for
+  <alive> : "code"
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘2’ (.variable ‘\1’)
+#   (.inner
+#     (for (@ 2 2-5) ‘1’ ‘2’ (.variable ‘\2’)
+#       (.inner
+#         (break (@ 3 4-9))
+#       )
+#     )
+#     (map (@ 5 2-2)
+#       (.sequence
+#         (keys (@ 5 2-9) ‘<alive>’)
+#       )
+#       (.result
+#         (string (@ 5 12-18) ‘"code"’)
+#       )
+#     )
+#   )
+# )
+

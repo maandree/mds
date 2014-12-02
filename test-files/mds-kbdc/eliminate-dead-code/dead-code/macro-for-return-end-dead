@@ -1,0 +1,20 @@
+macro m/0
+  for 1 to 1 as \1
+    return
+  end for
+  <dead code> : "dead code"
+end macro
+
+# (macro (@ 1 0-5) ‘m/0’
+#   (.inner
+#     (for (@ 2 2-5) ‘1’ ‘1’ (.variable ‘\1’)
+#       (.inner
+#         (return (@ 3 4-10))
+#       )
+#     )
+#   )
+# )
+# :5:2–2: warning: statement is unreachable
+#    <dead code> : "dead code"
+#    
+

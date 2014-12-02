@@ -80,13 +80,13 @@ obj/%.o: src/%.c src/%.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
 obj/%.o: src/%.c src/mds-base.h src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
-obj/mds-server/%.o: src/%.c src/mds-server/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
+obj/mds-server/%.o: src/mds-server/%.c src/mds-server/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
-obj/mds-registry/%.o: src/%.c src/mds-registry/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
+obj/mds-registry/%.o: src/mds-registry/%.c src/mds-registry/*.h src/mds-base.h src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
-obj/mds-kbdc/%.o: src/%.c src/mds-kbdc/*.h src/libmdsserver/*.h $(SEDED)
+obj/mds-kbdc/%.o: src/mds-kbdc/%.c src/mds-kbdc/*.h src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -Isrc -c -o $@ $<
 else
@@ -96,13 +96,13 @@ obj/%.o: src/%.c src/%.h src/mds-base.h $(SEDED)
 obj/%.o: src/%.c src/mds-base.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -c -o $@ $<
-obj/mds-server/%.o: src/%.c src/mds-server/*.h src/mds-base.h $(SEDED)
+obj/mds-server/%.o: src/mds-server/%.c src/mds-server/*.h src/mds-base.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -c -o $@ $<
-obj/mds-registry/%.o: src/%.c src/mds-registry/*.h src/mds-base.h $(SEDED)
+obj/mds-registry/%.o: src/mds-registry/%.c src/mds-registry/*.h src/mds-base.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -c -o $@ $<
-obj/mds-kbdc/%.o: src/%.c src/mds-kbdc/*.h $(SEDED)
+obj/mds-kbdc/%.o: src/mds-kbdc/%.c src/mds-kbdc/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -c -o $@ $<
 endif

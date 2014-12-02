@@ -1,0 +1,25 @@
+for 1 to 2 as \1
+  if 1
+    continue
+  else
+    continue
+  end if
+  <dead code> : "dead code"
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘2’ (.variable ‘\1’)
+#   (.inner
+#     (if (@ 2 2-4) ‘1’
+#       (.inner
+#         (continue (@ 3 4-12))
+#       )
+#       (.otherwise
+#         (continue (@ 5 4-12))
+#       )
+#     )
+#   )
+# )
+# :7:2–2: warning: statement is unreachable
+#    <dead code> : "dead code"
+#    
+

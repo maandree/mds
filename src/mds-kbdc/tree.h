@@ -283,14 +283,14 @@ typedef struct mds_kbdc_tree_include
   MDS_KBDC_TREE_COMMON;
   
   /**
-   * The filename of the file to include
-   */
-  char* filename;
-  
-  /**
    * The included layout code tree
    */
   mds_kbdc_tree_t* inner;
+  
+  /**
+   * The filename of the file to include
+   */
+  char* filename;
   
   /**
    * The source code of the file included by this statement
@@ -313,15 +313,21 @@ struct mds_kbdc_tree_callable
   MDS_KBDC_TREE_COMMON;
   
   /**
-   * The name of the callable
-   */
-  char* name;
-  
-  /**
    * The first child node, `.inner.next`
    * is used to access the second child node
    */
   mds_kbdc_tree_t* inner;
+  
+  /* It is important that `.inner` is first because
+   * it is first in `struct mds_kbdc_tree_nesting`
+   * too which means that `.inner` has to same
+   * offset everyever (except in `mds_kbdc_tree_if_t`).
+   */
+  
+  /**
+   * The name of the callable
+   */
+  char* name;
   
   MDS_KBDC_TREE_PADDING(2);
 };
@@ -411,6 +417,19 @@ typedef struct mds_kbdc_tree_for
   MDS_KBDC_TREE_COMMON;
   
   /**
+   * The first child node, `.inner.next` is
+   * used to access the second child node.
+   * This is what should be done inside the loop.
+   */
+  mds_kbdc_tree_t* inner;
+  
+  /* It is important that `.inner` is first because
+   * it is first in `struct mds_kbdc_tree_nesting`
+   * too which means that `.inner` has to same
+   * offset everyever (except in `mds_kbdc_tree_if_t`).
+   */
+  
+  /**
    * The first value to variable should take, inclusive
    */
   char* first;
@@ -424,13 +443,6 @@ typedef struct mds_kbdc_tree_for
    * The variable
    */
   char* variable;
-  
-  /**
-   * The first child node, `.inner.next` is
-   * used to access the second child node.
-   * This is what should be done inside the loop.
-   */
-  mds_kbdc_tree_t* inner;
   
   MDS_KBDC_TREE_PADDING(4);
   
