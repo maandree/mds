@@ -75,8 +75,8 @@
 /**
  * Pointer to the beginning of the current line
  */
-#define LINE			\
-  (result->source_code->lines[line_i])
+#define LINE					\
+  (parsing_result->source_code->lines[line_i])
 
 
 /**
@@ -96,7 +96,7 @@
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
 #define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)				\
-  NEW_ERROR_(result, SEVERITY, ERROR_IS_IN_FILE, line_i,			\
+  NEW_ERROR_(parsing_result, SEVERITY, ERROR_IS_IN_FILE, line_i,		\
 	     (size_t)(line - LINE), (size_t)(end - LINE), 1, __VA_ARGS__)
 
 
@@ -648,6 +648,42 @@
 
 
 /**
+ * Structure for the parsing state;
+ */
+typedef struct state
+{
+  /**
+   * Output parameter for the parsing result
+   */
+  mds_kbdc_parsed_t* restrict parsing_result_;
+  
+  /**
+   * The head of the parsing-stack
+   */
+  size_t stack_ptr_;
+  
+  /**
+   * The keyword portion of the parsing-stack
+   */
+  const char** restrict keyword_stack_;
+  
+  /**
+   * The tree portion of the parsing-stack
+   */
+  mds_kbdc_tree_t*** restrict tree_stack_;
+  
+} state_t;
+
+
+/* Short hands for the state variables. */
+#define parsing_result  (state->parsing_result_)
+#define stack_ptr       (state->stack_ptr_)
+#define keyword_stack   (state->keyword_stack_)
+#define tree_stack      (state->tree_stack_)
+
+
+
+/**
  * Variable whether the latest created error is stored
  */
 static mds_kbdc_parse_error_t* error;
@@ -658,10 +694,10 @@ static mds_kbdc_parse_error_t* error;
  * Get the pathname name of the parsed file
  * 
  * @param   filename  The filename of the parsed file
- * @param   result    The structure where the pathname should be stored
+ * @param   state     The parsing state
  * @return            The value the caller should return, or 1 if the caller should not return
  */
-static int get_pathname(const char* restrict filename, mds_kbdc_parsed_t* restrict result)
+static int get_pathname(const char* restrict filename, state_t* restrict state)
 {
   size_t cwd_size = 4096 >> 1;
   char* cwd = NULL;
@@ -671,8 +707,8 @@ static int get_pathname(const char* restrict filename, mds_kbdc_parsed_t* restri
   /* Get a non-relative pathname for the file, relative filenames
    * can be misleading as the program can have changed working
    * directory to be able to resolve filenames. */
-  result->pathname = realpath(filename, NULL); /* XXX use absolute path */
-  if (result->pathname == NULL)
+  parsing_result->pathname = realpath(filename, NULL); /* XXX use absolute path */
+  if (parsing_result->pathname == NULL)
     {
       fail_if (errno != ENOENT);
       saved_errno = errno;
@@ -689,18 +725,18 @@ static int get_pathname(const char* restrict filename, mds_kbdc_parsed_t* restri
 	    fail_if (errno != ERANGE);
 	}
       
-      result->pathname = strdup(filename);
-      fail_if (result->pathname == NULL);
-      NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
+      parsing_result->pathname = strdup(filename);
+      fail_if (parsing_result->pathname == NULL);
+      NEW_ERROR_(parsing_result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
       free(cwd);
       return 0;
     }
   
   /* Check that the file exists and can be read. */
-  if (access(result->pathname, R_OK) < 0)
+  if (access(parsing_result->pathname, R_OK) < 0)
     {
       saved_errno = errno;
-      NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 0, NULL);
+      NEW_ERROR_(parsing_result, ERROR, 0, 0, 0, 0, 0, NULL);
       error->description = strdup(strerror(saved_errno));
       fail_if (error->description == NULL);
       return 0;
@@ -716,15 +752,43 @@ static int get_pathname(const char* restrict filename, mds_kbdc_parsed_t* restri
 
 
 /**
+ * Allocate stacks needed to parse the tree
+ * 
+ * @param   state  The parsing state
+ * @return         Zero on success, -1 on error
+ */
+static int allocate_stacks(state_t* restrict state)
+{
+  size_t max_line_length = 0, cur_line_length, line_i, line_n;
+  
+  /* The maximum line-length is needed because lines can have there own stacking,
+   * like sequence mapping lines, additionally, let statements can have one array. */
+  for (line_i = 0, line_n = parsing_result->source_code->line_count; line_i < line_n; line_i++)
+    {
+      cur_line_length = strlen(LINE);
+      if (max_line_length < cur_line_length)
+	max_line_length = cur_line_length;
+    }
+  
+  fail_if (xmalloc(keyword_stack, line_n + max_line_length, const char*));
+  fail_if (xmalloc(tree_stack, line_n + max_line_length + 1, mds_kbdc_tree_t**));
+
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
  * Read the file and simplify it a bit
  * 
- * @param   result  The parsing state
- * @return          Zero on success, -1 on error
+ * @param   state  The parsing state
+ * @return         Zero on success, -1 on error
  */
-static int read_source_code(mds_kbdc_parsed_t* restrict result)
+static int read_source_code(state_t* restrict state)
 {
   /* Read the file and simplify it a bit. */
-  fail_if (read_source_lines(result->pathname, result->source_code) < 0);
+  fail_if (read_source_lines(parsing_result->pathname, parsing_result->source_code) < 0);
   
   /* TODO '\t':s should be expanded into ' ':s. */
   
@@ -738,15 +802,10 @@ static int read_source_code(mds_kbdc_parsed_t* restrict result)
  * Check that a the file did not end prematurely by checking
  * that the stack has been fully popped
  * 
- * @param   stack_ptr      The head of the stack
- * @param   keyword_stack  The keyword portion of the stack
- * @param   tree_stack     The tree portion of the stack
- * @param   result         Parsing state, errors will be reported here
- * @return                 Zero on success, -1 on error
+ * @param   state  Parsing state
+ * @return         Zero on success, -1 on error
  */
-static int check_for_premature_end_of_file(size_t stack_ptr, const char** restrict keyword_stack,
-					   mds_kbdc_tree_t*** restrict tree_stack,
-					   mds_kbdc_parsed_t* restrict result)
+static int check_for_premature_end_of_file(state_t* restrict state)
 {
   char* line = NULL;
   char* end = NULL;
@@ -786,17 +845,17 @@ static int check_for_premature_end_of_file(size_t stack_ptr, const char** restri
  * and generate a warning if that is the case, comments
  * and whitespace is ignored
  * 
- * @param   result  Parsing state
- * @return          Zero on success, -1 on error
+ * @param   state  Parsing state
+ * @return         Zero on success, -1 on error
  */
-static int check_whether_file_is_empty(mds_kbdc_parsed_t* restrict result)
+static int check_whether_file_is_empty(state_t* restrict state)
 {
   char* line = NULL;
   char* end = NULL;
   size_t line_i = 0;
   
   /* Warn about empty files. */
-  if (result->tree == NULL)
+  if (parsing_result->tree == NULL)
     NEW_ERROR(0, WARNING, "file is empty");
   
   return 0;
@@ -808,43 +867,30 @@ static int check_whether_file_is_empty(mds_kbdc_parsed_t* restrict result)
 /**
  * Parse a file into a syntax tree
  * 
- * @param   filename  The filename of the file to parse
- * @param   result    Output parameter for the parsing result
- * @return            -1 if an error occursed that cannot be stored in `result`, zero otherwise
+ * @param   filename   The filename of the file to parse
+ * @param   result     Output parameter for the parsing result
+ * @return             -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
 int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result)
 {
   /* TODO make this function less complex */
   
   size_t line_i, line_n;
-  const char** restrict keyword_stack = NULL;
-  mds_kbdc_tree_t*** restrict tree_stack = NULL;
-  size_t stack_ptr = 0;
   int r, saved_errno, in_array = 0;
+  state_t state_;
+  state_t* restrict state = &state_;
+  
+  memset(state, 0, sizeof(state_t));
+  parsing_result = result;
   
   fail_if (xmalloc(result->source_code, 1, mds_kbdc_source_code_t));
   mds_kbdc_source_code_initialise(result->source_code);
   
-  if (r = get_pathname(filename, result), r <= 0)
+  if (r = get_pathname(filename, state), r <= 0)
     return r;
   
-  fail_if (read_source_code(result));
-  
-  /* Allocate stacks needed to parse the tree. */
-  {
-    /* The maximum line-length is needed because lines can have there own stacking,
-     * like sequence mapping lines, additionally, let statements can have one array. */
-    size_t max_line_length = 0, cur_line_length;
-    for (line_i = 0, line_n = result->source_code->line_count; line_i < line_n; line_i++)
-      {
-	cur_line_length = strlen(LINE);
-	if (max_line_length < cur_line_length)
-	  max_line_length = cur_line_length;
-      }
-    
-    fail_if (xmalloc(keyword_stack, result->source_code->line_count + max_line_length, const char*));
-    fail_if (xmalloc(tree_stack, result->source_code->line_count + max_line_length + 1, mds_kbdc_tree_t**));
-  }
+  fail_if (read_source_code(state));
+  fail_if (allocate_stacks(state));
   
   /* Create a node-slot for the tree root. */
   *tree_stack = &(result->tree);
@@ -1146,8 +1192,8 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
       *end = prev_end_char;
     }
   
-  fail_if (check_for_premature_end_of_file(stack_ptr, keyword_stack, tree_stack, result));
-  fail_if (check_whether_file_is_empty(result));
+  fail_if (check_for_premature_end_of_file(state));
+  fail_if (check_whether_file_is_empty(state));
   
   free(keyword_stack);
   free(tree_stack);
@@ -1162,6 +1208,10 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
 
 
 
+#undef parsing_result
+#undef stack_ptr
+#undef keyword_stack
+#undef tree_stack
 #undef MAKE_BRANCH
 #undef MAKE_LEAF
 #undef SEQUENCE_FULLY_POPPED
