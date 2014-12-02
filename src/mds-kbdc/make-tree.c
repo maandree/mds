@@ -864,7 +864,8 @@ static int check_whether_file_is_empty(state_t* restrict state)
   
   /* Warn about empty files. */
   if (parsing_result->tree == NULL)
-    NEW_ERROR(0, WARNING, "file is empty");
+    if (parsing_result->errors_ptr == 0)
+      NEW_ERROR(0, WARNING, "file is empty");
   
   return 0;
  pfail:
