@@ -23,6 +23,7 @@
 #include "process-includes.h"
 #include "validate-tree.h"
 #include "eliminate-dead-code.h"
+#include "compile-layout.h"
 
 #include <libmdsserver/macros.h>
 
@@ -76,7 +77,7 @@ int main(int argc_, char** argv_)
   process (process_includes(&result));
   process (validate_tree(&result));
   process (eliminate_dead_code(&result));
-  /* TODO process (compile_layout(&result)); */
+  process (compile_layout(&result));
   /* TODO process (assemble_layout(&result)); */
  stop:
   mds_kbdc_tree_print(result.tree, stderr);
