@@ -28,3 +28,8 @@ int argc;
  */
 char** argv;
 
+/**
+ * Whether ‘--force’ is used
+ */
+int argv_force = 0;
+

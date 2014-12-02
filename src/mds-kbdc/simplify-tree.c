@@ -692,7 +692,6 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   mds_kbdc_tree_t** here;
   int allow_long = 0;
   size_t argument_count;
-  int argv_force = 0; /* TODO globals.h */
   
   /* Test for ‘(( ))’. */
   if (tree->inner && (tree->inner->next == NULL) && (tree->inner->type == C(UNORDERED)))

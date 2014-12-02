@@ -34,6 +34,21 @@
 
 
 /**
+ * Parse command line arguments
+ */
+void parse_cmdline(void)
+{
+  int i;
+  for (i = 0; i < argc; i++)
+    {
+      char* arg = argv[i];
+      if (strequals(arg, "--force"))
+	argv_force = 1;
+    }
+}
+
+
+/**
  * Compile a keyboard layout file
  * 
  * @param   argc_  The number of elements in `argv_`
@@ -52,6 +67,8 @@ int main(int argc_, char** argv_)
   
   argc = argc_;
   argv = argv_;
+  
+  parse_cmdline();
   
   mds_kbdc_parsed_initialise(&result);
   process (parse_to_tree(argv[1], &result));

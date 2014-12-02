@@ -29,6 +29,11 @@ extern int argc;
  */
 extern char** argv;
 
+/**
+ * Whether ‘--force’ is used
+ */
+extern int argv_force;
+
 
 #endif
 
