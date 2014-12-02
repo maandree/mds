@@ -28,7 +28,7 @@
  * 
  * @param  this    The error structure
  * @param  output  The output file
- * @parma  desc    The description of the error
+ * @param  desc    The description of the error
  */
 static void print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict output, const char* restrict desc)
 {
