@@ -17,6 +17,8 @@
  */
 #include "make-tree.h"
 
+#include "paths.h"
+
 #include <limits.h>
 #include <stdlib.h>
 #include <libgen.h>
@@ -711,32 +713,18 @@ static mds_kbdc_parse_error_t* error;
  */
 static int get_pathname(const char* restrict filename, state_t* restrict state)
 {
-  size_t cwd_size = 4096 >> 1;
   char* cwd = NULL;
-  char* old = NULL;
   int saved_errno;
   
   /* Get a non-relative pathname for the file, relative filenames
    * can be misleading as the program can have changed working
    * directory to be able to resolve filenames. */
-  parsing_result->pathname = realpath(filename, NULL); /* XXX use absolute path */
+  parsing_result->pathname = abspath(filename);
   if (parsing_result->pathname == NULL)
     {
       fail_if (errno != ENOENT);
       saved_errno = errno;
-      
-      /* Get the current working directory. */
-      /* glibc offers ways to do this in just one function call,
-       * but we will not assume that glibc is used here. */
-      for (;;)
-	{
-	  fail_if (xxrealloc(old, cwd, cwd_size <<= 1, char));
-	  if (getcwd(cwd, cwd_size))
-	    break;
-	  else
-	    fail_if (errno != ERANGE);
-	}
-      
+      fail_if ((cwd = curpath(), cwd == NULL));
       parsing_result->pathname = strdup(filename);
       fail_if (parsing_result->pathname == NULL);
       NEW_ERROR_(parsing_result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
@@ -758,7 +746,6 @@ static int get_pathname(const char* restrict filename, state_t* restrict state)
  pfail:
   saved_errno = errno;
   free(cwd);
-  free(old);
   return errno = saved_errno, -1;
 }
 

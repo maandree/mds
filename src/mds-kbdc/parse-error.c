@@ -17,6 +17,8 @@
  */
 #include "parse-error.h"
 
+#include "paths.h"
+
 #include <stdlib.h>
 #include <alloca.h>
 #include <string.h>
@@ -34,6 +36,7 @@ static void print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict ou
 {
   size_t i, n, start = 0, end = 0;
   const char* restrict code = this->code;
+  char* restrict path = relpath(this->pathname, NULL);
   
   /* Convert bytes count to character count for the code position. */
   for (i = 0, n = this->start; i < n; i++)
@@ -45,7 +48,8 @@ static void print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict ou
   end += start;
   
   /* Print error information. */
-  fprintf(output, "\033[01m%s\033[21m:", this->pathname); /* TODO should be relative to the current dir */
+  fprintf(output, "\033[01m%s\033[21m:", path ? path : this->pathname);
+  free(path);
   if (this->error_is_in_file)
     fprintf(output, "%zu:%zu–%zu:", this->line + 1, start, end);
   switch (this->severity)
