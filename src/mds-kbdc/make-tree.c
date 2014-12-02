@@ -1095,7 +1095,7 @@ static int parse_line(state_t* restrict state)
       if (colon = line, *line++ != ':')
 	{
 	  LEAF;
-	  return 0; /* Not an error in functions. */
+	  return 0; /* Not an error in functions, or if \set is access, even indirectly. */
 	}
       BRANCH(":");
 #undef inner
