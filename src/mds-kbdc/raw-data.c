@@ -126,9 +126,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
     {
       /* Make sure the buffer is not small. */
       if (buf_size - buf_ptr < 2048)
-	{
-	  fail_if (xxrealloc(old, content, buf_size <<= 1, char));
-	}
+	fail_if (xxrealloc(old, content, buf_size <<= 1, char));
       /* Read a chunk of the file. */
       got = read(fd, content + buf_ptr, (buf_size - buf_ptr) * sizeof(char));
       if ((got < 0) && (errno == EINTR))  continue;
@@ -138,7 +136,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
     }
   
   /* Shrink the buffer so it is not excessively large. */
-  if (buf_ptr) /* Simplest way to handle empty files: let the have the initial allocation size.  */
+  if (buf_ptr) /* Simplest way to handle empty files: let the have the initial allocation size. */
     fail_if (xxrealloc(old, content, buf_ptr, char));
   
   /* Close file decriptor for the file. */
@@ -334,6 +332,50 @@ static char** line_split(char* content, size_t length)
 
 
 /**
+ * Translate all tab spaces into blank spaces
+ * 
+ * @param   content       Input and output parameter for the file's content
+ * @param   content_size  Input and output parameter for the size of the file's content
+ * @return                Zero on success, -1 on error 
+ */
+static int expand(char** restrict content, size_t* restrict content_size)
+{
+  size_t extra = 0, added = 0, ptr, col, n = *content_size;
+  char* restrict data = *content;
+  
+  /* Calculate the new size of the file. */
+  for (ptr = col = 0; ptr < n; ptr++)
+    if (data[ptr] == '\n')
+      col = 0;
+    else if (data[ptr] == '\t')
+      extra += 8 - (col % 8) - 1;
+  
+  /* Extend the allocation. */
+  if (extra == 0)
+    return 0;
+  *content_size += extra;
+  fail_if (xrealloc(data, *content_size, char));
+  *content = data;
+  
+  /* Expand tab spaces. */
+  memmove(data + extra, data, n);
+  for (ptr = 0; ptr < n; ptr++, added--)
+    if (data[ptr] == '\n')
+      data[ptr + added++] = data[ptr + extra], col = 0;
+    else if (data[ptr] != '\t')
+      data[ptr + added++] = data[ptr + extra], col++;
+    else
+      do
+	data[ptr + added++] = ' ';
+      while (++col % 8);
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
  * Read lines of a source file
  * 
  * @param   pathname     The pathname of the source file
@@ -354,6 +396,9 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
   /* Read the file. */
   content = read_file(pathname, &content_size);
   fail_if (content == NULL);
+  
+  /* Expand tab spaces. */
+  fail_if (expand(&content, &content_size));
   
   /* Make sure the content ends with a new line. */
   if (!content_size || (content[content_size - 1] != '\n'))

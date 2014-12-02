@@ -802,8 +802,6 @@ static int read_source_code(state_t* restrict state)
   /* Read the file and simplify it a bit. */
   fail_if (read_source_lines(parsing_result->pathname, parsing_result->source_code) < 0);
   
-  /* TODO '\t':s should be expanded into ' ':s. */
-  
   return 0;
  pfail:
   return -1;
