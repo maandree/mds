@@ -17,6 +17,8 @@
  */
 #include "eliminate-dead-code.h"
 
+#include "include-stack.h"
+
 #include <stdlib.h>
 #include <errno.h>
 
@@ -28,26 +30,6 @@
 #define C(TYPE)  MDS_KBDC_TREE_TYPE_##TYPE
 
 /**
- * Add an error to the error list
- * 
- * @param  NODE:const mds_kbdc_tree_t*    The node the triggered the error
- * @param  SEVERITY:identifier            * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
- * @param  ...:const char*, ...           Error description format string and arguments
- * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
- */
-#define NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, ...)			\
-  NEW_ERROR_(result, SEVERITY, 1, (NODE)->loc_line,			\
-	     (NODE)->loc_start, (NODE)->loc_end, 1, __VA_ARGS__)
-
-/**
- * Add “included from here”-notes
- * 
- * @param  PTR:size_t  The number of “included from here”-notes
- */
-#define DUMP_INCLUDE_STACK(PTR)		\
-  fail_if (dump_include_stack(PTR))
-
-/**
  * Add an error with “included from here”-notes to the error list
  * 
  * @param  NODE:const mds_kbdc_tree_t*    The node the triggered the error
@@ -57,12 +39,7 @@
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
 #define NEW_ERROR(NODE, PTR, SEVERITY, ...)			\
-  do								\
-    {								\
-      NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, __VA_ARGS__);	\
-      DUMP_INCLUDE_STACK(PTR);					\
-    }								\
-  while (0)
+  NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, __VA_ARGS__)
 
 
 
@@ -75,31 +52,6 @@ static mds_kbdc_parse_error_t* error;
  * The parameter of `eliminate_dead_code`
  */
 static mds_kbdc_parsed_t* restrict result;
-
-/**
- * The original value of `result->pathname`
- */
-static char* original_pathname;
-
-/**
- * The original value of `result->source_code`
- */
-static mds_kbdc_source_code_t* original_source_code;
-
-/**
- * Stack of visited include-statements
- */
-static mds_kbdc_tree_include_t** restrict includes = NULL;
-
-/**
- * The number elements allocated for `includes`
- */
-static size_t includes_size = 0;
-
-/**
- * The number elements stored in `includes`
- */
-static size_t includes_ptr = 0;
 
 /**
  * 2: Eliminating because of a return-statement
@@ -121,32 +73,6 @@ static int eliminate_subtree(mds_kbdc_tree_t* restrict tree);
 
 
 /**
- * Add “included from here”-notes
- * 
- * @param   ptr  The number of “included from here”-notes
- * @return       Zero on success, -1 on error
- */
-static int dump_include_stack(size_t ptr)
-{
-  char* old_pathname = result->pathname;
-  mds_kbdc_source_code_t* old_source_code = result->source_code;
-  while (ptr--)
-    {
-      result->pathname = ptr ? includes[ptr - 1]->filename : original_pathname;
-      result->source_code = ptr ? includes[ptr - 1]->source_code : original_source_code;
-      NEW_ERROR_WITHOUT_INCLUDES(includes[ptr], NOTE, "included from here");
-    }
-  result->pathname = old_pathname;
-  result->source_code = old_source_code;
-  return 0;
- pfail:
-  result->pathname = old_pathname;
-  result->source_code = old_source_code;
-  return -1;
-} 
-
-  
-/**
  * Eliminate dead code in an include-statement
  * 
  * @param   tree  The tree to reduce
@@ -154,20 +80,13 @@ static int dump_include_stack(size_t ptr)
  */
 static int eliminate_include(mds_kbdc_tree_include_t* restrict tree)
 {
-  mds_kbdc_tree_include_t** old;
-  char* pathname = result->pathname;
-  mds_kbdc_source_code_t* source_code = result->source_code;
-  int r, saved_errno;
-  if (includes_ptr == includes_size)
-    if (xxrealloc(old, includes, includes_size += 4, mds_kbdc_tree_include_t*))
-      return saved_errno = errno, free(old), errno = saved_errno, -1;
-  includes[includes_ptr++] = tree;
-  result->pathname = tree->filename;
-  result->source_code = tree->source_code;
+  void* data;
+  int r;
+  if (mds_kbdc_include_stack_push(tree, &data))
+    return -1;
   r = eliminate_subtree(tree->inner);
-  result->pathname = pathname;
-  result->source_code = source_code;
-  return includes_ptr--, r;
+  mds_kbdc_include_stack_pop(data);
+  return r;
 }
 
 
@@ -252,23 +171,14 @@ static int eliminate_subtree(mds_kbdc_tree_t* restrict tree)
  */
 int eliminate_dead_code(mds_kbdc_parsed_t* restrict result_)
 {
-  int r, saved_errno;
-  result = result_;
-  original_pathname = result_->pathname;
-  original_source_code = result_->source_code;
+  int r;
+  mds_kbdc_include_stack_begin(result = result_);
   r = eliminate_subtree(result_->tree);
-  saved_errno = errno;
-  result_->pathname = original_pathname;
-  result_->source_code = original_source_code;
-  free(includes), includes = NULL;
-  includes_size = includes_ptr = 0;
-  return errno = saved_errno, r;
+  return mds_kbdc_include_stack_end(), r;
 }
 
 
 
 #undef NEW_ERROR
-#undef DUMP_INCLUDE_STACK
-#undef NEW_ERROR_WITHOUT_INCLUDES
 #undef C
 

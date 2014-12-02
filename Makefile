@@ -32,7 +32,8 @@ OBJ_mds-registry_ = mds-registry util globals reexec registry signals   \
 
 OBJ_mds-kbdc_     = mds-kbdc globals raw-data functions string tree     \
                     make-tree parse-error simplify-tree parsed          \
-                    process-includes validate-tree eliminate-dead-code
+                    process-includes validate-tree eliminate-dead-code  \
+                    include-stack
 
 OBJ_mds-server    = $(foreach O,$(OBJ_mds-server_),obj/mds-server/$(O).o)
 OBJ_mds-registry  = $(foreach O,$(OBJ_mds-registry_),obj/mds-registry/$(O).o)
