@@ -685,7 +685,7 @@ typedef struct state
 } state_t;
 
 
-/* Short hands for the state variables. */
+/* Shorthands for the state variables. */
 #define parsing_result  (state->parsing_result_)
 #define stack_ptr       (state->stack_ptr_)
 #define keyword_stack   (state->keyword_stack_)
