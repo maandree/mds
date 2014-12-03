@@ -174,21 +174,10 @@
 /**
  * Check that there are no tokens after a keyword
  * 
- * @param  KEYWORD:const char*  The keyword,
+ * @param  KEYWORD:const char*  The keyword
  */
-#define NO_PARAMETERS(KEYWORD)						\
-  do									\
-    {									\
-      line += strlen(line);						\
-      *end = prev_end_char, prev_end_char = '\0';			\
-      SKIP_SPACES(line);						\
-      if (*line)							\
-	{								\
-	  end = line + strlen(line);					\
-	  NEW_ERROR(1, ERROR, "extra token after ‘%s’", KEYWORD);	\
-	}								\
-    }									\
-  while (0)
+#define NO_PARAMETERS(KEYWORD)		\
+  fail_if (no_parameters(KEYWORD))
 
 
 /**
@@ -198,51 +187,8 @@
  * @param  var:identifier  The name of the member variable, for the current
  *                         node, where the parameter should be stored
  */
-#define NAMES_1(var)							\
-  do									\
-    {									\
-      line += strlen(line);						\
-      *end = prev_end_char, prev_end_char = '\0';			\
-      SKIP_SPACES(line);						\
-      if (*line == '\0')						\
-	{								\
-	  line = original, end = line + strlen(line);			\
-	  NEW_ERROR(1, ERROR, "a name is expected");			\
-	}								\
-      else								\
-	{								\
-	  char* name_end = line;					\
-	  char* test;							\
-	  int stray_char = 0;						\
-	  while (*name_end && is_name_char(*name_end))			\
-	    name_end++;							\
-	  if (*name_end && (*name_end != ' '))				\
-	    {								\
-	      char* end_end = name_end + 1;				\
-	      while ((*end_end & 0xC0) == 0x80)				\
-		end_end++;						\
-	      prev_end_char = *end_end, *end_end = '\0';		\
-	    NEW_ERROR(1, ERROR, "stray ‘%s’ character", name_end);	\
-	    error->start = (size_t)(name_end - LINE);			\
-	    error->end   = (size_t)(end_end  - LINE);			\
-	    *end_end = prev_end_char;					\
-	    stray_char = 1;						\
-	    }								\
-	  test = name_end;						\
-	  SKIP_SPACES(test);						\
-	  if (*test && !stray_char)					\
-	    {								\
-	      NEW_ERROR(1, ERROR, "too many parameters");		\
-	      error->start = (size_t)(test - LINE);			\
-	      error->end   = strlen(LINE);				\
-	    }								\
-	  end = name_end;						\
-	  prev_end_char = *end;						\
-	  *end = '\0';							\
-	  fail_if ((node->var = strdup(line)) == NULL);			\
-	}								\
-    }									\
-  while (0)
+#define NAMES_1(var)			\
+  fail_if (names_1(&(node->var)))
 
 
 /**
@@ -271,45 +217,8 @@
  * @param  var:identifier  The name of the member variable, for the current
  *                         node, where the parameter should be stored
  */
-#define CHARS(var)									\
-  do											\
-    {											\
-      if (too_few)									\
-	break;										\
-      line += strlen(line);								\
-      *end = prev_end_char, prev_end_char = '\0';					\
-      SKIP_SPACES(line);								\
-      if (*line == '\0')								\
-	{										\
-	  line = original, end = line + strlen(line);					\
-	  NEW_ERROR(1, ERROR, "too few parameters");					\
-	  line = end, too_few = 1;							\
-	}										\
-      else										\
-	{										\
-	  char* arg_end = line;								\
-	  char* call_end = arg_end;							\
-	  int escape = 0, quote = 0;							\
-	  while (*arg_end)								\
-	    {										\
-	      char c = *arg_end++;							\
-	      if      (escape)               escape = 0;				\
-	      else if (arg_end <= call_end)  ;						\
-	      else if (c == '\\')							\
-		{									\
-		  escape = 1;								\
-		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end)); 	\
-		}									\
-	      else if (quote)                quote = (c != '"');			\
-	      else if (IS_END(c))            { arg_end--; break; }			\
-	      else                           quote = (c == '"');			\
-	    }										\
-	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
-	  fail_if ((node->var = strdup(line)) == NULL);					\
-	  line = end;									\
-	}										\
-    }											\
-  while (0)
+#define CHARS(var)			\
+  fail_if (chars(&(node->var)))
 
 
 /**
@@ -331,24 +240,8 @@
 /**
  * Test that the next parameter is in quotes
  */
-#define QUOTES							\
-  do								\
-    {								\
-      char* line_ = line;					\
-      line += strlen(line);					\
-      *end = prev_end_char;					\
-      SKIP_SPACES(line);					\
-      if (*line && (*line != '"'))				\
-	{							\
-	  char* arg_end = line;					\
-	  SKIP_SPACES(arg_end);					\
-	  NEW_ERROR(1, ERROR, "parameter must be in quotes");	\
-	  error->end = (size_t)(arg_end - LINE);		\
-	}							\
-      *end = '\0';						\
-      line = line_;						\
-    }								\
-  while (0)
+#define QUOTES		\
+  fail_if (quotes())
 
 
 /**
@@ -373,39 +266,8 @@
  * 
  * @param  KEYWORD:const char*  The keyword
  */
-#define TEST_FOR_KEYWORD(KEYWORD)					\
-  do									\
-    {									\
-      if (too_few)							\
-	break;								\
-      line += strlen(line);						\
-      *end = prev_end_char, prev_end_char = '\0';			\
-      SKIP_SPACES(line);						\
-      if (*line == '\0')						\
-	{								\
-	  line = original, end = line + strlen(line);			\
-	  NEW_ERROR(1, ERROR, "too few parameters");			\
-	  line = end, too_few = 1;					\
-	}								\
-      else								\
-	{								\
-	  int ok = (strstr(line, KEYWORD) == line);			\
-	  line += strlen(KEYWORD);					\
-	  ok = ok && ((*line == '\0') || (*line == ' '));		\
-	  if (ok)							\
-	    {								\
-	      end = line;						\
-	      prev_end_char = *end, *end = '\0';			\
-	      break;							\
-	    }								\
-	  line -= strlen(KEYWORD);					\
-	  end = line;							\
-	  SKIP_SPACES(end);						\
-	  prev_end_char = *end, *end = '\0';				\
-	  NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", KEYWORD);	\
-	}								\
-    }									\
-  while (0)
+#define TEST_FOR_KEYWORD(KEYWORD)	\
+  fail_if (test_for_keyword(KEYWORD))
 
 
 /**
@@ -415,57 +277,8 @@
  * @param  var:identifier  The name of the member variable, for the current
  *                         node, where the parameter should be stored
  */
-#define KEYS(var)									\
-  do											\
-    {											\
-      if (too_few)									\
-	break;										\
-      line += strlen(line);								\
-      *end = prev_end_char, prev_end_char = '\0';					\
-      SKIP_SPACES(line);								\
-      if (*line == '\0')								\
-	{										\
-	  line = original, end = line + strlen(line);					\
-	  NEW_ERROR(1, ERROR, "too few parameters");					\
-	  line = end, too_few = 1;							\
-	}										\
-      else										\
-	{										\
-	  char* arg_end = line;								\
-	  char* call_end = arg_end;							\
-	  int escape = 0, quote = 0, triangle = (*arg_end == '<');			\
-	  while (*arg_end)								\
-	    {										\
-	      char c = *arg_end++                ;					\
-	      if      (escape)                   escape = 0;				\
-	      else if (arg_end <= call_end)      ;					\
-	      else if (c == '\\')							\
-		{									\
-		  escape = 1;								\
-		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));	\
-		}									\
-	      else if (quote)                    quote = (c != '"');			\
-	      else if (c == '\"')                quote = 1;				\
-	      else if (c == '>')                 triangle = 0;				\
-	      else if (IS_END(c) && !triangle)   { arg_end--; break; }			\
-	    }										\
-	  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;			\
-	  if (*line == '<')								\
-	    {										\
-	      NEW_SUBNODE(keys, KEYS);							\
-	      node->var = (mds_kbdc_tree_t*)subnode;					\
-	      fail_if ((subnode->keys = strdup(line)) == NULL);				\
-	    }										\
-	  else										\
-	    {										\
-	      NEW_SUBNODE(string, STRING);						\
-	      node->var = (mds_kbdc_tree_t*)subnode;					\
-	      fail_if ((subnode->string = strdup(line)) == NULL);			\
-	    }										\
-	  line = end;									\
-	}										\
-    }											\
-  while (0)
+#define KEYS(var)		\
+  fail_if (keys(&(node->var)))
 
 
 /**
@@ -475,46 +288,9 @@
  * @param  var:identifier  The name of the member variable, for the current
  *                         node, where the parameter should be stored
  */
-#define PURE_KEYS(var)									\
-  do											\
-    {											\
-      if (too_few)									\
-	break;										\
-      line += strlen(line);								\
-      *end = prev_end_char, prev_end_char = '\0';					\
-      SKIP_SPACES(line);								\
-      if (*line == '\0')								\
-	{										\
-	  line = original, end = line + strlen(line);					\
-	  NEW_ERROR(1, ERROR, "too few parameters");					\
-	  line = end, too_few = 1;							\
-	}										\
-      else										\
-	{										\
-	  char* arg_end = line;								\
-	  char* call_end = arg_end;							\
-	  int escape = 0, quote = 0, triangle = (*arg_end == '<');			\
-	  while (*arg_end)								\
-	    {										\
-	      char c = *arg_end++                ;					\
-	      if      (escape)                   escape = 0;				\
-	      else if (arg_end <= call_end)      ;					\
-	      else if (c == '\\')							\
-		{									\
-		  escape = 1;								\
-		  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));	\
-		}									\
-	      else if (quote)                    quote = (c != '"');			\
-	      else if (c == '\"')                quote = 1;				\
-	      else if (c == '>')                 triangle = 0;				\
-	      else if (IS_END(c) && !triangle)  { arg_end--; break; }			\
-	    }										\
-	  prev_end_char = *arg_end, *arg_end = '\0';					\
-	  fail_if ((node->var = strdup(line)) == NULL);					\
-	  end = arg_end, line = end;							\
-	}										\
-    }											\
-  while (0)
+#define PURE_KEYS(var)			\
+  fail_if (pure_keys(&(node->var)))
+
 
 
 /**
@@ -523,95 +299,23 @@
  * @param  mapseq:int  Whether this is a mapping sequence, otherwise
  *                     it is treated as macro call arguments
  */
-#define SEQUENCE(mapseq)										\
-  do /* for(;;) */											\
-    {													\
-      *end = prev_end_char;										\
-      SKIP_SPACES(line);										\
-      if ((*line == '\0') || (*line == (mapseq ? ':' : ')')))						\
-	break;												\
-      if (mapseq && (*line == '('))									\
-	{												\
-	  NEW_NODE(unordered, UNORDERED);								\
-	  node->loc_end = node->loc_start + 1;								\
-	  BRANCH(")");											\
-	  line++;											\
-	}												\
-      else if (*line == '[')										\
-	{												\
-	  NEW_NODE(alternation, ALTERNATION);								\
-	  node->loc_end = node->loc_start + 1;								\
-	  BRANCH("]");											\
-	  line++;											\
-	}												\
-      else if (*line == '.')										\
-	{												\
-	  NEW_NODE(nothing, NOTHING);									\
-	  node->loc_end = node->loc_start + 1;								\
-	  LEAF;												\
-	  line++;											\
-	}												\
-      else if (strchr("])", *line))									\
-	{												\
-	  end = line + 1;										\
-	  prev_end_char = *end, *end = '\0';								\
-	  if (stack_ptr == stack_orig)									\
-	    {												\
-	      NEW_ERROR(1, ERROR, "runaway ‘%s’", line);						\
-	    }												\
-	  else												\
-	    {												\
-	      stack_ptr--;										\
-	      if (strcmp(line, keyword_stack[stack_ptr]))						\
-		{											\
-		  NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);	\
-		}											\
-	      NEXT;											\
-	    }												\
-	  *end = prev_end_char;										\
-	  line++;											\
-	}												\
-      else if (*line == '<')										\
-	{												\
-	  NEW_NODE(keys, KEYS);										\
-	  NO_JUMP;											\
-	  PURE_KEYS(keys);										\
-	  LEAF;												\
-	  node->loc_end = (size_t)(line - LINE);							\
-	}												\
-      else												\
-	{												\
-	  NEW_NODE(string, STRING);									\
-	  NO_JUMP;											\
-	  CHARS(string);										\
-	  LEAF;												\
-	  node->loc_end = (size_t)(line - LINE);							\
-	}												\
-    }													\
+#define SEQUENCE(mapseq)					\
+  do /* for(;;) */						\
+    {								\
+      *end = prev_end_char;					\
+      SKIP_SPACES(line);					\
+      if ((*line == '\0') || (*line == (mapseq ? ':' : ')')))	\
+	break;							\
+      fail_if (sequence(mapseq, stack_orig));			\
+    }								\
   while (1)
 
 
 /**
- * Change the scopes created in `SEQUENCE` has all been popped
- * 
- * @param  stack_orig:size_t  The size of the stack when `SEQUENCE` was called
+ * Check that the scopes created in `SEQUENCE` has all been popped
  */
-#define SEQUENCE_FULLY_POPPED(stack_orig)						\
-  do											\
-    {											\
-      if (stack_ptr == stack_orig)							\
-	break;										\
-      end = line + 1;									\
-      NEW_ERROR(1, ERROR, "premature end of sequence");					\
-      while (stack_ptr > stack_orig)							\
-	{										\
-	  stack_ptr--;									\
-	  NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);	\
-	  error->start = tree_stack[stack_ptr][0]->loc_start;				\
-	  error->end   = tree_stack[stack_ptr][0]->loc_end;				\
-	}										\
-    }											\
-  while (0)
+#define SEQUENCE_FULLY_POPPED			\
+  fail_if (sequence_fully_popped(stack_orig))
 
 
 /**
@@ -677,12 +381,40 @@ static mds_kbdc_tree_t*** restrict tree_stack;
 /**
  * The index of the currently parsed line
  */
-static size_t line_i;
+static size_t line_i = 0;
 
 /**
  * Whether an array is currently being parsed
  */
 static int in_array;
+
+/**
+ * The beginning of what has not get been parsed
+ * on the current line
+ */
+static char* line = NULL;
+
+/**
+ * The end of what has been parsed on the current line
+ */
+static char* end = NULL;
+
+/**
+ * The previous value of `*end`
+ */
+static char prev_end_char;
+
+/**
+ * Pointer to the first non-whitespace character
+ * on the current line
+ */
+static char* original;
+
+/**
+ * Whether it has been identified that the
+ * current line has too few parameters
+ */
+static int too_few;
 
 
 
@@ -789,9 +521,6 @@ static int read_source_code(void)
  */
 static int check_for_premature_end_of_file(void)
 {
-  char* line = NULL;
-  char* end = NULL;
-  
   /* Check that all scopes have been popped. */
   if (stack_ptr)
     {
@@ -830,13 +559,429 @@ static int check_for_premature_end_of_file(void)
  */
 static int check_whether_file_is_empty(void)
 {
-  char* line = NULL;
-  char* end = NULL;
-  
   /* Warn about empty files. */
   if (result->tree == NULL)
     if (result->errors_ptr == 0)
       NEW_ERROR(0, WARNING, "file is empty");
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+
+/***  Parsing subprocedures.  ***/
+
+
+/**
+ * Check that there are no tokens after a keyword
+ * 
+ * @param   keyword  The keyword
+ * @return           Zero on success, -1 on error
+ */
+static int no_parameters(const char* restrict keyword)
+{
+  line += strlen(line);
+  *end = prev_end_char, prev_end_char = '\0';
+  SKIP_SPACES(line);
+  if (*line)
+    {
+      end = line + strlen(line);
+      NEW_ERROR(1, ERROR, "extra token after ‘%s’", keyword);
+    }
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+
+/**
+ * Take next parameter, which should be a name of a callable,
+ * and store it in the current node
+ * 
+ * @param   var  Address of the member variable, for the current
+ *               node, where the parameter should be stored
+ * @return       Zero on success, -1 on error
+ */
+static int names_1(char** restrict var)
+{
+  char* name_end;
+  char* test;
+  int stray_char = 0;
+  char* end_end;
+  
+  line += strlen(line);
+  *end = prev_end_char, prev_end_char = '\0';
+  SKIP_SPACES(line);
+  if (*line == '\0')
+    {
+      line = original, end = line + strlen(line);
+      NEW_ERROR(1, ERROR, "a name is expected");
+    }
+  else
+    {
+      name_end = line;
+      while (*name_end && is_name_char(*name_end))
+	name_end++;
+      if (*name_end && (*name_end != ' '))
+	{
+	  end_end = name_end + 1;
+	  while ((*end_end & 0xC0) == 0x80)
+	    end_end++;
+	  prev_end_char = *end_end, *end_end = '\0';
+	  NEW_ERROR(1, ERROR, "stray ‘%s’ character", name_end);
+	  error->start = (size_t)(name_end - LINE);
+	  error->end   = (size_t)(end_end  - LINE);
+	  *end_end = prev_end_char;
+	  stray_char = 1;
+	}
+      test = name_end;
+      SKIP_SPACES(test);
+      if (*test && !stray_char)
+	{
+	  NEW_ERROR(1, ERROR, "too many parameters");
+	  error->start = (size_t)(test - LINE);
+	  error->end   = strlen(LINE);
+	}
+      end = name_end;
+      prev_end_char = *end;
+      *end = '\0';
+      fail_if ((*var = strdup(line)) == NULL);
+    }
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Take next parameter, which should be a string or numeral,
+ * and store it in the current node
+ * 
+ * @param   var  Address of the member variable, for the current
+ *               node, where the parameter should be stored
+ * @return       Zero on success, -1 on error
+ */
+static int chars(char** restrict var)
+{
+  if (too_few)
+    return 0;
+  line += strlen(line);
+  *end = prev_end_char, prev_end_char = '\0';
+  SKIP_SPACES(line);
+  if (*line == '\0')
+    {
+      line = original, end = line + strlen(line);
+      NEW_ERROR(1, ERROR, "too few parameters");
+      line = end, too_few = 1;
+    }
+  else
+    {
+      char* arg_end = line;
+      char* call_end = arg_end;
+      int escape = 0, quote = 0;
+      while (*arg_end)
+	{
+	  char c = *arg_end++;
+	  if      (escape)               escape = 0;
+	  else if (arg_end <= call_end)  ;
+	  else if (c == '\\')
+	    {
+	      escape = 1;
+	      call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));
+	    }
+	  else if (quote)                quote = (c != '"');
+	  else if (IS_END(c))            { arg_end--; break; }
+	  else                           quote = (c == '"');
+	}
+      prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;
+      fail_if ((*var = strdup(line)) == NULL);
+      line = end;
+    }
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Test that the next parameter is in quotes
+ * 
+ * @return  Zero on success, -1 on error
+ */
+static int quotes(void)
+{
+  char* line_ = line;
+  line += strlen(line);
+  *end = prev_end_char;
+  SKIP_SPACES(line);
+  if (*line && (*line != '"'))
+    {
+      char* arg_end = line;
+      SKIP_SPACES(arg_end);
+      NEW_ERROR(1, ERROR, "parameter must be in quotes");
+      error->end = (size_t)(arg_end - LINE);
+    }
+  *end = '\0';
+  line = line_;
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Check whether the currently line has unparsed parameters
+ * 
+ * @return  Whether the currently line has unparsed parameters, -1 on error
+ */
+static int have_more_parameters(void)
+{
+  if (too_few)
+    return 0;
+  line += strlen(line);
+  *end = prev_end_char, prev_end_char = '\0';
+  SKIP_SPACES(line);
+  if (*line == '\0')
+    {
+      line = original, end = line + strlen(line);
+      NEW_ERROR(1, ERROR, "too few parameters");
+      line = end, too_few = 1;
+      return 0;
+    }
+  return 1;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Check that the next word is a specific keyword
+ * 
+ * @param   keyword  The keyword
+ * @return           Zero on success, -1 on error
+ */
+static int test_for_keyword(const char* restrict keyword)
+{
+  int r, ok;
+  if (r = have_more_parameters(), r <= 0)
+    return r;
+  
+  ok = (strstr(line, keyword) == line);
+  line += strlen(keyword);
+  ok = ok && ((*line == '\0') || (*line == ' '));
+  if (ok)
+    {
+      end = line;
+      prev_end_char = *end, *end = '\0';
+      return 0;
+    }
+  line -= strlen(keyword);
+  end = line;
+  SKIP_SPACES(end);
+  prev_end_char = *end, *end = '\0';
+  NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", keyword);
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Take next parameter, which should be a key combination or strings,
+ * and store it in the current node
+ * 
+ * @param   var  Address of the member variable, for the current
+ *               node, where the parameter should be stored
+ * @return       Zero on success, -1 on error
+ */
+static int keys(mds_kbdc_tree_t** restrict var)
+{
+  char* arg_end;
+  char* call_end;
+  int r, escape = 0, quote = 0, triangle;
+  if (r = have_more_parameters(), r <= 0)
+    return r;
+  
+  arg_end = line;
+  call_end = arg_end;
+  triangle = (*arg_end == '<');
+  while (*arg_end)
+    {
+      char c = *arg_end++                ;
+      if      (escape)                   escape = 0;
+      else if (arg_end <= call_end)      ;
+      else if (c == '\\')
+	{
+	  escape = 1;
+	  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));
+	}
+      else if (quote)                    quote = (c != '"');
+      else if (c == '\"')                quote = 1;
+      else if (c == '>')                 triangle = 0;
+      else if (IS_END(c) && !triangle)   { arg_end--; break; }
+    }
+  prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;
+  if (*line == '<')
+    {
+      NEW_SUBNODE(keys, KEYS);
+      *var = (mds_kbdc_tree_t*)subnode;
+      fail_if ((subnode->keys = strdup(line)) == NULL);
+    }
+  else
+    {
+      NEW_SUBNODE(string, STRING);
+      *var = (mds_kbdc_tree_t*)subnode;
+      fail_if ((subnode->string = strdup(line)) == NULL);
+    }
+  line = end;
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+
+/**
+ * Take next parameter, which should be a key combination,
+ * and store it in the current node
+ * 
+ * @param   var  Address of the member variable, for the current
+ *               node, where the parameter should be stored
+ * @return       Zero on success, -1 on error
+ */
+static int pure_keys(char** restrict var)
+{
+  char* arg_end;
+  char* call_end;
+  int r, escape = 0, quote = 0, triangle;
+  if (r = have_more_parameters(), r <= 0)
+    return r;
+  
+  arg_end = line;
+  call_end = arg_end;
+  triangle = (*arg_end == '<');
+  while (*arg_end)
+    {
+      char c = *arg_end++                ;
+      if      (escape)                   escape = 0;
+      else if (arg_end <= call_end)      ;
+      else if (c == '\\')
+	{
+	  escape = 1;
+	  call_end = arg_end + get_end_of_call(arg_end, 0, strlen(arg_end));
+	}
+      else if (quote)                    quote = (c != '"');
+      else if (c == '\"')                quote = 1;
+      else if (c == '>')                 triangle = 0;
+      else if (IS_END(c) && !triangle)   { arg_end--; break; }
+    }
+  prev_end_char = *arg_end, *arg_end = '\0';
+  fail_if ((*var = strdup(line)) == NULL);
+  end = arg_end, line = end;
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse an element of a sequence in a mapping
+ * 
+ * @param   mapseq      Whether this is a mapping sequence, otherwise
+ *                      it is treated as macro call arguments
+ * @param   stack_orig  The size of the stack when `SEQUENCE` was called
+ * @return              Zero on success, -1 on error
+ */
+static int sequence(int mapseq, size_t stack_orig)
+{
+  if (mapseq && (*line == '('))
+    {
+      NEW_NODE(unordered, UNORDERED);
+      node->loc_end = node->loc_start + 1;
+      BRANCH(")");
+      line++;
+    }
+  else if (*line == '[')
+    {
+      NEW_NODE(alternation, ALTERNATION);
+      node->loc_end = node->loc_start + 1;
+      BRANCH("]");
+      line++;
+    }
+  else if (*line == '.')
+    {
+      NEW_NODE(nothing, NOTHING);
+      node->loc_end = node->loc_start + 1;
+      LEAF;
+      line++;
+    }
+  else if (strchr("])", *line))
+    {
+      end = line + 1;
+      prev_end_char = *end, *end = '\0';
+      if (stack_ptr == stack_orig)
+	NEW_ERROR(1, ERROR, "runaway ‘%s’", line);
+      else
+	{
+	  stack_ptr--;
+	  if (strcmp(line, keyword_stack[stack_ptr]))
+	    NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
+	  NEXT;
+	}
+      *end = prev_end_char;
+      line++;
+    }
+  else if (*line == '<')
+    {
+      NEW_NODE(keys, KEYS);
+      NO_JUMP;
+      PURE_KEYS(keys);
+      LEAF;
+      node->loc_end = (size_t)(line - LINE);
+    }
+  else
+    {
+      NEW_NODE(string, STRING);
+      NO_JUMP;
+      CHARS(string);
+      LEAF;	
+      node->loc_end = (size_t)(line - LINE);
+    }
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Check that the scopes created in `SEQUENCE` has all been popped
+ * 
+ * @param  stack_orig  The size of the stack when `SEQUENCE` was called
+ */
+static int sequence_fully_popped(size_t stack_orig)
+{
+  if (stack_ptr == stack_orig)
+    return 0;
+  end = line + 1;
+  NEW_ERROR(1, ERROR, "premature end of sequence");
+  while (stack_ptr > stack_orig)
+    {
+      stack_ptr--;
+      NEW_ERROR(1, NOTE, "missing associated ‘%s’", keyword_stack[stack_ptr]);
+      error->start = tree_stack[stack_ptr][0]->loc_start;
+      error->end   = tree_stack[stack_ptr][0]->loc_end;
+    }
   
   return 0;
  pfail:
@@ -857,17 +1002,13 @@ static int parse_line(void)
 {
   /* TODO make this function less complex */
   
-  char* line = LINE;
-  char* end;
-  char prev_end_char;
-  char* original;
-  int too_few = 0;
-  
+  line = LINE;
   SKIP_SPACES(line);
   if (end = strchrnul(line, ' '), end == line)
     return 0;
   prev_end_char = *end, *end = '\0';
   original = line;
+  too_few = 0;
   
  redo:
   if (in_array)
@@ -1059,7 +1200,7 @@ static int parse_line(void)
 #undef inner
 #undef node
       SEQUENCE(1);
-      SEQUENCE_FULLY_POPPED(stack_orig);
+      SEQUENCE_FULLY_POPPED;
 #define node supernode
 #define inner result
       stack_ptr--;
@@ -1074,7 +1215,7 @@ static int parse_line(void)
 #undef inner
 #undef node
       SEQUENCE(1);
-      SEQUENCE_FULLY_POPPED(stack_orig);
+      SEQUENCE_FULLY_POPPED;
       stack_ptr--;
       *end = prev_end_char;
       SKIP_SPACES(line);
@@ -1115,7 +1256,7 @@ static int parse_line(void)
 #undef inner
 #undef node
 	  SEQUENCE(0);
-	  SEQUENCE_FULLY_POPPED(stack_orig);
+	  SEQUENCE_FULLY_POPPED;
 #define node supernode
 	  if (*line == ')')
 	    {
@@ -1178,7 +1319,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   stack_ptr = 0;
   keyword_stack = NULL;
   tree_stack = NULL;
-  line_i = 0;
   in_array = 0;
   
   fail_if (xmalloc(result->source_code, 1, mds_kbdc_source_code_t));
