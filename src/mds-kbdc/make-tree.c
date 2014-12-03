@@ -1031,7 +1031,6 @@ static int parse_line(void)
 	    }
 	  else
 	    {
-#define node subnode
 	      NEW_NODE(string, STRING);
 	      NO_JUMP;
 	      CHARS(string);
@@ -1039,7 +1038,6 @@ static int parse_line(void)
 	      node->loc_end = (size_t)(end - LINE);
 	      *end = prev_end_char;
 	      line = end;
-#undef node
 	    }
 	}
       return 0;
