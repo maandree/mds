@@ -1345,30 +1345,30 @@ static int parse_line(void)
   int r;
   
  redo:
-  if (in_array) p (parse_array_elements);
+  if (in_array)  p (parse_array_elements);
   else if (!strcmp(line, "have_chars"))
     MAKE_LEAF(assumption_have_chars, ASSUMPTION_HAVE_CHARS, QUOTES_1(chars));
   else if (!strcmp(line, "have_range"))
     MAKE_LEAF(assumption_have_range, ASSUMPTION_HAVE_RANGE, CHARS(first); CHARS(last); END);
-  else if (!strcmp(line, "have")) MAKE_LEAF(assumption_have, ASSUMPTION_HAVE, KEYS(data); END);
-  else if (!strcmp(line, "information")) MAKE_BRANCH(information, INFORMATION, NO_PARAMETERS("information"));
-  else if (!strcmp(line, "assumption")) MAKE_BRANCH(assumption, ASSUMPTION, NO_PARAMETERS("assumption"));
-  else if (!strcmp(line, "return")) MAKE_LEAF(return, RETURN, NO_PARAMETERS("return"));
-  else if (!strcmp(line, "continue")) MAKE_LEAF(continue, CONTINUE, NO_PARAMETERS("continue"));
-  else if (!strcmp(line, "break")) MAKE_LEAF(break, BREAK, NO_PARAMETERS("break"));
-  else if (!strcmp(line, "language")) MAKE_LEAF(information_language, INFORMATION_LANGUAGE, QUOTES_1(data));
-  else if (!strcmp(line, "country")) MAKE_LEAF(information_country, INFORMATION_COUNTRY, QUOTES_1(data));
-  else if (!strcmp(line, "variant")) MAKE_LEAF(information_variant, INFORMATION_VARIANT, QUOTES_1(data));
-  else if (!strcmp(line, "include")) MAKE_LEAF(include, INCLUDE, QUOTES_1(filename));
-  else if (!strcmp(line, "function")) MAKE_BRANCH(function, FUNCTION, NAMES_1(name));
-  else if (!strcmp(line, "macro")) MAKE_BRANCH(macro, MACRO, NAMES_1(name));
-  else if (!strcmp(line, "if")) MAKE_BRANCH(if, IF, CHARS(condition); END);
-  else if (!strcmp(line, "else")) p (parse_else);
-  else if (!strcmp(line, "for")) p (parse_for);
-  else if (!strcmp(line, "let")) p (parse_let);
-  else if (!strcmp(line, "end")) p (parse_end);
-  else if (strchr("\\\"<([0123456789", *line)) p (parse_map);
-  else p (parse_macro_call);
+  else if (!strcmp(line, "have"))  MAKE_LEAF(assumption_have, ASSUMPTION_HAVE, KEYS(data); END);
+  else if (!strcmp(line, "information"))  MAKE_BRANCH(information, INFORMATION, NO_PARAMETERS("information"));
+  else if (!strcmp(line, "assumption"))  MAKE_BRANCH(assumption, ASSUMPTION, NO_PARAMETERS("assumption"));
+  else if (!strcmp(line, "return"))  MAKE_LEAF(return, RETURN, NO_PARAMETERS("return"));
+  else if (!strcmp(line, "continue"))  MAKE_LEAF(continue, CONTINUE, NO_PARAMETERS("continue"));
+  else if (!strcmp(line, "break"))  MAKE_LEAF(break, BREAK, NO_PARAMETERS("break"));
+  else if (!strcmp(line, "language"))  MAKE_LEAF(information_language, INFORMATION_LANGUAGE, QUOTES_1(data));
+  else if (!strcmp(line, "country"))  MAKE_LEAF(information_country, INFORMATION_COUNTRY, QUOTES_1(data));
+  else if (!strcmp(line, "variant"))  MAKE_LEAF(information_variant, INFORMATION_VARIANT, QUOTES_1(data));
+  else if (!strcmp(line, "include"))  MAKE_LEAF(include, INCLUDE, QUOTES_1(filename));
+  else if (!strcmp(line, "function"))  MAKE_BRANCH(function, FUNCTION, NAMES_1(name));
+  else if (!strcmp(line, "macro"))  MAKE_BRANCH(macro, MACRO, NAMES_1(name));
+  else if (!strcmp(line, "if"))  MAKE_BRANCH(if, IF, CHARS(condition); END);
+  else if (!strcmp(line, "else"))  p (parse_else);
+  else if (!strcmp(line, "for"))  p (parse_for);
+  else if (!strcmp(line, "let"))  p (parse_let);
+  else if (!strcmp(line, "end"))  p (parse_end);
+  else if (strchr("\\\"<([0123456789", *line))  p (parse_map);
+  else  p (parse_macro_call);
   
   *end = prev_end_char;
   
