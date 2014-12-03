@@ -22,8 +22,14 @@
 
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 
+
+/**
+ * This process's value for `mds_kbdc_tree_t.processed`
+ */
+#define PROCESS_LEVEL  6
 
 /**
  * Tree type constant shortener
@@ -171,6 +177,7 @@ static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
   
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
   fail_if ((code = string_encode(data), code == NULL));
+  free(data);
   result->countries[result->countries_ptr++] = code;
   
   return 0;
@@ -218,7 +225,7 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   size_t lineoff = tree->loc_end;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict data = NULL;
-  char32_t** old32 = NULL;
+  char32_t** old = NULL;
   char32_t* restrict character;
   size_t n;
   int saved_errno;
@@ -227,12 +234,12 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
     lineoff++;
   
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->chars, lineoff), data == NULL));
-  for (n = 0; data[n] != -1; n++);
+  for (n = 0; data[n] >= 0; n++);
   
   if (result->assumed_strings_ptr + n >= result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
-      fail_if (xxrealloc(old32, result->assumed_strings, result->assumed_strings_size, char*));
+      fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
     }
   
   while (n--)
@@ -243,10 +250,11 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
       result->assumed_strings[result->assumed_strings_ptr++] = character;
     }
   
+  free(data);
   return 0;
   FAIL_BEGIN;
   free(data);
-  free(old32);
+  free(old);
   FAIL_END;
 }
 
@@ -259,8 +267,73 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
  */
 static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff_first = tree->loc_end;
+  size_t lineoff_last;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict first = NULL;
+  char32_t* restrict last = NULL;
+  char32_t** old = NULL;
+  char32_t* restrict character;
+  size_t n;
+  int saved_errno;
+  
+  while (code[lineoff_first] == ' ')
+    lineoff_first++;
+  fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
+  
+  lineoff_last = lineoff_first + strlen(tree->first);
+  
+  while (code[lineoff_last] == ' ')
+    lineoff_last++;
+  fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
+  
+  if (tree->processed == PROCESS_LEVEL)
+    goto done;
+  
+  if ((first[0] < 0) || (first[1] >= 0))
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      error->start = lineoff_first, lineoff_first = 0;
+      error->end = error->start + strlen(tree->first);
+    }
+  if ((last[0] < 0) || (last[1] >= 0))
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      error->start = lineoff_last, lineoff_last = 0;
+      error->end = error->start + strlen(tree->last);
+    }
+  
+  if ((lineoff_first == 0) || (lineoff_last == 0))
+    goto done;
+  
+  if (*first < *last)
+    *first ^= *last, *last ^= *first, *first ^= *last;
+  
+  n = (size_t)(*last - *first) + 1;
+  
+  if (result->assumed_strings_ptr + n >= result->assumed_strings_size)
+    {
+      result->assumed_strings_size += n;
+      fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
+    }
+  
+  while (*first != *last)
+    {
+      fail_if (xmalloc(character, 2, char32_t));
+      character[0] = (*first)++;
+      character[1] = -1;
+      result->assumed_strings[result->assumed_strings_ptr++] = character;
+    }
+  
+ done:
+  free(first);
+  free(last);
+  return 0;
+  FAIL_BEGIN;
+  free(first);
+  free(last);
+  free(old);
+  FAIL_END;
 }
 
 
@@ -311,8 +384,27 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
  */
 static int compile_if(mds_kbdc_tree_if_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff = tree->loc_end;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict data = NULL;
+  int ok, saved_errno;
+  size_t i;
+  
+  while (code[lineoff] == ' ')
+    lineoff++;
+  
+  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->condition, lineoff), data == NULL));
+  fail_if (tree->processed == PROCESS_LEVEL);
+  
+  for (ok = 1, i = 0; data[i] >= 0; i++)
+    ok &= !!(data[i]);
+  
+  free(data), data = NULL;
+  
+  return compile_subtree(ok ? tree->inner : tree->otherwise);
+  FAIL_BEGIN;
+  free(data);
+  FAIL_END;
 }
 
 
@@ -371,6 +463,9 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
   if (tree == NULL)
     return 0;
   
+  if (tree->processed == PROCESS_LEVEL)
+    goto next;
+  
   switch (tree->type)
     {
     case C(INFORMATION):
@@ -400,6 +495,7 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
       break;
     }
   
+ next:
   if (break_level)
     return 0;
   
@@ -431,4 +527,5 @@ int compile_layout(mds_kbdc_parsed_t* restrict result_)
 #undef FAIL_BEGIN
 #undef NEW_ERROR
 #undef C
+#undef PROCESS_LEVEL
 
