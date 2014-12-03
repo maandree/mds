@@ -994,46 +994,358 @@ static int sequence_fully_popped(size_t stack_orig)
 
 
 /**
+ * Parse an else- or else if-statement
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_else(void)
+{
+  size_t i;
+  if (stack_ptr == 0)
+    {
+      NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
+      return 0;
+    }
+  line += strlen(line);
+  *end = prev_end_char, prev_end_char = '\0';
+  end = line + strlen(line);
+  SKIP_SPACES(line);
+  i = stack_ptr - 1;
+  while (keyword_stack[i] == NULL)
+    i--;
+  if (strcmp(keyword_stack[i], "if"))
+    {
+      stack_ptr--;
+      line = original, end = line + strlen(line);
+      NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
+    }
+  else if (*line == '\0')
+    {
+      /* else */
+      mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
+      if (supernode->otherwise)
+	{
+	  line = strstr(LINE, "else");
+	  end = line + 4, prev_end_char = *end;
+	  NEW_ERROR(1, ERROR, "multiple ‘else’ statements");
+	  mds_kbdc_tree_free(supernode->otherwise);
+	  supernode->otherwise = NULL;
+	}
+      tree_stack[stack_ptr] = &(supernode->otherwise);
+    }
+  else if ((strstr(line, "if") == line) && ((line[2] == ' ') || (line[2] == '\0')))
+    {
+      /* else if */
+      mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
+      NEW_NODE(if, IF);
+      node->loc_end = node->loc_start + 2;
+      end = line += 2, prev_end_char = *end, *end = '\0';
+      CHARS(condition);
+      END;
+      tree_stack[stack_ptr] = &(supernode->otherwise);
+      BRANCH(NULL);
+    }
+  else
+    {
+      NEW_ERROR(1, ERROR, "expecting nothing or ‘if’");
+      stack_ptr--;
+    }
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse a for-statement
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_for(void)
+{
+  NEW_NODE(for, FOR);
+  CHARS(first);
+  TEST_FOR_KEYWORD("to");
+  CHARS(last);
+  TEST_FOR_KEYWORD("as");
+  CHARS(variable);
+  END;
+  BRANCH("for");
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse a let-statement
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_let(void)
+{
+  NEW_NODE(let, LET);
+  CHARS(variable);
+  TEST_FOR_KEYWORD(":");
+  *end = prev_end_char;
+  SKIP_SPACES(line);
+  if (*line == '{')
+#define inner value
+    BRANCH(NULL);
+#undef inner
+  else
+    LEAF;
+  if (*line == '\0')
+    {
+      line = original, end = line + strlen(line), prev_end_char = '\0';
+      NEW_ERROR(1, ERROR, "too few parameters");
+    }
+  else if (*line != '{')
+    {
+#define node subnode
+      NEW_NODE(string, STRING);
+      NO_JUMP;
+      CHARS(string);
+      node->loc_end = (size_t)(end - LINE);
+#undef node
+      node->value = (mds_kbdc_tree_t*)subnode;
+      END;
+    }
+  else
+    {
+#define node subnode
+#define inner elements
+      NEW_NODE(array, ARRAY);
+      BRANCH("}");
+      node->loc_end = node->loc_start + 1;
+#undef inner
+#undef node
+      in_array = 1;
+      line++;
+      return 1;
+    }
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse an end-statement
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_end(void)
+{
+  if (stack_ptr == 0)
+    {
+      NEW_ERROR(1, ERROR, "runaway ‘end’ statement");
+      return 0;
+    }
+  line += strlen(line);
+  *end = prev_end_char, prev_end_char = '\0';
+  SKIP_SPACES(line);
+  while (keyword_stack[--stack_ptr] == NULL);
+  if (*line == '\0')
+    {
+      line = original, end = line + strlen(line);
+      NEW_ERROR(1, ERROR, "expecting a keyword after ‘end’");
+    }
+  else if (strcmp(line, keyword_stack[stack_ptr]))
+    NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
+  NEXT;
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse a mapping- or value-statement
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_map(void)
+{
+  size_t stack_orig = stack_ptr + 1;
+  char* colon;
+#define node supernode
+#define inner sequence
+  NEW_NODE(map, MAP);
+  node->loc_end = node->loc_start;
+  BRANCH(":");
+#undef inner
+#undef node
+  SEQUENCE(1);
+  SEQUENCE_FULLY_POPPED;
+#define node supernode
+#define inner result
+  stack_ptr--;
+  *end = prev_end_char;
+  SKIP_SPACES(line);
+  if (colon = line, *line++ != ':')
+    {
+      LEAF;
+      prev_end_char = *end;
+      return 0; /* Not an error in functions, or if \set is access, even indirectly. */
+    }
+  BRANCH(":");
+#undef inner
+#undef node
+  SEQUENCE(1);
+  SEQUENCE_FULLY_POPPED;
+  stack_ptr--;
+  *end = prev_end_char;
+  SKIP_SPACES(line);
+#define node supernode
+  LEAF;
+#undef node
+  if (supernode->result == NULL)
+    {
+      NEW_ERROR(1, ERROR, "output missing");
+      error->start = (size_t)(colon - LINE);
+      error->end = error->start + 1;
+    }
+  if (*line == '\0')
+    return prev_end_char = *end, 0;
+  end = line + strlen(line), prev_end_char = *end;
+  NEW_ERROR(1, ERROR, "too many parameters");
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse a macro call
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_macro_call(void)
+{
+  char* old_end = end;
+  char old_prev_end_char = prev_end_char;
+  size_t stack_orig = stack_ptr + 1;
+  *end = prev_end_char;
+  end = strchrnul(line, '(');
+  prev_end_char = *end, *end = '\0';
+  if (prev_end_char)
+    {
+#define node supernode
+#define inner arguments
+      NEW_NODE(macro_call, MACRO_CALL);
+      old_end = end, old_prev_end_char = prev_end_char;
+      NO_JUMP;
+      *old_end = '\0';
+      CHARS(name);
+      BRANCH(NULL);
+      end = old_end, prev_end_char = old_prev_end_char;
+      line++;
+#undef inner
+#undef node
+      SEQUENCE(0);
+      SEQUENCE_FULLY_POPPED;
+#define node supernode
+      if (*line == ')')
+	{
+	  line++;
+	  SKIP_SPACES(line);
+	  if (*line)
+	    {
+	      NEW_ERROR(1, ERROR, "extra token after macro call");
+	      error->end = strlen(LINE);
+	    }
+	}
+      else
+	{
+	  NEW_ERROR(1, ERROR, "missing ‘)’");
+	  error->start = (size_t)(strchr(LINE, '(') - LINE);
+	  error->end   = error->start + 1;
+	}
+      stack_ptr--;
+      NEXT;
+      return 0;
+#undef node
+    }
+  *old_end = '\0';
+  end = old_end;
+  prev_end_char = old_prev_end_char;
+  if (strchr("}", *line))
+    NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
+  else
+    NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
+  
+  return 0;
+ pfail:
+  return -1;
+}
+
+
+/**
+ * Parse a line of an array
+ * 
+ * @return  Zero on success, -1 on error, 1 if the caller should go to `redo`
+ */
+static int parse_array_elements(void)
+{
+  for (;;)
+    {
+      SKIP_SPACES(line);
+      if (*line == '\0')
+	return 0;
+      else if (*line == '}')
+	{
+	  line++;
+	  end = line + strlen(line);
+	  END;
+	  line = end, prev_end_char = '\0';
+	  in_array = 0;
+	  stack_ptr -= 2;
+	  NEXT;
+	  return 0;
+	}
+      else
+	{
+	  NEW_NODE(string, STRING);
+	  NO_JUMP;
+	  CHARS(string);
+	  LEAF;
+	  node->loc_end = (size_t)(end - LINE);
+	  *end = prev_end_char;
+	  line = end;
+	}
+    }
+  
+ pfail:
+  return -1;
+}
+
+
+/**
  * Parse a line
  * 
  * @return  Zero on success, -1 on error
  */
 static int parse_line(void)
 {
-  /* TODO make this function less complex */
+#define p(function)				\
+  do						\
+    {						\
+      fail_if ((r = function(), r < 0));	\
+      if (r > 0)				\
+	goto redo;				\
+    }						\
+  while (0)
+  
+  int r;
   
  redo:
-  if (in_array)
-    {
-      for (;;)
-	{
-	  SKIP_SPACES(line);
-	  if (*line == '\0')
-	    break;
-	  else if (*line == '}')
-	    {
-	      line++;
-	      end = line + strlen(line);
-	      END;
-	      line = end, prev_end_char = '\0';
-	      in_array = 0;
-	      stack_ptr -= 2;
-	      NEXT;
-	      break;
-	    }
-	  else
-	    {
-	      NEW_NODE(string, STRING);
-	      NO_JUMP;
-	      CHARS(string);
-	      LEAF;
-	      node->loc_end = (size_t)(end - LINE);
-	      *end = prev_end_char;
-	      line = end;
-	    }
-	}
-      return 0;
-    }
+  if (in_array) p (parse_array_elements);
   else if (!strcmp(line, "have_chars"))
     MAKE_LEAF(assumption_have_chars, ASSUMPTION_HAVE_CHARS, QUOTES_1(chars));
   else if (!strcmp(line, "have_range"))
@@ -1051,239 +1363,19 @@ static int parse_line(void)
   else if (!strcmp(line, "function")) MAKE_BRANCH(function, FUNCTION, NAMES_1(name));
   else if (!strcmp(line, "macro")) MAKE_BRANCH(macro, MACRO, NAMES_1(name));
   else if (!strcmp(line, "if")) MAKE_BRANCH(if, IF, CHARS(condition); END);
-  else if (!strcmp(line, "else"))
-    {
-      size_t i;
-      if (stack_ptr == 0)
-	{
-	  NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
-	  goto next;
-	}
-      line += strlen(line);
-      *end = prev_end_char, prev_end_char = '\0';
-      end = line + strlen(line);
-      SKIP_SPACES(line);
-      i = stack_ptr - 1;
-      while (keyword_stack[i] == NULL)
-	i--;
-      if (strcmp(keyword_stack[i], "if"))
-	{
-	  stack_ptr--;
-	  line = original, end = line + strlen(line);
-	  NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
-	}
-      else if (*line == '\0')
-	{
-	  /* else */
-	  mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
-	  if (supernode->otherwise)
-	    {
-	      line = strstr(LINE, "else");
-	      end = line + 4, prev_end_char = *end;
-	      NEW_ERROR(1, ERROR, "multiple ‘else’ statements");
-	      mds_kbdc_tree_free(supernode->otherwise);
-	      supernode->otherwise = NULL;
-	    }
-	  tree_stack[stack_ptr] = &(supernode->otherwise);
-	}
-      else if ((strstr(line, "if") == line) && ((line[2] == ' ') || (line[2] == '\0')))
-	{
-	  /* else if */
-	  mds_kbdc_tree_if_t* supernode = &(tree_stack[stack_ptr - 1][0]->if_);
-	  NEW_NODE(if, IF);
-	  node->loc_end = node->loc_start + 2;
-	  end = line += 2, prev_end_char = *end, *end = '\0';
-	  CHARS(condition);
-	  END;
-	  tree_stack[stack_ptr] = &(supernode->otherwise);
-	  BRANCH(NULL);
-	}
-      else
-	{
-	  NEW_ERROR(1, ERROR, "expecting nothing or ‘if’");
-	  stack_ptr--;
-	}
-    }
-  else if (!strcmp(line, "for"))
-    {
-      NEW_NODE(for, FOR);
-      CHARS(first);
-      TEST_FOR_KEYWORD("to");
-      CHARS(last);
-      TEST_FOR_KEYWORD("as");
-      CHARS(variable);
-      END;
-      BRANCH("for");
-    }
-  else if (!strcmp(line, "let"))
-    {
-      NEW_NODE(let, LET);
-      CHARS(variable);
-      TEST_FOR_KEYWORD(":");
-      *end = prev_end_char;
-      SKIP_SPACES(line);
-      if (*line == '{')
-#define inner value
-	BRANCH(NULL);
-#undef inner
-      else
-	LEAF;
-      if (*line == '\0')
-	{
-	  line = original, end = line + strlen(line), prev_end_char = '\0';
-	  NEW_ERROR(1, ERROR, "too few parameters");
-	}
-      else if (*line != '{')
-	{
-#define node subnode
-	  NEW_NODE(string, STRING);
-	  NO_JUMP;
-	  CHARS(string);
-	  node->loc_end = (size_t)(end - LINE);
-#undef node
-	  node->value = (mds_kbdc_tree_t*)subnode;
-	  END;
-	}
-      else
-	{
-#define node subnode
-#define inner elements
-	  NEW_NODE(array, ARRAY);
-	  BRANCH("}");
-	  node->loc_end = node->loc_start + 1;
-#undef inner
-#undef node
-	  in_array = 1;
-	  line++;
-	  goto redo;
-	}
-    }
-  else if (!strcmp(line, "end"))
-    {
-      if (stack_ptr == 0)
-	{
-	  NEW_ERROR(1, ERROR, "runaway ‘end’ statement");
-	  goto next;
-	}
-      line += strlen(line);
-      *end = prev_end_char, prev_end_char = '\0';
-      SKIP_SPACES(line);
-      while (keyword_stack[--stack_ptr] == NULL);
-      if (*line == '\0')
-	{
-	  line = original, end = line + strlen(line);
-	  NEW_ERROR(1, ERROR, "expecting a keyword after ‘end’");
-	}
-      else if (strcmp(line, keyword_stack[stack_ptr]))
-	NEW_ERROR(1, ERROR, "expected ‘%s’ but got ‘%s’", keyword_stack[stack_ptr], line);
-      NEXT;
-    }
-  else if (strchr("\\\"<([0123456789", *line))
-    {
-      size_t stack_orig = stack_ptr + 1;
-      char* colon;
-#define node supernode
-#define inner sequence
-      NEW_NODE(map, MAP);
-      node->loc_end = node->loc_start;
-      BRANCH(":");
-#undef inner
-#undef node
-      SEQUENCE(1);
-      SEQUENCE_FULLY_POPPED;
-#define node supernode
-#define inner result
-      stack_ptr--;
-      *end = prev_end_char;
-      SKIP_SPACES(line);
-      if (colon = line, *line++ != ':')
-	{
-	  LEAF;
-	  return 0; /* Not an error in functions, or if \set is access, even indirectly. */
-	}
-      BRANCH(":");
-#undef inner
-#undef node
-      SEQUENCE(1);
-      SEQUENCE_FULLY_POPPED;
-      stack_ptr--;
-      *end = prev_end_char;
-      SKIP_SPACES(line);
-#define node supernode
-      LEAF;
-#undef node
-      if (supernode->result == NULL)
-	{
-	  NEW_ERROR(1, ERROR, "output missing");
-	  error->start = (size_t)(colon - LINE);
-	  error->end = error->start + 1;
-	}
-      if (*line == '\0')
-	return 0;
-      end = line + strlen(line), prev_end_char = *end;
-      NEW_ERROR(1, ERROR, "too many parameters");
-    }
-  else
-    {
-      char* old_end = end;
-      char old_prev_end_char = prev_end_char;
-      size_t stack_orig = stack_ptr + 1;
-      *end = prev_end_char;
-      end = strchrnul(line, '(');
-      prev_end_char = *end, *end = '\0';
-      if (prev_end_char)
-	{
-#define node supernode
-#define inner arguments
-	  NEW_NODE(macro_call, MACRO_CALL);
-	  old_end = end, old_prev_end_char = prev_end_char;
-	  NO_JUMP;
-	  *old_end = '\0';
-	  CHARS(name);
-	  BRANCH(NULL);
-	  end = old_end, prev_end_char = old_prev_end_char;
-	  line++;
-#undef inner
-#undef node
-	  SEQUENCE(0);
-	  SEQUENCE_FULLY_POPPED;
-#define node supernode
-	  if (*line == ')')
-	    {
-	      line++;
-	      SKIP_SPACES(line);
-	      if (*line)
-		{
-		  NEW_ERROR(1, ERROR, "extra token after macro call");
-		  error->end = strlen(LINE);
-		}
-	    }
-	  else
-	    {
-	      NEW_ERROR(1, ERROR, "missing ‘)’");
-	      error->start = (size_t)(strchr(LINE, '(') - LINE);
-	      error->end   = error->start + 1;
-	    }
-	  stack_ptr--;
-	  NEXT;
-	  goto next;
-#undef node
-	}
-      *old_end = '\0';
-      end = old_end;
-      prev_end_char = old_prev_end_char;
-      if (strchr("}", *line))
-	NEW_ERROR(1, ERROR, "runaway ‘%c’", *line);
-      else
-	NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
-    }
+  else if (!strcmp(line, "else")) p (parse_else);
+  else if (!strcmp(line, "for")) p (parse_for);
+  else if (!strcmp(line, "let")) p (parse_let);
+  else if (!strcmp(line, "end")) p (parse_end);
+  else if (strchr("\\\"<([0123456789", *line)) p (parse_map);
+  else p (parse_macro_call);
   
- next:
   *end = prev_end_char;
   
   return 0;
  pfail:
   return -1;
+#undef p
 }
 
 
