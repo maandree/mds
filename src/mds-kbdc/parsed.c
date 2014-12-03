@@ -46,6 +46,12 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
   free(this->source_code);
   free(this->pathname);
   mds_kbdc_parse_error_free_all(this->errors);
+  while (this->languages_ptr--)
+    free(this->languages[this->languages_ptr]);
+  free(this->languages);
+  while (this->countries_ptr--)
+    free(this->countries[this->countries_ptr]);
+  free(this->countries);
   memset(this, 0, sizeof(mds_kbdc_parsed_t));
 }
 

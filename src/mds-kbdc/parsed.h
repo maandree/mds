@@ -100,6 +100,42 @@ typedef struct mds_kbdc_parsed
    */
   int severest_error_level;
   
+  /**
+   * List of languages for which the layout is designed
+   */
+  char** languages;
+  
+  /**
+   * The number of elements allocated to `languages`
+   */
+  size_t languages_size;
+  
+  /**
+   * The number of elements stored in `languages`
+   */
+  size_t languages_ptr;
+  
+  /**
+   * List of countries for which the layout is designed
+   */
+  char** countries;
+  
+  /**
+   * The number of elements allocated to `countries`
+   */
+  size_t countries_size;
+  
+  /**
+   * The number of elements stored in `countries`
+   */
+  size_t countries_ptr;
+  
+  /**
+   * The variant of the keyboard for the languages/countries,
+   * `NULL` if not specified
+   */
+  char* variant;
+  
 } mds_kbdc_parsed_t;
 
 

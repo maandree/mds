@@ -37,7 +37,7 @@
 /**
  * Parse command line arguments
  */
-void parse_cmdline(void)
+static void parse_cmdline(void)
 {
   int i;
   for (i = 0; i < argc; i++)
