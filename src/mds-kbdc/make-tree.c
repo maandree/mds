@@ -1002,14 +1002,6 @@ static int parse_line(void)
 {
   /* TODO make this function less complex */
   
-  line = LINE;
-  SKIP_SPACES(line);
-  if (end = strchrnul(line, ' '), end == line)
-    return 0;
-  prev_end_char = *end, *end = '\0';
-  original = line;
-  too_few = 0;
-  
  redo:
   if (in_array)
     {
@@ -1334,7 +1326,17 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   
   /* Parse the file. */
   for (line_i = 0, line_n = result->source_code->line_count; line_i < line_n; line_i++)
-    parse_line();
+    {
+      line = LINE;
+      SKIP_SPACES(line);
+      if (end = strchrnul(line, ' '), end == line)
+	continue;
+      prev_end_char = *end, *end = '\0';
+      original = line;
+      too_few = 0;
+      
+      parse_line();
+    }
   
   
   /* Check parsing state. */
