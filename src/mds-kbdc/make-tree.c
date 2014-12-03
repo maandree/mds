@@ -78,7 +78,7 @@
  * Pointer to the beginning of the current line
  */
 #define LINE					\
-  (parsing_result->source_code->lines[line_i])
+  (result->source_code->lines[line_i])
 
 
 /**
@@ -98,7 +98,7 @@
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
 #define NEW_ERROR(ERROR_IS_IN_FILE, SEVERITY, ...)				\
-  NEW_ERROR_(parsing_result, SEVERITY, ERROR_IS_IN_FILE, line_i,		\
+  NEW_ERROR_(result, SEVERITY, ERROR_IS_IN_FILE, line_i,			\
 	     (size_t)(line - LINE), (size_t)(end - LINE), 1, __VA_ARGS__)
 
 
@@ -650,58 +650,43 @@
 
 
 /**
- * The parsing state
- */
-static struct state
-{
-  /**
-   * Output parameter for the parsing result
-   */
-  mds_kbdc_parsed_t* restrict parsing_result_;
-  
-  /**
-   * The head of the parsing-stack
-   */
-  size_t stack_ptr_;
-  
-  /**
-   * The keyword portion of the parsing-stack
-   */
-  const char** restrict keyword_stack_;
-  
-  /**
-   * The tree portion of the parsing-stack
-   */
-  mds_kbdc_tree_t*** restrict tree_stack_;
-  
-  /**
-   * The index of the currently parsed line
-   */
-  size_t line_i_;
-  
-  /**
-   * Whether an array is currently being parsed
-   */
-  int in_array_;
-  
-} state;
-
-
-/* Shorthands for the state variables. */
-#define parsing_result  (state.parsing_result_)
-#define stack_ptr       (state.stack_ptr_)
-#define keyword_stack   (state.keyword_stack_)
-#define tree_stack      (state.tree_stack_)
-#define line_i          (state.line_i_)
-#define in_array        (state.in_array_)
-
-
-
-/**
  * Variable whether the latest created error is stored
  */
 static mds_kbdc_parse_error_t* error;
 
+/**
+ * Output parameter for the parsing result
+ */
+static mds_kbdc_parsed_t* restrict result;
+
+/**
+ * The head of the parsing-stack
+ */
+static size_t stack_ptr;
+
+/**
+ * The keyword portion of the parsing-stack
+ */
+static const char** restrict keyword_stack;
+
+/**
+ * The tree portion of the parsing-stack
+ */
+static mds_kbdc_tree_t*** restrict tree_stack;
+
+/**
+ * The index of the currently parsed line
+ */
+static size_t line_i;
+
+/**
+ * Whether an array is currently being parsed
+ */
+static int in_array;
+
+
+
+/***  Pre-parsing procedures.  ***/
 
 
 /**
@@ -718,24 +703,24 @@ static int get_pathname(const char* restrict filename)
   /* Get a non-relative pathname for the file, relative filenames
    * can be misleading as the program can have changed working
    * directory to be able to resolve filenames. */
-  parsing_result->pathname = abspath(filename);
-  if (parsing_result->pathname == NULL)
+  result->pathname = abspath(filename);
+  if (result->pathname == NULL)
     {
       fail_if (errno != ENOENT);
       saved_errno = errno;
       fail_if ((cwd = curpath(), cwd == NULL));
-      parsing_result->pathname = strdup(filename);
-      fail_if (parsing_result->pathname == NULL);
-      NEW_ERROR_(parsing_result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
+      result->pathname = strdup(filename);
+      fail_if (result->pathname == NULL);
+      NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
       free(cwd);
       return 0;
     }
   
   /* Check that the file exists and can be read. */
-  if (access(parsing_result->pathname, R_OK) < 0)
+  if (access(result->pathname, R_OK) < 0)
     {
       saved_errno = errno;
-      NEW_ERROR_(parsing_result, ERROR, 0, 0, 0, 0, 0, NULL);
+      NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 0, NULL);
       error->description = strdup(strerror(saved_errno));
       fail_if (error->description == NULL);
       return 0;
@@ -760,7 +745,7 @@ static int allocate_stacks(void)
   
   /* The maximum line-length is needed because lines can have there own stacking,
    * like sequence mapping lines, additionally, let statements can have one array. */
-  for (line_i = 0, line_n = parsing_result->source_code->line_count; line_i < line_n; line_i++)
+  for (line_i = 0, line_n = result->source_code->line_count; line_i < line_n; line_i++)
     {
       cur_line_length = strlen(LINE);
       if (max_line_length < cur_line_length)
@@ -784,12 +769,16 @@ static int allocate_stacks(void)
 static int read_source_code(void)
 {
   /* Read the file and simplify it a bit. */
-  fail_if (read_source_lines(parsing_result->pathname, parsing_result->source_code) < 0);
+  fail_if (read_source_lines(result->pathname, result->source_code) < 0);
   
   return 0;
  pfail:
   return -1;
 }
+
+
+
+/***  Post-parsing procedures.  ***/
 
 
 /**
@@ -845,14 +834,18 @@ static int check_whether_file_is_empty(void)
   char* end = NULL;
   
   /* Warn about empty files. */
-  if (parsing_result->tree == NULL)
-    if (parsing_result->errors_ptr == 0)
+  if (result->tree == NULL)
+    if (result->errors_ptr == 0)
       NEW_ERROR(0, WARNING, "file is empty");
   
   return 0;
  pfail:
   return -1;
 }
+
+
+
+/***  Parsing procedures.  ***/
 
 
 /**
@@ -1163,23 +1156,30 @@ static int parse_line(void)
 }
 
 
+
+/***  Parsing root-procedure.  ***/
+
+
 /**
  * Parse a file into a syntax tree
  * 
  * @param   filename   The filename of the file to parse
- * @param   result     Output parameter for the parsing result
+ * @param   result_    Output parameter for the parsing result
  * @return             -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result)
+int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result_)
 {
   size_t line_n;
   int r, saved_errno;
   
   
   /* Prepare parsing. */
-  
-  memset(&state, 0, sizeof(state));
-  parsing_result = result;
+  result = result_;
+  stack_ptr = 0;
+  keyword_stack = NULL;
+  tree_stack = NULL;
+  line_i = 0;
+  in_array = 0;
   
   fail_if (xmalloc(result->source_code, 1, mds_kbdc_source_code_t));
   mds_kbdc_source_code_initialise(result->source_code);
@@ -1217,12 +1217,6 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
 
 
 
-#undef in_array
-#undef line_i
-#undef parsing_result
-#undef stack_ptr
-#undef keyword_stack
-#undef tree_stack
 #undef MAKE_BRANCH
 #undef MAKE_LEAF
 #undef SEQUENCE_FULLY_POPPED
