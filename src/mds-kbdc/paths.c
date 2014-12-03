@@ -137,9 +137,6 @@ char* relpath(const char* path, const char* base)
     /* Both `abspath` and `curpath` (and `relpath`) allocates one extra slot. */
     absbase[strlen(absbase) + 1] = '\0', absbase[strlen(absbase)] = '/';
   
-  fprintf(stderr, "abs: %s\n", abs);
-  fprintf(stderr, "absbase: %s\n\n", absbase);
-  
   for (p = 1; abs[p] && absbase[p] && (abs[p] == absbase[p]); p++)
     if (abs[p] == '/')
       slash = p + 1;
