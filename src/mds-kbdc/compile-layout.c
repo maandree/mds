@@ -50,6 +50,14 @@ static mds_kbdc_parse_error_t* error;
  */
 static mds_kbdc_parsed_t* restrict result;
 
+/**
+ * 3:   `return` is being processed
+ * 2:    `break` is being processed
+ * 1: `continue` is being processed
+ * 0:    Neither is being processed
+ */
+static int break_level = 0;
+
 
 
 /**
@@ -81,6 +89,175 @@ static int compile_include(mds_kbdc_tree_include_t* restrict tree)
 
 
 /**
+ * Compile a language-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a country-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a variant-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a have-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a have_chars-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a have_range-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a function
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_function(mds_kbdc_tree_function_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a macro
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a for-loop
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_for(mds_kbdc_tree_for_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile an if-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_if(mds_kbdc_tree_if_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a let-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_let(mds_kbdc_tree_let_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a mapping- or value-statement
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_map(mds_kbdc_tree_map_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
+ * Compile a macro call
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
+{
+  (void) tree;
+  return 0; /* TODO */
+}
+
+
+/**
  * Compile a subtree
  * 
  * @param   tree  The tree to compile
@@ -101,36 +278,35 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(INFORMATION):
       t (compile_subtree(tree->information.inner));
       break;
-    case C(INFORMATION_LANGUAGE): break;
-    case C(INFORMATION_COUNTRY): break;
-    case C(INFORMATION_VARIANT): break;
-    case C(INCLUDE):
-      c(include);
-      break;
-    case C(FUNCTION): break;
-    case C(MACRO): break;
+    case C(INFORMATION_LANGUAGE):   c (language);     break;
+    case C(INFORMATION_COUNTRY):    c (country);      break;
+    case C(INFORMATION_VARIANT):    c (variant);      break;
+    case C(INCLUDE):                c (include);      break;
+    case C(FUNCTION):               c (function);     break;
+    case C(MACRO):                  c (macro);        break;
     case C(ASSUMPTION):
       t ((includes_ptr == 0) && compile_subtree(tree->assumption.inner));
       break;
-    case C(ASSUMPTION_HAVE): break;
-    case C(ASSUMPTION_HAVE_CHARS): break;
-    case C(ASSUMPTION_HAVE_RANGE): break;
-    case C(FOR): break;
-    case C(IF): break;
-    case C(LET): break;
-    case C(MAP): break;
-    case C(MACRO_CALL): break;
-    case C(RETURN): break;
-    case C(BREAK): break;
-    case C(CONTINUE): break;
+    case C(ASSUMPTION_HAVE):        c (have);         break;
+    case C(ASSUMPTION_HAVE_CHARS):  c (have_chars);   break;
+    case C(ASSUMPTION_HAVE_RANGE):  c (have_range);   break;
+    case C(FOR):                    c_ (for);         break;
+    case C(IF):                     c_ (if);          break;
+    case C(LET):                    c (let);          break;
+    case C(MAP):                    c (map);          break;
+    case C(MACRO_CALL):             c (macro_call);   break;
+    case C(RETURN):                 break_level = 3;  break;
+    case C(BREAK):                  break_level = 2;  break;
+    case C(CONTINUE):               break_level = 1;  break;
     default:
       break;
     }
   
+  if (break_level)
+    return 0;
+  
   tree = tree->next;
   goto again;
- pfail:
-  return -1;
 #undef c_
 #undef c
 #undef t
