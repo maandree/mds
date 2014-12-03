@@ -22,6 +22,7 @@
 #include "tree.h"
 #include "raw-data.h"
 #include "parse-error.h"
+#include "string.h"
 
 #include <libmdsserver/macros.h>
 
@@ -135,6 +136,21 @@ typedef struct mds_kbdc_parsed
    * `NULL` if not specified
    */
   char* variant;
+  
+  /**
+   * List of strings the assembler should assume are provided
+   */
+  char32_t** assumed_strings;
+  
+  /**
+   * The number of elements allocated to `assumed_strings`
+   */
+  size_t assumed_strings_size;
+  
+  /**
+   * The number of elements stored in `assumed_strings`
+   */
+  size_t assumed_strings_ptr;
   
 } mds_kbdc_parsed_t;
 

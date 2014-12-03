@@ -18,6 +18,10 @@
 #include "compile-layout.h"
 
 #include "include-stack.h"
+#include "string.h"
+
+#include <stdlib.h>
+#include <errno.h>
 
 
 
@@ -37,6 +41,16 @@
  */
 #define NEW_ERROR(NODE, PTR, SEVERITY, ...)			\
   NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, __VA_ARGS__)
+
+/**
+ * Beginning of failure clause
+ */
+#define FAIL_BEGIN  pfail: saved_errno = errno
+
+/**
+ * End of failure clause
+ */
+#define FAIL_END  return errno = saved_errno, -1
 
 
 
@@ -70,6 +84,15 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree);
 
 
 
+static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  return NULL; /* TODO */
+}
+
+
 /**
  * Compile an include-statement
  * 
@@ -96,8 +119,30 @@ static int compile_include(mds_kbdc_tree_include_t* restrict tree)
  */
 static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff = tree->loc_end;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict data = NULL;
+  char** old = NULL;
+  int saved_errno;
+  
+  while (code[lineoff] == ' ')
+    lineoff++;
+  
+  if (result->languages_ptr == result->languages_size)
+    {
+      result->languages_size = result->languages_size ? (result->languages_size << 1) : 1;
+      fail_if (xxrealloc(old, result->languages, result->languages_size, char*));
+    }
+  
+  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  fail_if ((code = string_encode(data), code == NULL));
+  result->languages[result->languages_ptr++] = code;
+  
+  return 0;
+  FAIL_BEGIN;
+  free(old);
+  free(data);
+  FAIL_END;
 }
 
 
@@ -109,8 +154,30 @@ static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
  */
 static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff = tree->loc_end;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict data = NULL;
+  char** old = NULL;
+  int saved_errno;
+  
+  while (code[lineoff] == ' ')
+    lineoff++;
+  
+  if (result->countries_ptr == result->countries_size)
+    {
+      result->countries_size = result->countries_size ? (result->countries_size << 1) : 1;
+      fail_if (xxrealloc(old, result->countries, result->countries_size, char*));
+    }
+  
+  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  fail_if ((code = string_encode(data), code == NULL));
+  result->countries[result->countries_ptr++] = code;
+  
+  return 0;
+  FAIL_BEGIN;
+  free(old);
+  free(data);
+  FAIL_END;
 }
 
 
@@ -148,8 +215,41 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
  */
 static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff = tree->loc_end;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict data = NULL;
+  char** old = NULL;
+  char32_t** old32 = NULL;
+  char32_t* restrict character;
+  size_t n;
+  int saved_errno;
+  
+  while (code[lineoff] == ' ')
+    lineoff++;
+  
+  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->chars, lineoff), data == NULL));
+  for (n = 0; data[n] != -1; n++);
+  
+  if (result->assumed_strings_ptr + n >= result->assumed_strings_size)
+    {
+      result->assumed_strings_size += n;
+      fail_if (xxrealloc(old32, result->assumed_strings, result->assumed_strings_size, char*));
+    }
+  
+  while (n--)
+    {
+      fail_if (xmalloc(character, 2, char32_t));
+      character[0] = data[n];
+      character[1] = -1;
+      result->assumed_strings[result->assumed_strings_ptr++] = character;
+    }
+  
+  return 0;
+  FAIL_BEGIN;
+  free(data);
+  free(old);
+  free(old32);
+  FAIL_END;
 }
 
 
@@ -329,6 +429,8 @@ int compile_layout(mds_kbdc_parsed_t* restrict result_)
 
 
 
+#undef FAIL_END
+#undef FAIL_BEGIN
 #undef NEW_ERROR
 #undef C
 
