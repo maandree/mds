@@ -218,7 +218,6 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   size_t lineoff = tree->loc_end;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict data = NULL;
-  char** old = NULL;
   char32_t** old32 = NULL;
   char32_t* restrict character;
   size_t n;
@@ -247,7 +246,6 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   return 0;
   FAIL_BEGIN;
   free(data);
-  free(old);
   free(old32);
   FAIL_END;
 }
