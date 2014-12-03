@@ -1186,6 +1186,7 @@ static int parse_map(void)
 #define inner result
   stack_ptr--;
   *end = prev_end_char;
+  supernode->loc_end = (size_t)(end - LINE);
   SKIP_SPACES(line);
   if (colon = line, *line++ != ':')
     {
@@ -1200,6 +1201,7 @@ static int parse_map(void)
   SEQUENCE_FULLY_POPPED;
   stack_ptr--;
   *end = prev_end_char;
+  supernode->loc_end = (size_t)(end - LINE);
   SKIP_SPACES(line);
 #define node supernode
   LEAF;

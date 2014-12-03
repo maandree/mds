@@ -1,0 +1,4 @@
+When testing these files it is important to
+`goto stop;` after `eliminate_dead_code` been
+called in `mds-kbdc.c`.
+

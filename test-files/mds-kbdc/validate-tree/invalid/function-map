@@ -16,7 +16,8 @@ end function
 #     )
 #   )
 # )
-# :2:2–2: error: mapping-statement inside function definition
+# :2:2–30: error: mapping-statement inside function definition
 #    <dead compose> "a" "e" : "æ"
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #    
 

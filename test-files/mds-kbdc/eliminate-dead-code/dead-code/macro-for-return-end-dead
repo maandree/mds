@@ -14,7 +14,8 @@ end macro
 #     )
 #   )
 # )
-# :5:2–2: warning: statement is unreachable
+# :5:2–27: warning: statement is unreachable
 #    <dead code> : "dead code"
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^
 #    
 

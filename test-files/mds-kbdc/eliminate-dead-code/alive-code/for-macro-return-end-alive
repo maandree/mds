@@ -1,0 +1,25 @@
+for 1 to 2 as \1
+  macro m/0
+    return
+  end macro
+  <alive> : "code"
+end for
+
+# (for (@ 1 0-3) ‘1’ ‘2’ (.variable ‘\1’)
+#   (.inner
+#     (macro (@ 2 2-7) ‘m/0’
+#       (.inner
+#         (return (@ 3 4-10))
+#       )
+#     )
+#     (map (@ 5 2-18)
+#       (.sequence
+#         (keys (@ 5 2-9) ‘<alive>’)
+#       )
+#       (.result
+#         (string (@ 5 12-18) ‘"code"’)
+#       )
+#     )
+#   )
+# )
+

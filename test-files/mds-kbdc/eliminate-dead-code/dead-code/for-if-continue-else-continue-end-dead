@@ -19,7 +19,8 @@ end for
 #     )
 #   )
 # )
-# :7:2–2: warning: statement is unreachable
+# :7:2–27: warning: statement is unreachable
 #    <dead code> : "dead code"
+#    ^^^^^^^^^^^^^^^^^^^^^^^^^
 #    
 
