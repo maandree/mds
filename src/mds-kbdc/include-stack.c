@@ -20,6 +20,7 @@
 #include <alloca.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 
 
@@ -58,6 +59,11 @@ static size_t includes_size = 0;
  */
 size_t includes_ptr = 0;
 
+/**
+ * The latest saved include-stack
+ */
+static mds_kbdc_include_stack_t* latest_save = NULL;
+
 
 
 /**
@@ -93,6 +99,7 @@ int mds_kbdc_include_stack_dump(size_t ptr)
  */
 void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result_)
 {
+  latest_save = NULL;
   result = result_;
   original_pathname = result_->pathname;
   original_source_code = result_->source_code;
@@ -108,6 +115,7 @@ void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result_)
 void mds_kbdc_include_stack_end(void)
 {
   int saved_errno = errno;
+  latest_save = NULL;
   result->pathname = original_pathname;
   result->source_code = original_source_code;
   free(includes), includes = NULL;
@@ -133,15 +141,16 @@ int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, vo
   if (includes_ptr == includes_size)
     fail_if (xxrealloc(old, includes, includes_size += 4, mds_kbdc_tree_include_t*));
   
-  fail_if (xmalloc(*data, 2, void*));
-  
-  includes[includes_ptr++] = tree;
+  fail_if (xmalloc(*data, 3, void*));
   
   ((char**)(*data))[0] = result->pathname;
   ((mds_kbdc_source_code_t**)(*data))[1] = result->source_code;
+  ((mds_kbdc_include_stack_t**)(*data))[2] = latest_save;
   
+  includes[includes_ptr++] = tree;
   result->pathname = tree->filename;
   result->source_code = tree->source_code;
+  latest_save = NULL;
   
   return 0;
  pfail:
@@ -163,8 +172,91 @@ void mds_kbdc_include_stack_pop(void* data)
   int saved_errno = errno;
   result->pathname = ((char**)data)[0];
   result->source_code = ((mds_kbdc_source_code_t**)data)[1];
+  latest_save = ((mds_kbdc_include_stack_t**)data)[2];
   includes_ptr--;
   free(data);
   errno = saved_errno;
+}
+
+
+/**
+ * Save the current include-stack
+ * 
+ * @return  The include-stack, `NULL` on error
+ */
+mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void)
+{
+  int saved_errno;
+  
+  if (latest_save)
+    {
+      latest_save->duplicates++;
+      return latest_save;
+    }
+  
+  latest_save = malloc(sizeof(mds_kbdc_include_stack_t));
+  if (latest_save == NULL)
+    return NULL;
+  
+  latest_save->stack = NULL;
+  latest_save->ptr = includes_ptr;
+  latest_save->duplicates = 0;
+  
+  if (latest_save->ptr == 0)
+    return latest_save;
+  
+  fail_if (xmalloc(latest_save->stack, latest_save->ptr, const mds_kbdc_tree_include_t*));
+  memcpy(latest_save->stack, includes, latest_save->ptr * sizeof(const mds_kbdc_tree_include_t*));
+  
+  return latest_save;
+ pfail:
+  saved_errno = errno;
+  free(latest_save->stack);
+  latest_save = NULL;
+  errno = saved_errno;
+  return NULL;
+}
+
+
+/**
+ * Restore a previous include-stack
+ * 
+ * @param   stack  The include-stack
+ * @return         Zero on success, -1 on error
+ */
+int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t* restrict stack)
+{
+  const mds_kbdc_tree_include_t** new;
+  
+  latest_save = stack;
+  
+  if (stack->ptr > includes_size)
+    {
+      new = realloc(includes, stack->ptr * sizeof(const mds_kbdc_tree_include_t*));
+      if (new == NULL)
+	return -1;
+      includes = new;
+      includes_size = stack->ptr;
+    }
+  
+  memcpy(includes, stack->stack, stack->ptr * sizeof(const mds_kbdc_tree_include_t*));
+  includes_ptr = stack->ptr;
+  return 0;
+}
+
+
+/**
+ * Destroy a previous include-stack and free its allocation
+ * 
+ * @param  stack  The include-stack
+ */
+void mds_kbdc_include_stack_free(mds_kbdc_include_stack_t* restrict stack)
+{
+  if ((stack == NULL) || (stack->duplicates--))
+    return;
+  free(stack->stack);
+  free(stack);
+  if (latest_save == stack)
+    latest_save = NULL;
 }
 

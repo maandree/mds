@@ -63,6 +63,30 @@
 
 
 /**
+ * A saved state of the include stack
+ */
+typedef struct mds_kbdc_include_stack
+{
+  /**
+   * Stack of visited include-statements
+   */
+  const mds_kbdc_tree_include_t** stack;
+  
+  /**
+   * The number elements stored in `stack` (do not edit)
+   */
+  size_t ptr;
+  
+  /**
+   * The number of duplicates there are of this object
+   */
+  size_t duplicates;
+  
+} mds_kbdc_include_stack_t;
+
+
+
+/**
  * The number elements stored by `mds_kbdc_include_stack_push`
  * but not removed by `mds_kbdc_include_stack_pop`
  */
@@ -112,6 +136,28 @@ int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, vo
  * @param  data  `*data` from `mds_kbdc_include_stack_push`
  */
 void mds_kbdc_include_stack_pop(void* data);
+
+/**
+ * Save the current include-stack
+ * 
+ * @return  The include-stack, `NULL` on error
+ */
+mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void);
+
+/**
+ * Restore a previous include-stack
+ * 
+ * @param   stack  The include-stack
+ * @return         Zero on success, -1 on error
+ */
+int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t* restrict stack);
+
+/**
+ * Destroy a previous include-stack and free its allocation
+ * 
+ * @param  stack  The include-stack
+ */
+void mds_kbdc_include_stack_free(mds_kbdc_include_stack_t* restrict stack);
 
 
 #endif

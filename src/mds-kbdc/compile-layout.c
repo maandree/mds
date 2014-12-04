@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "compile-layout.h"
+/* TODO add call stack */
 
 #include "include-stack.h"
 #include "string.h"
@@ -40,13 +41,12 @@
  * Add an error with “included from here”-notes to the error list
  * 
  * @param  NODE:const mds_kbdc_tree_t*    The node the triggered the error
- * @param  PTR:size_t                     The number of “included from here”-notes
  * @param  SEVERITY:identifier            * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR(NODE, PTR, SEVERITY, ...)			\
-  NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, __VA_ARGS__)
+#define NEW_ERROR(NODE, SEVERITY, ...)					\
+  NEW_ERROR_WITH_INCLUDES(NODE, includes_ptr, SEVERITY, __VA_ARGS__)
 
 /**
  * Beginning of failure clause
@@ -150,12 +150,24 @@ static int pop_stack(void)
   return 0; /* TODO */
 }
 
-static int get_macro(const mds_kbdc_tree_macro_call_t* restrict macro_call,
-		     const mds_kbdc_tree_macro_t** restrict macro)
+static int get_macro_lax(const char* restrict macro_name,
+			 const mds_kbdc_tree_macro_t** restrict macro,
+			 mds_kbdc_include_stack_t** restrict macro_include_stack)
 {
-  NEW_ERROR(macro_call, includes_ptr, ERROR, "macro ‘%s’ as not been defined yet", macro_call->name);
+  (void) macro_name;
+  (void) macro;
+  (void) macro_include_stack;
+  return 0; /* TODO */
+}
+
+static int get_macro(const mds_kbdc_tree_macro_call_t* restrict macro_call,
+		     const mds_kbdc_tree_macro_t** restrict macro,
+		     mds_kbdc_include_stack_t** restrict macro_include_stack)
+{
+  NEW_ERROR(macro_call, ERROR, "macro ‘%s’ as not been defined yet", macro_call->name);
   /* return set `*macro = NULL` if `(*macro)->processed == PROCESS_LEVEL` */
   (void) macro;
+  (void) macro_include_stack;
   return 0; /* TODO */
  pfail:
   return -1;
@@ -265,7 +277,7 @@ static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
   if (result->variant)
     {
       if (multiple_variants == 0)
-	NEW_ERROR(tree, includes_ptr, ERROR, "only one ‘variant’ is allowed");
+	NEW_ERROR(tree, ERROR, "only one ‘variant’ is allowed");
       multiple_variants = 1;
       return 0;
     }
@@ -400,13 +412,13 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   
   if ((first[0] < 0) || (first[1] >= 0))
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   if ((last[0] < 0) || (last[1] >= 0))
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_last, lineoff_last = 0;
       error->end = error->start + strlen(tree->last);
     }
@@ -454,7 +466,8 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
 static int check_marco_calls(const mds_kbdc_tree_t* restrict tree)
 {
 #define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
-  const mds_kbdc_tree_macro_t* macro;
+  const mds_kbdc_tree_macro_t* _macro;
+  mds_kbdc_include_stack_t* _macro_include_stack;
   void* data;
   int r, rc = 0;
  again:
@@ -478,7 +491,7 @@ static int check_marco_calls(const mds_kbdc_tree_t* restrict tree)
       break;
       
     case C(MACRO_CALL):
-      t (get_macro(&(tree->macro_call), &macro));
+      t (get_macro(&(tree->macro_call), &_macro, &_macro_include_stack));
       break;
       
     default:
@@ -487,7 +500,8 @@ static int check_marco_calls(const mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
-  (void) macro;
+  (void) _macro;
+  (void) _macro_include_stack;
 #undef t
 }
 
@@ -633,25 +647,25 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
   
   if (name == NULL)
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "name-suffix is missing");
+      NEW_ERROR(tree, ERROR, "name-suffix is missing");
       goto name_error;
     }
   if (*++name == '\0')
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "empty name-suffix");
+      NEW_ERROR(tree, ERROR, "empty name-suffix");
       goto name_error;
     }
   if (!strcmp(name, "0"))
     return 0;
   if (*name == '\0')
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "leading zero in name-suffix");
+      NEW_ERROR(tree, ERROR, "leading zero in name-suffix");
       goto name_error;
     }
   for (; *name; name++)
     if ((*name < '0') || ('0' < *name))
       {
-	NEW_ERROR(tree, includes_ptr, ERROR, "name-suffix may only contain digits");
+	NEW_ERROR(tree, ERROR, "name-suffix may only contain digits");
 	goto name_error;
       }
   
@@ -704,11 +718,24 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
 #define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
-   int r;
+  const mds_kbdc_tree_macro_t* macro;
+  mds_kbdc_include_stack_t* macro_include_stack;
+  mds_kbdc_include_stack_t* our_include_stack = NULL;
+  int r, saved_errno;
   
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
-  /* TODO check for redefinition */
+  t (get_macro_lax(tree->name, &macro, &macro_include_stack));
+  if (macro)
+    {
+      NEW_ERROR(tree, ERROR, "macro ‘%s’ is already defined", tree->name);
+      fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+      fail_if (mds_kbdc_include_stack_restore(macro_include_stack));
+      NEW_ERROR(macro, NOTE, "previously defined here");
+      fail_if (mds_kbdc_include_stack_restore(our_include_stack));
+      mds_kbdc_include_stack_free(our_include_stack);
+      return 0;
+    }
   
   t (check_marco_calls(tree->inner));
   t (check_function_calls(tree->inner));
@@ -716,8 +743,9 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
   /* TODO add definition */
   
   return 0;
- pfail:
-  return -1;
+  FAIL_BEGIN;
+  mds_kbdc_include_stack_free(our_include_stack);
+  FAIL_END;
 #undef t
 }
 
@@ -756,13 +784,13 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   
   if ((first[0] < 0) || (first[1] >= 0))
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   if ((last[0] < 0) || (last[1] >= 0))
     {
-      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_last, lineoff_last = 0;
       error->end = error->start + strlen(tree->last);
     }
@@ -983,7 +1011,9 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
   mds_kbdc_tree_t* arg = NULL;
   mds_kbdc_tree_t* arg_;
-  const mds_kbdc_tree_macro_t* macro = NULL;
+  const mds_kbdc_tree_macro_t* macro;
+  mds_kbdc_include_stack_t* macro_include_stack;
+  mds_kbdc_include_stack_t* our_include_stack = NULL;
   size_t variable;
   int bad, saved_errno;
   
@@ -992,14 +1022,18 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   if (bad)
     return 0;
   
-  fail_if (get_macro(tree, &macro));
+  fail_if (get_macro(tree, &macro, &macro_include_stack));
   if (macro == NULL)
     goto done;
   
   fail_if (push_stack());
   for (arg_ = arg; arg_; arg_ = arg_->next)
     fail_if (let(variable, NULL, arg_, NULL, 0, 0));
+  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+  fail_if (mds_kbdc_include_stack_restore(macro_include_stack));
   fail_if (compile_subtree(macro->inner));
+  fail_if (mds_kbdc_include_stack_restore(our_include_stack));
+  mds_kbdc_include_stack_free(our_include_stack), our_include_stack = NULL;
   fail_if (pop_stack());
   
  done:
@@ -1008,6 +1042,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   return 0;
   FAIL_BEGIN;
   mds_kbdc_tree_free(arg);
+  mds_kbdc_include_stack_free(our_include_stack);
   FAIL_END;
 }
 
