@@ -98,6 +98,26 @@ static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restri
   return NULL; /* TODO */
 }
 
+static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  return 0; /* TODO */
+}
+
+static int let(size_t variable, char32_t* restrict string, mds_kbdc_tree_t* restrict value,
+	       mds_kbdc_tree_t* restrict statement, size_t lineoff, int possibile_shadow_attempt)
+{
+  (void) variable;
+  (void) string;
+  (void) value;
+  (void) statement;
+  (void) lineoff;
+  (void) possibile_shadow_attempt;
+  return 0; /* TODO */
+}
+
 
 /**
  * Compile an include-statement
@@ -306,7 +326,7 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   if ((lineoff_first == 0) || (lineoff_last == 0))
     goto done;
   
-  if (*first < *last)
+  if (*first > *last)
     *first ^= *last, *last ^= *first, *first ^= *last;
   
   n = (size_t)(*last - *first) + 1;
@@ -371,8 +391,66 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
  */
 static int compile_for(mds_kbdc_tree_for_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff_first;
+  size_t lineoff_last;
+  size_t lineoff_var;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict first = NULL;
+  char32_t* restrict last = NULL;
+  char32_t diff;
+  char32_t character[2];
+  size_t variable;
+  int saved_errno;
+  
+  for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
+  for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
+  for (lineoff_last += strlen("to"); code[lineoff_last] == ' '; lineoff_last++);
+  for (lineoff_var = lineoff_last + strlen(tree->variable); code[lineoff_var] == ' '; lineoff_var++);
+  for (lineoff_var += strlen("as"); code[lineoff_var] == ' '; lineoff_var++);
+  
+  fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
+  fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
+  fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff_var), variable == 0));
+  
+  if (tree->processed == PROCESS_LEVEL)
+    goto done;
+  
+  if ((first[0] < 0) || (first[1] >= 0))
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      error->start = lineoff_first, lineoff_first = 0;
+      error->end = error->start + strlen(tree->first);
+    }
+  if ((last[0] < 0) || (last[1] >= 0))
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "iteration boundary must be a single character string");
+      error->start = lineoff_last, lineoff_last = 0;
+      error->end = error->start + strlen(tree->last);
+    }
+  
+  if ((lineoff_first == 0) || (lineoff_last == 0))
+    goto done;
+  
+  character[1] = -1;
+  for (diff = (*first > *last) ? -1 : +1; (*first != *last) && (break_level < 2); *first += diff)
+    {
+      break_level = 0;
+      character[0] = *first;
+      fail_if (let(variable, character, NULL, (mds_kbdc_tree_t*)tree, lineoff_var, 1));
+      fail_if (compile_subtree(tree->inner));
+    }
+  
+  if (break_level < 3)
+    break_level = 0;
+  
+ done:
+  free(first);
+  free(last);
+  return 0;
+  FAIL_BEGIN;
+  free(first);
+  free(last);
+  FAIL_END;
 }
 
 
@@ -416,8 +494,20 @@ static int compile_if(mds_kbdc_tree_if_t* restrict tree)
  */
 static int compile_let(mds_kbdc_tree_let_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  size_t variable;
+  
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff), variable == 0));
+  
+  if (tree->processed == PROCESS_LEVEL)
+    return 0;
+  
+  fail_if (let(variable, NULL, tree->value, (mds_kbdc_tree_t*)tree, lineoff, 0));
+  return 0;
+ pfail:
+  return -1;
 }
 
 
