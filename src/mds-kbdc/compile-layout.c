@@ -95,6 +95,15 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree);
 
 
 
+static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
+					   const char* restrict raw, size_t lineoff)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  return 0; /* TODO */
+}
+
 static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
   (void) tree;
@@ -442,7 +451,7 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
  * @param   tree  The tree to evaluate
  * @return        Zero on success, -1 on error, 1 if an undefined macro is used
  */
-static int check_marco_calls(mds_kbdc_tree_t* tree)
+static int check_marco_calls(const mds_kbdc_tree_t* restrict tree)
 {
 #define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
   const mds_kbdc_tree_macro_t* macro;
@@ -456,7 +465,7 @@ static int check_marco_calls(mds_kbdc_tree_t* tree)
     {
     case C(INCLUDE):
       t (mds_kbdc_include_stack_push(&(tree->include), &data));
-      t (r = compile_subtree(tree->include.inner), mds_kbdc_include_stack_pop(data), r);
+      t (r = check_marco_calls(tree->include.inner), mds_kbdc_include_stack_pop(data), r);
       break;
       
     case C(FOR):
@@ -484,6 +493,182 @@ static int check_marco_calls(mds_kbdc_tree_t* tree)
 
 
 /**
+ * Check that all called functions in a for-statement are already defined
+ * 
+ * @param   tree  The tree to evaluate
+ * @return        Zero on success, -1 on error, 1 if an undefined function is used
+ */
+static int check_function_calls_in_for(const mds_kbdc_tree_for_t* restrict tree)
+{
+#define t(...)  if (rc |= r = check_function_calls_in_literal(__VA_ARGS__), r < 0)  return r
+  size_t lineoff_first;
+  size_t lineoff_last;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  int r, rc = 0;
+  
+  for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
+  for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
+  
+  t ((const mds_kbdc_tree_t*)tree, tree->first, lineoff_first);
+  t ((const mds_kbdc_tree_t*)tree, tree->last, lineoff_last);
+  
+  return rc;
+#undef t
+}
+
+
+/**
+ * Check that all called functions in an if-statement are already defined
+ * 
+ * @param   tree  The tree to evaluate
+ * @return        Zero on success, -1 on error, 1 if an undefined function is used
+ */
+static int check_function_calls_in_if(const mds_kbdc_tree_if_t* restrict tree)
+{
+  size_t lineoff;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->condition, lineoff);
+}
+
+
+/**
+ * Check that all called functions in a key-combination are already defined
+ * 
+ * @param   tree  The tree to evaluate
+ * @return        Zero on success, -1 on error, 1 if an undefined function is used
+ */
+static int check_function_calls_in_keys(const mds_kbdc_tree_keys_t* restrict tree)
+{
+  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->keys, tree->loc_end);
+}
+
+
+/**
+ * Check that all called functions in a string are already defined
+ * 
+ * @param   tree  The tree to evaluate
+ * @return        Zero on success, -1 on error, 1 if an undefined function is used
+ */
+static int check_function_calls_in_string(const mds_kbdc_tree_string_t* restrict tree)
+{
+  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->string, tree->loc_end);
+}
+
+
+/**
+ * Check that all called functions are already defined
+ * 
+ * @param   tree  The tree to evaluate
+ * @return        Zero on success, -1 on error, 1 if an undefined function is used
+ */
+static int check_function_calls(const mds_kbdc_tree_t* restrict tree)
+{
+#define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
+  void* data;
+  int r, rc = 0;
+ again:
+  if (tree == NULL)
+    return rc;
+  
+  switch (tree->type)
+    {
+    case C(INCLUDE):
+      t (mds_kbdc_include_stack_push(&(tree->include), &data));
+      t (r = check_function_calls(tree->include.inner), mds_kbdc_include_stack_pop(data), r);
+      break;
+      
+    case C(FOR):
+      t (check_function_calls_in_for(&(tree->for_)));
+      t (check_function_calls(tree->for_.inner));
+      break;
+      
+    case C(IF):
+      t (check_function_calls_in_if(&(tree->if_)));
+      t (check_function_calls(tree->if_.inner));
+      t (check_function_calls(tree->if_.otherwise));
+      break;
+      
+    case C(LET):
+      t (check_function_calls(tree->let.value));
+      break;
+      
+    case C(ARRAY):
+      t (check_function_calls(tree->array.elements));
+      break;
+      
+    case C(KEYS):
+      t (check_function_calls_in_keys(&(tree->keys)));
+      break;
+      
+    case C(STRING):
+      t (check_function_calls_in_string(&(tree->string)));
+      break;
+      
+    case C(MAP):
+      t (check_function_calls(tree->map.sequence));
+      break;
+      
+    default:
+      break;
+    }
+  
+  tree = tree->next;
+  goto again;
+#undef t
+}
+
+
+/**
+ * Check that a callable's name-suffix is correct
+ * 
+ * @param   tree  The tree to inspect
+ * @return        Zero on sucess, -1 on error, 1 if the name-suffix in invalid
+ */
+static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
+{
+  const char* restrict name = strchr(tree->name, '/');
+  const char* restrict code = result->source_code->real_lines[tree->loc_line];
+  
+  if (name == NULL)
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "name-suffix is missing");
+      goto name_error;
+    }
+  if (*++name == '\0')
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "empty name-suffix");
+      goto name_error;
+    }
+  if (!strcmp(name, "0"))
+    return 0;
+  if (*name == '\0')
+    {
+      NEW_ERROR(tree, includes_ptr, ERROR, "leading zero in name-suffix");
+      goto name_error;
+    }
+  for (; *name; name++)
+    if ((*name < '0') || ('0' < *name))
+      {
+	NEW_ERROR(tree, includes_ptr, ERROR, "name-suffix may only contain digits");
+	goto name_error;
+      }
+  
+  return 0;
+ pfail:
+  return -1;
+ name_error:
+  error->start = tree->loc_end;
+  while (code[error->start] == ' ')
+    error->start++;
+  error->end = error->start + strlen(tree->name);
+  tree->processed = PROCESS_LEVEL;
+  return 1;
+}
+
+
+/**
  * Compile a function
  * 
  * @param   tree  The tree to compile
@@ -491,19 +676,22 @@ static int check_marco_calls(mds_kbdc_tree_t* tree)
  */
 static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 {
+#define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
   int r;
   
-  fail_if ((r = check_marco_calls(tree->inner), r));
-  if (r)
-    tree->processed = PROCESS_LEVEL;
+  t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
-  return 0; /* TODO */
+  /* TODO check for redefinition */
+  
+  t (check_marco_calls(tree->inner));
+  t (check_function_calls(tree->inner));
+  
+  /* TODO add definition */
+  
+  return 0;
  pfail:
   return -1;
-  
-  /* Check redefinition */
-  /* Check the suffix in the name */
-  /* Check for forward- and self-references */
+#undef t
 }
 
 
@@ -515,19 +703,22 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
  */
 static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
-  int r;
+#define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
+   int r;
   
-  fail_if ((r = check_marco_calls(tree->inner), r));
-  if (r)
-    tree->processed = PROCESS_LEVEL;
+  t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
-  return 0; /* TODO */
+  /* TODO check for redefinition */
+  
+  t (check_marco_calls(tree->inner));
+  t (check_function_calls(tree->inner));
+  
+  /* TODO add definition */
+  
+  return 0;
  pfail:
   return -1;
-  
-  /* Check redefinition */
-  /* Check the suffix in the name */
-  /* Check for forward-references */
+#undef t
 }
 
 
@@ -642,30 +833,49 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
 {
   size_t lineoff;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
+  mds_kbdc_tree_t* value = NULL;
   size_t variable;
+  int saved_errno;
   
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff), variable == 0));
-  
   if (tree->processed == PROCESS_LEVEL)
     return 0;
   
-  fail_if (let(variable, NULL, tree->value, NULL, 0, 0));
+  fail_if ((value = mds_kbdc_tree_dup(tree->value), value == NULL));
+  fail_if (compile_subtree(value));
+  if ((tree->processed = value->processed) == PROCESS_LEVEL)
+    return 0;
+  
+  fail_if (let(variable, NULL, value, NULL, 0, 0));
+  
+  free(value);
   return 0;
- pfail:
-  return -1;
+  FAIL_BEGIN;
+  free(value);
+  FAIL_END;
 }
 
 
+/*
+ * `compile_keys`, `compile_string`, `compile_array` and `evaluate_element`
+ * are do only compilation subprocedures that may alter the compiled nodes.
+ * This is because (1) `compile_let`, `compile_map` and `compile_macro_call`
+ * needs the compiled values, and (2) only duplicates of nodes of types
+ * `C(KEYS)`, `C(STRING)` and `C(ARRAY)` are compiled, as they can only be
+ * found with `C(LET)`-, `C(MAP)`- and `C(MACRO_CALL)`-nodes.
+ */
+
+
 /**
- * Evaluate an element or argument in a mapping-, value-statement or macro call
+ * Evaluate an element or argument in a mapping-, value-, let-statement or macro call
  * 
  * @param   node  The element to evaluate
  * @return        Zero on success, -1 on error, 1 if the element is invalid
  */
-static int evaluate_element(mds_kbdc_tree_t* node)
+static int evaluate_element(mds_kbdc_tree_t* restrict node)
 {
-  char32_t* data = NULL;
+  char32_t* restrict data = NULL;
   int bad = 0;
   
   for (; node; node = node->next)
@@ -676,6 +886,7 @@ static int evaluate_element(mds_kbdc_tree_t* node)
 	fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
       free(node->string.string);
       node->string.string = string_encode(data);
+      free(data);
       fail_if (node->string.string == NULL);
       bad |= (node->processed == PROCESS_LEVEL);
     }
@@ -683,6 +894,47 @@ static int evaluate_element(mds_kbdc_tree_t* node)
   return bad;
  pfail:
   return -1;
+}
+
+
+/**
+ * Compile a key-combination
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_keys(mds_kbdc_tree_keys_t* restrict tree)
+{
+  return evaluate_element((mds_kbdc_tree_t*)tree) < 0 ? -1 : 0;
+}
+
+
+/**
+ * Compile a string
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_string(mds_kbdc_tree_string_t* restrict tree)
+{
+  return evaluate_element((mds_kbdc_tree_t*)tree) < 0 ? -1 : 0;
+}
+
+
+/**
+ * Compile an array
+ * 
+ * @param   tree  The tree to compile
+ * @return        Zero on success, -1 on error
+ */
+static int compile_array(mds_kbdc_tree_array_t* restrict tree)
+{
+  int r = evaluate_element(tree->elements);
+  if (r < 0)
+    return -1;
+  if (r)
+    tree->processed = PROCESS_LEVEL;
+  return 0;
 }
 
 
@@ -799,6 +1051,9 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(FOR):                    c_ (for);         break;
     case C(IF):                     c_ (if);          break;
     case C(LET):                    c (let);          break;
+    case C(KEYS):                   c (keys);         break;
+    case C(STRING):                 c (string);       break;
+    case C(ARRAY):                  c (array);        break;
     case C(MAP):                    c (map);          break;
     case C(MACRO_CALL):             c (macro_call);   break;
     case C(RETURN):                 break_level = 3;  break;

@@ -31,7 +31,7 @@ static mds_kbdc_parse_error_t* error;
 /**
  * The `result` parameter of root procedure that requires the include stack
  */
-static mds_kbdc_parsed_t* restrict result;
+static mds_kbdc_parsed_t* result;
 
 /**
  * The original value of `result->pathname`
@@ -46,7 +46,7 @@ static mds_kbdc_source_code_t* original_source_code;
 /**
  * Stack of visited include-statements
  */
-static mds_kbdc_tree_include_t** restrict includes = NULL;
+static const mds_kbdc_tree_include_t** restrict includes = NULL;
 
 /**
  * The number elements allocated for `includes`
@@ -125,9 +125,9 @@ void mds_kbdc_include_stack_end(void)
  *                is undefined on error
  * @return        Zero on success, -1 on error
  */
-int mds_kbdc_include_stack_push(mds_kbdc_tree_include_t* restrict tree, void** data)
+int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, void** data)
 {
-  mds_kbdc_tree_include_t** old = NULL;
+  const mds_kbdc_tree_include_t** old = NULL;
   int saved_errno;
   
   if (includes_ptr == includes_size)

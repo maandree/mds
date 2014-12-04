@@ -102,7 +102,7 @@ void mds_kbdc_include_stack_end(void);
  *                is undefined on error
  * @return        Zero on success, -1 on error
  */
-int mds_kbdc_include_stack_push(mds_kbdc_tree_include_t* restrict tree, void** data);
+int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, void** data);
 
 /**
  * Undo the lasted not-undone call to `mds_kbdc_include_stack_push`
