@@ -4,7 +4,7 @@ end macro
 
 # (macro (@ 1 0-5) ‘m/0’
 #   (.inner
-#     (macro_call (@ 2 2-3) ‘n’
+#     (macro_call (@ 2 2-3) ‘n/0’
 #       (.arguments nil)
 #     )
 #   )

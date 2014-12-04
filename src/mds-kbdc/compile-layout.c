@@ -644,10 +644,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
 static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
   int bad;
-  size_t arg_count = 0;
   mds_kbdc_tree_t* arg = NULL;
-  mds_kbdc_tree_t* arg_;
-  char* full_macro_name = NULL;
   int saved_errno;
   
   fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg = NULL));
@@ -655,19 +652,12 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   if (bad)
     return 0;
   
-  for (arg_ = arg; arg_; arg_ = arg_->next)
-    arg_count++;
-  
-  fail_if (xasprintf(full_macro_name, "%s/%zu", tree->name, arg_count));
-  
   /* TODO */
   
   break_level = 0;
-  free(full_macro_name);
   mds_kbdc_tree_free(arg);
   return 0;
   FAIL_BEGIN;
-  free(full_macro_name);
   mds_kbdc_tree_free(arg);
   FAIL_END;
 }

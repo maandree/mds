@@ -1,15 +1,15 @@
-function f/0
+assumption
   m()
-end function
+end assumption
 
-# (function (@ 1 0-8) ‘f/0’
+# (assumption (@ 1 0-10)
 #   (.inner
 #     (macro_call (@ 2 2-3) ‘m/0’
 #       (.arguments nil)
 #     )
 #   )
 # )
-# :2:2–3: error: macro call inside function definition
+# :2:2–3: error: macro call inside assumption clause
 #    m()
 #    ^
 

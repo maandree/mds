@@ -1,21 +1,21 @@
 my_macro([[1 2] [3 4]])
 
-# (macro_call (@ 1 0-8) ‘my_macro’
+# (macro_call (@ 1 0-8) ‘my_macro/1’
 #   (.arguments
 #     (string (@ 1 11-12) ‘1’)
 #   )
 # )
-# (macro_call (@ 1 0-8) ‘my_macro’
+# (macro_call (@ 1 0-8) ‘my_macro/1’
 #   (.arguments
 #     (string (@ 1 13-14) ‘2’)
 #   )
 # )
-# (macro_call (@ 1 0-8) ‘my_macro’
+# (macro_call (@ 1 0-8) ‘my_macro/1’
 #   (.arguments
 #     (string (@ 1 17-18) ‘3’)
 #   )
 # )
-# (macro_call (@ 1 0-8) ‘my_macro’
+# (macro_call (@ 1 0-8) ‘my_macro/1’
 #   (.arguments
 #     (string (@ 1 19-20) ‘4’)
 #   )

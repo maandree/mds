@@ -1,15 +1,15 @@
-function f/0
+information
   m()
-end function
+end information
 
-# (function (@ 1 0-8) ‘f/0’
+# (information (@ 1 0-11)
 #   (.inner
 #     (macro_call (@ 2 2-3) ‘m/0’
 #       (.arguments nil)
 #     )
 #   )
 # )
-# :2:2–3: error: macro call inside function definition
+# :2:2–3: error: macro call inside information clause
 #    m()
 #    ^
 

@@ -218,6 +218,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   mds_kbdc_tree_t* argument;
   mds_kbdc_tree_t* dup_arguments = NULL;
   mds_kbdc_tree_t** here;
+  char* full_macro_name;
   size_t argument_index = 0;
   int saved_errno;
   
@@ -230,15 +231,21 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   
   /* Copy arguments. */
   if (tree->arguments == NULL)
-    return 0;
+    goto no_args;
   fail_if ((dup_arguments = mds_kbdc_tree_dup(tree->arguments), dup_arguments == NULL));
   
   /* Eliminate alterations. */
   for (argument = dup_arguments; argument; argument = argument->next, argument_index++)
     if (argument->type == C(ALTERNATION))
       fail_if (eliminate_alternation((mds_kbdc_tree_t*)tree, argument, argument_index));
-  
   mds_kbdc_tree_free(dup_arguments), dup_arguments = NULL;
+  
+  /* Add argument count suffix. */
+ no_args:
+  for (argument_index = 0, argument = tree->arguments; argument; argument = argument->next)
+    argument_index++;
+  fail_if (xasprintf(full_macro_name, "%s/%zu", tree->name, argument_index));
+  free(tree->name), tree->name = full_macro_name;
   
   /* Example of what will happend:
    * 
@@ -308,6 +315,9 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
    *   no difference after simplify_macro_call on call 8
    * 
    * Nothings (‘.’) are removed before processing the alternations.
+   * 
+   * It should also be noticed that all macro names are update to
+   * with the argument count suffix.
    */
   
   return 0;
