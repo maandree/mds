@@ -119,7 +119,7 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   return 0; /* TODO */
 }
 
-static int let(size_t variable, char32_t* restrict string, mds_kbdc_tree_t* restrict value,
+static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_tree_t* restrict value,
 	       mds_kbdc_tree_t* restrict statement, size_t lineoff, int possibile_shadow_attempt)
 {
   (void) variable;
@@ -129,6 +129,27 @@ static int let(size_t variable, char32_t* restrict string, mds_kbdc_tree_t* rest
   (void) lineoff;
   (void) possibile_shadow_attempt;
   return 0; /* TODO */
+}
+
+static int push_stack(void)
+{
+  return 0; /* TODO */
+}
+
+static int pop_stack(void)
+{
+  return 0; /* TODO */
+}
+
+static int get_macro(const mds_kbdc_tree_macro_call_t* restrict macro_call,
+		     const mds_kbdc_tree_macro_t** restrict macro)
+{
+  NEW_ERROR(macro_call, includes_ptr, ERROR, "macro ‘%s’ as not been defined yet", macro_call->name);
+  /* return set `*macro = NULL` if `(*macro)->processed == PROCESS_LEVEL` */
+  (void) macro;
+  return 0; /* TODO */
+ pfail:
+  return -1;
 }
 
 
@@ -416,6 +437,53 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
 
 
 /**
+ * Check that all called macros are already defined
+ * 
+ * @param   tree  The tree to evaluate
+ * @return        Zero on success, -1 on error, 1 if an undefined macro is used
+ */
+static int check_marco_calls(mds_kbdc_tree_t* tree)
+{
+#define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
+  const mds_kbdc_tree_macro_t* macro;
+  void* data;
+  int r, rc = 0;
+ again:
+  if (tree == NULL)
+    return rc;
+  
+  switch (tree->type)
+    {
+    case C(INCLUDE):
+      t (mds_kbdc_include_stack_push(&(tree->include), &data));
+      t (r = compile_subtree(tree->include.inner), mds_kbdc_include_stack_pop(data), r);
+      break;
+      
+    case C(FOR):
+      t (check_marco_calls(tree->for_.inner));
+      break;
+      
+    case C(IF):
+      t (check_marco_calls(tree->if_.inner));
+      t (check_marco_calls(tree->if_.otherwise));
+      break;
+      
+    case C(MACRO_CALL):
+      t (get_macro(&(tree->macro_call), &macro));
+      break;
+      
+    default:
+      break;
+    }
+  
+  tree = tree->next;
+  goto again;
+  (void) macro;
+#undef t
+}
+
+
+/**
  * Compile a function
  * 
  * @param   tree  The tree to compile
@@ -423,10 +491,19 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
  */
 static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  int r;
   
-  /* Check for forward- and self-references. */
+  fail_if ((r = check_marco_calls(tree->inner), r));
+  if (r)
+    tree->processed = PROCESS_LEVEL;
+  
+  return 0; /* TODO */
+ pfail:
+  return -1;
+  
+  /* Check redefinition */
+  /* Check the suffix in the name */
+  /* Check for forward- and self-references */
 }
 
 
@@ -438,10 +515,19 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
  */
 static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  int r;
   
-  /* Check for forward- and self-references. */
+  fail_if ((r = check_marco_calls(tree->inner), r));
+  if (r)
+    tree->processed = PROCESS_LEVEL;
+  
+  return 0; /* TODO */
+ pfail:
+  return -1;
+  
+  /* Check redefinition */
+  /* Check the suffix in the name */
+  /* Check for forward-references */
 }
 
 
@@ -564,7 +650,7 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
   if (tree->processed == PROCESS_LEVEL)
     return 0;
   
-  fail_if (let(variable, NULL, tree->value, (mds_kbdc_tree_t*)tree, lineoff, 0));
+  fail_if (let(variable, NULL, tree->value, NULL, 0, 0));
   return 0;
  pfail:
   return -1;
@@ -643,17 +729,28 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
  */
 static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
-  int bad;
   mds_kbdc_tree_t* arg = NULL;
-  int saved_errno;
+  mds_kbdc_tree_t* arg_;
+  const mds_kbdc_tree_macro_t* macro = NULL;
+  size_t variable;
+  int bad, saved_errno;
   
   fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg = NULL));
   fail_if ((bad = evaluate_element(arg), bad < 0));
   if (bad)
     return 0;
   
-  /* TODO */
+  fail_if (get_macro(tree, &macro));
+  if (macro == NULL)
+    goto done;
   
+  fail_if (push_stack());
+  for (arg_ = arg; arg_; arg_ = arg_->next)
+    fail_if (let(variable, NULL, arg_, NULL, 0, 0));
+  fail_if (compile_subtree(macro->inner));
+  fail_if (pop_stack());
+  
+ done:
   break_level = 0;
   mds_kbdc_tree_free(arg);
   return 0;
