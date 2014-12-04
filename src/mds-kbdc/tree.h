@@ -581,6 +581,12 @@ typedef struct mds_kbdc_tree_string
    */
   char* string;
   
+  /*
+   * `evaluate_element` in "compile-layout.c" utilises
+   * that `mds_kbdc_tree_string.string` has the same
+   * offset as `mds_kbdc_tree_keys.keys`.
+   */
+  
   MDS_KBDC_TREE_PADDING(1);
   
 } mds_kbdc_tree_string_t;

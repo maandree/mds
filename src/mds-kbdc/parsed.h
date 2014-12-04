@@ -152,6 +152,21 @@ typedef struct mds_kbdc_parsed
    */
   size_t assumed_strings_ptr;
   
+  /**
+   * List of keys the assembler should assume are provided
+   */
+  char32_t** assumed_keys;
+  
+  /**
+   * The number of elements allocated to `assumed_keys`
+   */
+  size_t assumed_keys_size;
+  
+  /**
+   * The number of elements stored in `assumed_keys`
+   */
+  size_t assumed_keys_ptr;
+  
 } mds_kbdc_parsed_t;
 
 

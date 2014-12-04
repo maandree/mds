@@ -56,6 +56,9 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
   while (this->assumed_strings_ptr--)
     free(this->assumed_strings[this->assumed_strings_ptr]);
   free(this->assumed_strings);
+  while (this->assumed_keys_ptr--)
+    free(this->assumed_keys[this->assumed_keys_ptr]);
+  free(this->assumed_keys);
   memset(this, 0, sizeof(mds_kbdc_parsed_t));
 }
 

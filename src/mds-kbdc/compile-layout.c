@@ -78,6 +78,11 @@ static mds_kbdc_parsed_t* restrict result;
  */
 static int break_level = 0;
 
+/**
+ * Whether a second variant has already been encountered
+ */
+static int multiple_variants = 0;
+
 
 
 /**
@@ -91,6 +96,14 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree);
 
 
 static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  return NULL; /* TODO */
+}
+
+static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
   (void) tree;
   (void) raw;
@@ -145,14 +158,13 @@ static int compile_include(mds_kbdc_tree_include_t* restrict tree)
  */
 static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
 {
-  size_t lineoff = tree->loc_end;
+  size_t lineoff;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict data = NULL;
   char** old = NULL;
   int saved_errno;
   
-  while (code[lineoff] == ' ')
-    lineoff++;
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   
   if (result->languages_ptr == result->languages_size)
     {
@@ -180,14 +192,13 @@ static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
  */
 static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
 {
-  size_t lineoff = tree->loc_end;
+  size_t lineoff;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict data = NULL;
   char** old = NULL;
   int saved_errno;
   
-  while (code[lineoff] == ' ')
-    lineoff++;
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   
   if (result->countries_ptr == result->countries_size)
     {
@@ -216,8 +227,29 @@ static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
  */
 static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  size_t lineoff;
+  char* restrict code = result->source_code->real_lines[tree->loc_line];
+  char32_t* restrict data = NULL;
+  int saved_errno;
+  
+  if (result->variant)
+    {
+      if (multiple_variants == 0)
+	NEW_ERROR(tree, includes_ptr, ERROR, "only one ‘variant’ is allowed");
+      multiple_variants = 1;
+      return 0;
+    }
+  
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  fail_if ((code = string_encode(data), code == NULL));
+  free(data);
+  result->variant = code;
+  
+  return 0;
+  FAIL_BEGIN;
+  free(data);
+  FAIL_END;
 }
 
 
@@ -229,8 +261,40 @@ static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
  */
 static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  mds_kbdc_tree_t* node = tree->data;
+  char32_t* data = NULL;
+  char32_t** old = NULL;
+  size_t new_size = (node->type == C(STRING)) ? result->assumed_strings_size : result->assumed_keys_size;
+  int saved_errno;
+  
+  new_size = new_size ? (new_size << 1) : 1;
+  
+  if (node->type == C(STRING))
+    {
+      fail_if ((data = parse_string(node, node->string.string, node->loc_start), data == NULL));
+      if (node->processed == PROCESS_LEVEL)
+	return free(data), 0;
+      if (result->assumed_strings_ptr == result->assumed_strings_size)
+	fail_if (xxrealloc(old, result->assumed_strings, new_size, char*));
+      result->assumed_strings_size = new_size;
+      result->assumed_strings[result->assumed_strings_ptr++] = data;
+    }
+  else
+    {
+      fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
+      if (node->processed == PROCESS_LEVEL)
+	return free(data), 0;
+      if (result->assumed_keys_ptr == result->assumed_keys_size)
+	fail_if (xxrealloc(old, result->assumed_keys, new_size, char*));
+      result->assumed_keys_size = new_size;
+      result->assumed_keys[result->assumed_keys_ptr++] = data;
+    }
+  
+  return 0;
+  FAIL_BEGIN;
+  free(old);
+  free(data);
+  FAIL_END;
 }
 
 
@@ -242,7 +306,7 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
  */
 static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tree)
 {
-  size_t lineoff = tree->loc_end;
+  size_t lineoff;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict data = NULL;
   char32_t** old = NULL;
@@ -250,13 +314,11 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   size_t n;
   int saved_errno;
   
-  while (code[lineoff] == ' ')
-    lineoff++;
-  
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->chars, lineoff), data == NULL));
   for (n = 0; data[n] >= 0; n++);
   
-  if (result->assumed_strings_ptr + n >= result->assumed_strings_size)
+  if (result->assumed_strings_ptr + n > result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
       fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
@@ -287,7 +349,7 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
  */
 static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tree)
 {
-  size_t lineoff_first = tree->loc_end;
+  size_t lineoff_first;
   size_t lineoff_last;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict first = NULL;
@@ -297,14 +359,10 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   size_t n;
   int saved_errno;
   
-  while (code[lineoff_first] == ' ')
-    lineoff_first++;
+  for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
+  for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
+  
   fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
-  
-  lineoff_last = lineoff_first + strlen(tree->first);
-  
-  while (code[lineoff_last] == ' ')
-    lineoff_last++;
   fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
   
   if (tree->processed == PROCESS_LEVEL)
@@ -331,7 +389,7 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   
   n = (size_t)(*last - *first) + 1;
   
-  if (result->assumed_strings_ptr + n >= result->assumed_strings_size)
+  if (result->assumed_strings_ptr + n > result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
       fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
@@ -367,6 +425,8 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 {
   (void) tree;
   return 0; /* TODO */
+  
+  /* Check for forward- and self-references. */
 }
 
 
@@ -380,6 +440,8 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
   (void) tree;
   return 0; /* TODO */
+  
+  /* Check for forward- and self-references. */
 }
 
 
@@ -462,22 +524,20 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
  */
 static int compile_if(mds_kbdc_tree_if_t* restrict tree)
 {
-  size_t lineoff = tree->loc_end;
+  size_t lineoff;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
   char32_t* restrict data = NULL;
   int ok, saved_errno;
   size_t i;
   
-  while (code[lineoff] == ' ')
-    lineoff++;
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->condition, lineoff), data == NULL));
   fail_if (tree->processed == PROCESS_LEVEL);
   
   for (ok = 1, i = 0; data[i] >= 0; i++)
     ok &= !!(data[i]);
-  
-  free(data), data = NULL;
+  free(data);
   
   return compile_subtree(ok ? tree->inner : tree->otherwise);
   FAIL_BEGIN;
@@ -512,6 +572,35 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
 
 
 /**
+ * Evaluate an element or argument in a mapping-, value-statement or macro call
+ * 
+ * @param   node  The element to evaluate
+ * @return        Zero on success, -1 on error, 1 if the element is invalid
+ */
+static int evaluate_element(mds_kbdc_tree_t* node)
+{
+  char32_t* data = NULL;
+  int bad = 0;
+  
+  for (; node; node = node->next)
+    {
+      if (node->type == C(STRING))
+	fail_if ((data = parse_string(node, node->string.string, node->loc_start), data == NULL));
+      if (node->type == C(KEYS))
+	fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
+      free(node->string.string);
+      node->string.string = string_encode(data);
+      fail_if (node->string.string == NULL);
+      bad |= (node->processed == PROCESS_LEVEL);
+    }
+  
+  return bad;
+ pfail:
+  return -1;
+}
+
+
+/**
  * Compile a mapping- or value-statement
  * 
  * @param   tree  The tree to compile
@@ -519,8 +608,30 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
  */
 static int compile_map(mds_kbdc_tree_map_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  int bad = 0;
+  mds_kbdc_tree_t* seq = NULL;
+  mds_kbdc_tree_t* res = NULL;
+  int saved_errno;
+  
+  fail_if ((seq = mds_kbdc_tree_dup(tree->sequence), seq = NULL));
+  fail_if ((res = mds_kbdc_tree_dup(tree->result),   res = NULL));
+  
+  fail_if ((bad |= evaluate_element(seq), bad < 0));
+  fail_if ((bad |= evaluate_element(res), bad < 0));
+  if (bad)
+    return 0;
+  
+  /* TODO */
+  
+  /* NUL-characters (0xC0 0x80) is only allowed in value-statements */
+  
+  mds_kbdc_tree_free(seq);
+  mds_kbdc_tree_free(res);
+  return 0;
+  FAIL_BEGIN;
+  mds_kbdc_tree_free(seq);
+  mds_kbdc_tree_free(res);
+  FAIL_END;
 }
 
 
@@ -532,8 +643,33 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
  */
 static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
-  (void) tree;
-  return 0; /* TODO */
+  int bad;
+  size_t arg_count = 0;
+  mds_kbdc_tree_t* arg = NULL;
+  mds_kbdc_tree_t* arg_;
+  char* full_macro_name = NULL;
+  int saved_errno;
+  
+  fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg = NULL));
+  fail_if ((bad = evaluate_element(arg), bad < 0));
+  if (bad)
+    return 0;
+  
+  for (arg_ = arg; arg_; arg_ = arg_->next)
+    arg_count++;
+  
+  fail_if (xasprintf(full_macro_name, "%s/%zu", tree->name, arg_count));
+  
+  /* TODO */
+  
+  break_level = 0;
+  free(full_macro_name);
+  mds_kbdc_tree_free(arg);
+  return 0;
+  FAIL_BEGIN;
+  free(full_macro_name);
+  mds_kbdc_tree_free(arg);
+  FAIL_END;
 }
 
 
