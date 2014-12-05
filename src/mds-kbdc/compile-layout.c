@@ -105,6 +105,10 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree);
 
 
 
+/*** Macro-, function- and variable-support, string-parsing and value- and mapping-compilation. ***/
+/*                           (Basically everything except tree-walking.)                          */
+
+
 static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
 					   const char* restrict raw, size_t lineoff)
 {
@@ -227,6 +231,9 @@ static int add_mapping(mds_kbdc_tree_map_t* restrict mapping, mds_kbdc_include_s
   return 0; /* TODO */
 }
 
+
+
+/*** Tree-walking. ***/
 
 
 /**
