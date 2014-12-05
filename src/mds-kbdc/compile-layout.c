@@ -156,6 +156,7 @@ static int set_macro(const mds_kbdc_tree_macro_t* restrict macro,
 {
   (void) macro;
   (void) macro_include_stack;
+  mds_kbdc_include_stack_free(macro_include_stack);
   return 0; /* TODO */
 }
 
@@ -186,6 +187,7 @@ static int set_function(const mds_kbdc_tree_function_t* restrict function,
 {
   (void) function;
   (void) function_include_stack;
+  mds_kbdc_include_stack_free(function_include_stack);
   return 0; /* TODO */
 }
 
@@ -247,16 +249,24 @@ static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
   char** old = NULL;
   int saved_errno;
   
-  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
-  
+  /* Make sure the language-list fits another entry. */
   if (result->languages_ptr == result->languages_size)
     {
       result->languages_size = result->languages_size ? (result->languages_size << 1) : 1;
       fail_if (xxrealloc(old, result->languages, result->languages_size, char*));
     }
   
+  /* Locate the first character in the language-string. */
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  /* Evaluate function calls, variable dereferences and escapes in the language-string. */
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  if (tree->processed == PROCESS_LEVEL)
+    return free(data), 0;
+  /* We want the string in UTF-8, not UTF-16. */
   fail_if ((code = string_encode(data), code == NULL));
+  free(data);
+  
+  /* Add the language to the language-list. */
   result->languages[result->languages_ptr++] = code;
   
   return 0;
@@ -281,17 +291,24 @@ static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
   char** old = NULL;
   int saved_errno;
   
-  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
-  
+  /* Make sure the country-list fits another entry. */
   if (result->countries_ptr == result->countries_size)
     {
       result->countries_size = result->countries_size ? (result->countries_size << 1) : 1;
       fail_if (xxrealloc(old, result->countries, result->countries_size, char*));
     }
   
+  /* Locate the first character in the country-string. */
+  for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  /* Evaluate function calls, variable dereferences and escapes in the country-string. */
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  if (tree->processed == PROCESS_LEVEL)
+    return free(data), 0;
+  /* We want the string in UTF-8, not UTF-16. */
   fail_if ((code = string_encode(data), code == NULL));
   free(data);
+  
+  /* Add the country to the country-list. */
   result->countries[result->countries_ptr++] = code;
   
   return 0;
@@ -315,6 +332,7 @@ static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
   char32_t* restrict data = NULL;
   int saved_errno;
   
+  /* Make sure the variant has not already been set. */
   if (result->variant)
     {
       if (multiple_variants == 0)
@@ -323,10 +341,17 @@ static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
       return 0;
     }
   
+  /* Locate the first character in the variant-string. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  /* Evaluate function calls, variable dereferences and escapes in the variant-string. */
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  if (tree->processed == PROCESS_LEVEL)
+    return free(data), 0;
+  /* We want the string in UTF-8, not UTF-16. */
   fail_if ((code = string_encode(data), code == NULL));
   free(data);
+  
+  /* Store the variant. */
   result->variant = code;
   
   return 0;
@@ -347,29 +372,37 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
   mds_kbdc_tree_t* node = tree->data;
   char32_t* data = NULL;
   char32_t** old = NULL;
-  size_t new_size = (node->type == C(STRING)) ? result->assumed_strings_size : result->assumed_keys_size;
+  size_t new_size = 0;
   int saved_errno;
   
+  /* Make sure we can fit all assumption in the assumption list (part 1/2). */
+  new_size = (node->type == C(STRING)) ? result->assumed_strings_size : result->assumed_keys_size;
   new_size = new_size ? (new_size << 1) : 1;
   
   if (node->type == C(STRING))
     {
+      /* Evaluate function calls, variable dereferences and escapes in the string. */
       fail_if ((data = parse_string(node, node->string.string, node->loc_start), data == NULL));
       if (node->processed == PROCESS_LEVEL)
 	return free(data), 0;
+      /* Make sure we can fit all strings in the assumption list (part 2/2). */
       if (result->assumed_strings_ptr == result->assumed_strings_size)
 	fail_if (xxrealloc(old, result->assumed_strings, new_size, char*));
       result->assumed_strings_size = new_size;
+      /* Add the assumption to the list. */
       result->assumed_strings[result->assumed_strings_ptr++] = data;
     }
   else
     {
+      /* Evaluate function calls, variable dereferences and escapes in the key-combination. */
       fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
       if (node->processed == PROCESS_LEVEL)
 	return free(data), 0;
+      /* Make sure we can fit all key-combinations in the assumption list (part 2/2). */
       if (result->assumed_keys_ptr == result->assumed_keys_size)
 	fail_if (xxrealloc(old, result->assumed_keys, new_size, char*));
       result->assumed_keys_size = new_size;
+      /* Add the assumption to the list. */
       result->assumed_keys[result->assumed_keys_ptr++] = data;
     }
   
@@ -397,16 +430,23 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   size_t n;
   int saved_errno;
   
+  /* Locate the first character in the list. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
+  /* Evaluate function calls, variable dereferences
+     and escapes in the charcter list. */
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->chars, lineoff), data == NULL));
-  for (n = 0; data[n] >= 0; n++);
+  if (tree->processed == PROCESS_LEVEL)
+    return free(data), 0;
   
+  /* Make sure we can fit all characters in the assumption list. */
+  for (n = 0; data[n] >= 0; n++);
   if (result->assumed_strings_ptr + n > result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
       fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
     }
   
+  /* Add all characters to the assumption list. */
   while (n--)
     {
       fail_if (xmalloc(character, 2, char32_t));
@@ -442,21 +482,29 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   size_t n;
   int saved_errno;
   
+  
+  /* Locate the first characters of both bound strings. */
   for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
   for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
   
+  /* Duplicate bounds and evaluate function calls,
+     variable dereferences and escapes in the bounds. */
   fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
   fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
   
+  /* Did one of the bound not evaluate, then stop. */
   if (tree->processed == PROCESS_LEVEL)
     goto done;
   
+  
+  /* Check that the primary bound is single-character. */
   if ((first[0] < 0) || (first[1] >= 0))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
+  /* Check that the secondary bound is single-character. */
   if ((last[0] < 0) || (last[1] >= 0))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
@@ -464,20 +512,26 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
       error->end = error->start + strlen(tree->last);
     }
   
+  /* Was one of the bounds not single-character, then stop. */
   if ((lineoff_first == 0) || (lineoff_last == 0))
     goto done;
   
+  
+  /* If the range is descending, swap the bounds so it is ascending.
+     (This cannot be done in for-loops as that may cause side-effects
+     to be created in the wrong order.) */
   if (*first > *last)
     *first ^= *last, *last ^= *first, *first ^= *last;
   
+  /* Make sure we can fit all characters in the assumption list. */
   n = (size_t)(*last - *first) + 1;
-  
   if (result->assumed_strings_ptr + n > result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
       fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
     }
   
+  /* Add all characters to the assumption list. */
   while (*first != *last)
     {
       fail_if (xmalloc(character, 2, char32_t));
@@ -671,23 +725,30 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
   const char* restrict name = strchr(tree->name, '/');
   const char* restrict code = result->source_code->real_lines[tree->loc_line];
   
+  /* A "/" must exist in the name to tell us how many parameters there are. */
   if (name == NULL)
     {
       NEW_ERROR(tree, ERROR, "name-suffix is missing");
       goto name_error;
     }
+  /* Do not let the suffix by just "/". */
   if (*++name == '\0')
     {
       NEW_ERROR(tree, ERROR, "empty name-suffix");
       goto name_error;
     }
+  
+  /* We are all good if the suffix is simply "/0" */
   if (!strcmp(name, "0"))
     return 0;
+  
+  /* The suffix may not have leading zeroes. */
   if (*name == '\0')
     {
       NEW_ERROR(tree, ERROR, "leading zero in name-suffix");
       goto name_error;
     }
+  /* The suffix must be a decimal, non-negative number. */
   for (; *name; name++)
     if ((*name < '0') || ('0' < *name))
       {
@@ -725,19 +786,25 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   size_t arg_count;
   int r, saved_errno;
   
+  /* Check that the suffix if properly formatted. */
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
+  /* Get the function's name without suffix, and parse the suffix. */
   suffixless = tree->name;
   suffix_start = strchr(suffixless, '/');
   *suffix_start++ = '\0';
   arg_count = (size_t)atoll(suffix_start--);
   
+  /* Check that the function is not already defined as a builtin function. */
   if (builtin_function_defined(suffixless, arg_count))
     {
       NEW_ERROR(tree, ERROR, "function ‘%s’ is already defined as a builtin function", tree->name);
       *suffix_start = '/';
       return 0;
     }
+  /* Check that the function is not already defined,
+     the include-stack is used in the error-clause as
+     well as later when we list the function as defined. */
   fail_if (get_function_lax(suffixless, arg_count, &function, &function_include_stack));
   fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
   if (function)
@@ -751,9 +818,13 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
       return 0;
     }
   
+  /* Check the the function does not call macros or functions
+   * before they are defined, otherwise they may get defined
+   * between the definition of the function and calls to it. */
   t (check_marco_calls(tree->inner));
   t (check_function_calls(tree->inner));
   
+  /* List the function as defined. */
   *suffix_start = '/', suffix_start = NULL;
   t (set_function(tree, our_include_stack));
   
@@ -781,10 +852,13 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   int r, saved_errno;
   
-  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
-  
+  /* Check that the suffix if properly formatted. */
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
+  /* Check that the macro is not already defined,
+     the include-stack is used in the error-clause as
+     well as later when we list the macro as defined. */
+  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
   t (get_macro_lax(tree->name, &macro, &macro_include_stack));
   if (macro)
     {
@@ -796,9 +870,13 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
       return 0;
     }
   
+  /* Check the the macro does not call macros or functions
+   * before they are defined, otherwise they may get defined
+   * between the definition of the macro and calls to it. */
   t (check_marco_calls(tree->inner));
   t (check_function_calls(tree->inner));
   
+  /* List the macro as defined. */
   t (set_macro(tree, our_include_stack));
   
   return 0;
@@ -828,25 +906,36 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   size_t variable;
   int saved_errno;
   
+  
+  /* Locate the first character of the primary bound's string. */
   for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
+  /* Locate the first character of the secondary bound's string. */
   for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
   for (lineoff_last += strlen("to"); code[lineoff_last] == ' '; lineoff_last++);
+  /* Locate the first character of the select variable. */
   for (lineoff_var = lineoff_last + strlen(tree->variable); code[lineoff_var] == ' '; lineoff_var++);
   for (lineoff_var += strlen("as"); code[lineoff_var] == ' '; lineoff_var++);
   
+  /* Duplicate bounds and evaluate function calls,
+     variable dereferences and escapes in the bounds. */
   fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
   fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
+  /* Get the index of the selected variable. */
   fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff_var), variable == 0));
   
+  /* Did one of the bound not evaluate, then stop. */
   if (tree->processed == PROCESS_LEVEL)
     goto done;
   
+  
+  /* Check that the primary bound is single-character. */
   if ((first[0] < 0) || (first[1] >= 0))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
+  /* Check that the secondary bound is single-character. */
   if ((last[0] < 0) || (last[1] >= 0))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
@@ -854,9 +943,13 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
       error->end = error->start + strlen(tree->last);
     }
   
+  /* Was one of the bounds not single-character, then stop. */
   if ((lineoff_first == 0) || (lineoff_last == 0))
     goto done;
   
+  
+  /* Iterate over the loop for as long as a `return` or `break` has not
+     been encountered (without being caught elsewhere). */
   character[1] = -1;
   for (diff = (*first > *last) ? -1 : +1; (*first != *last) && (break_level < 2); *first += diff)
     {
@@ -866,8 +959,10 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
       fail_if (compile_subtree(tree->inner));
     }
   
+  /* Catch `break` and `continue`, they may not propagate further. */
   if (break_level < 3)
     break_level = 0;
+  
   
  done:
   free(first);
@@ -894,11 +989,14 @@ static int compile_if(mds_kbdc_tree_if_t* restrict tree)
   int ok, saved_errno;
   size_t i;
   
+  /* Locate the first character in the condition. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
-  
+  /* Evaluate function calls, variable dereferences and escapes in the condition. */
   fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->condition, lineoff), data == NULL));
-  fail_if (tree->processed == PROCESS_LEVEL);
+  if (tree->processed == PROCESS_LEVEL)
+    return free(data), 0;
   
+  /* Evaluate whether the evaluted value is true. */
   for (ok = 1, i = 0; data[i] >= 0; i++)
     ok &= !!(data[i]);
   free(data);
@@ -924,16 +1022,20 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
   size_t variable;
   int saved_errno;
   
+  /* Get the index of the selected variable. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff), variable == 0));
   if (tree->processed == PROCESS_LEVEL)
     return 0;
   
+  /* Duplicate arguments and evaluate function calls,
+     variable dereferences and escapes in the value. */
   fail_if ((value = mds_kbdc_tree_dup(tree->value), value == NULL));
   fail_if (compile_subtree(value));
   if ((tree->processed = value->processed) == PROCESS_LEVEL)
     return 0;
   
+  /* Set the value of the variable. */
   fail_if (let(variable, NULL, value, NULL, 0, 0));
   
   free(value);
@@ -1075,45 +1177,70 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   char32_t* data = NULL;
   int r, saved_errno;
   
+  /* Duplicate arguments and evaluate function calls,
+     variable dereferences and escapes in the mapping
+     input sequence. */
   fail_if ((seq = mds_kbdc_tree_dup(old_seq), seq = NULL));
   fail_if ((bad |= evaluate_element(seq), bad < 0));
   
+  /* Duplicate arguments and evaluate function calls,
+     variable dereferences and escapes in the mapping
+     output sequence, unless this is a value-statement. */
   if (tree->result)
     {
       fail_if ((res = mds_kbdc_tree_dup(old_res), res = NULL));
       fail_if ((bad |= evaluate_element(res), bad < 0));
     }
   
+  /* Stop if any of the mapping-arguments could not be evaluated. */
   if (bad)
     goto done;
   
+  
   if (tree->result)
     {
+      /* Mapping-statement. */
+      
+      /* Check for invalid characters in the mapping-arguments. */
       fail_if ((bad |= check_nonnul(seq), bad < 0));
       fail_if ((bad |= check_nonnul(res), bad < 0));
       if (bad)
 	goto done;
       
+      /* Duplicate the mapping-statement but give it the evaluated mapping-arguments. */
       tree->sequence = seq;
       tree->result = res;
       fail_if ((dup_map = &(mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree)->map), dup_map = NULL));
       tree->sequence = old_seq, seq = NULL;
       tree->result = old_res, res = NULL;
+      
+      /* Enlist the mapping for assembling. */
       fail_if ((include_stack = mds_kbdc_include_stack_save(), include_stack == NULL));
       fail_if (add_mapping(dup_map, include_stack));
+      
+      goto done;
     }
-  else
+  
+  
+  /* Value-statement */
+  
+  /* Add the value statement */
+  data = string_decode(seq->string.string);
+  fail_if (data == NULL);
+  fail_if ((r = set_return_value(data), r < 0));
+  data = NULL;
+  
+  /* Check that the value-statement is inside a function call, or has
+     side-effects by directly or indirectly calling ‘\set/3’ on an
+     array that is not shadowed by an inner function- or macro-call. */
+  if (r)
     {
-      data = string_decode(seq->string.string);
-      fail_if (data == NULL);
-      fail_if ((r = set_return_value(data), r < 0));
-      data = NULL;
-      if (r)
-	{
-	  NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
-	  tree->processed = PROCESS_LEVEL;
-	}
+      NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
+      tree->processed = PROCESS_LEVEL;
     }
+  
+  /* TODO warn if tree->next is also a value-statement, unless this value has side-effect */
+  
   
  done:
   mds_kbdc_tree_free(seq);
@@ -1147,24 +1274,41 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   size_t variable;
   int bad, saved_errno;
   
+  /* Duplicate arguments and evaluate function calls,
+     variable dereferences and escapes in the macro
+     call arguments. */
   fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg = NULL));
   fail_if ((bad = evaluate_element(arg), bad < 0));
   if (bad)
     return 0;
   
+  /* Get the macro's subtree and include stack, if it has
+     not been defined `get_macro` will add an error message
+     and return `NULL`. */
   fail_if (get_macro(tree, &macro, &macro_include_stack));
   if (macro == NULL)
     goto done;
   
+  
+  /* Push call stack and set parameters. */
   fail_if (push_stack());
   for (arg_ = arg; arg_; arg_ = arg_->next)
     fail_if (let(variable, NULL, arg_, NULL, 0, 0));
+  
+  /* Switch include-stack to the macro's. */
   fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
   fail_if (mds_kbdc_include_stack_restore(macro_include_stack));
+  
+  /* Call the macro. */
   fail_if (compile_subtree(macro->inner));
+  
+  /* Switch back the include-stack to ours. */
   fail_if (mds_kbdc_include_stack_restore(our_include_stack));
   mds_kbdc_include_stack_free(our_include_stack), our_include_stack = NULL;
+  
+  /* Pop call stack. */
   fail_if (pop_stack());
+  
   
  done:
   break_level = 0;
@@ -1194,6 +1338,8 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     return 0;
   
   if (tree->processed == PROCESS_LEVEL)
+    /* An error has occurred here before, lets skip it so
+     * we do not deluge the user with errors. */
     goto next;
   
   switch (tree->type)
@@ -1230,6 +1376,9 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
   
  next:
   if (break_level)
+    /* If a `continue`, `break` or `return` has been encountered,
+     * we are done here and should return to whence we came and
+     * let the subcompiler of that construct deal with it. */
     return 0;
   
   tree = tree->next;
