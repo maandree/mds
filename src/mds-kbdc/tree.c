@@ -156,11 +156,11 @@ static void mds_kbdc_tree_destroy_(mds_kbdc_tree_t* restrict this, int recursive
       break;
       
     case C(KEYS):
-      xfree(mds_kbdc_tree_keys_t*, keys);
-      break;
-      
     case C(STRING):
-      xfree(mds_kbdc_tree_string_t*, string);
+    case C(COMPILED_KEYS):
+    case C(COMPILED_STRING):
+      xfree(mds_kbdc_tree_keys_t*, keys);
+      /* We are abusing the similaries of the structures. */
       break;
       
     case C(MACRO_CALL):
@@ -245,8 +245,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define T(member)									\
-  fail_if (t->member && (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL))
+#define T(member)  fail_if (t->member && (n->member = mds_kbdc_tree_dup(t->member), n->member == NULL))
 
 
 /**
@@ -254,8 +253,15 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define S(member)								\
-  fail_if (t->member && (n->member = strdup(t->member), n->member == NULL))
+#define S(member)  fail_if (t->member && (n->member = strdup(t->member), n->member == NULL))
+
+
+/**
+ * Duplicate an UTF-32-string and goto `fail` on failure
+ * 
+ * @param  member:identifer  The member in the tree to duplicate
+ */
+#define Z(member)  fail_if (t->member && (n->member = string_dup(t->member), n->member == NULL))
 
 
 /**
@@ -263,8 +269,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to copied
  */
-#define R(member)										\
-  fail_if (t->member && (n->member = mds_kbdc_source_code_dup(t->member), n->member == NULL))
+#define R(member)  fail_if (t->member && (n->member = mds_kbdc_source_code_dup(t->member), n->member == NULL))
 
 
 /**
@@ -318,6 +323,8 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
     case C(ASSUMPTION_HAVE_CHARS):  { NODE(assumption_have_chars); S(chars);              }  break;
     case C(KEYS):                   { NODE(keys); S(keys);                                }  break;
     case C(STRING):                 { NODE(string); S(string);                            }  break;
+    case C(COMPILED_KEYS):          { NODE(compiled_keys); Z(keys);                       }  break;
+    case C(COMPILED_STRING):        { NODE(compiled_string); Z(string);                   }  break;
     case C(ASSUMPTION_HAVE_RANGE):  { NODE(assumption_have_range); S(first);S(last);      }  break;
     case C(FOR):                    { NODE(for); S(first);S(last);S(variable);T(inner);   }  break;
     case C(IF):                     { NODE(if); S(condition);T(inner);T(otherwise);       }  break;
@@ -336,6 +343,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
 
 #undef NODE
 #undef R
+#undef Z
 #undef S
 #undef T
 
@@ -397,9 +405,9 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
  * 
  * @param  MEMBER:identifier  The tree structure's member
  */
-#define SIMPLE(MEMBER)				\
-  STRING(MEMBER);				\
-  fprintf(output, ")\n", node->MEMBER)
+#define SIMPLE(MEMBER)		\
+  STRING(MEMBER);		\
+  fprintf(output, ")\n")
 
 
 /**
@@ -526,6 +534,28 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
     case C(RETURN):                 NOTHING("return");
     case C(BREAK):                  NOTHING("break");
     case C(CONTINUE):               NOTHING("continue");
+      
+    case C(COMPILED_KEYS):
+      {
+	NODE(compiled_keys, "compiled_keys");
+	if (node->keys)
+	  fprintf(output, " ‘\033[32m%s\033[00m’", string_encode(node->keys));
+	else
+	  fprintf(output, " \033[35mnil\033[00m");
+	fprintf(output, ")\n");
+      }
+      break;
+      
+    case C(COMPILED_STRING):
+      {
+	NODE(compiled_string, "compiled_string");
+	if (node->string)
+	  fprintf(output, " ‘\033[32m%s\033[00m’", string_encode(node->string));
+	else
+	  fprintf(output, " \033[35mnil\033[00m");
+	fprintf(output, ")\n");
+      }
+      break;
       
     case C(FOR):
       {

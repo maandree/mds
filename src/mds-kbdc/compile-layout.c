@@ -1108,9 +1108,8 @@ static int evaluate_element(mds_kbdc_tree_t* restrict node)
       if (node->type == C(KEYS))
 	fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
       free(node->string.string);
-      node->string.string = string_encode(data);
-      free(data);
-      fail_if (node->string.string == NULL);
+      node->type = (node->type == C(STRING)) ? C(COMPILED_STRING) : C(COMPILED_KEYS);
+      node->compiled_string.string = data;
       bad |= (node->processed == PROCESS_LEVEL);
     }
   
@@ -1171,14 +1170,14 @@ static int compile_array(mds_kbdc_tree_array_t* restrict tree)
  */
 static int check_nonnul(mds_kbdc_tree_t* restrict tree)
 {
-  const char* restrict string;
+  const char32_t* restrict string;
   int rc = 0;
  again:
   if (tree == NULL)
     return rc;
   
-  for (string = tree->string.string; *string; string++)
-    if ((string[0] == (char)0xC0) && (string[1] == (char)0x80))
+  for (string = tree->compiled_string.string; *string != -1; string++)
+    if (*string == 0)
       {
 	NEW_ERROR(tree, ERROR, "NULL characters are not allowed in mappings");
 	tree->processed = PROCESS_LEVEL;
@@ -1208,7 +1207,6 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_t* old_seq = tree->sequence;
   mds_kbdc_tree_t* old_res = tree->result;
   mds_kbdc_tree_map_t* dup_map = NULL;
-  char32_t* data = NULL;
   int r, saved_errno;
   mds_kbdc_tree_t* previous_last_value_statement = last_value_statement;
   
@@ -1268,10 +1266,8 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   last_value_statement = (mds_kbdc_tree_t*)tree;
   
   /* Add the value statement */
-  data = string_decode(seq->string.string);
-  fail_if (data == NULL);
-  fail_if ((r = set_return_value(data), r < 0));
-  data = NULL;
+  fail_if ((r = set_return_value(seq->compiled_string.string), r < 0));
+  seq->compiled_string.string = NULL;
   
   /* Check that the value-statement is inside a function call, or has
      side-effects by directly or indirectly calling ‘\set/3’ on an
@@ -1298,7 +1294,6 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_free(res);
   return 0;
   FAIL_BEGIN;
-  free(data);
   mds_kbdc_include_stack_free(include_stack);
   mds_kbdc_tree_free((mds_kbdc_tree_t*)dup_map);
   mds_kbdc_tree_free(seq);

@@ -20,6 +20,7 @@
 
 
 #include "raw-data.h"
+#include "string.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -118,44 +119,54 @@
 #define MDS_KBDC_TREE_TYPE_STRING  17
 
 /**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_compiled_keys_t`
+ */
+#define MDS_KBDC_TREE_TYPE_COMPILED_KEYS  18
+
+/**
+ * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_compiled_string_t`
+ */
+#define MDS_KBDC_TREE_TYPE_COMPILED_STRING  19
+
+/**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_nothing_t`
  */
-#define MDS_KBDC_TREE_TYPE_NOTHING  18
+#define MDS_KBDC_TREE_TYPE_NOTHING  20
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_alternation_t`
  */
-#define MDS_KBDC_TREE_TYPE_ALTERNATION  19
+#define MDS_KBDC_TREE_TYPE_ALTERNATION  21
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_unordered_t`
  */
-#define MDS_KBDC_TREE_TYPE_UNORDERED  20
+#define MDS_KBDC_TREE_TYPE_UNORDERED  22
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_ordered_t`
  */
-#define MDS_KBDC_TREE_TYPE_ORDERED  21
+#define MDS_KBDC_TREE_TYPE_ORDERED  23
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_macro_call_t`
  */
-#define MDS_KBDC_TREE_TYPE_MACRO_CALL  22
+#define MDS_KBDC_TREE_TYPE_MACRO_CALL  24
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_return_t`
  */
-#define MDS_KBDC_TREE_TYPE_RETURN  23
+#define MDS_KBDC_TREE_TYPE_RETURN  25
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_break_t`
  */
-#define MDS_KBDC_TREE_TYPE_BREAK  24
+#define MDS_KBDC_TREE_TYPE_BREAK  26
 
 /**
  * Value of `mds_kbdc_tree_t.type` for `mds_kbdc_tree_continue_t`
  */
-#define MDS_KBDC_TREE_TYPE_CONTINUE  25
+#define MDS_KBDC_TREE_TYPE_CONTINUE  27
 
 
 
@@ -553,14 +564,14 @@ typedef struct mds_kbdc_tree_array
 
 
 /**
- * Leaf structure for a key combination
+ * Leaf structure for a key-combination
  */
 typedef struct mds_kbdc_tree_keys
 {
   MDS_KBDC_TREE_COMMON;
   
   /**
-   * The key combination
+   * The key-combination
    */
   char* keys;
   
@@ -590,6 +601,48 @@ typedef struct mds_kbdc_tree_string
   MDS_KBDC_TREE_PADDING(1);
   
 } mds_kbdc_tree_string_t;
+
+
+/**
+ * Leaf structure for a compiled key-combination
+ */
+typedef struct mds_kbdc_tree_compiled_keys
+{
+  MDS_KBDC_TREE_COMMON;
+  
+  /**
+   * The key-combination
+   * 
+   * Strictly terminated by -1
+   */
+  char32_t* keys;
+  
+  MDS_KBDC_TREE_PADDING(1);
+  
+} mds_kbdc_tree_compiled_keys_t;
+
+
+/**
+ * Leaf structure for a compiled string
+ */
+typedef struct mds_kbdc_tree_compiled_string
+{
+  MDS_KBDC_TREE_COMMON;
+  
+  /**
+   * The string
+   */
+  char32_t* string;
+  
+  /*
+   * `evaluate_element` in "compile-layout.c" utilises
+   * that `mds_kbdc_tree_string.compiled_string` has the
+   * same offset as `mds_kbdc_tree_keys.compiled_keys`.
+   */
+  
+  MDS_KBDC_TREE_PADDING(1);
+  
+} mds_kbdc_tree_compiled_string_t;
 
 
 /**
@@ -703,6 +756,8 @@ union mds_kbdc_tree
   mds_kbdc_tree_array_t array;
   mds_kbdc_tree_keys_t keys;
   mds_kbdc_tree_string_t string;
+  mds_kbdc_tree_compiled_keys_t compiled_keys;
+  mds_kbdc_tree_compiled_string_t compiled_string;
   mds_kbdc_tree_nothing_t nothing;
   mds_kbdc_tree_alternation_t alternation;
   mds_kbdc_tree_unordered_t unordered;

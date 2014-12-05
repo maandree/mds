@@ -24,34 +24,42 @@
 
 
 /**
- * Data type for a character in a decoded string.
+ * Data type for a character in a decoded string
  */
 typedef int32_t char32_t;
 
 
 /**
- * Get the length of a string.
+ * Get the length of a string
  * 
- * @param   string  The string.
- * @return          The length of the string.
+ * @param   string  The string
+ * @return          The length of the string
  */
 size_t string_length(const char32_t* restrict string) __attribute__((pure, nonnull));
 
 /**
- * Convert a NUL-terminated UTF-8 string to a -1-terminated UTF-32 string.
+ * Convert a NUL-terminated UTF-8 string to a -1-terminated UTF-32 string
  * 
- * @param   string  The UTF-8 string.
- * @return          The string in UTF-32, `NULL` on error.
+ * @param   string  The UTF-8 string
+ * @return          The string in UTF-32, `NULL` on error
  */
 char32_t* string_decode(const char* restrict string) __attribute__((nonnull));
 
 /**
- * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string.
+ * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string
  * 
- * @param   string  The UTF-32 string.
- * @return          The string in UTF-8, `NULL` on error.
+ * @param   string  The UTF-32 string
+ * @return          The string in UTF-8, `NULL` on error
  */
 char* string_encode(const char32_t* restrict string) __attribute__((nonnull));
+
+/**
+ * Create duplicate of a string
+ * 
+ * @param   string  The string
+ * @return          A duplicate of the strnig, `NULL` on error or if `string` is `NULL`
+ */
+char32_t* string_dup(const char32_t* restrict string);
 
 
 

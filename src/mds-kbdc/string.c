@@ -20,29 +20,30 @@
 #include <libmdsserver/macros.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 
 
 /**
- * Get the length of a string.
+ * Get the length of a string
  * 
- * @param   string  The string.
- * @return          The length of the string.
+ * @param   string  The string
+ * @return          The length of the string
  */
 size_t string_length(const char32_t* restrict string)
 {
   size_t i = 0;
-  while (string[i] >= 0)
+  while (string[i] > -1)
     i++;
   return i;
 }
 
 
 /**
- * Convert a NUL-terminated UTF-8 string to a -1-terminated UTF-32 string.
+ * Convert a NUL-terminated UTF-8 string to a -1-terminated UTF-32 string
  * 
- * @param   string  The UTF-8 string.
- * @return          The string in UTF-32, `NULL` on error.
+ * @param   string  The UTF-8 string
+ * @return          The string in UTF-32, `NULL` on error
  */
 char32_t* string_decode(const char* restrict string)
 {
@@ -84,10 +85,12 @@ char32_t* string_decode(const char* restrict string)
 
 
 /**
- * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string.
+ * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string
  * 
- * @param   string  The UTF-32 string.
- * @return          The string in UTF-8, `NULL` on error.
+ * Negative values apart from -1 are converted to 0x00
+ * 
+ * @param   string  The UTF-32 string
+ * @return          The string in UTF-8, `NULL` on error
  */
 char* string_encode(const char32_t* restrict string)
 {
@@ -117,5 +120,26 @@ char* string_encode(const char32_t* restrict string)
   
   /* NUL-terminate and return. */
   return rc[j] = '\0', rc;
+}
+
+
+/**
+ * Create duplicate of a string
+ * 
+ * @param   string  The string
+ * @return          A duplicate of the strnig, `NULL` on error or if `string` is `NULL`
+ */
+char32_t* string_dup(const char32_t* restrict string)
+{
+  size_t n;
+  char32_t* rc;
+  if (string == NULL)
+    return NULL;
+  n = string_length(string) + 1;
+  rc = malloc(n * sizeof(char32_t));
+  if (rc == NULL)
+    return NULL;
+  memcpy(rc, string, n * sizeof(char32_t));
+  return rc;
 }
 
