@@ -19,6 +19,7 @@
 /* TODO add call stack */
 
 #include "include-stack.h"
+#include "builtin-functions.h"
 #include "string.h"
 
 #include <stdlib.h>
@@ -150,8 +151,15 @@ static int pop_stack(void)
   return 0; /* TODO */
 }
 
-static int get_macro_lax(const char* restrict macro_name,
-			 const mds_kbdc_tree_macro_t** restrict macro,
+static int set_macro(const mds_kbdc_tree_macro_t* restrict macro,
+		     mds_kbdc_include_stack_t* macro_include_stack)
+{
+  (void) macro;
+  (void) macro_include_stack;
+  return 0; /* TODO */
+}
+
+static int get_macro_lax(const char* restrict macro_name, const mds_kbdc_tree_macro_t** restrict macro,
 			 mds_kbdc_include_stack_t** restrict macro_include_stack)
 {
   (void) macro_name;
@@ -172,6 +180,7 @@ static int get_macro(const mds_kbdc_tree_macro_call_t* restrict macro_call,
  pfail:
   return -1;
 }
+
 
 
 /**
@@ -604,26 +613,11 @@ static int check_function_calls(const mds_kbdc_tree_t* restrict tree)
       t (check_function_calls(tree->if_.otherwise));
       break;
       
-    case C(LET):
-      t (check_function_calls(tree->let.value));
-      break;
-      
-    case C(ARRAY):
-      t (check_function_calls(tree->array.elements));
-      break;
-      
-    case C(KEYS):
-      t (check_function_calls_in_keys(&(tree->keys)));
-      break;
-      
-    case C(STRING):
-      t (check_function_calls_in_string(&(tree->string)));
-      break;
-      
-    case C(MAP):
-      t (check_function_calls(tree->map.sequence));
-      break;
-      
+    case C(LET):     t (check_function_calls(tree->let.value));            break;
+    case C(ARRAY):   t (check_function_calls(tree->array.elements));       break;
+    case C(KEYS):    t (check_function_calls_in_keys(&(tree->keys)));      break;
+    case C(STRING):  t (check_function_calls_in_string(&(tree->string)));  break;
+    case C(MAP):     t (check_function_calls(tree->map.sequence));         break;
     default:
       break;
     }
@@ -691,11 +685,37 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
 static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 {
 #define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
-  int r;
+  const mds_kbdc_tree_function_t* function;
+  mds_kbdc_include_stack_t* function_include_stack;
+  mds_kbdc_include_stack_t* our_include_stack = NULL;
+  char* suffixless;
+  char* suffix_start;
+  size_t arg_count;
+  int r, saved_errno;
   
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
-  /* TODO check for redefinition */
+  suffixless = strdup(tree->name);
+  fail_if (suffixless == NULL);
+  suffix_start = strchr(suffixless, '/');
+  *suffix_start++ = '\0';
+  arg_count = (size_t)atoll(suffix_start);
+  
+  if (builtin_function_defined(suffixless, arg_count))
+    {
+      NEW_ERROR(tree, ERROR, "function ‘%s’ is already defined as a builtin function", tree->name);
+      return 0;
+    }
+  /* TODO check for redefinition */ function = NULL, function_include_stack = NULL;
+  if (function)
+    {
+      NEW_ERROR(tree, ERROR, "function ‘%s’ is already defined", tree->name);
+      fail_if (mds_kbdc_include_stack_restore(function_include_stack));
+      NEW_ERROR(function, NOTE, "previously defined here");
+      fail_if (mds_kbdc_include_stack_restore(our_include_stack));
+      mds_kbdc_include_stack_free(our_include_stack);
+      return 0;
+    }
   
   t (check_marco_calls(tree->inner));
   t (check_function_calls(tree->inner));
@@ -703,8 +723,9 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   /* TODO add definition */
   
   return 0;
- pfail:
-  return -1;
+  FAIL_BEGIN;
+  mds_kbdc_include_stack_free(our_include_stack);
+  FAIL_END;
 #undef t
 }
 
@@ -723,13 +744,14 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   int r, saved_errno;
   
+  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+  
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
   t (get_macro_lax(tree->name, &macro, &macro_include_stack));
   if (macro)
     {
       NEW_ERROR(tree, ERROR, "macro ‘%s’ is already defined", tree->name);
-      fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
       fail_if (mds_kbdc_include_stack_restore(macro_include_stack));
       NEW_ERROR(macro, NOTE, "previously defined here");
       fail_if (mds_kbdc_include_stack_restore(our_include_stack));
@@ -740,7 +762,7 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
   t (check_marco_calls(tree->inner));
   t (check_function_calls(tree->inner));
   
-  /* TODO add definition */
+  t (set_macro(tree, our_include_stack));
   
   return 0;
   FAIL_BEGIN;
@@ -967,6 +989,38 @@ static int compile_array(mds_kbdc_tree_array_t* restrict tree)
 
 
 /**
+ * Check that a chain of strings and key-combinations
+ * does not contain NULL characters
+ * 
+ * @param   tree  The tree to check
+ * @return        Zero on success, -1 on error, 1 if any of
+ *                the elements contain a NULL character
+ */
+static int check_nonnul(mds_kbdc_tree_t* restrict tree)
+{
+  const char* restrict string;
+  int rc = 0;
+ again:
+  if (tree == NULL)
+    return rc;
+  
+  for (string = tree->string.string; *string; string++)
+    if ((string[0] == (char)0xC0) && (string[1] == (char)0x80))
+      {
+	NEW_ERROR(tree, ERROR, "NULL characters are not allowed in mappings");
+	tree->processed = PROCESS_LEVEL;
+	rc = 1;
+	break;
+      }
+  
+  tree = tree->next;
+  goto again;
+ pfail:
+   return -1;
+}
+
+
+/**
  * Compile a mapping- or value-statement
  * 
  * @param   tree  The tree to compile
@@ -980,17 +1034,32 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   int saved_errno;
   
   fail_if ((seq = mds_kbdc_tree_dup(tree->sequence), seq = NULL));
-  fail_if ((res = mds_kbdc_tree_dup(tree->result),   res = NULL));
-  
   fail_if ((bad |= evaluate_element(seq), bad < 0));
-  fail_if ((bad |= evaluate_element(res), bad < 0));
+  
+  if (tree->result)
+    {
+      fail_if ((res = mds_kbdc_tree_dup(tree->result), res = NULL));
+      fail_if ((bad |= evaluate_element(res), bad < 0));
+    }
+  
   if (bad)
-    return 0;
+    goto done;
   
-  /* TODO */
+  if (tree->result)
+    {
+      fail_if ((bad |= check_nonnul(seq), bad < 0));
+      fail_if ((bad |= check_nonnul(res), bad < 0));
+      if (bad)
+	goto done;
+      
+      /* TODO */
+    }
+  else
+    {
+      /* TODO */
+    }
   
-  /* NUL-characters (0xC0 0x80) is only allowed in value-statements */
-  
+ done:
   mds_kbdc_tree_free(seq);
   mds_kbdc_tree_free(res);
   return 0;

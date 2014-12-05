@@ -30,8 +30,8 @@ OBJ_mds-server_   = mds-server interception-condition client multicast  \
 OBJ_mds-registry_ = mds-registry util globals reexec registry signals   \
                     slave
 
-OBJ_mds-kbdc_     = mds-kbdc globals raw-data functions string tree     \
-                    make-tree parse-error simplify-tree parsed          \
+OBJ_mds-kbdc_     = mds-kbdc globals raw-data builtin-functions string  \
+                    tree make-tree parse-error simplify-tree parsed     \
                     process-includes validate-tree eliminate-dead-code  \
                     paths include-stack compile-layout
 
