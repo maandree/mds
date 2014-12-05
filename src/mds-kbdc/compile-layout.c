@@ -169,7 +169,7 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
       statement && (statement->processed != PROCESS_LEVEL))
     {
       statement->processed = PROCESS_LEVEL;
-      NEW_ERROR(statement, WARNING, "will not shadow existing definition");
+      NEW_ERROR(statement, WARNING, "does not shadow existing definition");
       error->start = lineoff;
       error->end = lineoff + (size_t)snprintf(NULL, 0, "\\%zu", variable);
     }
