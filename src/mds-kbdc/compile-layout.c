@@ -181,6 +181,38 @@ static int get_macro(const mds_kbdc_tree_macro_call_t* restrict macro_call,
   return -1;
 }
 
+static int set_function(const mds_kbdc_tree_function_t* restrict function,
+			mds_kbdc_include_stack_t* function_include_stack)
+{
+  (void) function;
+  (void) function_include_stack;
+  return 0; /* TODO */
+}
+
+static int get_function_lax(const char* restrict function_name, size_t arg_count,
+			    const mds_kbdc_tree_function_t** restrict function,
+			    mds_kbdc_include_stack_t** restrict function_include_stack)
+{
+  (void) function_name;
+  (void) arg_count;
+  (void) function;
+  (void) function_include_stack;
+  return 0; /* TODO */
+}
+
+static int set_return_value(char32_t* restrict value)
+{
+  free(value);
+  return 1; /* TODO */
+}
+
+static int add_mapping(mds_kbdc_tree_map_t* restrict mapping, mds_kbdc_include_stack_t* restrict include_stack)
+{
+  mds_kbdc_tree_free((mds_kbdc_tree_t*)mapping);
+  mds_kbdc_include_stack_free(include_stack);
+  return 0; /* TODO */
+}
+
 
 
 /**
@@ -689,26 +721,28 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   mds_kbdc_include_stack_t* function_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   char* suffixless;
-  char* suffix_start;
+  char* suffix_start = NULL;
   size_t arg_count;
   int r, saved_errno;
   
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
   
-  suffixless = strdup(tree->name);
-  fail_if (suffixless == NULL);
+  suffixless = tree->name;
   suffix_start = strchr(suffixless, '/');
   *suffix_start++ = '\0';
-  arg_count = (size_t)atoll(suffix_start);
+  arg_count = (size_t)atoll(suffix_start--);
   
   if (builtin_function_defined(suffixless, arg_count))
     {
       NEW_ERROR(tree, ERROR, "function ‘%s’ is already defined as a builtin function", tree->name);
+      *suffix_start = '/';
       return 0;
     }
-  /* TODO check for redefinition */ function = NULL, function_include_stack = NULL;
+  fail_if (get_function_lax(suffixless, arg_count, &function, &function_include_stack));
+  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
   if (function)
     {
+      *suffix_start = '/';
       NEW_ERROR(tree, ERROR, "function ‘%s’ is already defined", tree->name);
       fail_if (mds_kbdc_include_stack_restore(function_include_stack));
       NEW_ERROR(function, NOTE, "previously defined here");
@@ -720,10 +754,13 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   t (check_marco_calls(tree->inner));
   t (check_function_calls(tree->inner));
   
-  /* TODO add definition */
+  *suffix_start = '/', suffix_start = NULL;
+  t (set_function(tree, our_include_stack));
   
   return 0;
   FAIL_BEGIN;
+  if (suffix_start)
+    *suffix_start = '/';
   mds_kbdc_include_stack_free(our_include_stack);
   FAIL_END;
 #undef t
@@ -1029,16 +1066,21 @@ static int check_nonnul(mds_kbdc_tree_t* restrict tree)
 static int compile_map(mds_kbdc_tree_map_t* restrict tree)
 {
   int bad = 0;
+  mds_kbdc_include_stack_t* restrict include_stack = NULL;
   mds_kbdc_tree_t* seq = NULL;
   mds_kbdc_tree_t* res = NULL;
-  int saved_errno;
+  mds_kbdc_tree_t* old_seq = tree->sequence;
+  mds_kbdc_tree_t* old_res = tree->result;
+  mds_kbdc_tree_map_t* dup_map = NULL;
+  char32_t* data = NULL;
+  int r, saved_errno;
   
-  fail_if ((seq = mds_kbdc_tree_dup(tree->sequence), seq = NULL));
+  fail_if ((seq = mds_kbdc_tree_dup(old_seq), seq = NULL));
   fail_if ((bad |= evaluate_element(seq), bad < 0));
   
   if (tree->result)
     {
-      fail_if ((res = mds_kbdc_tree_dup(tree->result), res = NULL));
+      fail_if ((res = mds_kbdc_tree_dup(old_res), res = NULL));
       fail_if ((bad |= evaluate_element(res), bad < 0));
     }
   
@@ -1052,11 +1094,25 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
       if (bad)
 	goto done;
       
-      /* TODO */
+      tree->sequence = seq;
+      tree->result = res;
+      fail_if ((dup_map = &(mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree)->map), dup_map = NULL));
+      tree->sequence = old_seq, seq = NULL;
+      tree->result = old_res, res = NULL;
+      fail_if ((include_stack = mds_kbdc_include_stack_save(), include_stack == NULL));
+      fail_if (add_mapping(dup_map, include_stack));
     }
   else
     {
-      /* TODO */
+      data = string_decode(seq->string.string);
+      fail_if (data == NULL);
+      fail_if ((r = set_return_value(data), r < 0));
+      data = NULL;
+      if (r)
+	{
+	  NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
+	  tree->processed = PROCESS_LEVEL;
+	}
     }
   
  done:
@@ -1064,8 +1120,13 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_free(res);
   return 0;
   FAIL_BEGIN;
+  free(data);
+  mds_kbdc_include_stack_free(include_stack);
+  mds_kbdc_tree_free((mds_kbdc_tree_t*)dup_map);
   mds_kbdc_tree_free(seq);
   mds_kbdc_tree_free(res);
+  tree->sequence = old_seq;
+  tree->result = old_res;
   FAIL_END;
 }
 
