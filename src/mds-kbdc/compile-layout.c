@@ -84,6 +84,15 @@ static int break_level = 0;
  */
 static int multiple_variants = 0;
 
+/**
+ * The previous value-statement, which has no effect
+ * if we can find another value statemnt that is
+ * sure to be evaluated
+ * 
+ * (We will not look too hard.)
+ */
+static mds_kbdc_tree_t* last_value_statement = NULL;
+
 
 
 /**
@@ -111,6 +120,8 @@ static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restri
   (void) raw;
   (void) lineoff;
   return NULL; /* TODO */
+  
+  /* Do not forget to store and then restore `last_value_statement` */
 }
 
 static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
@@ -205,6 +216,7 @@ static int get_function_lax(const char* restrict function_name, size_t arg_count
 static int set_return_value(char32_t* restrict value)
 {
   free(value);
+  last_value_statement = NULL; /* should only be done if we have side-effects */
   return 1; /* TODO */
 }
 
@@ -231,6 +243,12 @@ static int compile_include(mds_kbdc_tree_include_t* restrict tree)
     return -1;
   r = compile_subtree(tree->inner);
   mds_kbdc_include_stack_pop(data);
+  
+  /* For simplicity we set `last_value_statement` on includes,
+   * so we are sure `last_value_statement` has the same
+   * include-stack as its overriding statement. */
+  last_value_statement = NULL;
+  
   return r;
 }
 
@@ -907,6 +925,9 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   int saved_errno;
   
   
+  last_value_statement = NULL;
+  
+  
   /* Locate the first character of the primary bound's string. */
   for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
   /* Locate the first character of the secondary bound's string. */
@@ -965,6 +986,7 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   
   
  done:
+  last_value_statement = NULL;
   free(first);
   free(last);
   return 0;
@@ -989,6 +1011,8 @@ static int compile_if(mds_kbdc_tree_if_t* restrict tree)
   int ok, saved_errno;
   size_t i;
   
+  last_value_statement = NULL;
+  
   /* Locate the first character in the condition. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   /* Evaluate function calls, variable dereferences and escapes in the condition. */
@@ -1001,7 +1025,10 @@ static int compile_if(mds_kbdc_tree_if_t* restrict tree)
     ok &= !!(data[i]);
   free(data);
   
-  return compile_subtree(ok ? tree->inner : tree->otherwise);
+  /* Compile the appropriate clause. */
+  ok = compile_subtree(ok ? tree->inner : tree->otherwise);
+  last_value_statement = NULL;
+  return ok;
   FAIL_BEGIN;
   free(data);
   FAIL_END;
@@ -1176,6 +1203,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_map_t* dup_map = NULL;
   char32_t* data = NULL;
   int r, saved_errno;
+  mds_kbdc_tree_t* previous_last_value_statement = last_value_statement;
   
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the mapping
@@ -1224,6 +1252,14 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   
   /* Value-statement */
   
+  /* Save this statement so we can warn later if it is unnecessary,
+   * `set_return_value` will set it to `NULL` if there are side-effects,
+   * which would make this statement necessary (unless the overridding
+   * statement has identical side-effect, but we will not check for that).
+   * For simplicity, we do not store the include-stack, instead, we reset
+   * `last_value_statement` to `NULL` when we visit an include-statement. */
+  last_value_statement = (mds_kbdc_tree_t*)tree;
+  
   /* Add the value statement */
   data = string_decode(seq->string.string);
   fail_if (data == NULL);
@@ -1239,7 +1275,15 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
       tree->processed = PROCESS_LEVEL;
     }
   
-  /* TODO warn if tree->next is also a value-statement, unless this value has side-effect */
+  /* Check whether we made a previous value-statement unnecessary. */
+  if (previous_last_value_statement)
+    {
+      /* For simplicity we set `last_value_statement` on includes,
+       * so we are sure `last_value_statement` has the same include-stack. */
+      
+      NEW_ERROR(previous_last_value_statement, WARNING, "value-statement has no effects");
+      NEW_ERROR(tree, NOTE, "overridden here");
+    }
   
   
  done:
@@ -1274,6 +1318,8 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   size_t variable;
   int bad, saved_errno;
   
+  last_value_statement = NULL;
+  
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the macro
      call arguments. */
@@ -1282,7 +1328,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   if (bad)
     return 0;
   
-  /* Get the macro's subtree and include stack, if it has
+  /* Get the macro's subtree and include-stack, if it has
      not been defined `get_macro` will add an error message
      and return `NULL`. */
   fail_if (get_macro(tree, &macro, &macro_include_stack));
@@ -1311,6 +1357,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   
   
  done:
+  last_value_statement = NULL;
   break_level = 0;
   mds_kbdc_tree_free(arg);
   return 0;
