@@ -831,7 +831,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this);
  * @param   this  The tree node
  * @return        A duplicate of `this`, `NULL` on error
  */
-mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this);
+mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this);
 
 
 /**
@@ -840,7 +840,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this);
  * @param  this    The tree node
  * @param  output  The output file
  */
-void mds_kbdc_tree_print(mds_kbdc_tree_t* restrict this, FILE* output);
+void mds_kbdc_tree_print(const mds_kbdc_tree_t* restrict this, FILE* output);
 
 
 

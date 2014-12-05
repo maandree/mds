@@ -112,8 +112,6 @@ void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result);
 /**
  * Mark the root of the tree as no longer being visited,
  * and release clean up after the use of this module
- * 
- * This function is guaranteed not to modify `errno`
  */
 void mds_kbdc_include_stack_end(void);
 

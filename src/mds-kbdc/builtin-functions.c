@@ -17,6 +17,8 @@
  */
 #include "builtin-functions.h"
 
+#include "variables.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -258,8 +260,45 @@ static char32_t* builtin_function_less_2(const char32_t** restrict args)
 }
 
 
-/* static char32_t* builtin_function_set_3(const char32_t** restrict args);  (variable index value) */
-/* static char32_t* builtin_function_get_2(const char32_t** restrict args);  (variable index) */
+/**
+ * Definition of the built-in function get/2
+ * 
+ * @param   args  The arguments passed to the function
+ * @return        The return value of the function, `NULL` on error
+ */
+static char32_t* builtin_function_get_2(const char32_t** restrict args)
+{
+  const char32_t* restrict a = *args++;
+  const char32_t* restrict b = *args++;
+  size_t n = (size_t)*b;
+  mds_kbdc_tree_t* value = variables_get((size_t)*a);
+  while (n--)
+    value = value->next;
+  return string_dup(value->compiled_string.string);
+}
+
+
+/**
+ * Definition of the built-in function set/3
+ * 
+ * @param   args  The arguments passed to the function
+ * @return        The return value of the function, `NULL` on error
+ */
+static char32_t* builtin_function_set_3(const char32_t** restrict args)
+{
+  const char32_t* restrict a = *args++;
+  const char32_t* restrict b = *args++;
+  const char32_t* restrict c = *args++;
+  size_t n = (size_t)*b;
+  mds_kbdc_tree_t* value = variables_get((size_t)*a);
+  while (n--)
+    value = value->next;
+  free(value->compiled_string.string);
+  value->compiled_string.string = string_dup(c);
+  if (value->compiled_string.string == NULL)
+    return NULL;
+  return string_dup(c);
+}
 
 
 #undef define_1
@@ -298,6 +337,10 @@ int builtin_function_defined(const char* restrict name, size_t arg_count)
 /**
  * Invoke a builtin function
  * 
+ * The function will abort if an non-builtin function is addressed
+ * 
+ * Before invoking set/3 or get/2, please check the arguments
+ * 
  * @param   name       The name of the function
  * @param   arg_count  The number of arguments to pass to the function
  * @param   args       The arguments to pass
@@ -307,14 +350,14 @@ char32_t* builtin_function_invoke(const char* restrict name, size_t arg_count, c
 {
   if (arg_count == 3)
     if (!strcmp(name, "set"))
-      return NULL; /* TODO builtin_function_set_3(args) */
+      return builtin_function_set_3(args);
   
   if (arg_count == 1)
     if (!strcmp(name, "not"))
       return builtin_function_not_1(args);
   
   if (arg_count != 2)
-    return NULL;
+    abort();
   
   if (!strcmp(name, "add"))      return builtin_function_add_2(args);
   if (!strcmp(name, "sub"))      return builtin_function_sub_2(args);
@@ -329,8 +372,8 @@ char32_t* builtin_function_invoke(const char* restrict name, size_t arg_count, c
   if (!strcmp(name, "equals"))   return builtin_function_equals_2(args);
   if (!strcmp(name, "greater"))  return builtin_function_greater_2(args);
   if (!strcmp(name, "less"))     return builtin_function_less_2(args);
-  if (!strcmp(name, "get"))      return NULL; /* TODO builtin_function_get_2(args) */
+  if (!strcmp(name, "get"))      return builtin_function_get_2(args);
   
-  return NULL;
+  abort();
 }
 

@@ -38,6 +38,10 @@ int builtin_function_defined(const char* restrict name, size_t arg_count) __attr
 /**
  * Invoke a builtin function
  * 
+ * The function will abort if an non-builtin function is addressed
+ * 
+ * Before invoking set/3 or get/2, please check the arguments
+ * 
  * @param   name       The name of the function
  * @param   arg_count  The number of arguments to pass to the function
  * @param   args       The arguments to pass

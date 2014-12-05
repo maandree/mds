@@ -21,6 +21,7 @@
 #include "include-stack.h"
 #include "builtin-functions.h"
 #include "string.h"
+#include "variables.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -144,27 +145,53 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   return 0; /* TODO */
 }
 
+
+/**
+ * Assign a value to a variable, and define or shadow it in the process
+ * 
+ * @param   variable                  The variable index
+ * @param   string                    The variable's new value, must be `NULL` iff `value != NULL`
+ * @param   value                     The variable's new value, must be `NULL` iff `string != NULL`
+ * @param   statement                 The statement where the variable is assigned, may be `NULL`
+ * @param   lineoff                   The offset of the line for where the string selecting the variable begins
+ * @param   possibile_shadow_attempt  Whether `statement` is of a type that does not shadow variables,
+ *                                    but could easily be mistaked for one that does
+ * @return                            Zero on success, -1 on error
+ */
 static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_tree_t* restrict value,
 	       mds_kbdc_tree_t* restrict statement, size_t lineoff, int possibile_shadow_attempt)
 {
-  (void) variable;
-  (void) string;
-  (void) value;
-  (void) statement;
-  (void) lineoff;
-  (void) possibile_shadow_attempt;
-  return 0; /* TODO */
+  mds_kbdc_tree_t* tree = NULL;
+  int saved_errno;
+  
+  /* Warn if this is a possible shadow attempt. */
+  if (possibile_shadow_attempt && variables_let_will_override(variable) &&
+      statement && (statement->processed != PROCESS_LEVEL))
+    {
+      statement->processed = PROCESS_LEVEL;
+      NEW_ERROR(statement, WARNING, "will not shadow existing definition");
+      error->start = lineoff;
+      error->end = lineoff + (size_t)snprintf(NULL, 0, "\\%zu", variable);
+    }
+  
+  /* Duplicate value. */
+  if (value)
+    fail_if ((tree = mds_kbdc_tree_dup(value), tree == NULL));
+  if (value == NULL)
+    {
+      fail_if ((tree = mds_kbdc_tree_create(C(COMPILED_STRING)), tree == NULL));
+      tree->compiled_string.string = string_dup(string);
+      fail_if (tree->compiled_string.string == NULL);
+    }
+  
+  /* Assign variable. */
+  fail_if (variables_let(variable, tree));
+  return 0;
+  FAIL_BEGIN;
+  mds_kbdc_tree_free(tree);
+  FAIL_END;
 }
 
-static int push_stack(void)
-{
-  return 0; /* TODO */
-}
-
-static int pop_stack(void)
-{
-  return 0; /* TODO */
-}
 
 static int set_macro(const mds_kbdc_tree_macro_t* restrict macro,
 		     mds_kbdc_include_stack_t* macro_include_stack)
@@ -1072,7 +1099,7 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
   /* Set the value of the variable. */
   fail_if (let(variable, NULL, value, NULL, 0, 0));
   
-  free(value);
+  mds_kbdc_tree_free(value);
   return 0;
   FAIL_BEGIN;
   free(value);
@@ -1339,7 +1366,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   
   
   /* Push call stack and set parameters. */
-  fail_if (push_stack());
+  variables_stack_push();
   for (arg_ = arg; arg_; arg_ = arg_->next)
     fail_if (let(variable, NULL, arg_, NULL, 0, 0));
   
@@ -1355,7 +1382,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   mds_kbdc_include_stack_free(our_include_stack), our_include_stack = NULL;
   
   /* Pop call stack. */
-  fail_if (pop_stack());
+  variables_stack_pop();
   
   
  done:
@@ -1446,10 +1473,14 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
  */
 int compile_layout(mds_kbdc_parsed_t* restrict result_)
 {
-  int r;
+  int r, saved_errno;
   mds_kbdc_include_stack_begin(result = result_);
   r = compile_subtree(result_->tree);
-  return mds_kbdc_include_stack_end(), r;
+  saved_errno = errno;
+  mds_kbdc_include_stack_end();
+  variables_terminate();
+  errno = saved_errno;
+  return r;
 }
 
 

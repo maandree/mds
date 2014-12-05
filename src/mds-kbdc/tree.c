@@ -277,9 +277,9 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  LOWERCASE:identifer   The name of subtype
  */
-#define NODE(LOWERCASE)								\
-  mds_kbdc_tree_##LOWERCASE##_t* n = (mds_kbdc_tree_##LOWERCASE##_t*)node;	\
-  mds_kbdc_tree_##LOWERCASE##_t* t = (mds_kbdc_tree_##LOWERCASE##_t*)this
+#define NODE(LOWERCASE)									\
+  mds_kbdc_tree_##LOWERCASE##_t* n = (mds_kbdc_tree_##LOWERCASE##_t*)node;		\
+  const mds_kbdc_tree_##LOWERCASE##_t* t = (const mds_kbdc_tree_##LOWERCASE##_t*)this
 
 
 /**
@@ -288,7 +288,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * @param   this  The tree node
  * @return        A duplicate of `this`, `NULL` on error
  */
-mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
+mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this)
 {
   mds_kbdc_tree_t* node = NULL;
   int saved_errno;
@@ -357,8 +357,8 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
  * @param  NOTATION:const char*  The notation for the subtype
  */
 #define NODE(LOWERCASE, NOTATION)					\
-  mds_kbdc_tree_##LOWERCASE##_t* node;					\
-  node = (mds_kbdc_tree_##LOWERCASE##_t*)this;				\
+  const mds_kbdc_tree_##LOWERCASE##_t* node;				\
+  node = (const mds_kbdc_tree_##LOWERCASE##_t*)this;			\
   fprintf(output, "%*.s(\033[01m%s\033[00m", indent, "", NOTATION);	\
   fprintf(output, " \033[36m(@ %zu %zu-%zu)\033[00m",			\
 	  node->loc_line + 1, node->loc_start, node->loc_end)
@@ -502,7 +502,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(mds_kbdc_tree_t* restrict this)
  * @param  output  The output file
  * @param  indent  The indent
  */
-static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* output, int indent)
+static void mds_kbdc_tree_print_indented(const mds_kbdc_tree_t* restrict this, FILE* output, int indent)
 {
  again:
   if (this == NULL)
@@ -605,7 +605,7 @@ static void mds_kbdc_tree_print_indented(mds_kbdc_tree_t* restrict this, FILE* o
  * @param  this    The tree node
  * @param  output  The output file
  */
-void mds_kbdc_tree_print(mds_kbdc_tree_t* restrict this, FILE* output)
+void mds_kbdc_tree_print(const mds_kbdc_tree_t* restrict this, FILE* output)
 {
   mds_kbdc_tree_print_indented(this, output, 0);
 }
