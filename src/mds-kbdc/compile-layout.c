@@ -22,6 +22,7 @@
 #include "builtin-functions.h"
 #include "string.h"
 #include "variables.h"
+#include "callables.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -193,56 +194,102 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
 }
 
 
-static int set_macro(const mds_kbdc_tree_macro_t* restrict macro,
+/**
+ * Store a macro
+ * 
+ * @param   macro                The macro
+ * @param   macro_include_stack  The include-stack for the macro
+ * @return                       Zero on success, -1 on error
+ */
+static int set_macro(mds_kbdc_tree_macro_t* restrict macro,
 		     mds_kbdc_include_stack_t* macro_include_stack)
 {
-  (void) macro;
-  (void) macro_include_stack;
-  mds_kbdc_include_stack_free(macro_include_stack);
-  return 0; /* TODO */
+  return callables_set(macro->name, 0, (mds_kbdc_tree_t*)macro, macro_include_stack);
 }
 
-static int get_macro_lax(const char* restrict macro_name, const mds_kbdc_tree_macro_t** restrict macro,
-			 mds_kbdc_include_stack_t** restrict macro_include_stack)
+
+/**
+ * Get a stored macro
+ * 
+ * @param  name                 The name of the macro, with suffix
+ * @param  macro                Output parameter for the macro, `NULL` if not found
+ * @param  macro_include_stack  Output parameter for the include-stack for the macro
+ */
+static void get_macro_lax(const char* restrict macro_name, mds_kbdc_tree_macro_t** restrict macro,
+			  mds_kbdc_include_stack_t** restrict macro_include_stack)
 {
-  (void) macro_name;
-  (void) macro;
-  (void) macro_include_stack;
-  return 0; /* TODO */
+  callables_get(macro_name, 0, (mds_kbdc_tree_t**)macro, macro_include_stack);
 }
 
-static int get_macro(const mds_kbdc_tree_macro_call_t* restrict macro_call,
-		     const mds_kbdc_tree_macro_t** restrict macro,
+
+/**
+ * Get a stored macro
+ * 
+ * The function is similar to `get_macro_lax`, however, this fucntion
+ * will report an error if the macro has not yet been defined, and it
+ * will pretend that it has not yet been defined if the macro contained
+ * an error in an earlier called to it
+ * 
+ * @param   macro_call           The macro-call
+ * @param   macro                Output parameter for the macro, `NULL` if not found or has an error
+ * @param   macro_include_stack  Output parameter for the include-stack for the macro
+ * @return                       Zero on success, -1 on error
+ */
+static int get_macro(mds_kbdc_tree_macro_call_t* restrict macro_call,
+		     mds_kbdc_tree_macro_t** restrict macro,
 		     mds_kbdc_include_stack_t** restrict macro_include_stack)
 {
-  NEW_ERROR(macro_call, ERROR, "macro ‘%s’ as not been defined yet", macro_call->name);
-  /* return set `*macro = NULL` if `(*macro)->processed == PROCESS_LEVEL` */
-  (void) macro;
-  (void) macro_include_stack;
-  return 0; /* TODO */
+  get_macro_lax(macro_call->name, macro, macro_include_stack);
+  if (*macro == NULL)
+    {
+      NEW_ERROR(macro_call, ERROR, "macro ‘%s’ as not been defined yet", macro_call->name);
+      macro_call->processed = PROCESS_LEVEL;
+      return 0;
+    }
+  if ((*macro)->processed == PROCESS_LEVEL)
+    *macro = NULL;
+  return 0;
  pfail:
   return -1;
 }
 
-static int set_function(const mds_kbdc_tree_function_t* restrict function,
+
+/**
+ * Store a function
+ * 
+ * @param   function                The function
+ * @param   function_include_stack  The include-stack for the function
+ * @return                          Zero on success, -1 on error
+ */
+static int set_function(mds_kbdc_tree_function_t* restrict function,
 			mds_kbdc_include_stack_t* function_include_stack)
 {
-  (void) function;
-  (void) function_include_stack;
-  mds_kbdc_include_stack_free(function_include_stack);
-  return 0; /* TODO */
+  char* suffixless = function->name;
+  char* suffix_start = strchr(suffixless, '/');
+  size_t arg_count = (size_t)atoll(suffix_start + 1);
+  int r;
+  
+  *suffix_start = '\0';
+  r = callables_set(suffixless, arg_count, (mds_kbdc_tree_t*)function, function_include_stack);
+  return *suffix_start = '/', r;
 }
 
-static int get_function_lax(const char* restrict function_name, size_t arg_count,
-			    const mds_kbdc_tree_function_t** restrict function,
-			    mds_kbdc_include_stack_t** restrict function_include_stack)
+
+/**
+ * Get a stored function
+ * 
+ * @param  name                    The name of the function, suffixless
+ * @param  arg_count               The number of arguments the function takes
+ * @param  function                Output parameter for the function, `NULL` if not found
+ * @param  function_include_stack  Output parameter for the include-stack for the function
+ */
+static void get_function_lax(const char* restrict function_name, size_t arg_count,
+			     mds_kbdc_tree_function_t** restrict function,
+			     mds_kbdc_include_stack_t** restrict function_include_stack)
 {
-  (void) function_name;
-  (void) arg_count;
-  (void) function;
-  (void) function_include_stack;
-  return 0; /* TODO */
+  callables_get(function_name, arg_count, (mds_kbdc_tree_t**)function, function_include_stack);
 }
+
 
 static int set_return_value(char32_t* restrict value)
 {
@@ -610,10 +657,10 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
  * @param   tree  The tree to evaluate
  * @return        Zero on success, -1 on error, 1 if an undefined macro is used
  */
-static int check_marco_calls(const mds_kbdc_tree_t* restrict tree)
+static int check_marco_calls(mds_kbdc_tree_t* restrict tree)
 {
 #define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
-  const mds_kbdc_tree_macro_t* _macro;
+  mds_kbdc_tree_macro_t* _macro;
   mds_kbdc_include_stack_t* _macro_include_stack;
   void* data;
   int r, rc = 0;
@@ -830,7 +877,7 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
 static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 {
 #define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
-  const mds_kbdc_tree_function_t* function;
+  mds_kbdc_tree_function_t* function;
   mds_kbdc_include_stack_t* function_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   char* suffixless;
@@ -857,7 +904,7 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   /* Check that the function is not already defined,
      the include-stack is used in the error-clause as
      well as later when we list the function as defined. */
-  fail_if (get_function_lax(suffixless, arg_count, &function, &function_include_stack));
+  get_function_lax(suffixless, arg_count, &function, &function_include_stack);
   fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
   if (function)
     {
@@ -899,7 +946,7 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
 #define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
-  const mds_kbdc_tree_macro_t* macro;
+  mds_kbdc_tree_macro_t* macro;
   mds_kbdc_include_stack_t* macro_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   int r, saved_errno;
@@ -911,7 +958,7 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
      the include-stack is used in the error-clause as
      well as later when we list the macro as defined. */
   fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
-  t (get_macro_lax(tree->name, &macro, &macro_include_stack));
+  get_macro_lax(tree->name, &macro, &macro_include_stack);
   if (macro)
     {
       NEW_ERROR(tree, ERROR, "macro ‘%s’ is already defined", tree->name);
@@ -1341,7 +1388,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
   mds_kbdc_tree_t* arg = NULL;
   mds_kbdc_tree_t* arg_;
-  const mds_kbdc_tree_macro_t* macro;
+  mds_kbdc_tree_macro_t* macro;
   mds_kbdc_include_stack_t* macro_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   size_t variable;
@@ -1479,6 +1526,7 @@ int compile_layout(mds_kbdc_parsed_t* restrict result_)
   saved_errno = errno;
   mds_kbdc_include_stack_end();
   variables_terminate();
+  callables_terminate();
   errno = saved_errno;
   return r;
 }
