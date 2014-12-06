@@ -272,7 +272,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
   if (builtin == 0)
     callables_get(name, arg_count, (mds_kbdc_tree_t**)&function, &function_include_stack);
   if ((builtin == 0) && (function == NULL))
-    FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ as not been defined yet", name, arg_count);
+    FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ has not been defined yet", name, arg_count);
   
   
   /* Call non-builtin function. */
@@ -473,11 +473,19 @@ static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char
   if (*rc < 0)  return;
   
   /* Check that the function is defined. */
-  if (builtin_function_defined(name, arg_count) == 0)
-    {
-      callables_get(name, arg_count, &function, &_function_include_stack);
-      *rc |= function != NULL;
-    }
+  if (builtin_function_defined(name, arg_count))
+    return;
+  callables_get(name, arg_count, &function, &_function_include_stack);
+  if (function != NULL)
+    return;
+  *rc |= 1;
+  NEW_ERROR(tree, ERROR, "function ‘%s/%zu’ has not been defined yet", name, arg_count);
+  error->start = lineoff;
+  error->end = lineoff + (size_t)(bracket - raw);
+  return;
+  
+ pfail:
+  *rc |= -1;
 }
 
 
@@ -1011,7 +1019,7 @@ static int get_macro(mds_kbdc_tree_macro_call_t* restrict macro_call,
   get_macro_lax(macro_call->name, macro, macro_include_stack);
   if (*macro == NULL)
     {
-      NEW_ERROR(macro_call, ERROR, "macro ‘%s’ as not been defined yet", macro_call->name);
+      NEW_ERROR(macro_call, ERROR, "macro ‘%s’ has not been defined yet", macro_call->name);
       macro_call->processed = PROCESS_LEVEL;
       return 0;
     }
