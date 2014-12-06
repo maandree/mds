@@ -138,12 +138,41 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   return NULL; /* TODO */
 }
 
+
+/**
+ * Parse a variable string
+ * 
+ * @param   tree     The statement where the variable is selected
+ * @param   raw      The variable string
+ * @param   lineoff  The offset on the line where the variable string begins
+ * @return           The index of the variable, zero on error
+ */
 static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  return 0; /* TODO */
+  int bad = 0;
+  size_t var;
+  const char* restrict raw_ = raw;
+  
+  if (*raw++ != '/')  bad = 1;
+  if (*raw++ == '0')  bad = 1;
+  for (; *raw; raw++)
+    bad |= ((*raw < '0') || ('9' < *raw));
+  
+  if (bad)
+    {
+      NEW_ERROR(tree, ERROR, "not a variable");
+      error->start = lineoff;
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+      return 1;
+    }
+  
+  var = (size_t)atoll(raw_ + 1);
+  if (strlen(raw_ + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
+    return errno = ERANGE, (size_t)0;
+  return var;
+ pfail:
+  return 0;
 }
 
 
