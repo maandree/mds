@@ -281,6 +281,14 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
   fail_if ((subrc = string_decode(buf), subrc == NULL));	\
   COPY
+#define CHAR_ERROR(...)					\
+  do							\
+    {							\
+      NEW_ERROR(__VA_ARGS__);				\
+      error->end = lineoff + (size_t)(raw - raw_);	\
+      error->start = error->end - 1;			\
+    }							\
+  while (0)
   
   const char* restrict raw_ = raw;
   char32_t* restrict subrc = NULL;
@@ -290,7 +298,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   char* restrict old_buf = NULL;
   size_t rc_ptr = 0, rc_size = 0, n;
   size_t buf_ptr = 0, buf_size = 0;
-  int quote = 0, escape = 1;
+  int quote = 0, escape = 0;
   char c;
   int saved_errno;
   
@@ -307,6 +315,8 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
       {
 	/* Close or open quote, of it got closed, convert the buffered UTF-8 text to UTF-32. */
 	if (quote ^= 1)  continue;
+	if ((quote == 1) && (raw != raw_ + 1))
+	  CHAR_ERROR(tree, WARNING, "strings should either be unquoted or unclosed in one large quoted");
 	STORE;
       }
     else if (c == '\\')
@@ -318,9 +328,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
     else if ((quote == 0) && (tree->processed != PROCESS_LEVEL))
       {
 	/* Only escapes may be used without quotes, if the string contains quotes. */
-	NEW_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
-	error->end = lineoff + (size_t)(raw - raw_);
-	error->start = error->end - 1;
+	CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
 	tree->processed = PROCESS_LEVEL;
       }
     else
@@ -359,9 +367,12 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   free(subrc);
   free(old_rc);
   free(old_buf);
+  free(rc);
   free(buf);
   return errno = saved_errno, NULL;
+#undef CHAR_ERROR
 #undef STORE
+#undef COPY
 #undef GROW_BUF
 }
 
@@ -394,7 +405,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
 static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
-  char32_t* rc = ((*raw == '"') ? parse_quoted_string : parse_unquoted_string)(tree, raw, lineoff);
+  char32_t* rc = (strchr("\"\\", *raw) ? parse_quoted_string : parse_unquoted_string)(tree, raw, lineoff);
   last_value_statement = old_last_value_statement;
   return rc;
 }
