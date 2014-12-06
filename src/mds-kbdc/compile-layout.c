@@ -481,7 +481,7 @@ static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char
   *rc |= 1;
   NEW_ERROR(tree, ERROR, "function ‘%s/%zu’ has not been defined yet", name, arg_count);
   error->start = lineoff;
-  error->end = lineoff + (size_t)(bracket - raw);
+  error->end = lineoff + (size_t)(*end - raw);
   return;
   
  pfail:
