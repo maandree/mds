@@ -122,6 +122,142 @@ static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
 
 
 /**
+ * Parse a function call escape
+ * 
+ * @param   tree     The statement where the escape is located
+ * @param   raw      The escape to parse
+ * @param   lineoff  The offset on the line where the escape beings
+ * @param   escape   Will be set to zero if the escape ended,
+ *                   till be set to anything but zero otherwise
+ * @param   end      Output parameter for the end of the escape
+ * @return           The text the escape represents, `NULL` on error
+ */
+static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff,
+				     int* restrict escape, const char* restrict* restrict end)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  (void) escape;
+  (void) end;
+  return NULL; /* TODO */
+}
+
+
+/**
+ * Parse an escape, variable dereference or function call
+ * 
+ * @param   tree     The statement where the escape is located
+ * @param   raw      The escape to parse
+ * @param   lineoff  The offset on the line where the escape beings
+ * @param   escape   Will be set to zero if the escape ended,
+ *                   till be set to anything but zero otherwise
+ * @param   end      Output parameter for the end of the escape
+ * @return           The text the escape represents, `NULL` on error
+ */
+static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff,
+			      int* restrict escape, const char* restrict* restrict end)
+{
+#define R(LOWER, UPPER)         (((LOWER) <= c) && (c <= (UPPER)))
+#define CR(COND, LOWER, UPPER)  ((COND) && ((LOWER) <= c) && (c <= (UPPER)))
+#define VARIABLE                (int)(raw - raw_) - (c == '.'), raw_
+#define RETURN_ERROR(...)					\
+  do								\
+    {								\
+      NEW_ERROR(__VA_ARGS__);					\
+      error->start = lineoff;					\
+      error->end = lineoff + (size_t)(raw - raw_);		\
+      tree->processed = PROCESS_LEVEL;				\
+      *escape = 0;						\
+      if (rc)							\
+	goto done;						\
+      fail_if ((rc = malloc(sizeof(char32_t)), rc == NULL));	\
+      *rc = -1;							\
+      goto done;						\
+    }								\
+  while (0)
+  
+  const char* restrict raw_ = raw++;
+  char c = *raw++;
+  uintmax_t numbuf = 0;
+  char32_t* rc = NULL;
+  mds_kbdc_tree_t* value;
+  int have = 0, saved_errno;
+  
+  
+  /* Get escape type. */
+  if (c == '0')
+    /* Octal representation. */
+    *escape = 8;
+  else if (c == 'u')
+    /* Hexadecimal representation. */
+    *escape = 16;
+  else if (R('1', '9'))
+    /* Variable dereference. */
+    *escape = 10;
+  else if ((c == '_') || R('a', 'z') || R('A', 'Z'))
+    /* Function call. */
+    *escape = 100;
+  else
+    RETURN_ERROR(tree, ERROR, "invalid escape");
+  
+  
+  /* Read escape. */
+  if (*escape == 100)
+    /* Function call. */
+    return parse_function_call(tree, raw_, lineoff, escape, end);
+  /* Octal or hexadecimal representation, or variable dereference. */
+  for (; (c = *raw++) && (c != '.'); have = 1)
+    if      (CR(*escape ==  8, '0', '7'))  numbuf = ( 8 * numbuf) + (c & 15);
+    else if (CR(*escape == 16, '0', '9'))  numbuf = (16 * numbuf) + (c & 15);
+    else if (CR(*escape == 16, 'a', 'f'))  numbuf = (16 * numbuf) + (c & 15) + 9;
+    else if (CR(*escape == 16, 'A', 'F'))  numbuf = (16 * numbuf) + (c & 15) + 9;
+    else if (CR(*escape == 10, '0', '9'))  numbuf = (10 * numbuf) + (c & 15);
+    else
+      {
+	raw--;
+	break;
+      }
+  if (have == 0)
+    RETURN_ERROR(tree, ERROR, "invalid escape");
+  
+  
+  /* Evaluate escape. */
+  if (*escape == 10)
+    {
+      /* Variable dereference. */
+      if (value = variables_get((size_t)numbuf), value == NULL)
+	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is not defined", VARIABLE);
+      if (value->type == C(ARRAY))
+	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);
+      if (value->type != C(COMPILED_STRING))
+	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);
+      fail_if ((rc = string_dup(tree->compiled_string.string), rc == NULL));
+    }
+  else
+    {
+      /* Octal or hexadecimal representation. */
+      fail_if ((rc = malloc(2 * sizeof(char32_t)), rc == NULL));
+      rc[0] = (char32_t)numbuf, rc[1] = -1;
+    }
+  
+  
+ done:
+  *escape = 0;
+  *end = raw;
+  return rc;
+ pfail:
+  saved_errno = errno;
+  free(rc);
+  return errno = saved_errno, NULL;
+#undef RETURN_ERROR
+#undef VARIABLE
+#undef CR
+#undef R
+}
+
+
+/**
  * Parse a quoted string
  * 
  * @param   tree     The statement where the string is located
@@ -131,10 +267,102 @@ static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
  */
 static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  return NULL; /* TODO */
+#define GROW_BUF								\
+  if (buf_ptr == buf_size)							\
+    fail_if (xxrealloc(old_buf, buf, buf_size ? (buf_size <<= 1) : 16, char))
+#define COPY							\
+  n = string_length(subrc);					\
+  if (rc_ptr + n > rc_size)					\
+    fail_if (xxrealloc(old_rc, rc, rc_ptr + n, char32_t));	\
+  memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t));		\
+  free(subrc), subrc = NULL
+#define STORE							\
+  GROW_BUF;							\
+  buf[buf_ptr] = '\0', buf_ptr = 0;				\
+  fail_if ((subrc = string_decode(buf), subrc == NULL));	\
+  COPY
+  
+  const char* restrict raw_ = raw;
+  char32_t* restrict subrc = NULL;
+  char32_t* restrict rc = NULL;
+  char32_t* restrict old_rc = NULL;
+  char* restrict buf = NULL;
+  char* restrict old_buf = NULL;
+  size_t rc_ptr = 0, rc_size = 0, n;
+  size_t buf_ptr = 0, buf_size = 0;
+  int quote = 0, escape = 1;
+  char c;
+  int saved_errno;
+  
+  /* Parse the string. */
+  while ((c = *raw++))
+    if (escape)
+      {
+	/* Parse escape. */
+	raw -= 2, subrc = parse_escape(tree, raw, lineoff + (size_t)(raw - raw_), &escape, &raw);
+	fail_if (subrc == NULL);
+	COPY;
+      }
+    else if (c == '"')
+      {
+	/* Close or open quote, of it got closed, convert the buffered UTF-8 text to UTF-32. */
+	if (quote ^= 1)  continue;
+	STORE;
+      }
+    else if (c == '\\')
+      {
+	/* Convert the buffered UTF-8 text to UTF-32, and start an escape. */
+	STORE;
+	escape = 1;
+      }
+    else if ((quote == 0) && (tree->processed != PROCESS_LEVEL))
+      {
+	/* Only escapes may be used without quotes, if the string contains quotes. */
+	NEW_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
+	error->end = lineoff + (size_t)(raw - raw_);
+	error->start = error->end - 1;
+	tree->processed = PROCESS_LEVEL;
+      }
+    else
+      {
+	/* Buffer UTF-8 text for convertion to UTF-32. */
+	GROW_BUF;
+	buf[buf_ptr++] = c;
+      }
+  
+  /* Check that no escape is incomplete. */
+  if (escape && (tree->processed != PROCESS_LEVEL))
+    {
+      NEW_ERROR(tree, ERROR, "incomplete escape");
+      error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw);
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+    }
+  
+  /* Check that the quote is complete. */
+  if (quote && (tree->processed != PROCESS_LEVEL))
+    {
+      NEW_ERROR(tree, ERROR, "quote is not closed");
+      error->start = lineoff;
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+    }
+  
+  /* Shrink or grow to string to its minimal size, and -1-terminate it. */
+  fail_if (xxrealloc(old_rc, rc, rc_ptr + 1, char32_t));
+  rc[rc_ptr] = -1;
+  
+  free(buf);
+  return rc;
+ pfail:
+  saved_errno = errno;
+  free(subrc);
+  free(old_rc);
+  free(old_buf);
+  free(buf);
+  return errno = saved_errno, NULL;
+#undef STORE
+#undef GROW_BUF
 }
 
 
