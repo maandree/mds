@@ -374,13 +374,127 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
 }
 
 
+/**
+ * Check that a function used in a part of a literal is defined
+ * 
+ * @param  tree     The statement where the literal is located
+ * @param  raw      The beginning of the function call in the literal
+ * @param  lineoff  The offset on the line where the function call in the literal beings
+ * @param  end      Output parameter for the end of the function call
+ * @param  rc       Success status output parameter: zero on success,
+ *                  -1 on error, 1 if an undefined function is used
+ */
+static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char* restrict raw,
+				size_t lineoff, const char* restrict* restrict end, int* restrict rc);
+
+
+/**
+ * Check that all functions used in a part of a literal are defined
+ * 
+ * @param   tree     The statement where the literal is located
+ * @param   raw      The beginning of the part of the literal to check
+ * @param   lineoff  The offset on the line where the part of the literal beings
+ * @param   end      Output parameter for the part of the literal
+ * @param   rc       Success status output parameter: zero on success,
+ *                   -1 on error, 1 if an undefined function is used
+ * @return           The number of arguments the part of the literal contains
+ */
+static size_t check_function_calls_in_literal_(const mds_kbdc_tree_t* restrict tree,
+					       const char* restrict raw, size_t lineoff,
+					       const char* restrict* restrict end, int* restrict rc)
+{
+#define R(LOWER, UPPER)  (((LOWER) <= c) && (c <= (UPPER)))
+  const char* restrict raw_ = raw;
+  size_t count = 0;
+  int space = 1, quote = 0, escape = 0;
+  char c;
+  
+  while ((c = *raw++))
+    {
+      if ((c != ' ') && space)
+	space = 0, count++;
+      
+      if (escape)
+	{
+	  escape = 0;
+	  if ((c == '_') || R('a', 'z') || R('A', 'Z'))
+	    if (check_function_call(tree, raw - 2, lineoff + (size_t)(raw - 2 - raw_), &raw, rc), *rc < 0)
+	      break;
+	}
+      else if (c == '\\')  escape = 1;
+      else if (c == '"')   quote ^= 1;
+      else if (!quote)
+	{
+	  space = (c == ' ');
+	  if (c == ')')
+	    break;
+	}
+    }
+  
+  *end = raw;
+  return count;
+#undef R
+}
+
+
+/**
+ * Check that a function used in a part of a literal is defined
+ * 
+ * @param  tree     The statement where the literal is located
+ * @param  raw      The beginning of the function call in the literal
+ * @param  lineoff  The offset on the line where the function call in the literal beings
+ * @param  end      Output parameter for the end of the function call
+ * @param  rc       Success status output parameter: zero on success,
+ *                  -1 on error, 1 if an undefined function is used
+ */
+static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char* restrict raw,
+				size_t lineoff, const char* restrict* restrict end, int* restrict rc)
+{
+  mds_kbdc_tree_t* function = NULL;
+  mds_kbdc_include_stack_t* _function_include_stack;
+  char* bracket = strchr(raw, '(');
+  char* name = NULL;
+  size_t arg_count;
+  
+  /* Check that it is a function call by check that it has an opening bracket. */
+  if (bracket == NULL)
+    {
+      *end = raw + strlen(raw);
+      return;
+    }
+  
+  /* Copy the name of the function. */
+  name = alloca((size_t)(bracket - raw) * sizeof(char));
+  memcpy(name, raw + 1, (size_t)(bracket - raw - 1) * sizeof(char));
+  name[bracket - raw - 1] = 0;
+  
+  /* Get the number of arguments used, and check function calls there too. */
+  arg_count = check_function_calls_in_literal_(tree, raw, lineoff, end, rc);
+  if (*rc < 0)  return;
+  
+  /* Check that the function is defined. */
+  if (builtin_function_defined(name, arg_count) == 0)
+    {
+      callables_get(name, arg_count, &function, &_function_include_stack);
+      *rc |= function != NULL;
+    }
+}
+
+
+/**
+ * Check that all functions used in a literal are defined
+ * 
+ * @param   tree     The statement where the literal is located
+ * @param   raw      The literal to check
+ * @param   lineoff  The offset on the line where the literal beings
+ * @return           Zero on success, -1 on error, 1 if an undefined function is used
+ */
 static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
 					   const char* restrict raw, size_t lineoff)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  return 0; /* TODO */
+  int rc = 0;
+  (void) check_function_calls_in_literal_(tree, raw, lineoff, &raw, &rc);
+  return rc;
 }
 
 
