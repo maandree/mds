@@ -466,10 +466,10 @@ static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char
   /* Copy the name of the function. */
   name = alloca((size_t)(bracket - raw) * sizeof(char));
   memcpy(name, raw + 1, (size_t)(bracket - raw - 1) * sizeof(char));
-  name[bracket - raw - 1] = 0;
+  name[bracket++ - raw - 1] = 0;
   
   /* Get the number of arguments used, and check function calls there too. */
-  arg_count = check_function_calls_in_literal_(tree, raw, lineoff, end, rc);
+  arg_count = check_function_calls_in_literal_(tree, bracket, lineoff + (size_t)(bracket - raw), end, rc);
   if (*rc < 0)  return;
   
   /* Check that the function is defined. */
