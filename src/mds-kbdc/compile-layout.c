@@ -120,15 +120,57 @@ static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
   return 0; /* TODO */
 }
 
-static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
+
+/**
+ * Parse a quoted string
+ * 
+ * @param   tree     The statement where the string is located
+ * @param   raw      The string to parse
+ * @param   lineoff  The offset on the line where the string beings
+ * @return           The string as pure text, `NULL` on error
+ */
+static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
   (void) tree;
   (void) raw;
   (void) lineoff;
   return NULL; /* TODO */
-  
-  /* Do not forget to store and then restore `last_value_statement` */
 }
+
+
+/**
+ * Parse am unquoted string
+ * 
+ * @param   tree     The statement where the string is located
+ * @param   raw      The string to parse
+ * @param   lineoff  The offset on the line where the string beings
+ * @return           The string as pure text, `NULL` on error
+ */
+static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  return NULL; /* TODO */
+}
+
+
+/**
+ * Parse a string
+ * 
+ * @param   tree     The statement where the string is located
+ * @param   raw      The string to parse
+ * @param   lineoff  The offset on the line where the string beings
+ * @return           The string as pure text, `NULL` on error
+ */
+static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
+{
+  mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
+  char32_t* rc = ((*raw == '"') ? parse_quoted_string : parse_unquoted_string)(tree, raw, lineoff);
+  last_value_statement = old_last_value_statement;
+  return rc;
+}
+
 
 static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
@@ -136,6 +178,8 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   (void) raw;
   (void) lineoff;
   return NULL; /* TODO */
+  
+  /* Do not forget to store and then restore `last_value_statement` */
 }
 
 
@@ -153,11 +197,19 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   size_t var;
   const char* restrict raw_ = raw;
   
-  if (*raw++ != '/')  bad = 1;
+  /* The variable must begin with \. */
+  if (*raw++ != '\\')  bad = 1;
+  /* Zero is not a valid varible, nor may there be leading zeroes.  */
   if (*raw++ == '0')  bad = 1;
   for (; *raw; raw++)
-    bad |= ((*raw < '0') || ('9' < *raw));
+    /* Check that the variable consists only of digits. */
+    if (('0' <= *raw) && (*raw <= '9'));
+    /* However, it may end with a dot. */
+    else if ((raw[0] == '.') && (raw[1] == '\0'));
+    else
+      bad = 1;
   
+  /* Report an error but return a variable index if the variable-string is invalid. */
   if (bad)
     {
       NEW_ERROR(tree, ERROR, "not a variable");
@@ -167,6 +219,7 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
       return 1;
     }
   
+  /* Parse the variable string and check that it did not overflow. */
   var = (size_t)atoll(raw_ + 1);
   if (strlen(raw_ + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
     return errno = ERANGE, (size_t)0;
@@ -326,6 +379,7 @@ static int set_return_value(char32_t* restrict value)
   last_value_statement = NULL; /* should only be done if we have side-effects */
   return 1; /* TODO */
 }
+
 
 static int add_mapping(mds_kbdc_tree_map_t* restrict mapping, mds_kbdc_include_stack_t* restrict include_stack)
 {
