@@ -358,7 +358,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
  * @param   raw      The escape to parse
  * @param   lineoff  The offset on the line where the escape beings
  * @param   escape   Will be set to zero if the escape ended,
- *                   till be set to anything but zero otherwise
+ *                   will be set to anything but zero otherwise
  * @param   end      Output parameter for the end of the escape
  * @return           The text the escape represents, `NULL` on error
  */
@@ -513,7 +513,7 @@ static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
  * @param   raw      The escape to parse
  * @param   lineoff  The offset on the line where the escape beings
  * @param   escape   Will be set to zero if the escape ended,
- *                   till be set to anything but zero otherwise
+ *                   will be set to anything but zero otherwise
  * @param   end      Output parameter for the end of the escape
  * @return           The text the escape represents, `NULL` on error
  */
