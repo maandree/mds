@@ -95,6 +95,11 @@ static int multiple_variants = 0;
  */
 static mds_kbdc_tree_t* last_value_statement = NULL;
 
+/**
+ * Address of the current return value
+ */
+static char32_t** current_return_value = NULL;
+
 
 
 /**
@@ -111,13 +116,238 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree);
 /*                           (Basically everything except tree-walking.)                          */
 
 
-static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
-					   const char* restrict raw, size_t lineoff)
+/**
+ * Assign a value to a variable, and define or shadow it in the process
+ * 
+ * @param   variable                  The variable index
+ * @param   string                    The variable's new value, must be `NULL` iff `value != NULL`
+ * @param   value                     The variable's new value, must be `NULL` iff `string != NULL`
+ * @param   statement                 The statement where the variable is assigned, may be `NULL`
+ * @param   lineoff                   The offset of the line for where the string selecting the variable begins
+ * @param   possibile_shadow_attempt  Whether `statement` is of a type that does not shadow variables,
+ *                                    but could easily be mistaked for one that does
+ * @return                            Zero on success, -1 on error
+ */
+static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_tree_t* restrict value,
+	       mds_kbdc_tree_t* restrict statement, size_t lineoff, int possibile_shadow_attempt)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  return 0; /* TODO */
+  mds_kbdc_tree_t* tree = NULL;
+  int saved_errno;
+  
+  /* Warn if this is a possible shadow attempt. */
+  if (possibile_shadow_attempt && variables_let_will_override(variable) &&
+      statement && (statement->processed != PROCESS_LEVEL))
+    {
+      statement->processed = PROCESS_LEVEL;
+      NEW_ERROR(statement, WARNING, "does not shadow existing definition");
+      error->start = lineoff;
+      error->end = lineoff + (size_t)snprintf(NULL, 0, "\\%zu", variable);
+    }
+  
+  /* Duplicate value. */
+  if (value)
+    fail_if ((tree = mds_kbdc_tree_dup(value), tree == NULL));
+  if (value == NULL)
+    {
+      fail_if ((tree = mds_kbdc_tree_create(C(COMPILED_STRING)), tree == NULL));
+      tree->compiled_string.string = string_dup(string);
+      fail_if (tree->compiled_string.string == NULL);
+    }
+  
+  /* Assign variable. */
+  fail_if (variables_let(variable, tree));
+  return 0;
+  FAIL_BEGIN;
+  mds_kbdc_tree_free(tree);
+  FAIL_END;
+}
+
+
+/**
+ * Check that a call to set/3 or get/2 is valid
+ * 
+ * @param   tree          The statement from where the function is called
+ * @param   is_set        Whether a call to set/3 is being checked
+ * @param   variable_arg  The first argument
+ * @param   index_arg     The second argument
+ * @param   start         The offset on the line where the function call begins
+ * @param   end           The offset on the line where the function call ends
+ * @return                Zero on success, -1 on error, 1 if the call is invalid
+ */
+static int check_set_3_get_2_call(mds_kbdc_tree_t* restrict tree, int is_set, const char32_t* variable_arg,
+				  const char32_t* index_arg, size_t start, size_t end)
+{
+#define F  (is_set ? "set/3" : "get/2")
+#define FUN_ERROR(...)			\
+  do					\
+    {					\
+      NEW_ERROR(__VA_ARGS__);		\
+      error->start = start;		\
+      error->end = end;			\
+      return 1;				\
+    }					\
+  while(0);
+  
+  mds_kbdc_tree_t* variable;
+  mds_kbdc_tree_t* element;
+  size_t index;
+  
+  if ((variable_arg[0] <= 0) || (variable_arg[1] != -1))
+    FUN_ERROR(tree, ERROR, "first argument in call to function ‘%s’ must be a variable index", F);
+  
+  if ((index_arg[0] < 0) || (index_arg[1] != -1))
+    FUN_ERROR(tree, ERROR, "second argument in call to function ‘%s’ must be an element index", F);
+  
+  variable = variables_get((size_t)*variable_arg);
+  if (variable == NULL)
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not declared", (size_t)*variable_arg);
+  if (variable->type != C(ARRAY))
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not an array", (size_t)*variable_arg);
+  
+  index = (size_t)*index_arg;
+  element = variable->array.elements;
+  while (element && index--)
+    element = element->next;
+  
+  if (element == NULL)
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu elements", (size_t)*variable_arg, (size_t)*index_arg);
+  
+  return 0;
+ pfail:
+  return -1;
+#undef FUN_ERROR
+#undef F
+}
+
+
+/**
+ * Call a function
+ * 
+ * @param   tree          The statement from where the function is called
+ * @param   name          The name of the function, suffixless
+ * @param   arguments     The arguments to pass to the function, `NULL`-terminated
+ * @param   start         The offset on the line where the function call begins
+ * @param   end           The offset on the line where the function call ends
+ * @param   return_value  Output parameter for the return value, `NULL` if the
+ *                        function did not return, was not defined or otherwise
+ *                        invoked an error, which is true will be reported to the
+ *                        user from this function and the statement will be marked
+ *                        as containing an error
+ * @return                Zero on success, -1 on error
+ */
+static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict name,
+			 const char32_t** restrict arguments, size_t start, size_t end,
+			 char32_t** restrict return_value)
+{
+#define FUN_ERROR(...)					\
+  do							\
+    {							\
+      NEW_ERROR(__VA_ARGS__);				\
+      error->start = start;				\
+      error->end = end;					\
+      tree->processed = PROCESS_LEVEL;			\
+      free(*return_value), *return_value = NULL;	\
+      goto done;					\
+    }							\
+  while(0);
+  
+  size_t i, arg_count = 0, empty_count = 0;
+  char32_t** old_return_value;
+  mds_kbdc_tree_function_t* function = NULL;
+  mds_kbdc_include_stack_t* function_include_stack = NULL;
+  mds_kbdc_include_stack_t* our_include_stack = NULL;
+  int r, is_set, builtin, saved_errno;
+  
+  /* Count the number of arguments we have. */
+  while (arguments[arg_count])
+    arg_count++;
+  
+  /* Push return-stack. */
+  *return_value = NULL;
+  old_return_value = current_return_value;
+  current_return_value = return_value;
+  
+  /* Get function definition. */
+  builtin = builtin_function_defined(name, arg_count);
+  if (builtin == 0)
+    callables_get(name, arg_count, (mds_kbdc_tree_t**)&function, &function_include_stack);
+  if ((builtin == 0) && (function == NULL))
+    FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ as not been defined yet", name, arg_count);
+  
+  
+  /* Call non-builtin function. */
+  if (builtin == 0)
+    {
+      /* Push call stack and set parameters. */
+      variables_stack_push();
+      for (i = 0; i < arg_count; i++)
+	fail_if (let(i, arguments[i], NULL, NULL, 0, 0));
+      
+      /* Switch include-stack to the function's. */
+      fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+      fail_if (mds_kbdc_include_stack_restore(function_include_stack));
+      
+      /* Call the function. */
+      fail_if (compile_subtree(function->inner));
+      
+      /* Switch back the include-stack to ours. */
+      fail_if (mds_kbdc_include_stack_restore(our_include_stack));
+      mds_kbdc_include_stack_free(our_include_stack), our_include_stack = NULL;
+      
+      /* Pop call stack. */
+      variables_stack_pop();
+      
+      /* Check that the function returned a value. */
+      if (*return_value == NULL)
+	FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ did not return a value", name, arg_count);
+      
+      goto done;
+    }
+  
+  
+  /* Call builtin function. */
+  
+  /* Check argument sanity. */
+  is_set = (arg_count == 3) && !strcmp(name, "set");
+  if (is_set || ((arg_count == 2) && !strcmp(name, "get")))
+    {
+      fail_if ((r = check_set_3_get_2_call(tree, is_set, arguments[0], arguments[1], start, end), r < 0));
+      if (r)
+	{
+	  tree->processed = PROCESS_LEVEL;
+	  free(*return_value), *return_value = NULL;
+	  goto done;
+	}
+    }
+  else
+    {
+      for (i = 0; i < arg_count; i++)
+	empty_count += string_length(arguments[i]) == 0;
+      if (empty_count && (empty_count != arg_count))
+	FUN_ERROR(tree, ERROR,
+		  "built-in function ‘%s/%zu’ requires that either none of"
+		  " the arguments are empty strings or that all of them are",
+		  name, arg_count);
+    }
+  
+  /* TODO side-effect if `is_set` */
+  
+  /* Call the function. */
+  *return_value = builtin_function_invoke(name, arg_count, arguments);
+  fail_if (*return_value == NULL);
+    
+  
+ done:
+  /* Pop return-stack. */
+  current_return_value = old_return_value;
+  return 0;
+  
+  FAIL_BEGIN;
+  mds_kbdc_include_stack_free(our_include_stack);
+  free(*return_value), *return_value = NULL;
+  current_return_value = old_return_value;
+  FAIL_END;
+#undef FUN_ERROR
 }
 
 
@@ -141,6 +371,16 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   (void) escape;
   (void) end;
   return NULL; /* TODO */
+}
+
+
+static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
+					   const char* restrict raw, size_t lineoff)
+{
+  (void) tree;
+  (void) raw;
+  (void) lineoff;
+  return 0; /* TODO */
 }
 
 
@@ -610,53 +850,6 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
 
 
 /**
- * Assign a value to a variable, and define or shadow it in the process
- * 
- * @param   variable                  The variable index
- * @param   string                    The variable's new value, must be `NULL` iff `value != NULL`
- * @param   value                     The variable's new value, must be `NULL` iff `string != NULL`
- * @param   statement                 The statement where the variable is assigned, may be `NULL`
- * @param   lineoff                   The offset of the line for where the string selecting the variable begins
- * @param   possibile_shadow_attempt  Whether `statement` is of a type that does not shadow variables,
- *                                    but could easily be mistaked for one that does
- * @return                            Zero on success, -1 on error
- */
-static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_tree_t* restrict value,
-	       mds_kbdc_tree_t* restrict statement, size_t lineoff, int possibile_shadow_attempt)
-{
-  mds_kbdc_tree_t* tree = NULL;
-  int saved_errno;
-  
-  /* Warn if this is a possible shadow attempt. */
-  if (possibile_shadow_attempt && variables_let_will_override(variable) &&
-      statement && (statement->processed != PROCESS_LEVEL))
-    {
-      statement->processed = PROCESS_LEVEL;
-      NEW_ERROR(statement, WARNING, "does not shadow existing definition");
-      error->start = lineoff;
-      error->end = lineoff + (size_t)snprintf(NULL, 0, "\\%zu", variable);
-    }
-  
-  /* Duplicate value. */
-  if (value)
-    fail_if ((tree = mds_kbdc_tree_dup(value), tree == NULL));
-  if (value == NULL)
-    {
-      fail_if ((tree = mds_kbdc_tree_create(C(COMPILED_STRING)), tree == NULL));
-      tree->compiled_string.string = string_dup(string);
-      fail_if (tree->compiled_string.string == NULL);
-    }
-  
-  /* Assign variable. */
-  fail_if (variables_let(variable, tree));
-  return 0;
-  FAIL_BEGIN;
-  mds_kbdc_tree_free(tree);
-  FAIL_END;
-}
-
-
-/**
  * Store a macro
  * 
  * @param   macro                The macro
@@ -753,11 +946,19 @@ static void get_function_lax(const char* restrict function_name, size_t arg_coun
 }
 
 
+/**
+ * Store a value for being returned by the current function
+ * 
+ * @param   value  The value the function should return
+ * @return         Zero on success, 1 if no function is currently being called
+ */
 static int set_return_value(char32_t* restrict value)
 {
-  free(value);
-  last_value_statement = NULL; /* should only be done if we have side-effects */
-  return 1; /* TODO */
+  if (current_return_value == NULL)
+    return free(value), 1;
+  free(*current_return_value);
+  *current_return_value = value;
+  return 0;
 }
 
 
@@ -1803,17 +2004,18 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   last_value_statement = (mds_kbdc_tree_t*)tree;
   
   /* Add the value statement */
-  fail_if ((r = set_return_value(seq->compiled_string.string), r < 0));
+  r = set_return_value(seq->compiled_string.string);
   seq->compiled_string.string = NULL;
   
   /* Check that the value-statement is inside a function call, or has
      side-effects by directly or indirectly calling ‘\set/3’ on an
      array that is not shadowed by an inner function- or macro-call. */
-  if (r)
+  if (r /* TODO was there a side-effect? enter if no */)
     {
       NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
       tree->processed = PROCESS_LEVEL;
     }
+  /* TODO if we have side-effects: ```last_value_statement = NULL;``` */
   
   /* Check whether we made a previous value-statement unnecessary. */
   if (previous_last_value_statement)

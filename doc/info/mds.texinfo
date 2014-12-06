@@ -3769,7 +3769,16 @@ provide one place to do modifications to port the
 system.
 
 @table @asis
-@item @code{xsnprintf} [(@code{char buffer[], char* format, ...}) @arrow{} @code{int}]
+@item @code{xasprintf} [(@code{char* buffer, ...}) @arrow{} @code{int}]
+This is a wrapper for @code{asprintf} that has two
+important properties, the buffer is guaranteed to
+be @code{NULL} on failure, and it will return zero
+on and only on success. Unlike @code{asprintf},
+@code{xasprintf} takes the buffer's variable as
+its first argument rather than the address of that
+variable.
+
+@item @code{xsnprintf} [(@code{char buffer[], ...}) @arrow{} @code{int}]
 This is a wrapper for @code{snprintf} that allows you
 to forget about the buffer size. When you know how long
 a string can be, you should use @code{sprintf}. But when
@@ -3896,6 +3905,13 @@ on success. On failure, @code{var} will be
 @code{NULL}, so you must store the @code{var}
 into another variable in case this macro
 fails.
+
+@item @code{xxrealloc} [(@code{type* old, type* var, size_t elements, type}) @arrow{} @code{int}]
+Variant of @code{xrealloc} that will
+return with @code{old} set to @code{NULL}
+on success, and @code{old} set to @code{var}
+on error. Like @code{xrealloc}, @code{xxrealloc}
+returns zero on and only on success.
 
 @item @code{growalloc} [(@code{type* old, type* var, size_t elements, type}) @arrow{} @code{int}]
 When using this macro @code{var} should
@@ -5781,10 +5797,9 @@ function less_eq/2
 end function
 @end example
 
-A final constract to make layout code less
+A final construct to make layout code less
 repetitive is let-statements. This can be
-used to assign values to variables, and
-declar variables in undefined.
+used to assign values to variables.
 
 The code
 
@@ -5800,7 +5815,7 @@ macro latter/1
 end macro
 @end example
 
-can equivalently be writen using @code{let} as
+can equivalently be written using @code{let} as
 
 @example
 macro latter/1
@@ -5852,6 +5867,15 @@ not start with `0'--`9'. Additionally, when declared
 macro and function names must be suffixed with `/'
 follwed by the exact number of arguments the macro
 or function takes.
+
+Variable indices are constrained to the 31:th power
+of 2, exclusively. Attempts to use higher variable
+indices invoke undefined behaviour. Additionally
+there is no guarantee that the compiler allocates
+indexwise spares variables efficiently.
+
+Like variables, the size of arrays are also
+restricted to the 31:th power of 2.
 
 
 

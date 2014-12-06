@@ -53,13 +53,12 @@
 /**
  * Wrapper for `snprintf` that allows you to forget about the buffer size
  * 
- * @param   buffer:char[]  The buffer, must be of the type `char[]` and not `char*`
- * @param   format:char*   The format
- * @param   ...            The arguments
- * @return  :int           The number of bytes written, including the NUL-termination, negative on error
+ * @param   buffer:char[]         The buffer, must be of the type `char[]` and not `char*`
+ * @param   ...:const char*, ...  The format string and arguments
+ * @return  :int                  The number of bytes written, including the NUL-termination, negative on error
  */
-#define xsnprintf(buffer, format, ...)  \
-  snprintf(buffer, sizeof(buffer) / sizeof(char), format, __VA_ARGS__)
+#define xsnprintf(buffer, ...)  \
+  snprintf(buffer, sizeof(buffer) / sizeof(char), __VA_ARGS__)
 
 
 /**

@@ -339,7 +339,9 @@ int builtin_function_defined(const char* restrict name, size_t arg_count)
  * 
  * The function will abort if an non-builtin function is addressed
  * 
- * Before invoking set/3 or get/2, please check the arguments
+ * Before invoking set/3 or get/2, please check the arguments,
+ * please also check that either all or none of the arguments
+ * are empty string for any of the other builtin functions
  * 
  * @param   name       The name of the function
  * @param   arg_count  The number of arguments to pass to the function
