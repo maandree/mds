@@ -208,11 +208,11 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     return parse_function_call(tree, raw_, lineoff, escape, end);
   /* Octal or hexadecimal representation, or variable dereference. */
   for (; (c = *raw++) && (c != '.'); have = 1)
-    if      (CR(*escape ==  8, '0', '7'))  numbuf = ( 8 * numbuf) + (c & 15);
-    else if (CR(*escape == 16, '0', '9'))  numbuf = (16 * numbuf) + (c & 15);
-    else if (CR(*escape == 16, 'a', 'f'))  numbuf = (16 * numbuf) + (c & 15) + 9;
-    else if (CR(*escape == 16, 'A', 'F'))  numbuf = (16 * numbuf) + (c & 15) + 9;
-    else if (CR(*escape == 10, '0', '9'))  numbuf = (10 * numbuf) + (c & 15);
+    if      (CR(*escape ==  8, '0', '7'))  numbuf =  8 * numbuf + (c & 15);
+    else if (CR(*escape == 16, '0', '9'))  numbuf = 16 * numbuf + (c & 15);
+    else if (CR(*escape == 16, 'a', 'f'))  numbuf = 16 * numbuf + (c & 15) + 9;
+    else if (CR(*escape == 16, 'A', 'F'))  numbuf = 16 * numbuf + (c & 15) + 9;
+    else if (CR(*escape == 10, '0', '9'))  numbuf = 10 * numbuf + (c & 15);
     else
       {
 	raw--;
@@ -328,7 +328,10 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
     else if ((quote == 0) && (tree->processed != PROCESS_LEVEL))
       {
 	/* Only escapes may be used without quotes, if the string contains quotes. */
-	CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
+	if (*raw_ == '"')
+	  CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
+	else
+	  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
 	tree->processed = PROCESS_LEVEL;
       }
     else
@@ -387,10 +390,37 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
  */
 static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  return NULL; /* TODO */
+#define R(LOWER, UPPER)  (((LOWER) <= c) && (c <= (UPPER)))
+#define CHAR_ERROR(...)					\
+  do							\
+    {							\
+      NEW_ERROR(__VA_ARGS__);				\
+      error->end = lineoff + (size_t)(raw - raw_);	\
+      error->start = error->end - 1;			\
+      tree->processed = PROCESS_LEVEL;			\
+      goto done;					\
+    }							\
+  while (0)
+
+  const char* restrict raw_ = raw;
+  char32_t* rc;
+  char32_t buf = 0;
+  char c;
+  
+  while ((c = *raw++))
+    if (R('0', '9'))     buf = 10 * buf + (c & 15);
+    else if (c == '\\')  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
+    else if (c == '"')   CHAR_ERROR(tree, ERROR, "mixing numericals and quotes is not allowed");
+    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);
+  
+ done:
+  fail_if ((rc = malloc(2 * sizeof(char32_t)), rc == NULL));
+  return rc[0] = buf, rc[1] = -1, rc;
+  
+ pfail:
+  return NULL;
+#undef CHAR_ERROR
+#undef R
 }
 
 
