@@ -98,22 +98,29 @@ char* string_encode(const char32_t* restrict string)
   char* restrict rc;
   
   /* Allocated Modified UTF-8 string. */
-  if (xmalloc(rc, 6 * n + 1, char))
+  if (xmalloc(rc, 7 * n + 1, char))
     return NULL;
   
   /* Convert to Modified UTF-8. */
   for (i = j = 0; i < n; i++)
     {
 #define _c(s)  rc[j++] = (char)(((c >> (s)) & 0x3F) | 0x80)
-#define _t(s)  c < (char32_t)(1L << s)
+#define _t(s)  (0 < c) && ((uint32_t)c < (uint32_t)(1ULL << s))
       char32_t c = string[i];
       if      (c == 0)  rc[j++] = (char)0xC0, rc[j++] = (char)0x80;
       else if (_t( 7))  rc[j++] = (char)c;
       else if (_t(11))  rc[j++] = (char)((c >>  6) | 0xC0), _c( 0);
       else if (_t(16))  rc[j++] = (char)((c >> 12) | 0xE0), _c( 6), _c( 0);
       else if (_t(21))  rc[j++] = (char)((c >> 18) | 0xF0), _c(12), _c( 6), _c( 0);
+      /* UTF-8 actually ends here, fits 32 planes. */
       else if (_t(26))  rc[j++] = (char)((c >> 24) | 0xF8), _c(18), _c(12), _c( 6), _c(0);
-      else              rc[j++] = (char)((c >> 30) | 0xFC), _c(24), _c(18), _c(12), _c(6), _c(0);
+      else if (_t(31))  rc[j++] = (char)((c >> 30) | 0xFC), _c(24), _c(18), _c(12), _c(6), _c(0);
+      /* The orginal UTF-8 specification ended here, fits 31 bits.
+       * However, we added another byte so we can fit 32 bits
+       * (actually we ca now fit 36 bits.)
+       * However, we only needed this in `string_decode` which would
+       * not require any changed, but we added it here for symmetry. */
+      else              rc[j++] = (char)((c >> 30) | 0xFE), _c(30), _c(24), _c(18), _c(12), _c(6), _c(0);
 #undef _t
 #undef _c
     }

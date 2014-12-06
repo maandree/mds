@@ -304,7 +304,14 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   
   /* Parse the string. */
   while ((c = *raw++))
-    if (escape)
+    if (escape && quote && strchr("()[]{}<>\"\\,", c))
+      {
+	/* Buffer UTF-8 text for convertion to UTF-32. */
+	GROW_BUF;
+	buf[buf_ptr++] = c;
+	escape = 0;
+      }
+    else if (escape)
       {
 	/* Parse escape. */
 	raw -= 2, subrc = parse_escape(tree, raw, lineoff + (size_t)(raw - raw_), &escape, &raw);
@@ -401,7 +408,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
       goto done;					\
     }							\
   while (0)
-
+  
   const char* restrict raw_ = raw;
   char32_t* rc;
   char32_t buf = 0;
@@ -436,19 +443,123 @@ static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restri
 {
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
   char32_t* rc = (strchr("\"\\", *raw) ? parse_quoted_string : parse_unquoted_string)(tree, raw, lineoff);
-  last_value_statement = old_last_value_statement;
-  return rc;
+  return last_value_statement = old_last_value_statement, rc;
 }
 
 
+/**
+ * Parse a key-combination string
+ * 
+ * @param   tree     The statement where the string is located
+ * @param   raw      The string to parse
+ * @param   lineoff  The offset on the line where the string beings
+ * @return           The string as pure text, `NULL` on error
+ */
 static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  return NULL; /* TODO */
+#define GROW_BUF								\
+  if (buf_ptr == buf_size)							\
+    fail_if (xxrealloc(old_buf, buf, buf_size ? (buf_size <<= 1) : 16, char))
+#define COPY							\
+  n = string_length(subrc);					\
+  if (rc_ptr + n > rc_size)					\
+    fail_if (xxrealloc(old_rc, rc, rc_ptr + n, char32_t));	\
+  memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t));		\
+  free(subrc), subrc = NULL
+#define STORE							\
+  GROW_BUF;							\
+  buf[buf_ptr] = '\0', buf_ptr = 0;				\
+  fail_if ((subrc = string_decode(buf), subrc == NULL));	\
+  COPY
   
-  /* Do not forget to store and then restore `last_value_statement` */
+  mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
+  const char* restrict raw_ = raw++;
+  char32_t* restrict subrc = NULL;
+  char32_t* restrict rc = NULL;
+  char32_t* restrict old_rc = NULL;
+  char* restrict buf = NULL;
+  char* restrict old_buf = NULL;
+  size_t rc_ptr = 0, rc_size = 0, n;
+  size_t buf_ptr = 0, buf_size = 0, i;
+  int escape = 0;
+  char c;
+  int saved_errno;
+  
+  /* Parse the string. */
+  while (c = *raw++, *raw)
+    if (escape && strchr("()[]{}<>\"\\,", c))
+      {
+	/* Buffer UTF-8 text for convertion to UTF-32. */
+	GROW_BUF;
+	buf[buf_ptr++] = c;
+	escape = 0;
+      }
+    else if (escape)
+      {
+	/* Parse escape. */
+	raw -= 2, subrc = parse_escape(tree, raw, lineoff + (size_t)(raw - raw_), &escape, &raw);
+	fail_if (subrc == NULL);
+	COPY;
+      }
+    else if (c == '\\')
+      {
+	/* Convert the buffered UTF-8 text to UTF-32, and start an escape. */
+	STORE;
+	escape = 1;
+      }
+    else if (c == ',')
+      {
+	/* Include commas as (1 << 31) ^ 1 (above 2³¹, yet guaranteed not to be -1). */
+	for (i = 0; i < 7; i++)
+	  GROW_BUF;
+	buf[buf_ptr++] = (char)0xFE;
+	for (i = 0; i < 5; i++)
+	  buf[buf_ptr++] = 0x00;
+	buf[buf_ptr++] = (char)(((1ULL << 31) ^ 1ULL) & 255);
+      }
+    else
+      {
+	/* Buffer UTF-8 text for convertion to UTF-32. */
+	GROW_BUF;
+	buf[buf_ptr++] = c;
+      }
+  
+  /* Check that no escape is incomplete. */
+  if (escape && (tree->processed != PROCESS_LEVEL))
+    {
+      NEW_ERROR(tree, ERROR, "incomplete escape");
+      error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw);
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+    }
+  
+  /* Check that key-combination is complete. */
+  if ((c != '>') && (tree->processed != PROCESS_LEVEL))
+    {
+      NEW_ERROR(tree, ERROR, "key-combination is not closed");
+      error->start = lineoff;
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+    }
+  
+  /* Shrink or grow to string to its minimal size, and -1-terminate it. */
+  fail_if (xxrealloc(old_rc, rc, rc_ptr + 1, char32_t));
+  rc[rc_ptr] = -1;
+  
+  free(buf);
+  return last_value_statement = old_last_value_statement, rc;
+ pfail:
+  saved_errno = errno;
+  free(subrc);
+  free(old_rc);
+  free(old_buf);
+  free(rc);
+  free(buf);
+  errno = saved_errno;
+  return last_value_statement = old_last_value_statement, NULL;
+#undef STORE
+#undef COPY
+#undef GROW_BUF
 }
 
 
