@@ -349,7 +349,7 @@ static int check_value_statement_before_simplification(mds_kbdc_tree_map_t* rest
     NEW_ERROR(tree->sequence, WARNING, "use of sequence in value statement is discouraged");
   
   /* Simplify argument and start over. */
-  fail_if(simplify(tree->sequence));
+  fail_if (simplify(tree->sequence));
   goto again;
   
  pfail:
@@ -401,7 +401,7 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   
   /* Valid value properties. */
   if (tree->result == NULL)
-    fail_if(check_value_statement_before_simplification(tree));
+    fail_if (check_value_statement_before_simplification(tree));
   
   /* Simplify sequence. */
   for (argument = tree->sequence; argument; argument = argument->next)
@@ -464,7 +464,7 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   
   /* Valid value properties. */
   if (tree->result == NULL)
-    fail_if(check_value_statement_after_simplification(tree));
+    fail_if (check_value_statement_after_simplification(tree));
   
   /* Mapping statements are simplified in a manner similar
    * to how macro calls are simplified. However mapping
