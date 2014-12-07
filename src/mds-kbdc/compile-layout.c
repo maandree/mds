@@ -110,6 +110,32 @@ static char32_t** current_return_value = NULL;
  */
 static int compile_subtree(mds_kbdc_tree_t* restrict tree);
 
+/**
+ * Check that a function used in a part of a literal is defined
+ * 
+ * @param  tree     The statement where the literal is located
+ * @param  raw      The beginning of the function call in the literal
+ * @param  lineoff  The offset on the line where the function call in the literal beings
+ * @param  end      Output parameter for the end of the function call
+ * @param  rc       Success status output parameter: zero on success,
+ *                  -1 on error, 1 if an undefined function is used
+ */
+static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char* restrict raw,
+				size_t lineoff, const char* restrict* restrict end, int* restrict rc);
+
+/**
+ * Parse an argument in a function call
+ * 
+ * @param   tree     The statement where the function call appear
+ * @param   raw      The beginning of the argument for the function call
+ * @param   lineoff  The offset for `raw` on line in which it appears
+ * @param   end      Output parameter for the end of the argument
+ * @param   value    Output parameter for the value to which the argument evaulates
+ * @return           Zero on success, -1 on error
+ */
+static int parse_function_argument(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff,
+				   const char* restrict* restrict end, char32_t** restrict value);
+
 
 
 /*** Macro-, function- and variable-support, string-parsing and value- and mapping-compilation. ***/
@@ -335,7 +361,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
   /* Call the function. */
   *return_value = builtin_function_invoke(name, arg_count, arguments);
   fail_if (*return_value == NULL);
-    
+  
   
  done:
   /* Pop return-stack. */
@@ -365,27 +391,92 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
 static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff,
 				     int* restrict escape, const char* restrict* restrict end)
 {
-  (void) tree;
-  (void) raw;
-  (void) lineoff;
-  (void) escape;
-  (void) end;
-  return NULL; /* TODO */
+#define R(LOWER, UPPER)  (((LOWER) <= c) && (c <= (UPPER)))
+#define GROW_ARGS									\
+  if (arguments_ptr == arguments_size)							\
+    fail_if (xxrealloc(old_arguments, arguments, arguments_size += 4, char32_t*))
+  
+  const char* restrict bracket = raw + 1;
+  char32_t* rc = NULL;
+  const char32_t** restrict arguments_;
+  char32_t** restrict arguments = NULL;
+  char32_t** restrict old_arguments = NULL;
+  size_t arguments_ptr = 0, arguments_size = 0;
+  char* restrict name;
+  char c;
+  int r, saved_errno;
+  
+  /* Find the opening bracket associated with the function call and validate the escape. */
+  while ((c = *bracket++))
+    if ((c == '_') || R('0', '9') || R('a', 'z') || R('A', 'Z'));
+    else if (c == '(')
+      break;
+    else
+      {
+	*end = --bracket;
+	NEW_ERROR(tree, ERROR, "invalid escape");
+	goto error;
+      }
+  
+  /* Copy the name of the function. */
+  name = alloca((size_t)(bracket - raw) * sizeof(char));
+  memcpy(name, raw + 1, (size_t)(bracket - raw - 1) * sizeof(char));
+  name[bracket - raw - 1] = 0;
+  
+  /* Get arguments. */
+  for (*end = ++bracket;;)
+    {
+      while (**end == ' ')
+	(*end)++;
+      GROW_ARGS;
+      arguments[arguments_ptr] = NULL;
+      if (**end == ')')
+	{
+	  arguments_ptr++;
+	  break;
+	}
+      r = parse_function_argument(tree, *end, lineoff + (size_t)(*end - raw), end, arguments + arguments_ptr++);
+      fail_if (r < 0);
+    }
+  
+  /* Call the function. */
+  if (tree->processed == PROCESS_LEVEL)
+    goto stop;
+  arguments_ = alloca(arguments_ptr * sizeof(const char32_t*));
+  memcpy(arguments_, arguments, arguments_ptr * sizeof(const char32_t*));
+  fail_if (call_function(tree, name, arguments_, lineoff, lineoff + (size_t)(*end - raw), &rc));
+  if (rc == NULL)
+    goto stop;
+  
+  while (arguments_ptr--)
+    free(arguments[arguments_ptr]);
+  free(arguments);
+  *escape = (**end == ')') ? 0 : 1;
+  if (*escape == 0)
+    (*end)++;
+  return rc;
+  
+ error:
+  error->start = lineoff;
+  error->end = lineoff + (size_t)(*end - raw);
+ stop:
+  *escape = 0;
+  tree->processed = PROCESS_LEVEL;
+  fail_if (xmalloc(rc, 1, char32_t));
+  return *rc = -1, rc;
+  
+ pfail:
+  saved_errno = errno;
+  free(rc);
+  if (old_arguments)
+    arguments = old_arguments;
+  while (arguments_ptr--)
+    free(arguments[arguments_ptr]);
+  free(arguments);
+  return errno = saved_errno, NULL;
+#undef GROW_ARGS
+#undef R
 }
-
-
-/**
- * Check that a function used in a part of a literal is defined
- * 
- * @param  tree     The statement where the literal is located
- * @param  raw      The beginning of the function call in the literal
- * @param  lineoff  The offset on the line where the function call in the literal beings
- * @param  end      Output parameter for the end of the function call
- * @param  rc       Success status output parameter: zero on success,
- *                  -1 on error, 1 if an undefined function is used
- */
-static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char* restrict raw,
-				size_t lineoff, const char* restrict* restrict end, int* restrict rc);
 
 
 /**
@@ -452,8 +543,8 @@ static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char
 {
   mds_kbdc_tree_t* function = NULL;
   mds_kbdc_include_stack_t* _function_include_stack;
-  char* bracket = strchr(raw, '(');
-  char* name = NULL;
+  char* restrict bracket = strchr(raw, '(');
+  char* restrict name;
   size_t arg_count;
   
   /* Check that it is a function call by check that it has an opening bracket. */
@@ -968,6 +1059,76 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   return var;
  pfail:
   return 0;
+}
+
+
+/**
+ * Parse an argument in a function call
+ * 
+ * @param   tree     The statement where the function call appear
+ * @param   raw      The beginning of the argument for the function call
+ * @param   lineoff  The offset for `raw` on line in which it appears
+ * @param   end      Output parameter for the end of the argument
+ * @param   value    Output parameter for the value to which the argument evaulates
+ * @return           Zero on success, -1 on error
+ */
+static int parse_function_argument(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff,
+				   const char* restrict* restrict end, char32_t** restrict value)
+{
+  size_t size = strlen(raw), ptr = 0, call_end = 0;
+  int escape = 0, quote = 0;
+  char* raw_argument = NULL;
+  int saved_errno;
+  
+  /* Find the span of the argument. */
+  while (ptr < size)
+    {
+      char c = raw[ptr++];
+      
+      /* Escapes may be longer than one character,
+         but only the first can affect the parsing. */
+      if (escape)                escape = 0;
+      /* Nested function and nested quotes can appear. */
+      else if (ptr <= call_end)  ;
+      /* Quotes end with the same symbols as they start with,
+         and quotes automatically escape brackets. */
+      /* \ can either start a functon call or an escape. */
+      else if (c == '\\')
+	{
+	  /* It may not be an escape, but registering it
+	     as an escape cannot harm us since we only
+	     skip the first character, and a function call
+	     cannot be that short. */
+	  escape = 1;
+	  /* Nested quotes can appear at function calls. */
+	  call_end = get_end_of_call(raw, ptr, size);
+	}
+      /* " is the quote symbol. */
+      else if (quote)            quote = (c != '"');
+      else if (c == '"')         quote = 1;
+      /* End of argument? */
+      else if (strchr(" )", c))
+	{
+	  ptr--;
+	  break;
+	}
+    }
+  *end = raw + ptr;
+  
+  /* Copy the argument so that we have a NUL-terminates string. */
+  fail_if (xmalloc(raw_argument, ptr + 1, char));
+  memcpy(raw_argument, raw, ptr * sizeof(char));
+  raw_argument[ptr] = '\0';
+  
+  /* Evaluate argument. */
+  *value = parse_string(tree, raw_argument, lineoff);
+  fail_if (*value == NULL);
+  
+  free(raw_argument);
+  return 0;
+  FAIL_BEGIN;
+  free(raw_argument);
+  FAIL_END;
 }
 
 

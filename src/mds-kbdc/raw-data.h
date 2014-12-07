@@ -106,7 +106,7 @@ mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restric
  *                   or `size` if the call do not end (that is, the code ends
  *                   prematurely), or zero if there is no function call at `offset`
  */
-size_t get_end_of_call(char* restrict content, size_t offset, size_t size) __attribute__((pure));
+size_t get_end_of_call(const char* restrict content, size_t offset, size_t size) __attribute__((pure));
 
 /**
  * Read lines of a source file
