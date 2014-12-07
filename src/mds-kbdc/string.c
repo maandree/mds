@@ -33,7 +33,7 @@
 size_t string_length(const char32_t* restrict string)
 {
   size_t i = 0;
-  while (string[i] > -1)
+  while (string[i] != -1)
     i++;
   return i;
 }
@@ -120,7 +120,7 @@ char* string_encode(const char32_t* restrict string)
        * (actually we ca now fit 36 bits.)
        * However, we only needed this in `string_decode` which would
        * not require any changed, but we added it here for symmetry. */
-      else              rc[j++] = (char)((c >> 30) | 0xFE), _c(30), _c(24), _c(18), _c(12), _c(6), _c(0);
+      else              rc[j++] = (char)0xFE, _c(30), _c(24), _c(18), _c(12), _c(6), _c(0);
 #undef _t
 #undef _c
     }
@@ -134,7 +134,7 @@ char* string_encode(const char32_t* restrict string)
  * Create duplicate of a string
  * 
  * @param   string  The string
- * @return          A duplicate of the strnig, `NULL` on error or if `string` is `NULL`
+ * @return          A duplicate of the string, `NULL` on error or if `string` is `NULL`
  */
 char32_t* string_dup(const char32_t* restrict string)
 {
@@ -143,8 +143,7 @@ char32_t* string_dup(const char32_t* restrict string)
   if (string == NULL)
     return NULL;
   n = string_length(string) + 1;
-  rc = malloc(n * sizeof(char32_t));
-  if (rc == NULL)
+  if (xmalloc(rc, n, char32_t))
     return NULL;
   memcpy(rc, string, n * sizeof(char32_t));
   return rc;

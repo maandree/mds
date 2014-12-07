@@ -57,7 +57,7 @@ char* string_encode(const char32_t* restrict string) __attribute__((nonnull));
  * Create duplicate of a string
  * 
  * @param   string  The string
- * @return          A duplicate of the strnig, `NULL` on error or if `string` is `NULL`
+ * @return          A duplicate of the string, `NULL` on error or if `string` is `NULL`
  */
 char32_t* string_dup(const char32_t* restrict string);
 

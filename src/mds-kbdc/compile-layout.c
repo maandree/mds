@@ -182,8 +182,7 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
   if (value == NULL)
     {
       fail_if (tree = mds_kbdc_tree_create(C(COMPILED_STRING)), tree == NULL);
-      tree->compiled_string.string = string_dup(string);
-      fail_if (tree->compiled_string.string == NULL);
+      fail_if ((tree->compiled_string.string = string_dup(string)) == NULL);
     }
   
   /* Assign variable. */
@@ -691,12 +690,12 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
 	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);
       if (value->type != C(COMPILED_STRING))
 	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);
-      fail_if (rc = string_dup(tree->compiled_string.string), rc == NULL);
+      fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
     }
   else
     {
       /* Octal or hexadecimal representation. */
-      fail_if ( rc = malloc(2 * sizeof(char32_t)), rc == NULL);
+      fail_if (xmalloc(rc, 2, char32_t));
       rc[0] = (char32_t)numbuf, rc[1] = -1;
     }
   
@@ -1564,14 +1563,14 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   
   
   /* Check that the primary bound is single-character. */
-  if ((first[0] < 0) || (first[1] >= 0))
+  if ((first[0] == -1) || (first[1] != -1))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   /* Check that the secondary bound is single-character. */
-  if ((last[0] < 0) || (last[1] >= 0))
+  if ((last[0] == -1) || (last[1] != -1))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_last, lineoff_last = 0;
@@ -2001,14 +2000,14 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   
   
   /* Check that the primary bound is single-character. */
-  if ((first[0] < 0) || (first[1] >= 0))
+  if ((first[0] == -1) || (first[1] != -1))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   /* Check that the secondary bound is single-character. */
-  if ((last[0] < 0) || (last[1] >= 0))
+  if ((last[0] == -1) || (last[1] != -1))
     {
       NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_last, lineoff_last = 0;
