@@ -930,7 +930,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
   fail_if (subrc = string_decode(buf), subrc == NULL);		\
   COPY
-#define SPECIAL(VAL /* [1, 255] */)					\
+#define SPECIAL(VAL /* [1, 63] */)					\
   do									\
     {									\
       /* (above 2³¹, yet guaranteed not to be -1). */			\
