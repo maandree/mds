@@ -176,7 +176,7 @@ size_t get_end_of_call(char* restrict content, size_t offset, size_t size)
   int escape = 0, quote = 0;
   
   /* Skip to end of function name. */
-  while ((ptr < size) && (r('a', 'z') || r('A', 'Z') || (C == '_')))
+  while ((ptr < size) && (r('a', 'z') || r('A', 'Z') || r('0', '9') || (C == '_')))
     ptr++;
   
   /* Check that it is a function call. */
