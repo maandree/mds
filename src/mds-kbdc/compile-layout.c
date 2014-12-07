@@ -930,18 +930,18 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
   fail_if (subrc = string_decode(buf), subrc == NULL);		\
   COPY
-#define SPECIAL(VAL /* [1, 63] */)					\
-  do									\
-    {									\
-      /* (above 2³¹, yet guaranteed not to be -1). */			\
-      size_t i;								\
-      for (i = 0; i < 7; i++)						\
-	GROW_BUF;							\
-      buf[buf_ptr++] = (char)0xFE;					\
-      for (i = 0; i < 5; i++)						\
-	buf[buf_ptr++] = 0x00;						\
-      buf[buf_ptr++] = (char)(((1ULL << 31) ^ VAL##ULL) & 255);		\
-    }									\
+#define SPECIAL(VAL /* [1, 63] */)						\
+  do										\
+    {										\
+      /* (above 2³¹, yet guaranteed not to be -1). */				\
+      size_t i;									\
+      for (i = 0; i < 7; i++)							\
+	GROW_BUF;								\
+      buf[buf_ptr++] = (char)0xFE;						\
+      for (i = 0; i < 5; i++)							\
+	buf[buf_ptr++] = 0x80;							\
+      buf[buf_ptr++] = (char)((((1ULL << 31) ^ VAL##ULL) & 255) | 0x80);	\
+    }										\
   while (0)
   /* Actually, UTF-8 does not suppot beyond plane 16 nowadays, but we ignore that. */
   
