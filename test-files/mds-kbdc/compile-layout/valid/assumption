@@ -3,5 +3,6 @@ assumption
   have " "
   have_chars ",.-"
   have_range "a" "z"
+  have_range "9" "0"
 end assumption
 

@@ -1,0 +1,7 @@
+for "a" to "e" as \1
+    if 1
+        continue
+    end if
+    <letter \1> : \1
+end for
+

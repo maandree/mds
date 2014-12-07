@@ -1,0 +1,13 @@
+let \1 : "a"
+if \equals(\1 "a")
+  <letter \1> : \1
+else
+  "\1" : "x"
+end if
+let \1 : "b"
+if \not(\equals(\1 "b"))
+  "\1" : "x"
+else
+  <letter \1> : \1
+end if
+

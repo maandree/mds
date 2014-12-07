@@ -300,7 +300,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this)
   node->loc_start = this->loc_start;
   node->loc_end = this->loc_end;
   node->processed = this->processed;
-  node->next = mds_kbdc_tree_dup(this->next);
+  node->next = mds_kbdc_tree_dup(this->next); /* TODO perhaps we do not need recursion for this. */
   fail_if (this->next && (node->next == NULL));
   
   switch (this->type)

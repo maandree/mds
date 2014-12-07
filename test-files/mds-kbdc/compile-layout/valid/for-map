@@ -1,0 +1,4 @@
+for "a" to "e" as \1
+  <letter \1> : \1
+end for
+

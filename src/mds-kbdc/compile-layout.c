@@ -17,6 +17,7 @@
  */
 #include "compile-layout.h"
 /* TODO add call stack */
+/* TODO fix so that for-loops do not generate the same errors/warnings in all iterations. */
 
 #include "include-stack.h"
 #include "builtin-functions.h"
@@ -418,7 +419,8 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
     else
       {
 	*end = --bracket;
-	NEW_ERROR(tree, ERROR, "invalid escape");
+	if (tree->processed != PROCESS_LEVEL)
+	  NEW_ERROR(tree, ERROR, "invalid escape");
 	goto error;
       }
   
@@ -964,7 +966,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 	STORE;
 	escape = 1;
       }
-    else if (c == ',')
+    else if (c == ',') /* TODO must handle " too */
       {
 	/* Include commas as (1 << 31) ^ 1 (above 2³¹, yet guaranteed not to be -1). */
 	for (i = 0; i < 7; i++)
@@ -1582,12 +1584,15 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
     }
   
   /* Add all characters to the assumption list. */
-  while (*first != *last)
+  for (;;)
     {
       fail_if (xmalloc(character, 2, char32_t));
-      character[0] = (*first)++;
+      character[0] = *first;
       character[1] = -1;
       result->assumed_strings[result->assumed_strings_ptr++] = character;
+      /* Bounds are inclusive. */
+      if ((*first)++ == *last)
+	break;
     }
   
  done:
@@ -1954,7 +1959,7 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   char32_t diff;
   char32_t character[2];
   size_t variable;
-  int saved_errno;
+  int possible_shadow = 1, saved_errno;
   
   
   last_value_statement = NULL;
@@ -1966,7 +1971,7 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
   for (lineoff_last += strlen("to"); code[lineoff_last] == ' '; lineoff_last++);
   /* Locate the first character of the select variable. */
-  for (lineoff_var = lineoff_last + strlen(tree->variable); code[lineoff_var] == ' '; lineoff_var++);
+  for (lineoff_var = lineoff_last + strlen(tree->last); code[lineoff_var] == ' '; lineoff_var++);
   for (lineoff_var += strlen("as"); code[lineoff_var] == ' '; lineoff_var++);
   
   /* Duplicate bounds and evaluate function calls,
@@ -2004,12 +2009,16 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   /* Iterate over the loop for as long as a `return` or `break` has not
      been encountered (without being caught elsewhere). */
   character[1] = -1;
-  for (diff = (*first > *last) ? -1 : +1; (*first != *last) && (break_level < 2); *first += diff)
+  for (diff = (*first > *last) ? -1 : +1; break_level < 2; *first += diff)
     {
       break_level = 0;
       character[0] = *first;
-      fail_if (let(variable, character, NULL, (mds_kbdc_tree_t*)tree, lineoff_var, 1));
+      fail_if (let(variable, character, NULL, (mds_kbdc_tree_t*)tree, lineoff_var, possible_shadow));
+      possible_shadow = 0;
       fail_if (compile_subtree(tree->inner));
+      /* Bounds are inclusive. */
+      if (*first == *last)
+	break;
     }
   
   /* Catch `break` and `continue`, they may not propagate further. */
@@ -2240,7 +2249,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the mapping
      input sequence. */
-  fail_if ((seq = mds_kbdc_tree_dup(old_seq), seq = NULL));
+  fail_if ((seq = mds_kbdc_tree_dup(old_seq), seq == NULL));
   fail_if ((bad |= evaluate_element(seq), bad < 0));
   
   /* Duplicate arguments and evaluate function calls,
@@ -2248,7 +2257,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
      output sequence, unless this is a value-statement. */
   if (tree->result)
     {
-      fail_if ((res = mds_kbdc_tree_dup(old_res), res = NULL));
+      fail_if ((res = mds_kbdc_tree_dup(old_res), res == NULL));
       fail_if ((bad |= evaluate_element(res), bad < 0));
     }
   
@@ -2268,11 +2277,11 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
 	goto done;
       
       /* Duplicate the mapping-statement but give it the evaluated mapping-arguments. */
-      tree->sequence = seq;
-      tree->result = res;
-      fail_if ((dup_map = &(mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree)->map), dup_map = NULL));
-      tree->sequence = old_seq, seq = NULL;
-      tree->result = old_res, res = NULL;
+      tree->sequence = NULL;
+      tree->result   = NULL;
+      fail_if ((dup_map = &(mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree)->map), dup_map == NULL));
+      tree->sequence = old_seq, dup_map->sequence = seq, seq = NULL;
+      tree->result   = old_res, dup_map->result   = res, res = NULL;
       
       /* Enlist the mapping for assembling. */
       fail_if ((include_stack = mds_kbdc_include_stack_save(), include_stack == NULL));
@@ -2348,7 +2357,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   mds_kbdc_tree_macro_t* macro;
   mds_kbdc_include_stack_t* macro_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
-  size_t variable;
+  size_t variable = 0;
   int bad, saved_errno;
   
   last_value_statement = NULL;
@@ -2356,7 +2365,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the macro
      call arguments. */
-  fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg = NULL));
+  fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg == NULL));
   fail_if ((bad = evaluate_element(arg), bad < 0));
   if (bad)
     return 0;
@@ -2372,7 +2381,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Push call stack and set parameters. */
   variables_stack_push();
   for (arg_ = arg; arg_; arg_ = arg_->next)
-    fail_if (let(variable, NULL, arg_, NULL, 0, 0));
+    fail_if (let(++variable, NULL, arg_, NULL, 0, 0));
   
   /* Switch include-stack to the macro's. */
   fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
