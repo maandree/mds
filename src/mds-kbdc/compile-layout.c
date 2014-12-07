@@ -17,7 +17,9 @@
  */
 #include "compile-layout.h"
 /* TODO add call stack */
-/* TODO fix so that for-loops do not generate the same errors/warnings in all iterations. */
+/* TODO fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
+/* TODO test all builtin functions */
+/* TODO test all function and macro overloading */
 
 #include "include-stack.h"
 #include "builtin-functions.h"
@@ -649,7 +651,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
   /* Get escape type. */
   if (c == '0')
     /* Octal representation. */
-    *escape = 8;
+    *escape = 8, have = 1;
   else if (c == 'u')
     /* Hexadecimal representation. */
     *escape = 16;
@@ -724,13 +726,12 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
  */
 static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-#define GROW_BUF								\
-  if (buf_ptr == buf_size)							\
-    fail_if (xxrealloc(old_buf, buf, buf_size ? (buf_size <<= 1) : 16, char))
+#define GROW_BUF						\
+  if (buf_ptr == buf_size)					\
+    fail_if (xxrealloc(old_buf, buf, buf_size += 16, char))
 #define COPY								\
   n = string_length(subrc);						\
-  if (rc_ptr + n > rc_size)						\
-    fail_if (xxrealloc(old_rc, rc, rc_size = rc_ptr + n, char32_t));	\
+  fail_if (xxrealloc(old_rc, rc, rc_ptr + n, char32_t));		\
   memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t)), rc_ptr += n;	\
   free(subrc), subrc = NULL
 #define STORE							\
@@ -753,7 +754,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   char32_t* restrict old_rc = NULL;
   char* restrict buf = NULL;
   char* restrict old_buf = NULL;
-  size_t rc_ptr = 0, rc_size = 0, n;
+  size_t rc_ptr = 0, n;
   size_t buf_ptr = 0, buf_size = 0;
   size_t escoff = 0;
   int quote = 0, escape = 0;
@@ -916,34 +917,28 @@ static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restri
  */
 static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-#define GROW_BUF								\
-  if (buf_ptr == buf_size)							\
-    fail_if (xxrealloc(old_buf, buf, buf_size ? (buf_size <<= 1) : 16, char))
-#define COPY							\
-  n = string_length(subrc);					\
-  if (rc_ptr + n > rc_size)					\
-    fail_if (xxrealloc(old_rc, rc, rc_ptr + n, char32_t));	\
-  memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t));		\
+#define GROW_BUF						\
+  if (buf_ptr == buf_size)					\
+    fail_if (xxrealloc(old_buf, buf, buf_size += 16, char))
+#define COPY								\
+  n = string_length(subrc);						\
+  fail_if (xxrealloc(old_rc, rc, rc_ptr + n, char32_t));		\
+  memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t)), rc_ptr += n;	\
   free(subrc), subrc = NULL
 #define STORE							\
-  GROW_BUF;							\
-  buf[buf_ptr] = '\0', buf_ptr = 0;				\
-  fail_if (subrc = string_decode(buf), subrc == NULL);		\
-  COPY
-#define SPECIAL(VAL /* [1, 63] */)						\
-  do										\
-    {										\
-      /* (above 2³¹, yet guaranteed not to be -1). */				\
-      size_t i;									\
-      for (i = 0; i < 7; i++)							\
-	GROW_BUF;								\
-      buf[buf_ptr++] = (char)0xFE;						\
-      for (i = 0; i < 5; i++)							\
-	buf[buf_ptr++] = (char)0x80;						\
-      buf[buf_ptr++] = (char)((((1ULL << 31) ^ VAL##ULL) & 255) | 0x80);	\
-    }										\
-  while (0)
-  /* Actually, UTF-8 does not suppot beyond plane 16 nowadays, but we ignore that. */
+  if (buf_ptr)							\
+    do								\
+      {								\
+	GROW_BUF;						\
+	buf[buf_ptr] = '\0', buf_ptr = 0;			\
+	fail_if (subrc = string_decode(buf), subrc == NULL);	\
+	COPY;							\
+      }								\
+    while (0)
+#define SPECIAL(VAL)						\
+  STORE;							\
+  fail_if (xxrealloc(old_rc, rc, rc_ptr + 1, char32_t));	\
+  rc[rc_ptr++] = -(VAL + 1)
   
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
   const char* restrict raw_ = raw++;
@@ -952,7 +947,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   char32_t* restrict old_rc = NULL;
   char* restrict buf = NULL;
   char* restrict old_buf = NULL;
-  size_t rc_ptr = 0, rc_size = 0, n;
+  size_t rc_ptr = 0, n;
   size_t buf_ptr = 0, buf_size = 0;
   size_t escoff = 0;
   int escape = 0, quote = 0;
@@ -983,8 +978,10 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 	escape = 1;
       }
     else if ((c == ',') && !quote)
-      /* Sequence in key-combination. */
-      SPECIAL(1);
+      {
+	/* Sequence in key-combination. */
+	SPECIAL(1);
+      }
     else if (c == '"')
       {
 	/* String in key-combination. */
@@ -997,6 +994,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 	GROW_BUF;
 	buf[buf_ptr++] = c;
       }
+  STORE;
   
   /* Check that no escape is incomplete. */
   if (escape && (tree->processed != PROCESS_LEVEL))
@@ -2124,7 +2122,7 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
   fail_if (value = mds_kbdc_tree_dup(tree->value), value == NULL);
   fail_if (compile_subtree(value));
   if ((tree->processed = value->processed) == PROCESS_LEVEL)
-    return 0;
+    return mds_kbdc_tree_free(value), 0;
   
   /* Set the value of the variable. */
   fail_if (let(variable, NULL, value, NULL, 0, 0));
