@@ -232,7 +232,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Copy arguments. */
   if (tree->arguments == NULL)
     goto no_args;
-  fail_if ((dup_arguments = mds_kbdc_tree_dup(tree->arguments), dup_arguments == NULL));
+  fail_if (dup_arguments = mds_kbdc_tree_dup(tree->arguments), dup_arguments == NULL);
   
   /* Eliminate alterations. */
   for (argument = dup_arguments; argument; argument = argument->next, argument_index++)
@@ -441,7 +441,7 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
   for (need_reelimination = 1; need_reelimination ? (need_reelimination = 0, 1) : 0; redo = 0)
     {
       /* Copy sequence. */
-      fail_if ((dup_sequence = mds_kbdc_tree_dup(tree->sequence), dup_sequence == NULL));
+      fail_if (dup_sequence = mds_kbdc_tree_dup(tree->sequence), dup_sequence == NULL);
       
       /* Eliminate alterations, remember, unordered subsequences have
 	 been simplified to alternations of ordered subsequences. */
@@ -660,7 +660,7 @@ static mds_kbdc_tree_t* create_permutations(mds_kbdc_tree_t* elements)
       while (subperms)
 	{
 	  /* Join. */
-	  fail_if ((perm = mds_kbdc_tree_dup(&ordered), perm == NULL));
+	  fail_if (perm = mds_kbdc_tree_dup(&ordered), perm == NULL);
 	  perm->ordered.inner->next = subperms->ordered.inner;
 	  subperms->ordered.inner = NULL;
 	  /* Add the permutation to the chain. */

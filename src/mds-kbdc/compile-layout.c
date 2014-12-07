@@ -178,10 +178,10 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
   
   /* Duplicate value. */
   if (value)
-    fail_if ((tree = mds_kbdc_tree_dup(value), tree == NULL));
+    fail_if (tree = mds_kbdc_tree_dup(value), tree == NULL);
   if (value == NULL)
     {
-      fail_if ((tree = mds_kbdc_tree_create(C(COMPILED_STRING)), tree == NULL));
+      fail_if (tree = mds_kbdc_tree_create(C(COMPILED_STRING)), tree == NULL);
       tree->compiled_string.string = string_dup(string);
       fail_if (tree->compiled_string.string == NULL);
     }
@@ -316,7 +316,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
 	fail_if (let(i, arguments[i], NULL, NULL, 0, 0));
       
       /* Switch include-stack to the function's. */
-      fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+      fail_if (our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL);
       fail_if (mds_kbdc_include_stack_restore(function_include_stack));
       
       /* Call the function. */
@@ -343,7 +343,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
   is_set = (arg_count == 3) && !strcmp(name, "set");
   if (is_set || ((arg_count == 2) && !strcmp(name, "get")))
     {
-      fail_if ((r = check_set_3_get_2_call(tree, is_set, arguments[0], arguments[1], start, end), r < 0));
+      fail_if (r = check_set_3_get_2_call(tree, is_set, arguments[0], arguments[1], start, end), r < 0);
       if (r)
 	{
 	  tree->processed = PROCESS_LEVEL;
@@ -630,7 +630,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
       *escape = 0;						\
       if (rc)							\
 	goto done;						\
-      fail_if ((rc = malloc(sizeof(char32_t)), rc == NULL));	\
+      fail_if (rc = malloc(sizeof(char32_t)), rc == NULL);	\
       *rc = -1;							\
       goto done;						\
     }								\
@@ -691,12 +691,12 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
 	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);
       if (value->type != C(COMPILED_STRING))
 	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);
-      fail_if ((rc = string_dup(tree->compiled_string.string), rc == NULL));
+      fail_if (rc = string_dup(tree->compiled_string.string), rc == NULL);
     }
   else
     {
       /* Octal or hexadecimal representation. */
-      fail_if ((rc = malloc(2 * sizeof(char32_t)), rc == NULL));
+      fail_if ( rc = malloc(2 * sizeof(char32_t)), rc == NULL);
       rc[0] = (char32_t)numbuf, rc[1] = -1;
     }
   
@@ -738,7 +738,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
 #define STORE							\
   GROW_BUF;							\
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
-  fail_if ((subrc = string_decode(buf), subrc == NULL));	\
+  fail_if (subrc = string_decode(buf), subrc == NULL);	\
   COPY
 #define CHAR_ERROR(...)					\
   do							\
@@ -880,7 +880,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
     else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);
   
  done:
-  fail_if ((rc = malloc(2 * sizeof(char32_t)), rc == NULL));
+  fail_if (rc = malloc(2 * sizeof(char32_t)), rc == NULL);
   return rc[0] = buf, rc[1] = -1, rc;
   
  pfail:
@@ -928,7 +928,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 #define STORE							\
   GROW_BUF;							\
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
-  fail_if ((subrc = string_decode(buf), subrc == NULL));	\
+  fail_if (subrc = string_decode(buf), subrc == NULL);		\
   COPY
   
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
@@ -1311,11 +1311,11 @@ static int compile_language(mds_kbdc_tree_information_language_t* restrict tree)
   /* Locate the first character in the language-string. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   /* Evaluate function calls, variable dereferences and escapes in the language-string. */
-  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  fail_if (data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL);
   if (tree->processed == PROCESS_LEVEL)
     return free(data), 0;
   /* We want the string in UTF-8, not UTF-16. */
-  fail_if ((code = string_encode(data), code == NULL));
+  fail_if (code = string_encode(data), code == NULL);
   free(data);
   
   /* Add the language to the language-list. */
@@ -1353,11 +1353,11 @@ static int compile_country(mds_kbdc_tree_information_country_t* restrict tree)
   /* Locate the first character in the country-string. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   /* Evaluate function calls, variable dereferences and escapes in the country-string. */
-  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  fail_if (data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL);
   if (tree->processed == PROCESS_LEVEL)
     return free(data), 0;
   /* We want the string in UTF-8, not UTF-16. */
-  fail_if ((code = string_encode(data), code == NULL));
+  fail_if (code = string_encode(data), code == NULL);
   free(data);
   
   /* Add the country to the country-list. */
@@ -1396,11 +1396,11 @@ static int compile_variant(mds_kbdc_tree_information_variant_t* restrict tree)
   /* Locate the first character in the variant-string. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   /* Evaluate function calls, variable dereferences and escapes in the variant-string. */
-  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL));
+  fail_if (data = parse_string((mds_kbdc_tree_t*)tree, tree->data, lineoff), data == NULL);
   if (tree->processed == PROCESS_LEVEL)
     return free(data), 0;
   /* We want the string in UTF-8, not UTF-16. */
-  fail_if ((code = string_encode(data), code == NULL));
+  fail_if (code = string_encode(data), code == NULL);
   free(data);
   
   /* Store the variant. */
@@ -1434,7 +1434,7 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
   if (node->type == C(STRING))
     {
       /* Evaluate function calls, variable dereferences and escapes in the string. */
-      fail_if ((data = parse_string(node, node->string.string, node->loc_start), data == NULL));
+      fail_if (data = parse_string(node, node->string.string, node->loc_start), data == NULL);
       if (node->processed == PROCESS_LEVEL)
 	return free(data), 0;
       /* Make sure we can fit all strings in the assumption list (part 2/2). */
@@ -1447,7 +1447,7 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
   else
     {
       /* Evaluate function calls, variable dereferences and escapes in the key-combination. */
-      fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
+      fail_if (data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL);
       if (node->processed == PROCESS_LEVEL)
 	return free(data), 0;
       /* Make sure we can fit all key-combinations in the assumption list (part 2/2). */
@@ -1486,7 +1486,7 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   /* Evaluate function calls, variable dereferences
      and escapes in the charcter list. */
-  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->chars, lineoff), data == NULL));
+  fail_if (data = parse_string((mds_kbdc_tree_t*)tree, tree->chars, lineoff), data == NULL);
   if (tree->processed == PROCESS_LEVEL)
     return free(data), 0;
   
@@ -1541,8 +1541,8 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   
   /* Duplicate bounds and evaluate function calls,
      variable dereferences and escapes in the bounds. */
-  fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
-  fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
+  fail_if (first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL);
+  fail_if (last  = parse_string((mds_kbdc_tree_t*)tree, tree->last,  lineoff_last),  last  == NULL);
   
   /* Did one of the bound not evaluate, then stop. */
   if (tree->processed == PROCESS_LEVEL)
@@ -1832,7 +1832,7 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
  */
 static int compile_function(mds_kbdc_tree_function_t* restrict tree)
 {
-#define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
+#define t(expr)  fail_if (r = (expr), r < 0);  if (r)  tree->processed = PROCESS_LEVEL
   mds_kbdc_tree_function_t* function;
   mds_kbdc_include_stack_t* function_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
@@ -1861,7 +1861,7 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
      the include-stack is used in the error-clause as
      well as later when we list the function as defined. */
   get_function_lax(suffixless, arg_count, &function, &function_include_stack);
-  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+  fail_if (our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL);
   if (function)
     {
       *suffix_start = '/';
@@ -1901,7 +1901,7 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
  */
 static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
-#define t(expr)  fail_if ((r = (expr), r < 0));  if (r)  tree->processed = PROCESS_LEVEL
+#define t(expr)  fail_if (r = (expr), r < 0);  if (r)  tree->processed = PROCESS_LEVEL
   mds_kbdc_tree_macro_t* macro;
   mds_kbdc_include_stack_t* macro_include_stack;
   mds_kbdc_include_stack_t* our_include_stack = NULL;
@@ -1913,7 +1913,7 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
   /* Check that the macro is not already defined,
      the include-stack is used in the error-clause as
      well as later when we list the macro as defined. */
-  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+  fail_if (our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL);
   get_macro_lax(tree->name, &macro, &macro_include_stack);
   if (macro)
     {
@@ -1976,10 +1976,10 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   
   /* Duplicate bounds and evaluate function calls,
      variable dereferences and escapes in the bounds. */
-  fail_if ((first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL));
-  fail_if ((last = parse_string((mds_kbdc_tree_t*)tree, tree->last, lineoff_last), last == NULL));
+  fail_if (first = parse_string((mds_kbdc_tree_t*)tree, tree->first, lineoff_first), first == NULL);
+  fail_if (last  = parse_string((mds_kbdc_tree_t*)tree, tree->last,  lineoff_last),  last  == NULL);
   /* Get the index of the selected variable. */
-  fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff_var), variable == 0));
+  fail_if (variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff_var), variable == 0);
   
   /* Did one of the bound not evaluate, then stop. */
   if (tree->processed == PROCESS_LEVEL)
@@ -2057,7 +2057,7 @@ static int compile_if(mds_kbdc_tree_if_t* restrict tree)
   /* Locate the first character in the condition. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
   /* Evaluate function calls, variable dereferences and escapes in the condition. */
-  fail_if ((data = parse_string((mds_kbdc_tree_t*)tree, tree->condition, lineoff), data == NULL));
+  fail_if (data = parse_string((mds_kbdc_tree_t*)tree, tree->condition, lineoff), data == NULL);
   if (tree->processed == PROCESS_LEVEL)
     return free(data), 0;
   
@@ -2092,13 +2092,13 @@ static int compile_let(mds_kbdc_tree_let_t* restrict tree)
   
   /* Get the index of the selected variable. */
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
-  fail_if ((variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff), variable == 0));
+  fail_if (variable = parse_variable((mds_kbdc_tree_t*)tree, tree->variable, lineoff), variable == 0);
   if (tree->processed == PROCESS_LEVEL)
     return 0;
   
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the value. */
-  fail_if ((value = mds_kbdc_tree_dup(tree->value), value == NULL));
+  fail_if (value = mds_kbdc_tree_dup(tree->value), value == NULL);
   fail_if (compile_subtree(value));
   if ((tree->processed = value->processed) == PROCESS_LEVEL)
     return 0;
@@ -2138,9 +2138,9 @@ static int evaluate_element(mds_kbdc_tree_t* restrict node)
   for (; node; node = node->next)
     {
       if (node->type == C(STRING))
-	fail_if ((data = parse_string(node, node->string.string, node->loc_start), data == NULL));
+	fail_if (data = parse_string(node, node->string.string, node->loc_start), data == NULL);
       if (node->type == C(KEYS))
-	fail_if ((data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL));
+	fail_if (data = parse_keys(node, node->keys.keys, node->loc_start), data == NULL);
       free(node->string.string);
       node->type = (node->type == C(STRING)) ? C(COMPILED_STRING) : C(COMPILED_KEYS);
       node->compiled_string.string = data;
@@ -2249,16 +2249,16 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the mapping
      input sequence. */
-  fail_if ((seq = mds_kbdc_tree_dup(old_seq), seq == NULL));
-  fail_if ((bad |= evaluate_element(seq), bad < 0));
+  fail_if (seq = mds_kbdc_tree_dup(old_seq), seq == NULL);
+  fail_if (bad |= evaluate_element(seq), bad < 0);
   
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the mapping
      output sequence, unless this is a value-statement. */
   if (tree->result)
     {
-      fail_if ((res = mds_kbdc_tree_dup(old_res), res == NULL));
-      fail_if ((bad |= evaluate_element(res), bad < 0));
+      fail_if (res = mds_kbdc_tree_dup(old_res), res == NULL);
+      fail_if (bad |= evaluate_element(res), bad < 0);
     }
   
   /* Stop if any of the mapping-arguments could not be evaluated. */
@@ -2271,20 +2271,20 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
       /* Mapping-statement. */
       
       /* Check for invalid characters in the mapping-arguments. */
-      fail_if ((bad |= check_nonnul(seq), bad < 0));
-      fail_if ((bad |= check_nonnul(res), bad < 0));
+      fail_if (bad |= check_nonnul(seq), bad < 0);
+      fail_if (bad |= check_nonnul(res), bad < 0);
       if (bad)
 	goto done;
       
       /* Duplicate the mapping-statement but give it the evaluated mapping-arguments. */
       tree->sequence = NULL;
       tree->result   = NULL;
-      fail_if ((dup_map = &(mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree)->map), dup_map == NULL));
+      fail_if (dup_map = &(mds_kbdc_tree_dup((mds_kbdc_tree_t*)tree)->map), dup_map == NULL);
       tree->sequence = old_seq, dup_map->sequence = seq, seq = NULL;
       tree->result   = old_res, dup_map->result   = res, res = NULL;
       
       /* Enlist the mapping for assembling. */
-      fail_if ((include_stack = mds_kbdc_include_stack_save(), include_stack == NULL));
+      fail_if (include_stack = mds_kbdc_include_stack_save(), include_stack == NULL);
       fail_if (add_mapping(dup_map, include_stack));
       
       goto done;
@@ -2365,8 +2365,8 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the macro
      call arguments. */
-  fail_if ((arg = mds_kbdc_tree_dup(tree->arguments), arg == NULL));
-  fail_if ((bad = evaluate_element(arg), bad < 0));
+  fail_if (arg = mds_kbdc_tree_dup(tree->arguments), arg == NULL);
+  fail_if (bad = evaluate_element(arg), bad < 0);
   if (bad)
     return 0;
   
@@ -2384,7 +2384,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
     fail_if (let(++variable, NULL, arg_, NULL, 0, 0));
   
   /* Switch include-stack to the macro's. */
-  fail_if ((our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL));
+  fail_if (our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL);
   fail_if (mds_kbdc_include_stack_restore(macro_include_stack));
   
   /* Call the macro. */

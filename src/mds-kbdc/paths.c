@@ -75,7 +75,7 @@ char* abspath(const char* path)
   if (*path == '/')
     return strdup(path);
   
-  fail_if ((cwd = curpath(), cwd == NULL));
+  fail_if (cwd = curpath(), cwd == NULL);
   size = (p = strlen(cwd)) + strlen(path) + 2;
   fail_if (xmalloc(buf, size + 1, char));
   memcpy(buf, cwd, (p + 1) * sizeof(char));

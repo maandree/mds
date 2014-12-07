@@ -381,9 +381,9 @@
 /**
  * Go to the label `pfail` if a condition is met
  * 
- * @param  condition  The condition
+ * @param  ...  The condition
  */
-#define fail_if(condition)  if (condition)  goto pfail
+#define fail_if(...)  if (__VA_ARGS__)  goto pfail
 
 
 /**

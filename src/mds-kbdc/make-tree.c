@@ -440,7 +440,7 @@ static int get_pathname(const char* restrict filename)
     {
       fail_if (errno != ENOENT);
       saved_errno = errno;
-      fail_if ((cwd = curpath(), cwd == NULL));
+      fail_if (cwd = curpath(), cwd == NULL);
       result->pathname = strdup(filename);
       fail_if (result->pathname == NULL);
       NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
@@ -1338,7 +1338,7 @@ static int parse_line(void)
 #define p(function)				\
   do						\
     {						\
-      fail_if ((r = function(), r < 0));	\
+      fail_if (r = function(), r < 0);		\
       if (r > 0)				\
 	goto redo;				\
     }						\

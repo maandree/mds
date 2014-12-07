@@ -112,7 +112,7 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
   mds_kbdc_include_stack_t** new_callable_include_stack_list = NULL;
   int saved_errno;
   
-  fail_if ((dupname = strdup(name), dupname == NULL));
+  fail_if (dupname = strdup(name), dupname == NULL);
   
   if (arg_count >= buckets)
     {
