@@ -408,16 +408,16 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   size_t arguments_ptr = 0, arguments_size = 0;
   char* restrict name;
   char c;
-  int r, saved_errno;
+  int r, saved_errno = 0;
   
   /* Find the opening bracket associated with the function call and validate the escape. */
-  while ((c = *bracket++))
+  for (; (c = *bracket); bracket++)
     if ((c == '_') || R('0', '9') || R('a', 'z') || R('A', 'Z'));
     else if (c == '(')
       break;
     else
       {
-	*end = --bracket;
+	*end = bracket;
 	if (tree->processed != PROCESS_LEVEL)
 	  NEW_ERROR(tree, ERROR, "invalid escape");
 	goto error;
@@ -437,6 +437,8 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
       arguments[arguments_ptr] = NULL;
       if (**end == ')')
 	{
+	  *escape = 0;
+	  (*end)++;
 	  arguments_ptr++;
 	  break;
 	}
@@ -453,13 +455,7 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   if (rc == NULL)
     goto stop;
   
-  while (arguments_ptr--)
-    free(arguments[arguments_ptr]);
-  free(arguments);
-  *escape = (**end == ')') ? 0 : 1;
-  if (*escape == 0)
-    (*end)++;
-  return rc;
+  goto done;
   
  error:
   error->start = lineoff;
@@ -468,7 +464,8 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   *escape = 0;
   tree->processed = PROCESS_LEVEL;
   fail_if (xmalloc(rc, 1, char32_t));
-  return *rc = -1, rc;
+  *rc = -1;
+  goto done;
   
  pfail:
   saved_errno = errno;
@@ -478,7 +475,13 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   while (arguments_ptr--)
     free(arguments[arguments_ptr]);
   free(arguments);
-  return errno = saved_errno, NULL;
+  rc = NULL;
+ done:
+  while (arguments_ptr--)
+    free(arguments[arguments_ptr]);
+  free(arguments);
+  errno = saved_errno;
+  return rc;
 #undef GROW_ARGS
 #undef R
 }
@@ -617,7 +620,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
 			      int* restrict escape, const char* restrict* restrict end)
 {
 #define R(LOWER, UPPER)         (((LOWER) <= c) && (c <= (UPPER)))
-#define CR(COND, LOWER, UPPER)  ((COND) && ((LOWER) <= c) && (c <= (UPPER)))
+#define CR(COND, LOWER, UPPER)  ((*escape == (COND)) && R(LOWER, UPPER))
 #define VARIABLE                (int)(raw - raw_) - (c == '.'), raw_
 #define RETURN_ERROR(...)					\
   do								\
@@ -665,17 +668,13 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     /* Function call. */
     return parse_function_call(tree, raw_, lineoff, escape, end);
   /* Octal or hexadecimal representation, or variable dereference. */
-  for (; c = *raw++, c != '.'; have = 1)
-    if      (CR(*escape ==  8, '0', '7'))  numbuf =  8 * numbuf + (c & 15);
-    else if (CR(*escape == 16, '0', '9'))  numbuf = 16 * numbuf + (c & 15);
-    else if (CR(*escape == 16, 'a', 'f'))  numbuf = 16 * numbuf + (c & 15) + 9;
-    else if (CR(*escape == 16, 'A', 'F'))  numbuf = 16 * numbuf + (c & 15) + 9;
-    else if (CR(*escape == 10, '0', '9'))  numbuf = 10 * numbuf + (c & 15);
-    else
-      {
-	raw--;
-	break;
-      }
+  for (; (c = *raw); have = 1, raw++)
+    if      (CR( 8, '0', '7'))  numbuf =  8 * numbuf + (c & 15);
+    else if (CR(16, '0', '9'))  numbuf = 16 * numbuf + (c & 15);
+    else if (CR(16, 'a', 'f'))  numbuf = 16 * numbuf + (c & 15) + 9;
+    else if (CR(16, 'A', 'F'))  numbuf = 16 * numbuf + (c & 15) + 9;
+    else if (CR(10, '0', '9'))  numbuf = 10 * numbuf + (c & 15);
+    else                        break;
   if (have == 0)
     RETURN_ERROR(tree, ERROR, "invalid escape");
   
@@ -737,7 +736,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
 #define STORE							\
   GROW_BUF;							\
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
-  fail_if (subrc = string_decode(buf), subrc == NULL);	\
+  fail_if (subrc = string_decode(buf), subrc == NULL);		\
   COPY
 #define CHAR_ERROR(...)					\
   do							\
@@ -756,6 +755,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   char* restrict old_buf = NULL;
   size_t rc_ptr = 0, rc_size = 0, n;
   size_t buf_ptr = 0, buf_size = 0;
+  size_t escoff = 0;
   int quote = 0, escape = 0;
   char c;
   int saved_errno;
@@ -772,7 +772,8 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
     else if (escape)
       {
 	/* Parse escape. */
-	raw -= 2, subrc = parse_escape(tree, raw, lineoff + (size_t)(raw - raw_), &escape, &raw);
+	raw -= 2, escoff = lineoff + (size_t)(raw - raw_);
+	subrc = parse_escape(tree, raw, escoff, &escape, &raw);
 	fail_if (subrc == NULL);
 	COPY;
       }
@@ -810,7 +811,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   if (escape && (tree->processed != PROCESS_LEVEL))
     {
       NEW_ERROR(tree, ERROR, "incomplete escape");
-      error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw);
+      error->start = escoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
     }
@@ -953,6 +954,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   char* restrict old_buf = NULL;
   size_t rc_ptr = 0, rc_size = 0, n;
   size_t buf_ptr = 0, buf_size = 0;
+  size_t escoff = 0;
   int escape = 0, quote = 0;
   char c;
   int saved_errno;
@@ -969,7 +971,8 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
     else if (escape)
       {
 	/* Parse escape. */
-	raw -= 2, subrc = parse_escape(tree, raw, lineoff + (size_t)(raw - raw_), &escape, &raw);
+	raw -= 2, escoff = lineoff + (size_t)(raw - raw_);
+	subrc = parse_escape(tree, raw, escoff, &escape, &raw);
 	fail_if (subrc == NULL);
 	COPY;
       }
@@ -999,7 +1002,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   if (escape && (tree->processed != PROCESS_LEVEL))
     {
       NEW_ERROR(tree, ERROR, "incomplete escape");
-      error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw);
+      error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw_);
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
     }

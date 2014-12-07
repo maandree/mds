@@ -169,13 +169,17 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
 void callables_get(const char* restrict name, size_t arg_count, mds_kbdc_tree_t** restrict callable,
 		   mds_kbdc_include_stack_t** restrict callable_include_stack)
 {
-  char** restrict names_ = names[arg_count];
-  size_t i, n = bucket_sizes[arg_count];
+  char** restrict names_;
+  size_t i, n;
   
   *callable = NULL;
   *callable_include_stack = NULL;
   
-  for (i = 0; i < n; i++)
+  if (arg_count >= buckets)
+    return;
+  
+  names_ = names[arg_count];
+  for (i = 0, n = bucket_sizes[arg_count]; i < n; i++)
     {
       if (strcmp(names_[i], name))
 	continue;
