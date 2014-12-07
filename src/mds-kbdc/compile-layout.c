@@ -1199,15 +1199,22 @@ static int get_macro(mds_kbdc_tree_macro_call_t* restrict macro_call,
 		     mds_kbdc_tree_macro_t** restrict macro,
 		     mds_kbdc_include_stack_t** restrict macro_include_stack)
 {
+  char* code = result->source_code->lines[macro_call->loc_line];
+  char* end = code + strlen(code) - 1;
+  
   get_macro_lax(macro_call->name, macro, macro_include_stack);
   if (*macro == NULL)
     {
       NEW_ERROR(macro_call, ERROR, "macro ‘%s’ has not been defined yet", macro_call->name);
+      while (*end == ' ')
+	end--;
+      error->end = (size_t)(++end - code);
       macro_call->processed = PROCESS_LEVEL;
       return 0;
     }
   if ((*macro)->processed == PROCESS_LEVEL)
     *macro = NULL;
+  
   return 0;
  pfail:
   return -1;
