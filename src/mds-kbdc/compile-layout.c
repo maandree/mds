@@ -100,6 +100,11 @@ static mds_kbdc_tree_t* last_value_statement = NULL;
  */
 static char32_t** current_return_value = NULL;
 
+/**
+ * Whether ‘\set/3’ has been called
+ */
+static int have_side_effect = 0;
+
 
 
 /**
@@ -356,11 +361,10 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
 		  name, arg_count);
     }
   
-  /* TODO side-effect if `is_set` */
-  
   /* Call the function. */
   *return_value = builtin_function_invoke(name, arg_count, arguments);
   fail_if (*return_value == NULL);
+  have_side_effect |= is_set;
   
   
  done:
@@ -2221,7 +2225,7 @@ static int check_nonnul(mds_kbdc_tree_t* restrict tree)
  */
 static int compile_map(mds_kbdc_tree_map_t* restrict tree)
 {
-  int bad = 0;
+  int bad = 0, old_have_side_effect = have_side_effect;
   mds_kbdc_include_stack_t* restrict include_stack = NULL;
   mds_kbdc_tree_t* seq = NULL;
   mds_kbdc_tree_t* res = NULL;
@@ -2230,6 +2234,8 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_map_t* dup_map = NULL;
   int r, saved_errno;
   mds_kbdc_tree_t* previous_last_value_statement = last_value_statement;
+  
+  have_side_effect = 0;
   
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the mapping
@@ -2293,12 +2299,13 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   /* Check that the value-statement is inside a function call, or has
      side-effects by directly or indirectly calling ‘\set/3’ on an
      array that is not shadowed by an inner function- or macro-call. */
-  if (r /* TODO was there a side-effect? enter if no */)
+  if (r && !have_side_effect)
     {
       NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
       tree->processed = PROCESS_LEVEL;
     }
-  /* TODO if we have side-effects: ```last_value_statement = NULL;``` */
+  if (have_side_effect)
+    last_value_statement = NULL;
   
   /* Check whether we made a previous value-statement unnecessary. */
   if (previous_last_value_statement)
@@ -2314,6 +2321,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
  done:
   mds_kbdc_tree_free(seq);
   mds_kbdc_tree_free(res);
+  have_side_effect = old_have_side_effect;
   return 0;
   FAIL_BEGIN;
   mds_kbdc_include_stack_free(include_stack);
@@ -2322,6 +2330,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
   mds_kbdc_tree_free(res);
   tree->sequence = old_seq;
   tree->result = old_res;
+  have_side_effect = old_have_side_effect;
   FAIL_END;
 }
 
