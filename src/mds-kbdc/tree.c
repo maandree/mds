@@ -272,15 +272,6 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 #define R(member)  fail_if (t->member && (n->member = mds_kbdc_source_code_dup(t->member), n->member == NULL))
 
 
-/**
- * Cast the trees to a specialised subtype
- * 
- * @param  LOWERCASE:identifer   The name of subtype
- */
-#define NODE(LOWERCASE)									\
-  mds_kbdc_tree_##LOWERCASE##_t* n = (mds_kbdc_tree_##LOWERCASE##_t*)node;		\
-  const mds_kbdc_tree_##LOWERCASE##_t* t = (const mds_kbdc_tree_##LOWERCASE##_t*)this
-
 
 /**
  * Create a duplicate of a tree node and its children
@@ -290,18 +281,21 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  */
 mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this)
 {
-  mds_kbdc_tree_t* node = NULL;
+#define  t  this
+#define  n  (*node)
+  mds_kbdc_tree_t* rc = NULL;
+  mds_kbdc_tree_t** node = &rc;
   int saved_errno;
   
-  fail_if ((this == NULL) || xcalloc(node, 1, mds_kbdc_tree_t));
+ again:
+  if (t == NULL)  return rc;
+  fail_if (xcalloc(n, 1, mds_kbdc_tree_t));
   
-  node->type = this->type;
-  node->loc_line = this->loc_line;
-  node->loc_start = this->loc_start;
-  node->loc_end = this->loc_end;
-  node->processed = this->processed;
-  node->next = mds_kbdc_tree_dup(this->next); /* TODO perhaps we do not need recursion for this. */
-  fail_if (this->next && (node->next == NULL));
+  n->type      = t->type;
+  n->loc_line  = t->loc_line;
+  n->loc_start = t->loc_start;
+  n->loc_end   = t->loc_end;
+  n->processed = t->processed;
   
   switch (this->type)
     {
@@ -309,39 +303,43 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this)
     case C(ASSUMPTION):
     case C(ALTERNATION):
     case C(UNORDERED):
-    case C(ORDERED):                { NODE(nesting); T(inner);                            }  break;
+    case C(ORDERED):                T(ordered.inner);                                               break;
     case C(FUNCTION):
-    case C(MACRO):                  { NODE(callable); S(name);T(inner);                   }  break;
-    case C(ASSUMPTION_HAVE):        { NODE(assumption_have); T(data);                     }  break;
-    case C(ARRAY):                  { NODE(array); T(elements);                           }  break;
-    case C(LET):                    { NODE(let); S(variable);T(value);                    }  break;
-    case C(MACRO_CALL):             { NODE(macro_call); S(name);T(arguments);             }  break;
+    case C(MACRO):                  S(macro.name); T(macro.inner);                                  break;
+    case C(ASSUMPTION_HAVE):        T(have.data);                                                   break;
+    case C(ARRAY):                  T(array.elements);                                              break;
+    case C(LET):                    S(let.variable); T(let.value);                                  break;
+    case C(MACRO_CALL):             S(macro_call.name); T(macro_call.arguments);                    break;
     case C(INFORMATION_LANGUAGE):
     case C(INFORMATION_COUNTRY):
-    case C(INFORMATION_VARIANT):    { NODE(information_data); S(data);                    }  break;
-    case C(INCLUDE):                { NODE(include); S(filename);T(inner);R(source_code); }  break;
-    case C(ASSUMPTION_HAVE_CHARS):  { NODE(assumption_have_chars); S(chars);              }  break;
-    case C(KEYS):                   { NODE(keys); S(keys);                                }  break;
-    case C(STRING):                 { NODE(string); S(string);                            }  break;
-    case C(COMPILED_KEYS):          { NODE(compiled_keys); Z(keys);                       }  break;
-    case C(COMPILED_STRING):        { NODE(compiled_string); Z(string);                   }  break;
-    case C(ASSUMPTION_HAVE_RANGE):  { NODE(assumption_have_range); S(first);S(last);      }  break;
-    case C(FOR):                    { NODE(for); S(first);S(last);S(variable);T(inner);   }  break;
-    case C(IF):                     { NODE(if); S(condition);T(inner);T(otherwise);       }  break;
-    case C(MAP):                    { NODE(map); T(sequence);T(result);                   }  break;
+    case C(INFORMATION_VARIANT):    S(variant.data);                                                break;
+    case C(INCLUDE):                S(include.filename); T(include.inner); R(include.source_code);  break;
+    case C(ASSUMPTION_HAVE_CHARS):  S(have_chars.chars);                                            break;
+    case C(KEYS):                   S(keys.keys);                                                   break;
+    case C(STRING):                 S(string.string);                                               break;
+    case C(COMPILED_KEYS):          Z(compiled_keys.keys);                                          break;
+    case C(COMPILED_STRING):        Z(compiled_string.string);                                      break;
+    case C(ASSUMPTION_HAVE_RANGE):  S(have_range.first); S(have_range.last);                        break;
+    case C(FOR):                    S(for_.first); S(for_.last); S(for_.variable); T(for_.inner);   break;
+    case C(IF):                     S(if_.condition); T(if_.inner); T(if_.otherwise);               break;
+    case C(MAP):                    T(map.sequence); T(map.result);                                 break;
     default:
       break;
     }
   
-  return node;
+  t = t->next;
+  node = &(n->next);
+  goto again;
+  
  pfail:
   saved_errno = errno;
-  mds_kbdc_tree_free(node);
+  mds_kbdc_tree_free(rc);
   return errno = saved_errno, NULL;
+#undef n
+#undef t
 }
 
 
-#undef NODE
 #undef R
 #undef Z
 #undef S
