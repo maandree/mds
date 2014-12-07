@@ -930,6 +930,19 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   buf[buf_ptr] = '\0', buf_ptr = 0;				\
   fail_if (subrc = string_decode(buf), subrc == NULL);		\
   COPY
+#define SPECIAL(VAL)							\
+  do									\
+    {									\
+      /* (above 2³¹, yet guaranteed not to be -1). */			\
+      size_t i;								\
+      for (i = 0; i < 7; i++)						\
+	GROW_BUF;							\
+      buf[buf_ptr++] = (char)0xFE;					\
+      for (i = 0; i < 5; i++)						\
+	buf[buf_ptr++] = 0x00;						\
+      buf[buf_ptr++] = (char)(((1ULL << 31) ^ VAL##ULL) & 255);		\
+    }									\
+  while (0)
   
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
   const char* restrict raw_ = raw++;
@@ -939,7 +952,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   char* restrict buf = NULL;
   char* restrict old_buf = NULL;
   size_t rc_ptr = 0, rc_size = 0, n;
-  size_t buf_ptr = 0, buf_size = 0, i;
+  size_t buf_ptr = 0, buf_size = 0;
   int escape = 0;
   char c;
   int saved_errno;
@@ -966,16 +979,8 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 	STORE;
 	escape = 1;
       }
-    else if (c == ',') /* TODO must handle " too */
-      {
-	/* Include commas as (1 << 31) ^ 1 (above 2³¹, yet guaranteed not to be -1). */
-	for (i = 0; i < 7; i++)
-	  GROW_BUF;
-	buf[buf_ptr++] = (char)0xFE;
-	for (i = 0; i < 5; i++)
-	  buf[buf_ptr++] = 0x00;
-	buf[buf_ptr++] = (char)(((1ULL << 31) ^ 1ULL) & 255);
-      }
+    else if (c == ',')  SPECIAL(1);
+    else if (c == '"')  SPECIAL(2);
     else
       {
 	/* Buffer UTF-8 text for convertion to UTF-32. */
@@ -1016,6 +1021,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   free(buf);
   errno = saved_errno;
   return last_value_statement = old_last_value_statement, NULL;
+#undef SPECIAL
 #undef STORE
 #undef COPY
 #undef GROW_BUF
