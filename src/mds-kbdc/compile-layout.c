@@ -943,6 +943,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
       buf[buf_ptr++] = (char)(((1ULL << 31) ^ VAL##ULL) & 255);		\
     }									\
   while (0)
+  /* Actually, UTF-8 does not suppot beyond plane 16 nowadays, but we ignore that. */
   
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
   const char* restrict raw_ = raw++;
@@ -953,7 +954,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   char* restrict old_buf = NULL;
   size_t rc_ptr = 0, rc_size = 0, n;
   size_t buf_ptr = 0, buf_size = 0;
-  int escape = 0;
+  int escape = 0, quote = 0;
   char c;
   int saved_errno;
   
@@ -979,8 +980,15 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 	STORE;
 	escape = 1;
       }
-    else if (c == ',')  SPECIAL(1);
-    else if (c == '"')  SPECIAL(2);
+    else if ((c == ',') && !quote)
+      /* Sequence in key-combination. */
+      SPECIAL(1);
+    else if (c == '"')
+      {
+	/* String in key-combination. */
+	quote ^= 1;
+	SPECIAL(2);
+      }
     else
       {
 	/* Buffer UTF-8 text for convertion to UTF-32. */
