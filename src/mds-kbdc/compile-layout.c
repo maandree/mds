@@ -939,7 +939,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
 	GROW_BUF;								\
       buf[buf_ptr++] = (char)0xFE;						\
       for (i = 0; i < 5; i++)							\
-	buf[buf_ptr++] = 0x80;							\
+	buf[buf_ptr++] = (char)0x80;						\
       buf[buf_ptr++] = (char)((((1ULL << 31) ^ VAL##ULL) & 255) | 0x80);	\
     }										\
   while (0)
