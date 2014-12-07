@@ -1,0 +1,7 @@
+assumption
+  have <shift>
+  have " "
+  have_chars ",.-"
+  have_range "a" "z"
+end assumption
+

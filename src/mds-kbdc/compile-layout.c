@@ -727,11 +727,11 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
 #define GROW_BUF								\
   if (buf_ptr == buf_size)							\
     fail_if (xxrealloc(old_buf, buf, buf_size ? (buf_size <<= 1) : 16, char))
-#define COPY							\
-  n = string_length(subrc);					\
-  if (rc_ptr + n > rc_size)					\
-    fail_if (xxrealloc(old_rc, rc, rc_ptr + n, char32_t));	\
-  memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t));		\
+#define COPY								\
+  n = string_length(subrc);						\
+  if (rc_ptr + n > rc_size)						\
+    fail_if (xxrealloc(old_rc, rc, rc_size = rc_ptr + n, char32_t));	\
+  memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t)), rc_ptr += n;	\
   free(subrc), subrc = NULL
 #define STORE							\
   GROW_BUF;							\

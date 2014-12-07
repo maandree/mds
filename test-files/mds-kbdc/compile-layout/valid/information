@@ -1,0 +1,8 @@
+information
+  language "language1"
+  language "language2"
+  country "country1"
+  country "country2"
+  variant "variant1"
+end information
+
