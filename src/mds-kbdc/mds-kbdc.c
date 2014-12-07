@@ -80,7 +80,7 @@ int main(int argc_, char** argv_)
   process (compile_layout(&result));
   /* TODO process (assemble_layout(&result)); */
  stop:
-  /* mds_kbdc_tree_print(result.tree, stderr); */
+  /* mds_kbdc_tree_print(result.tree, stderr); // for testing passes parse_to_tree–eliminate_dead_code */
   mds_kbdc_parsed_print_errors(&result, stderr);
   mds_kbdc_parsed_destroy(&result);
   return fatal;
