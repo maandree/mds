@@ -653,7 +653,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     *escape = 16;
   else if (R('1', '9'))
     /* Variable dereference. */
-    *escape = 10;
+    *escape = 10, have = 1, numbuf = (uintmax_t)(c - '0');
   else if ((c == '_') || R('a', 'z') || R('A', 'Z'))
     /* Function call. */
     *escape = 100;
@@ -666,7 +666,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     /* Function call. */
     return parse_function_call(tree, raw_, lineoff, escape, end);
   /* Octal or hexadecimal representation, or variable dereference. */
-  for (; (c = *raw++) && (c != '.'); have = 1)
+  for (; c = *raw++, c != '.'; have = 1)
     if      (CR(*escape ==  8, '0', '7'))  numbuf =  8 * numbuf + (c & 15);
     else if (CR(*escape == 16, '0', '9'))  numbuf = 16 * numbuf + (c & 15);
     else if (CR(*escape == 16, 'a', 'f'))  numbuf = 16 * numbuf + (c & 15) + 9;
