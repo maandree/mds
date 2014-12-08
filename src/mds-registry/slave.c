@@ -168,29 +168,28 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
   slave_t* slave = slave_create(wait_set, recv_client_id, recv_message_id);
   size_t slave_address, i;
   ssize_t node = LINKED_LIST_UNUSED;
+  int locked = 0;
   
   fail_if (slave == NULL);
   fail_if ((errno = pthread_mutex_lock(&slave_mutex)));
+  locked = 1;
   
   slave_address = (size_t)(void*)slave;
   slave->node = node = linked_list_insert_end(&slave_list, slave_address);
-  if (slave->node == LINKED_LIST_UNUSED)
-    goto pfail_in_mutex;
+  fail_if (slave->node == LINKED_LIST_UNUSED);
   
   for (i = 0; i < received.header_count; i++)
     if (startswith(received.headers[i], "Time to live: "))
       {
 	const char* ttl = received.headers[i] + strlen("Time to live: ");
 	slave->timed = 1;
-	if (monotone(&(slave->dethklok)))
-	  goto pfail_in_mutex;
+	fail_if (monotone(&(slave->dethklok)));
 	slave->dethklok.tv_sec += (time_t)atoll(ttl);
-	/* It should really be `atol`, but we want to be future proof. */
+	/* It should really be `atol`, but we want to be future-proof. */
 	break;
       }
   
-  if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)))
-    goto pfail_in_mutex;
+  fail_if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)));
   
   if ((errno = pthread_detach(slave->thread)))
     xperror(*argv);
@@ -201,11 +200,8 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
   return 0;
  pfail:
   xperror(*argv);
-  goto more_fail;
- pfail_in_mutex:
-  xperror(*argv);
-  pthread_mutex_unlock(&slave_mutex);
- more_fail:
+  if (locked)
+    pthread_mutex_unlock(&slave_mutex);
   if (node != LINKED_LIST_UNUSED)
     linked_list_remove(&slave_list, node);
   return -1;

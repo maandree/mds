@@ -225,19 +225,18 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
   else if ((action == 0) && !has_key)
     {
       /* Add protocl to wait set of not present in the protocol table. */
-      if ((command = strdup(command)) == NULL)
-	goto pfail_wait;
+      fail_if ((command = strdup(command)) == NULL);
       command_key = (size_t)(void*)command;
       if (hash_table_put(wait_set, command_key, 1) == 0)
 	if (errno)
 	  {
 	    free(command);
-	    goto pfail_wait;
+	    fail_if (1);
 	  }
     }
   
   return 0;
- pfail_wait:
+ pfail:
   xperror(*argv);
   hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
   free(wait_set);
