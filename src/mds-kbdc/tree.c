@@ -241,7 +241,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 
 
 /**
- * Duplicate a subtree and goto `fail` on failure
+ * Duplicate a subtree and goto `pfail` on failure
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
@@ -249,7 +249,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 
 
 /**
- * Duplicate a string and goto `fail` on failure
+ * Duplicate a string and goto `pfail` on failure
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
@@ -257,7 +257,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 
 
 /**
- * Duplicate an UTF-32-string and goto `fail` on failure
+ * Duplicate an UTF-32-string and goto `pfail` on failure
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
@@ -265,7 +265,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
 
 
 /**
- * Duplicate a source code structure and goto `fail` on failure
+ * Duplicate a source code structure and goto `pfail` on failure
  * 
  * @param  member:identifer  The member in the tree to copied
  */
