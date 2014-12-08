@@ -74,8 +74,7 @@ static int handle_close_message(void)
 	    
 	    /* If no servers support the protocol, list the protocol for removal. */
 	    fail_if ((keys == NULL) && xmalloc(keys, size, size_t));
-	    if (ptr == size ? growalloc(old_keys, keys, size, size_t) : 0)
-	      goto fail;
+	    fail_if (ptr == size ? growalloc(old_keys, keys, size, size_t) : 0);
 	    keys[ptr++] = entry->key;
 	  }
 	
@@ -110,7 +109,6 @@ static int handle_close_message(void)
   return 0;
  pfail:
   xperror(*argv);
- fail:
   free(keys);
   return -1;
 }

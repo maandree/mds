@@ -104,8 +104,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
   
   out->clients = NULL;
   
-  if ((new_clients = malloc(n)) == NULL)
-    goto fail;
+  fail_if ((new_clients = malloc(n)) == NULL);
   
   out->clients = new_clients;
   
@@ -116,7 +115,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
   
   return 0;
   
- fail:
+ pfail:
   free(new_clients);
   return -1;
 }

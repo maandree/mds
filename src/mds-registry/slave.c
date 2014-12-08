@@ -272,22 +272,18 @@ slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv
 {
   slave_t* restrict rc = NULL;
   
-  if (xmalloc(rc, 1, slave_t))
-    return NULL;
+  fail_if (xmalloc(rc, 1, slave_t));
   
   slave_initialise(rc);
   rc->wait_set = wait_set;
   rc->client = parse_client_id(recv_client_id);
   
-  if ((rc->client_id = strdup(recv_client_id)) == NULL)
-    goto fail;
-  
-  if ((rc->message_id = strdup(recv_message_id)) == NULL)
-    goto fail;
+  fail_if ((rc->client_id = strdup(recv_client_id)) == NULL);
+  fail_if ((rc->message_id = strdup(recv_message_id)) == NULL);
   
   return rc;
   
- fail:
+ pfail:
   slave_destroy(rc);
   free(rc);
   return NULL;
@@ -318,6 +314,9 @@ void slave_initialise(slave_t* restrict this)
  */
 void slave_destroy(slave_t* restrict this)
 {
+  if (this == NULL)
+    return;
+  
   if (this->wait_set != NULL)
     {
       hash_table_destroy(this->wait_set, (free_func*)reg_table_free_key, NULL);

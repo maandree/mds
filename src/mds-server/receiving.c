@@ -183,6 +183,7 @@ static int assign_and_send_id(client_t* client, const char* message_id)
   char* msgbuf = NULL;
   char* msgbuf_;
   size_t n;
+  int rc = -1;
   
   /* Construct response. */
   n = 2 * 10 + strlen(message_id) + 1;
@@ -204,6 +205,7 @@ static int assign_and_send_id(client_t* client, const char* message_id)
   
   /* Queue message to be sent when this function returns.
      This done to simplify `multicast_message` for re-exec and termination. */
+#define pfail  fail_in_mutex
   with_mutex (client->mutex,
 	      if (client->send_pending_size == 0)
 		{
@@ -216,20 +218,20 @@ static int assign_and_send_id(client_t* client, const char* message_id)
 		  /* Concatenate message to already pending messages. */
 		  size_t new_len = client->send_pending_size + n;
 		  char* msg_new = client->send_pending;
-		  if (xrealloc(msg_new, new_len, char))
-		    goto fail;
+		  fail_if (xrealloc(msg_new, new_len, char));
 		  memcpy(msg_new + client->send_pending_size, msgbuf, n * sizeof(char));
 		  client->send_pending = msg_new;
 		  client->send_pending_size = new_len;
 		}
-	      fail:
+	      (msgbuf = NULL, rc = 0, errno = 0);
+	     fail_in_mutex:
 	      );
+#undef pfail
   
-  return 0;
-  
- pfail:
+ pfail: /* Also success. */
+  xperror(*argv);
   free(msgbuf);
-  return -1;
+  return rc;
 }
 
 

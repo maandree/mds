@@ -360,8 +360,7 @@ pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options)
   rc = waitpid(pid, status, options);
   if (rc == (pid_t)-1)
     {
-      if (errno != EINTR)
-	goto fail;
+      fail_if (errno != EINTR);
       if (have_time && (monotone(&time_intr) >= 0))
 	if (time_start.tv_sec != time_intr.tv_sec)
 	  intr_count = 0;
@@ -370,7 +369,7 @@ pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options)
       /* Don't let the CPU catch fire! */
       errno = EINTR;
     }
- fail:
+ pfail:
   return rc;
 }
 

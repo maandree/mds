@@ -429,7 +429,7 @@ int master_loop(void)
       if (r == -2)
 	{
 	  eprint("corrupt message received, aborting.");
-	  goto fail;
+	  goto done;
 	}
       else if (errno == EINTR)
 	continue;
@@ -440,8 +440,7 @@ int master_loop(void)
       mds_message_destroy(&received);
       mds_message_initialise(&received);
       connected = 0;
-      if (reconnect_to_display())
-	goto fail;
+      fail_if (reconnect_to_display());
       connected = 1;
     }
   
@@ -451,10 +450,10 @@ int master_loop(void)
   if (unlink(vtfile_path) < 0)
     xperror(*argv);
   vt_close(display_tty_fd, &old_vt_stat);
-  goto fail;
+  goto done;
  pfail:
   xperror(*argv);
- fail:
+ done:
   rc |= secondary_thread_failed;
   if (rc || !reexecing)
     mds_message_destroy(&received);
@@ -489,7 +488,8 @@ void* secondary_loop(void* data)
       if (r == -2)
 	{
 	  eprint("corrupt message received, aborting.");
-	  goto fail;
+	  secondary_thread_failed = 1;
+	  goto done;
 	}
       else if (errno == EINTR)
 	continue;
@@ -499,14 +499,12 @@ void* secondary_loop(void* data)
       eprint("lost secondary connection to server.");
       mds_message_destroy(&secondary_received);
       mds_message_initialise(&secondary_received);
-      if (reconnect_fd_to_display(&secondary_socket_fd) < 0)
-	goto fail;
+      fail_if (reconnect_fd_to_display(&secondary_socket_fd) < 0);
     }
   
   goto done;
  pfail:
   xperror(*argv);
- fail:
   secondary_thread_failed = 1;
  done:
   secondary_thread_started = 0;

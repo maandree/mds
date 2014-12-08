@@ -362,7 +362,11 @@ int spawn_and_respawn_server(int fd)
   /* If the server exited normally or SIGTERM, do not respawn. */
   if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
       ((WTERMSIG(status) == SIGTERM) || (WTERMSIG(status) == SIGINT)))
-    goto done; /* Child exited normally, stop. */
+    {
+      /* Child exited normally, stop. */
+      rc--;
+      goto done;
+    }
   
   /* Get the current time. (End of child process.) */
   time_error |= (monotone(&time_end) < 0);
@@ -377,7 +381,7 @@ int spawn_and_respawn_server(int fd)
     {
       xperror(*argv);
       eprintf("`%s' died abnormally, not respawning because we could not read the time.", master_server);
-      goto fail;
+      goto done;
     }
   
       /* Respawn if the server did not die too fast. */
@@ -386,7 +390,7 @@ int spawn_and_respawn_server(int fd)
   else
     {
       eprintf("`%s' died abnormally, died too fast, not respawning.", master_server);
-      goto fail;
+      goto done;
     }
   
   if (first_spawn)
@@ -401,8 +405,6 @@ int spawn_and_respawn_server(int fd)
   
   
  done:
-  rc--;
- fail:
   rc++;
   free(child_args[0]);
   free(child_args[argc + 0]);
@@ -412,7 +414,7 @@ int spawn_and_respawn_server(int fd)
   
  pfail:
   xperror(*argv);
-  goto fail;
+  goto done;
 }
 
 

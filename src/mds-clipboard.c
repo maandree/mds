@@ -357,7 +357,7 @@ int master_loop(void)
       if (r == -2)
 	{
 	  eprint("corrupt message received, aborting.");
-	  goto fail;
+	  goto done;
 	}
       else if (errno == EINTR)
 	continue;
@@ -368,16 +368,15 @@ int master_loop(void)
       mds_message_destroy(&received);
       mds_message_initialise(&received);
       connected = 0;
-      if (reconnect_to_display())
-	goto fail;
+      fail_if (reconnect_to_display());
       connected = 1;
     }
   
   rc = 0;
-  goto fail;
+  goto done;
  pfail:
   xperror(*argv);
- fail:
+ done:
   if (!rc && reexecing)
     return 0;
   mds_message_destroy(&received);

@@ -36,7 +36,7 @@
 #include <fcntl.h>
 
 
-#define  try(INSTRUCTION)  if ((r = INSTRUCTION))  goto fail
+#define  try(INSTRUCTION)  fail_if ((r = (INSTRUCTION)))
 
 
 /**
@@ -482,24 +482,21 @@ static void perform_reexec(void)
   /* Marshal the state of the server. */
   xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
   reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-  if (reexec_fd < 0)
-    {
-      xperror(*argv);
-      return;
-    }
-  if (base_marshal(reexec_fd) < 0)
-    goto fail;
+  fail_if (reexec_fd < 0);
+  fail_if (base_marshal(reexec_fd) < 0);
   close(reexec_fd);
   reexec_fd = -1;
   
   /* Re-exec the server. */
   reexec_server(argc, argv, is_reexec);
-  xperror(*argv);
   
- fail:
+ pfail:
+  xperror(*argv);
   if (reexec_fd >= 0)
-    close(reexec_fd);
-  shm_unlink(shm_path);
+    {
+      close(reexec_fd);
+      shm_unlink(shm_path);
+    }
 }
 
 
@@ -520,7 +517,8 @@ int main(int argc_, char** argv_)
   
   if (server_characteristics.require_privileges == 0)
     /* Drop privileges like it's hot. */
-    fail_if (drop_privileges());
+    if (drop_privileges())
+      fail_if ((r = 1));
   
   
   /* Use /proc/self/exe when re:exec-ing */
@@ -573,7 +571,7 @@ int main(int argc_, char** argv_)
   if (reexecing)
     {
       perform_reexec();
-      goto fail;
+      fail_if (1);
     }
   
   close(socket_fd);
@@ -582,8 +580,6 @@ int main(int argc_, char** argv_)
   
  pfail:
   xperror(*argv);
-  r = 1;
- fail:
   if (socket_fd >= 0)
     close(socket_fd);
   return r;

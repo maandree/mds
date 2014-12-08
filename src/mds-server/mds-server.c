@@ -302,7 +302,7 @@ void* slave_loop(void* data)
       if ((r == 0) && message_received(information))
 	goto terminate;
       else if (r == -2)
-	goto fail;
+	goto done;
       else if (r && (errno == EINTR) && terminating)
       	goto terminate; /* Stop the thread if we are re-exec:ing or terminating the server. */
     }
@@ -329,7 +329,7 @@ void* slave_loop(void* data)
   if (reexecing)
     goto reexec;
   
- fail: /* This done on success as well. */
+ done:
   /* Close socket and free resources. */
   close(slave_fd);
   free(msgbuf);
@@ -350,7 +350,7 @@ void* slave_loop(void* data)
   
  pfail:
   xperror(*argv);
-  goto fail;
+  goto done;
   
   
  reexec:
@@ -482,22 +482,22 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   multicast->message_prefix = n;
   message = NULL;
   
+#define pfail  fail_in_mutex
   /* Queue message multicasting. */
   with_mutex (sender->mutex,
 	      new_buf = sender->multicasts;
-	      if (xrealloc(new_buf, sender->multicasts_count + 1, multicast_t))
-		{
-		  xperror(*argv);
-		  goto fail_queue;
-		}
+	      fail_if (xrealloc(new_buf, sender->multicasts_count + 1, multicast_t));
 	      sender->multicasts = new_buf;
 	      sender->multicasts[sender->multicasts_count++] = *multicast;
 	      free(multicast);
 	      multicast = NULL;
-	     fail_queue:
+	      errno = 0;
+	     fail_in_mutex:
+	      xperror(*argv);
 	      );
+#undef pfail
   
- fail: /* This is done before this function returns even if there was no error. */
+ done:
   /* Release resources. */
   xfree(headers, header_count);
   xfree(header_values, header_count);
@@ -510,7 +510,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   
  pfail:
   xperror(*argv);
-  goto fail;
+  goto done;
 }
 
 

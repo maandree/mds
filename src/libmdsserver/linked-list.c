@@ -95,10 +95,10 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity)
  */
 void linked_list_destroy(linked_list_t* restrict this)
 {
-  free(this->reusable);  this->reusable = NULL;
-  free(this->values);    this->values   = NULL;
-  free(this->next);      this->next     = NULL;
-  free(this->previous);  this->previous = NULL;
+  free(this->reusable),  this->reusable = NULL;
+  free(this->values),    this->values   = NULL;
+  free(this->next),      this->next     = NULL;
+  free(this->previous),  this->previous = NULL;
 }
 
 
@@ -122,10 +122,10 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
   out->previous = NULL;
   out->reusable = NULL;
   
-  if ((new_values   = malloc(n)) == NULL)  goto fail;
-  if ((new_next     = malloc(n)) == NULL)  goto fail;
-  if ((new_previous = malloc(n)) == NULL)  goto fail;
-  if ((new_reusable = malloc(n)) == NULL)  goto fail;
+  fail_if ((new_values   = malloc(n)) == NULL);
+  fail_if ((new_next     = malloc(n)) == NULL);
+  fail_if ((new_previous = malloc(n)) == NULL);
+  fail_if ((new_reusable = malloc(n)) == NULL);
   
   out->values   = new_values;
   out->next     = new_next;
@@ -144,7 +144,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
   
   return 0;
 
- fail:
+ pfail:
   free(new_values);
   free(new_next);
   free(new_previous);
@@ -191,9 +191,9 @@ int linked_list_pack(linked_list_t* restrict this)
   
   if (cap != this->capacity)
     {
-      if (xmalloc(new_next,     cap, ssize_t))  goto fail;
-      if (xmalloc(new_previous, cap, ssize_t))  goto fail;
-      if (xmalloc(new_reusable, cap, ssize_t))  goto fail;
+      fail_if (xmalloc(new_next,     cap, ssize_t));
+      fail_if (xmalloc(new_previous, cap, ssize_t));
+      fail_if (xmalloc(new_reusable, cap, ssize_t));
       
       free(this->next);
       free(this->previous);
@@ -218,7 +218,7 @@ int linked_list_pack(linked_list_t* restrict this)
   
   return 0;
 
- fail:
+ pfail:
   free(vals);
   free(new_next);
   free(new_previous);
