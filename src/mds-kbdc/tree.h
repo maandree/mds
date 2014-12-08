@@ -17,6 +17,7 @@
  */
 #ifndef MDS_MDS_KBDC_TREE_H
 #define MDS_MDS_KBDC_TREE_H
+/* TODO add information field for layout mods */
 
 
 #include "raw-data.h"
