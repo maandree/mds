@@ -153,7 +153,7 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
       if (new == NULL)
 	return -1;
       variables = new;
-      memset(variables, 0, (variable + 1 - variable_count) * sizeof(variable_t*));
+      memset(variables + variable_count, 0, (variable + 1 - variable_count) * sizeof(variable_t*));
       variable_count = variable + 1;
     }
   

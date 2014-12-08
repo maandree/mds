@@ -1,0 +1,17 @@
+function n
+end function
+macro n/
+end macro
+function n/01
+end function
+macro n/a
+end macro
+function n/1 # this one is good
+end function
+macro n/9 # this one is good
+end macro
+function n/0 # this one is good
+end function
+macro n/10 # this one is good
+end macro
+

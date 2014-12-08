@@ -1,0 +1,12 @@
+let 1 : 1
+let \. : 1
+let \0 : 1
+let \0. : 1
+let \1.. : 1
+let \1 : 1 # this one is good
+let \1. : 1 # this one is good
+let \9 : 1 # this one is good
+let \a : 1
+let \f() : 1
+let a : 1
+

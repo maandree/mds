@@ -68,15 +68,17 @@ void callables_terminate(void)
 {
   size_t i, j, n;
   char** bucket;
-  for (i = 0; i < list_ptr; i++)
+  for (i = 0; i < buckets; i++)
     {
       bucket = names[i];
       for (j = 0, n = bucket_sizes[i]; j < n; j++)
 	free(bucket[j]);
       free(bucket);
+      free(callables[i]);
     }
   for (i = 0; i < list_ptr; i++)
     mds_kbdc_include_stack_free(callable_include_stack_list[i]);
+  free(callables), callables = NULL;
   free(names), names = NULL;
   free(bucket_sizes), bucket_sizes = NULL;
   free(callable_list), callable_list = NULL;
@@ -98,7 +100,7 @@ void callables_terminate(void)
 int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* restrict callable,
 		  mds_kbdc_include_stack_t* restrict callable_include_stack)
 {
-#define yrealloc(var, elements, type)				\
+#define yrealloc(var, elements, type)					\
   (new_##var = realloc(var, (elements) * sizeof(type)),			\
    (new_##var == NULL) ? -1 : (var = new_##var, new_##var = NULL, 0))
   
@@ -119,16 +121,16 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
       fail_if (yrealloc(names,        arg_count + 1, char**));
       fail_if (yrealloc(callables,    arg_count + 1, size_t*));
       fail_if (yrealloc(bucket_sizes, arg_count + 1, size_t));
-      memset(names,        0, (arg_count + 1 - buckets) * sizeof(char**));
-      memset(callables,    0, (arg_count + 1 - buckets) * sizeof(size_t*));
-      memset(bucket_sizes, 0, (arg_count + 1 - buckets) * sizeof(size_t));
+      memset(names        + buckets, 0, (arg_count + 1 - buckets) * sizeof(char**));
+      memset(callables    + buckets, 0, (arg_count + 1 - buckets) * sizeof(size_t*));
+      memset(bucket_sizes + buckets, 0, (arg_count + 1 - buckets) * sizeof(size_t));
       buckets = arg_count + 1;
     }
   
   fail_if (xxrealloc(old_names,     names[arg_count],     bucket_sizes[arg_count] + 1, char*));
   fail_if (xxrealloc(old_callables, callables[arg_count], bucket_sizes[arg_count] + 1, size_t));
   
-  names[arg_count][bucket_sizes[arg_count]] = dupname, dupname = NULL;;
+  names[arg_count][bucket_sizes[arg_count]] = dupname, dupname = NULL;
   callables[arg_count][bucket_sizes[arg_count]] = list_ptr;
   bucket_sizes[arg_count]++;
   

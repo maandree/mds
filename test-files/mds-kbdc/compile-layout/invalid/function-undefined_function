@@ -1,0 +1,8 @@
+function f/0
+  for \f(1) to \f(1) as \1
+    if \f(1)
+      \f(1)
+    end if
+  end for
+end function
+

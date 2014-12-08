@@ -20,6 +20,7 @@
 /* TODO fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
 /* TODO test all builtin functions */
 /* TODO test function- and macro-overloading */
+/* TODO test same-named macros and functions */
 
 #include "include-stack.h"
 #include "builtin-functions.h"
@@ -173,7 +174,7 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
       statement && (statement->processed != PROCESS_LEVEL))
     {
       statement->processed = PROCESS_LEVEL;
-      NEW_ERROR(statement, WARNING, "does not shadow existing definition");
+      NEW_ERROR(statement, WARNING, "does not shadow existing definition");/* TODO test */
       error->start = lineoff;
       error->end = lineoff + (size_t)snprintf(NULL, 0, "\\%zu", variable);
     }
@@ -226,16 +227,16 @@ static int check_set_3_get_2_call(mds_kbdc_tree_t* restrict tree, int is_set, co
   size_t index;
   
   if ((variable_arg[0] <= 0) || (variable_arg[1] != -1))
-    FUN_ERROR(tree, ERROR, "first argument in call to function ‘%s’ must be a variable index", F);
+    FUN_ERROR(tree, ERROR, "first argument in call to function ‘%s’ must be a variable index", F);/* TODO test */
   
   if ((index_arg[0] < 0) || (index_arg[1] != -1))
-    FUN_ERROR(tree, ERROR, "second argument in call to function ‘%s’ must be an element index", F);
+    FUN_ERROR(tree, ERROR, "second argument in call to function ‘%s’ must be an element index", F);/* TODO test */
   
   variable = variables_get((size_t)*variable_arg);
   if (variable == NULL)
-    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not declared", (size_t)*variable_arg);
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not declared", (size_t)*variable_arg);/* TODO test */
   if (variable->type != C(ARRAY))
-    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not an array", (size_t)*variable_arg);
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not an array", (size_t)*variable_arg);/* TODO test */
   
   index = (size_t)*index_arg;
   element = variable->array.elements;
@@ -243,7 +244,7 @@ static int check_set_3_get_2_call(mds_kbdc_tree_t* restrict tree, int is_set, co
     element = element->next;
   
   if (element == NULL)
-    FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu elements", (size_t)*variable_arg, (size_t)*index_arg);
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu elements", (size_t)*variable_arg, (size_t)*index_arg);/* TODO test */
   
   return 0;
  pfail:
@@ -332,7 +333,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
       
       /* Check that the function returned a value. */
       if (*return_value == NULL)
-	FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ did not return a value", name, arg_count);
+	FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ did not return a value", name, arg_count);/* TODO test */
       
       goto done;
     }
@@ -360,7 +361,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
 	FUN_ERROR(tree, ERROR,
 		  "built-in function ‘%s/%zu’ requires that either none of"
 		  " the arguments are empty strings or that all of them are",
-		  name, arg_count);
+		  name, arg_count);/* TODO test */
     }
   
   /* Call the function. */
@@ -421,7 +422,7 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
       {
 	*end = bracket;
 	if (tree->processed != PROCESS_LEVEL)
-	  NEW_ERROR(tree, ERROR, "invalid escape");
+	  NEW_ERROR(tree, ERROR, "invalid escape");/* TODO test */
 	goto error;
       }
   
@@ -662,7 +663,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     /* Function call. */
     *escape = 100;
   else
-    RETURN_ERROR(tree, ERROR, "invalid escape");
+    RETURN_ERROR(tree, ERROR, "invalid escape");/* TODO test */
   
   
   /* Read escape. */
@@ -678,7 +679,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     else if (CR(10, '0', '9'))  numbuf = 10 * numbuf + (c & 15);
     else                        break;
   if (have == 0)
-    RETURN_ERROR(tree, ERROR, "invalid escape");
+    RETURN_ERROR(tree, ERROR, "invalid escape");/* TODO test */
   
   
   /* Evaluate escape. */
@@ -686,11 +687,11 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     {
       /* Variable dereference. */
       if (value = variables_get((size_t)numbuf), value == NULL)
-	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is not defined", VARIABLE);
+	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is not defined", VARIABLE);/* TODO test */
       if (value->type == C(ARRAY))
-	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);
+	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);/* TODO test */
       if (value->type != C(COMPILED_STRING))
-	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);
+	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);/* TODO test */
       fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
     }
   else
@@ -788,7 +789,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
 	/* Close or open quote, of it got closed, convert the buffered UTF-8 text to UTF-32. */
 	if (quote ^= 1)  continue;
 	if ((quote == 1) && (raw != raw_ + 1))
-	  CHAR_ERROR(tree, WARNING, "strings should either be unquoted or unclosed in one large quoted");
+	  CHAR_ERROR(tree, WARNING, "strings should either be unquoted or unclosed in one large quoted");/* TODO test */
 	STORE;
       }
     else if (c == '\\')
@@ -801,9 +802,9 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
       {
 	/* Only escapes may be used without quotes, if the string contains quotes. */
 	if (*raw_ == '"')
-	  CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
+	  CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");/* TODO test */
 	else
-	  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
+	  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");/* TODO test */
 	tree->processed = PROCESS_LEVEL;
       }
     else
@@ -816,7 +817,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   /* Check that no escape is incomplete. */
   if (escape && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "incomplete escape");
+      NEW_ERROR(tree, ERROR, "incomplete escape");/* TODO test */
       error->start = escoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -825,7 +826,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   /* Check that the quote is complete. */
   if (quote && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "quote is not closed");
+      NEW_ERROR(tree, ERROR, "quote is not closed");/* TODO test */
       error->start = lineoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -881,9 +882,9 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
   
   while ((c = *raw++))
     if (R('0', '9'))     buf = 10 * buf + (c & 15);
-    else if (c == '\\')  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
-    else if (c == '"')   CHAR_ERROR(tree, ERROR, "mixing numericals and quotes is not allowed");
-    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);
+    else if (c == '\\')  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");/* TODO test */
+    else if (c == '"')   CHAR_ERROR(tree, ERROR, "mixing numericals and quotes is not allowed");/* TODO test */
+    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);/* TODO test */
   
  done:
   fail_if (rc = malloc(2 * sizeof(char32_t)), rc == NULL);
@@ -1004,7 +1005,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   /* Check that no escape is incomplete. */
   if (escape && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "incomplete escape");
+      NEW_ERROR(tree, ERROR, "incomplete escape");/* TODO test */
       error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw_);
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -1013,7 +1014,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   /* Check that key-combination is complete. */
   if ((c != '>') && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "key-combination is not closed");
+      NEW_ERROR(tree, ERROR, "key-combination is not closed");/* TODO test */
       error->start = lineoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -1051,39 +1052,43 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
  */
 static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restrict raw, size_t lineoff)
 {
-  int bad = 0;
-  size_t var;
+  size_t var, n;
   const char* restrict raw_ = raw;
+  char* restrict dotless;
   
   /* The variable must begin with \. */
-  if (*raw++ != '\\')  bad = 1;
-  /* Zero is not a valid varible, nor may there be leading zeroes.  */
-  if (*raw++ == '0')  bad = 1;
-  for (; *raw; raw++)
+  if (*raw++ != '\\')  goto bad;
+  /* Zero is not a valid varible, nor may there be leading zeroes or be empty.  */
+  if (*raw == '0')   goto bad;
+  if (*raw == '.')   goto bad;
+  if (*raw == '\0')  goto bad;
+  for (raw++; *raw; raw++)
     /* Check that the variable consists only of digits. */
     if (('0' <= *raw) && (*raw <= '9'));
     /* However, it may end with a dot. */
-    else if ((raw[0] == '.') && (raw[1] == '\0'));
+    else if ((raw[0] == '.') && (raw[1] == '\0'))
+      break;
     else
-      bad = 1;
-  
-  /* Report an error but return a variable index if the variable-string is invalid. */
-  if (bad)
-    {
-      NEW_ERROR(tree, ERROR, "not a variable");
-      error->start = lineoff;
-      error->end = lineoff + strlen(raw_);
-      tree->processed = PROCESS_LEVEL;
-      return 1;
-    }
+      goto bad;
   
   /* Parse the variable string and check that it did not overflow. */
-  var = (size_t)atoll(raw_ + 1);
-  if (strlen(raw_ + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
+  n = (size_t)(raw - raw_);
+  dotless = alloca((n + 1) * sizeof(char));
+  memcpy(dotless, raw_, n * sizeof(char)), dotless[n] = '\0';
+  var = (size_t)atoll(dotless + 1);
+  if (strlen(dotless + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
     return errno = ERANGE, (size_t)0;
   return var;
  pfail:
   return 0;
+  
+ bad:
+  /* Report an error but return a variable index if the variable-string is invalid. */
+  NEW_ERROR(tree, ERROR, "not a variable");
+  error->start = lineoff;
+  error->end = lineoff + strlen(raw_);
+  tree->processed = PROCESS_LEVEL;
+  return 1;
 }
 
 
@@ -1582,14 +1587,14 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   /* Check that the primary bound is single-character. */
   if ((first[0] == -1) || (first[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   /* Check that the secondary bound is single-character. */
   if ((last[0] == -1) || (last[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
       error->start = lineoff_last, lineoff_last = 0;
       error->end = error->start + strlen(tree->last);
     }
@@ -1702,6 +1707,7 @@ static int check_function_calls_in_for(const mds_kbdc_tree_for_t* restrict tree)
   
   for (lineoff_first = tree->loc_end; code[lineoff_first] == ' '; lineoff_first++);
   for (lineoff_last = lineoff_first + strlen(tree->first); code[lineoff_last] == ' '; lineoff_last++);
+  for (lineoff_last += strlen("to"); code[lineoff_last] == ' '; lineoff_last++);
   
   t ((const mds_kbdc_tree_t*)tree, tree->first, lineoff_first);
   t ((const mds_kbdc_tree_t*)tree, tree->last, lineoff_last);
@@ -1735,7 +1741,7 @@ static int check_function_calls_in_if(const mds_kbdc_tree_if_t* restrict tree)
  */
 static int check_function_calls_in_keys(const mds_kbdc_tree_keys_t* restrict tree)
 {
-  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->keys, tree->loc_end);
+  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->keys, tree->loc_start);
 }
 
 
@@ -1747,7 +1753,7 @@ static int check_function_calls_in_keys(const mds_kbdc_tree_keys_t* restrict tre
  */
 static int check_function_calls_in_string(const mds_kbdc_tree_string_t* restrict tree)
 {
-  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->string, tree->loc_end);
+  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->string, tree->loc_start);
 }
 
 
@@ -1828,14 +1834,14 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
     return 0;
   
   /* The suffix may not have leading zeroes. */
-  if (*name == '\0')
+  if (*name == '0')
     {
       NEW_ERROR(tree, ERROR, "leading zero in name-suffix");
       goto name_error;
     }
   /* The suffix must be a decimal, non-negative number. */
   for (; *name; name++)
-    if ((*name < '0') || ('0' < *name))
+    if ((*name < '0') || ('9' < *name))
       {
 	NEW_ERROR(tree, ERROR, "name-suffix may only contain digits");
 	goto name_error;
@@ -1873,6 +1879,7 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   
   /* Check that the suffix if properly formatted. */
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
+  if (r)  return 0;
   
   /* Get the function's name without suffix, and parse the suffix. */
   suffixless = tree->name;
@@ -1883,7 +1890,8 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   /* Check that the function is not already defined as a builtin function. */
   if (builtin_function_defined(suffixless, arg_count))
     {
-      NEW_ERROR(tree, ERROR, "function ‘%s’ is already defined as a builtin function", tree->name);
+      NEW_ERROR(tree, ERROR, "function ‘%s/%zu’ is already defined as a builtin function",
+		tree->name, arg_count);
       *suffix_start = '/';
       return 0;
     }
@@ -1939,6 +1947,7 @@ static int compile_macro(mds_kbdc_tree_macro_t* restrict tree)
   
   /* Check that the suffix if properly formatted. */
   t (check_name_suffix((struct mds_kbdc_tree_callable*)tree));
+  if (r)  return 0;
   
   /* Check that the macro is not already defined,
      the include-stack is used in the error-clause as
@@ -2019,14 +2028,14 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   /* Check that the primary bound is single-character. */
   if ((first[0] == -1) || (first[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   /* Check that the secondary bound is single-character. */
   if ((last[0] == -1) || (last[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
       error->start = lineoff_last, lineoff_last = 0;
       error->end = error->start + strlen(tree->last);
     }
@@ -2340,7 +2349,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
      array that is not shadowed by an inner function- or macro-call. */
   if (r && !have_side_effect)
     {
-      NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
+      NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");/* TODO test */
       tree->processed = PROCESS_LEVEL;
     }
   if (have_side_effect)
@@ -2352,7 +2361,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
       /* For simplicity we set `last_value_statement` on includes,
        * so we are sure `last_value_statement` has the same include-stack. */
       
-      NEW_ERROR(previous_last_value_statement, WARNING, "value-statement has no effects");
+      NEW_ERROR(previous_last_value_statement, WARNING, "value-statement has no effects");/* TODO test */
       NEW_ERROR(tree, NOTE, "overridden here");
     }
   
@@ -2480,13 +2489,13 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(ASSUMPTION_HAVE_RANGE):  c (have_range);   break;
     case C(FOR):                    c_ (for);         break;
     case C(IF):                     c_ (if);          break;
-    case C(LET):                    c (let);          break;
-    case C(KEYS):                   c (keys);         break;
-    case C(STRING):                 c (string);       break;
-    case C(ARRAY):                  c (array);        break;
+    case C(LET):                    c (let);          break;/* TODO test */
+    case C(KEYS):                   c (keys);         break;/* TODO test */
+    case C(STRING):                 c (string);       break;/* TODO test */
+    case C(ARRAY):                  c (array);        break;/* TODO test */
     case C(MAP):                    c (map);          break;
-    case C(MACRO_CALL):             c (macro_call);   break;
-    case C(RETURN):                 break_level = 3;  break;
+    case C(MACRO_CALL):             c (macro_call);   break;/* TODO test */
+    case C(RETURN):                 break_level = 3;  break;/* TODO test */
     case C(BREAK):                  break_level = 2;  break;
     case C(CONTINUE):               break_level = 1;  break;
     default:
