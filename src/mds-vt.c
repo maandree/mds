@@ -247,8 +247,7 @@ int initialise_server(void)
   if (is_respawn == 0)
     {
       display_vt = select_vt();
-      if (display_vt < 0)
-	goto pfail;
+      fail_if (display_vt < 0);
       display_tty_fd = vt_open(display_vt, &old_vt_stat);
       fail_if (write_vt_file() < 0);
       fail_if (vt_set_active(display_vt) < 0);
@@ -434,8 +433,8 @@ int master_loop(void)
 	}
       else if (errno == EINTR)
 	continue;
-      else if (errno != ECONNRESET)
-	goto pfail;
+      else
+	fail_if (errno != ECONNRESET);
       
       eprint("lost primary connection to server.");
       mds_message_destroy(&received);
@@ -494,8 +493,8 @@ void* secondary_loop(void* data)
 	}
       else if (errno == EINTR)
 	continue;
-      else if (errno != ECONNRESET)
-	goto pfail;
+      else
+	fail_if (errno != ECONNRESET);
       
       eprint("lost secondary connection to server.");
       mds_message_destroy(&secondary_received);

@@ -336,8 +336,7 @@ int spawn_and_respawn_server(int fd)
  respawn:
   
   pid = fork();
-  if (pid == (pid_t)-1)
-    goto pfail;
+  fail_if (pid == (pid_t)-1);
   
   if (pid == 0) /* Child. */
     {
@@ -347,7 +346,7 @@ int spawn_and_respawn_server(int fd)
       umask(saved_umask);
       /* Change image into the master server. */
       exec_master_server(child_args);
-      goto pfail;
+      fail_if (1);
     }
   
   
@@ -358,8 +357,7 @@ int spawn_and_respawn_server(int fd)
     xperror(*argv);
   
   /* Wait for master server to die. */
-  if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
-    goto pfail;
+  fail_if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1);
   
   /* If the server exited normally or SIGTERM, do not respawn. */
   if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
@@ -396,8 +394,7 @@ int spawn_and_respawn_server(int fd)
       first_spawn = 0;
       free(child_args[argc + 0]);
       child_args[argc + 0] = strdup("--respawn");
-      if (child_args[argc + 0] == NULL)
-	goto pfail;
+      fail_if (child_args[argc + 0] == NULL);
     }
   
   goto respawn;
@@ -443,14 +440,12 @@ int create_directory_root(const char* pathname)
     /* Directory is missing, create it. */
     if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
       {
-	if (errno != EEXIST) /* Unlikely race condition. */
-	  goto pfail;
+	fail_if (errno != EEXIST); /* Unlikely race condition. */
       }
     else
       {
 	/* Set ownership. */
-	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
-	  goto pfail;
+	fail_if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0);
       }
   
   return 0;
@@ -525,7 +520,7 @@ int unlink_recursive(const char* pathname)
       if (stat(pathname, &_attr) < 0)
 	return 0; /* Directory does not exist. */
       errno = errno_;
-      goto pfail;
+      fail_if (1);
     }
   
   /* Remove the content of the directory. */
@@ -534,14 +529,12 @@ int unlink_recursive(const char* pathname)
 	strcmp(file->d_name, "..") &&
 	(unlink(file->d_name) < 0))
       {
-	if (errno != EISDIR)
-	  goto pfail;
+	fail_if (errno != EISDIR);
 	unlink_recursive(file->d_name);
       }
   
   /* Remove the drectory. */
-  if (rmdir(pathname) < 0)
-    goto pfail;
+  fail_if (rmdir(pathname) < 0);
   
  done:
   if (dir != NULL)

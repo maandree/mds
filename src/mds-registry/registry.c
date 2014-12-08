@@ -132,8 +132,7 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
       /* Add server to protocol if the protocol is already in the table. */
       size_t address = hash_table_get(&reg_table, command_key);
       client_list_t* list = (client_list_t*)(void*)address;
-      if (client_list_add(list, client) < 0)
-	goto pfail;
+      fail_if (client_list_add(list, client) < 0);
     }
   else
     {
@@ -142,13 +141,12 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
       /* Allocate list of servers for the protocol. */
       client_list_t* list = malloc(sizeof(client_list_t));
       void* address = list;
-      if (list == NULL)
-	goto pfail;
+      fail_if (list == NULL);
       /* Duplicate the protocol name so it can be accessed later. */
       if ((command = strdup(command)) == NULL)
 	{
 	  free(list);
-	  goto pfail;
+	  fail_if (1);
 	}
       /* Create list of servers, add server to list and add the protocol to the table. */
       command_key = (size_t)(void*)command;
@@ -159,7 +157,7 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
 	  client_list_destroy(list);
 	  free(list);
 	  free(command);
-	  goto pfail;
+	  fail_if (1);
 	}
     }
   

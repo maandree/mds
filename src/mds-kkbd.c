@@ -441,8 +441,8 @@ int master_loop(void)
 	}
       else if (errno == EINTR)
 	continue;
-      else if (errno != ECONNRESET)
-	goto pfail;
+      else
+	fail_if (errno != ECONNRESET);
       
       eprint("lost connection to server.");
       mds_message_destroy(&received);
@@ -487,8 +487,7 @@ void* keyboard_loop(void* data)
   
   while (!reexecing && !terminating)
     if (fetch_keys() < 0)
-      if (errno != EINTR)
-	goto pfail;
+      fail_if (errno != EINTR);
   
   return NULL;
   

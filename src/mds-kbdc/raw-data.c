@@ -130,8 +130,8 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
       /* Read a chunk of the file. */
       got = read(fd, content + buf_ptr, (buf_size - buf_ptr) * sizeof(char));
       if ((got < 0) && (errno == EINTR))  continue;
-      else if (got < 0)                   goto pfail;
-      else if (got == 0)                  break;
+      if (got == 0)                       break;
+      fail_if (got < 0);
       buf_ptr += (size_t)got;
     }
   

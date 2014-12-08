@@ -292,8 +292,7 @@ int postinitialise_server(void)
     if (commands_args[i] == NULL)
       j++;
     else if (strequals(commands_args[i], "--initial-spawn"))
-      if ((commands_args[i] = strdup("--respawn")) == NULL)
-	goto pfail;
+      fail_if ((commands_args[i] = strdup("--respawn")) == NULL);
   
   /* Respawn dead and dead and buried servers.*/
   

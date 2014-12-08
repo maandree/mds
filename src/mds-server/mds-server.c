@@ -435,14 +435,14 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
       if ((header_values[i] = strdup(msg)) == NULL)
 	{
 	  header_count = i;
-	  goto pfail;
+	  fail_if (1);
 	}
       *colon = '\0';
       if ((headers[i] = strdup(msg)) == NULL)
 	{
 	  free(headers[i]);
 	  header_count = i;
-	  goto pfail;
+	  fail_if (1);
 	}
       *colon = ':';
       *end = '\n';

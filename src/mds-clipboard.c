@@ -361,8 +361,8 @@ int master_loop(void)
 	}
       else if (errno == EINTR)
 	continue;
-      else if (errno != ECONNRESET)
-	goto pfail;
+      else
+	fail_if (errno != ECONNRESET);
       
       eprint("lost connection to server.");
       mds_message_destroy(&received);
@@ -854,7 +854,7 @@ int clipboard_set_size(int level, size_t size)
       if (xrealloc(clipboard[level], size, clipitem_t))
 	{
 	  clipboard[level] = old;
-	  goto pfail;
+	  fail_if (1);
 	}
       clipboard_size[level] = size;
     }
