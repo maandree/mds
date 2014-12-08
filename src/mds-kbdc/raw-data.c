@@ -145,7 +145,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
   *size = buf_ptr;
   return content;
   
- pfail:
+ fail:
   xperror(*argv);
   free(old);
   free(content);
@@ -325,7 +325,7 @@ static char** line_split(char* content, size_t length)
   
   return lines;
   
- pfail:
+ fail:
   xperror(*argv);
   return NULL;
 }
@@ -370,7 +370,7 @@ static int expand(char** restrict content, size_t* restrict content_size)
       while (++col % 8);
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -429,7 +429,7 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
   source_code->line_count = line_count;
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   free(old);
   free(content);
@@ -519,7 +519,7 @@ char* parse_raw_string(const char* restrict string)
   
   *p = '\0';
   return rc;
- pfail:
+ fail:
   free(rc);
   return NULL;
 #undef r

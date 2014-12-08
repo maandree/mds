@@ -112,7 +112,7 @@ int initialise_server(void)
   fail_if (mds_message_initialise(&received));
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   return 1;
@@ -246,7 +246,7 @@ int master_loop(void)
   
   rc = 0;
   goto done;
- pfail:
+ fail:
   xperror(*argv);
  done:
   if (rc || !reexecing)

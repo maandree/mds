@@ -369,7 +369,7 @@ pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options)
       /* Don't let the CPU catch fire! */
       errno = EINTR;
     }
- pfail:
+ fail:
   return rc;
 }
 

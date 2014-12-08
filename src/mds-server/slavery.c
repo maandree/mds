@@ -130,7 +130,7 @@ client_t* initialise_client(int client_fd)
   return information;
   
   
- pfail:
+ fail:
   saved_errno = errno;
   if (locked)
     pthread_mutex_unlock(&slave_mutex);
@@ -139,6 +139,6 @@ client_t* initialise_client(int client_fd)
     {
       with_mutex (slave_mutex, linked_list_remove(&client_list, entry););
     }
-  return saved_errno = errno, NULL;
+  return errno = saved_errno, NULL;
 }
 

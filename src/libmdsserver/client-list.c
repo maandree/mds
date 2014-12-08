@@ -116,7 +116,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
   
   return 0;
   
- pfail:
+ fail:
   saved_errno = errno;
   free(new_clients);
   return errno = saved_errno, -1;

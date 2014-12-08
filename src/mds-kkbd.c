@@ -250,7 +250,7 @@ int initialise_server(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   if (stage < 5)
     {
@@ -386,7 +386,7 @@ int unmarshal_server(char* state_buf)
   fail_if (mds_message_unmarshal(&received, state_buf));
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   free(mapping);
@@ -456,7 +456,7 @@ int master_loop(void)
   fail_if ((errno = pthread_join(kbd_thread, &kbd_ret)));
   rc = kbd_ret == NULL ? 0 : 1;
   goto done;
- pfail:
+ fail:
   xperror(*argv);
  done:
   pthread_mutex_destroy(&send_mutex);
@@ -490,7 +490,7 @@ void* keyboard_loop(void* data)
   
   return NULL;
   
- pfail:
+ fail:
   xperror(*argv);
   raise(SIGTERM);
   return (void*)1024;

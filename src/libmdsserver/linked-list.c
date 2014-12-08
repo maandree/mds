@@ -145,7 +145,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
   
   return 0;
 
- pfail:
+ fail:
   saved_errno = errno;
   free(new_values);
   free(new_next);
@@ -221,7 +221,7 @@ int linked_list_pack(linked_list_t* restrict this)
   
   return 0;
 
- pfail:
+ fail:
   saved_errno = errno;
   free(vals);
   free(new_next);

@@ -135,7 +135,7 @@ static int transfer_errors(mds_kbdc_parsed_t* restrict subresult, mds_kbdc_tree_
   
   free(errors);
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   while (errors_ptr--)
     mds_kbdc_parse_error_free(errors[errors_ptr]);
@@ -223,7 +223,7 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
   mds_kbdc_parsed_destroy(&subresult);
   
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   free(dirname);
   free(cwd);
@@ -309,7 +309,7 @@ int process_includes(mds_kbdc_parsed_t* restrict result_)
     free(included), included_size = 0;
   
   return errno = saved_errno, r;
- pfail:
+ fail:
   return -1;
 }
 

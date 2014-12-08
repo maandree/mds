@@ -93,7 +93,7 @@ static int modifying_notify(client_t* client, mds_message_t message, uint64_t mo
   return 0;
   
   
- pfail:
+ fail:
   xperror(*argv);
   if (multicast != NULL)
     {
@@ -205,7 +205,7 @@ static int assign_and_send_id(client_t* client, const char* message_id)
   
   /* Queue message to be sent when this function returns.
      This done to simplify `multicast_message` for re-exec and termination. */
-#define pfail  fail_in_mutex
+#define fail  fail_in_mutex
   with_mutex (client->mutex,
 	      if (client->send_pending_size == 0)
 		{
@@ -226,9 +226,9 @@ static int assign_and_send_id(client_t* client, const char* message_id)
 	      (msgbuf = NULL, rc = 0, errno = 0);
 	     fail_in_mutex:
 	      );
-#undef pfail
+#undef fail
   
- pfail: /* Also success. */
+ fail: /* Also success. */
   xperror(*argv);
   free(msgbuf);
   return rc;
@@ -329,7 +329,7 @@ int message_received(client_t* client)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   free(msgbuf);
   return 0;

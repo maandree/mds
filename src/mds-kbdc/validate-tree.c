@@ -151,7 +151,7 @@ static int validate_function(mds_kbdc_tree_function_t* restrict tree)
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
   return function = NULL, r;
- pfail:
+ fail:
   return -1;
 }
 
@@ -193,7 +193,7 @@ static int validate_macro(mds_kbdc_tree_macro_t* restrict tree)
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
   return macro = NULL, r;
- pfail:
+ fail:
   return -1;
 }
 
@@ -235,7 +235,7 @@ static int validate_information(mds_kbdc_tree_information_t* restrict tree)
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
   return information = NULL, r;
- pfail:
+ fail:
   return -1;
 }
 
@@ -277,7 +277,7 @@ static int validate_assumption(mds_kbdc_tree_assumption_t* restrict tree)
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
   return assumption = NULL, r;
- pfail:
+ fail:
   return -1;
 }
 
@@ -305,7 +305,7 @@ static int validate_map(mds_kbdc_tree_map_t* restrict tree)
   else if (function)
     NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside function definition");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -325,7 +325,7 @@ static int validate_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   else if (function)
     NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside function definition");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -369,7 +369,7 @@ static int validate_return(mds_kbdc_tree_return_t* restrict tree)
   if ((function == NULL) && (macro == NULL))
     NEW_ERROR(tree, includes_ptr, ERROR, "‘return’ outside function and macro definition");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -385,7 +385,7 @@ static int validate_break(mds_kbdc_tree_break_t* restrict tree)
   if (fors == 0)
     NEW_ERROR(tree, includes_ptr, ERROR, "‘break’ outside ‘for’");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -401,7 +401,7 @@ static int validate_continue(mds_kbdc_tree_continue_t* restrict tree)
   if (fors == 0)
     NEW_ERROR(tree, includes_ptr, ERROR, "‘continue’ outside ‘for’");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -417,7 +417,7 @@ static int validate_assumption_data(mds_kbdc_tree_t* restrict tree)
   if (assumption == NULL)
     NEW_ERROR(tree, includes_ptr, ERROR, "assumption outside assumption clause");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -433,7 +433,7 @@ static int validate_information_data(mds_kbdc_tree_t* restrict tree)
   if (information == NULL)
     NEW_ERROR(tree, includes_ptr, ERROR, "information outside information clause");
   return 0;
- pfail:
+ fail:
   return -1;
 }
 

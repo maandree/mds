@@ -197,7 +197,7 @@ int unmarshal_server(char* state_buf)
     }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   if (stage >= 1)

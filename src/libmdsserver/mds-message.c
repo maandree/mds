@@ -545,7 +545,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   
   return 0;
   
- pfail:
+ fail:
   return -1;
 }
 

@@ -85,7 +85,7 @@ int mds_kbdc_include_stack_dump(size_t ptr)
   result->pathname = old_pathname;
   result->source_code = old_source_code;
   return 0;
- pfail:
+ fail:
   result->pathname = old_pathname;
   result->source_code = old_source_code;
   return -1;
@@ -149,7 +149,7 @@ int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, vo
   latest_save = NULL;
   
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   free(old);
   return errno = saved_errno, -1;
@@ -205,7 +205,7 @@ mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void)
   memcpy(latest_save->stack, includes, latest_save->ptr * sizeof(const mds_kbdc_tree_include_t*));
   
   return latest_save;
- pfail:
+ fail:
   saved_errno = errno;
   free(latest_save->stack);
   latest_save = NULL;

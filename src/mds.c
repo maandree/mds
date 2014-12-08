@@ -217,7 +217,7 @@ int main(int argc_, char** argv_)
   
   return rc;
   
- pfail:
+ fail:
   xperror(*argv);
   rc = 1;
   goto done;
@@ -412,7 +412,7 @@ int spawn_and_respawn_server(int fd)
     _exit(1);
   return rc;
   
- pfail:
+ fail:
   xperror(*argv);
   goto done;
 }
@@ -452,7 +452,7 @@ int create_directory_root(const char* pathname)
   
   return 0;
 
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -544,7 +544,7 @@ int unlink_recursive(const char* pathname)
   return rc;
   
   
- pfail:
+ fail:
   xperror(*argv);
   rc = -1;
   goto done;

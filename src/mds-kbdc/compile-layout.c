@@ -58,7 +58,7 @@
 /**
  * Beginning of failure clause
  */
-#define FAIL_BEGIN  pfail: saved_errno = errno
+#define FAIL_BEGIN  fail: saved_errno = errno
 
 /**
  * End of failure clause
@@ -247,7 +247,7 @@ static int check_set_3_get_2_call(mds_kbdc_tree_t* restrict tree, int is_set, co
     FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu elements", (size_t)*variable_arg, (size_t)*index_arg);/* TODO test */
   
   return 0;
- pfail:
+ fail:
   return -1;
 #undef FUN_ERROR
 #undef F
@@ -470,7 +470,7 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   *rc = -1;
   goto done;
   
- pfail:
+ fail:
   saved_errno = errno;
   free(rc);
   if (old_arguments)
@@ -586,7 +586,7 @@ static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char
   error->end = lineoff + (size_t)(*end - raw);
   return;
   
- pfail:
+ fail:
   *rc |= -1;
 }
 
@@ -706,7 +706,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
   *escape = 0;
   *end = raw;
   return rc;
- pfail:
+ fail:
   saved_errno = errno;
   free(rc);
   return errno = saved_errno, NULL;
@@ -838,7 +838,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   
   free(buf);
   return rc;
- pfail:
+ fail:
   saved_errno = errno;
   free(subrc);
   free(old_rc);
@@ -890,7 +890,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
   fail_if (rc = malloc(2 * sizeof(char32_t)), rc == NULL);
   return rc[0] = buf, rc[1] = -1, rc;
   
- pfail:
+ fail:
   return NULL;
 #undef CHAR_ERROR
 #undef R
@@ -1026,7 +1026,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   
   free(buf);
   return last_value_statement = old_last_value_statement, rc;
- pfail:
+ fail:
   saved_errno = errno;
   free(subrc);
   free(old_rc);
@@ -1079,7 +1079,7 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   if (strlen(dotless + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
     return errno = ERANGE, (size_t)0;
   return var;
- pfail:
+ fail:
   return 0;
   
  bad:
@@ -1224,7 +1224,7 @@ static int get_macro(mds_kbdc_tree_macro_call_t* restrict macro_call,
     *macro = NULL;
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1848,7 +1848,7 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
       }
   
   return 0;
- pfail:
+ fail:
   return -1;
  name_error:
   error->start = tree->loc_end;
@@ -2187,7 +2187,7 @@ static int evaluate_element(mds_kbdc_tree_t* restrict node)
     }
   
   return bad;
- pfail:
+ fail:
   return -1;
 }
 
@@ -2260,7 +2260,7 @@ static int check_nonnul(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
- pfail:
+ fail:
    return -1;
 }
 

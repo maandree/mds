@@ -331,7 +331,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this)
   node = &(n->next);
   goto again;
   
- pfail:
+ fail:
   saved_errno = errno;
   mds_kbdc_tree_free(rc);
   return errno = saved_errno, NULL;

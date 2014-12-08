@@ -114,7 +114,7 @@ static void* slave_loop(void* data)
   
   goto done;
   
- pfail:
+ fail:
   xperror(*argv);
  done:
   with_mutex (slave_mutex,
@@ -198,7 +198,7 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
   pthread_mutex_unlock(&slave_mutex);
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   if (locked)
     pthread_mutex_unlock(&slave_mutex);
@@ -284,7 +284,7 @@ slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv
   
   return rc;
   
- pfail:
+ fail:
   saved_errno = errno;
   slave_destroy(rc), free(rc);
   return errno = saved_errno, NULL;

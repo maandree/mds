@@ -148,7 +148,7 @@ int preinitialise_server(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -348,7 +348,7 @@ void* slave_loop(void* data)
   return NULL;
   
   
- pfail:
+ fail:
   xperror(*argv);
   goto done;
   
@@ -483,7 +483,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   multicast->message_prefix = n;
   message = NULL;
   
-#define pfail  fail_in_mutex
+#define fail  fail_in_mutex
   /* Queue message multicasting. */
   with_mutex (sender->mutex,
 	      new_buf = sender->multicasts;
@@ -496,7 +496,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
 	     fail_in_mutex:
 	      xperror(*argv);
 	      );
-#undef pfail
+#undef fail
   
  done:
   /* Release resources. */
@@ -509,7 +509,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   free(multicast);
   return;
   
- pfail:
+ fail:
   xperror(*argv);
   goto done;
 }

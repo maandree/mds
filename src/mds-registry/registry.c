@@ -107,7 +107,7 @@ static int handle_close_message(void)
   
   free(keys);
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   free(keys);
   return -1;
@@ -167,7 +167,7 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
   fail_if (advance_slaves(command));
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return -1;
 }
@@ -239,7 +239,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
     }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
   free(wait_set);

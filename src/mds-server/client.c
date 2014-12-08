@@ -262,7 +262,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   rc += n * sizeof(char);
   return rc;
   
- pfail:
+ fail:
   saved_errno = errno;
   mds_message_destroy(&(this->message));
   for (i = 0; i < this->interception_conditions_count; i++)

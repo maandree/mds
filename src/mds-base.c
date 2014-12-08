@@ -189,7 +189,7 @@ int __attribute__((weak)) connect_to_display(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
@@ -417,7 +417,7 @@ static int base_unmarshal(void)
     fail_if (reexec_failure_recover());
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -460,7 +460,7 @@ static int base_marshal(int reexec_fd)
   free(state_buf);
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   free(state_buf);
   return 1;
@@ -490,7 +490,7 @@ static void perform_reexec(void)
   /* Re-exec the server. */
   reexec_server(argc, argv, is_reexec);
   
- pfail:
+ fail:
   xperror(*argv);
   if (reexec_fd >= 0)
     {
@@ -578,7 +578,7 @@ int main(int argc_, char** argv_)
   return 0;
   
   
- pfail:
+ fail:
   xperror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
@@ -638,7 +638,7 @@ int trap_signals(void)
     { fail_if (xsigaction(SIGDANGER, received_danger) < 0); }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }

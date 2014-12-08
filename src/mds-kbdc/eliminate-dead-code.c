@@ -105,7 +105,7 @@ static int eliminate_if(mds_kbdc_tree_if_t* restrict tree)
   if (elimination > elimination_level)
     elimination = elimination_level;
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -156,7 +156,7 @@ static int eliminate_subtree(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
- pfail:
+ fail:
   return -1;
 #undef E
 #undef e

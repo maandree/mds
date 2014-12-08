@@ -277,7 +277,7 @@ int initialise_server(void)
  no_display:
   eprint("no display has been set, how did this happen.");
   return 1;
- pfail:
+ fail:
   xperror(*argv);
   unlink(vtfile_path);
   if (display_tty_fd >= 0)
@@ -451,7 +451,7 @@ int master_loop(void)
     xperror(*argv);
   vt_close(display_tty_fd, &old_vt_stat);
   goto done;
- pfail:
+ fail:
   xperror(*argv);
  done:
   rc |= secondary_thread_failed;
@@ -503,7 +503,7 @@ void* secondary_loop(void* data)
     }
   
   goto done;
- pfail:
+ fail:
   xperror(*argv);
   secondary_thread_failed = 1;
  done:

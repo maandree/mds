@@ -66,7 +66,7 @@ int preinitialise_server(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   if (stage >= 1)  pthread_mutex_destroy(&slave_mutex);
   if (stage >= 2)  pthread_cond_destroy(&slave_cond);
@@ -117,7 +117,7 @@ int initialise_server(void)
   fail_if (mds_message_initialise(&received));
   
   return 0;  
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   return 1;
@@ -188,7 +188,7 @@ int master_loop(void)
   
   rc = 0;
   goto done;
- pfail:
+ fail:
   xperror(*argv);
  done:
   /* Join with all slaves threads. */

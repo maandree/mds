@@ -321,7 +321,7 @@ static int simplify_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
    */
   
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   mds_kbdc_tree_free(dup_arguments);
   return errno = saved_errno, -1;
@@ -352,7 +352,7 @@ static int check_value_statement_before_simplification(mds_kbdc_tree_map_t* rest
   fail_if (simplify(tree->sequence));
   goto again;
   
- pfail:
+ fail:
   return -1;
 }
 
@@ -374,7 +374,7 @@ static int check_value_statement_after_simplification(mds_kbdc_tree_map_t* restr
     NEW_ERROR(tree->sequence, ERROR, "bad value type");
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
   
@@ -530,7 +530,7 @@ static int simplify_map(mds_kbdc_tree_map_t* restrict tree)
    */
   
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   mds_kbdc_tree_free(dup_sequence);
   return errno = saved_errno, -1;
@@ -603,7 +603,7 @@ static int simplify_alternation(mds_kbdc_tree_alternation_t* restrict tree)
       }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -678,7 +678,7 @@ static mds_kbdc_tree_t* create_permutations(mds_kbdc_tree_t* elements)
   
   return first;
   
- pfail:
+ fail:
   saved_errno = errno;
   mds_kbdc_tree_free(first);
   mds_kbdc_tree_free(subperms);
@@ -790,7 +790,7 @@ static int simplify_unordered(mds_kbdc_tree_unordered_t* restrict tree)
   mds_kbdc_tree_free(arguments);
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 

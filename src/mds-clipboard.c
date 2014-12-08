@@ -138,7 +138,7 @@ int initialise_server(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   while (--i >= 0)
@@ -305,7 +305,7 @@ int unmarshal_server(char* state_buf)
     }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   for (i = 0; i < CLIPBOARD_LEVELS; i++)
@@ -374,7 +374,7 @@ int master_loop(void)
   
   rc = 0;
   goto done;
- pfail:
+ fail:
   xperror(*argv);
  done:
   if (!rc && reexecing)
@@ -636,7 +636,7 @@ static int clipboard_purge(int level, const char* client_id)
     }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return -1;
 }
@@ -727,7 +727,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
   clipboard[level][0] = new_clip;
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return -1;
 }
@@ -801,7 +801,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   
   free(message);
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return -1;
 }
@@ -859,7 +859,7 @@ int clipboard_set_size(int level, size_t size)
     }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return -1;
 }
@@ -904,7 +904,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   
   free(message);
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   free(message);
   return -1;
