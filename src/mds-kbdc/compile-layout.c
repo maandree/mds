@@ -735,10 +735,15 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   memcpy(rc + rc_ptr, subrc, n * sizeof(char32_t)), rc_ptr += n;	\
   free(subrc), subrc = NULL
 #define STORE							\
-  GROW_BUF;							\
-  buf[buf_ptr] = '\0', buf_ptr = 0;				\
-  fail_if (subrc = string_decode(buf), subrc == NULL);		\
-  COPY
+  if (buf_ptr)							\
+    do								\
+      {								\
+	GROW_BUF;						\
+	buf[buf_ptr] = '\0', buf_ptr = 0;			\
+	fail_if (subrc = string_decode(buf), subrc == NULL);	\
+	COPY;							\
+      }								\
+    while (0)
 #define CHAR_ERROR(...)					\
   do							\
     {							\
