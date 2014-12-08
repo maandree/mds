@@ -19,7 +19,7 @@
 /* TODO add call stack */
 /* TODO fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
 /* TODO test all builtin functions */
-/* TODO test all function and macro overloading */
+/* TODO test function- and macro-overloading */
 
 #include "include-stack.h"
 #include "builtin-functions.h"
