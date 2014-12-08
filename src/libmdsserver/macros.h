@@ -383,7 +383,9 @@
  * 
  * @param  ...  The condition
  */
-#define fail_if(...)  if (__VA_ARGS__)  goto pfail
+#define fail_if(...)										\
+  if (__VA_ARGS__)										\
+    do { fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__); goto pfail; } while (0)
 
 
 /**
@@ -392,7 +394,7 @@
  * @param  condition     The condition
  * @param  instructions  The instruction (semicolon-terminated)
  */
-#define exit_if(condition, instructions)  if (condition)  { instructions return 1; }
+#define exit_if(condition, instructions)  if (condition)  do { instructions return 1; } while (0)
 
 
 /**
