@@ -1460,8 +1460,10 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
 	return free(data), 0;
       /* Make sure we can fit all strings in the assumption list (part 2/2). */
       if (result->assumed_strings_ptr == result->assumed_strings_size)
-	fail_if (xxrealloc(old, result->assumed_strings, new_size, char*));
-      result->assumed_strings_size = new_size;
+	{
+	  fail_if (xxrealloc(old, result->assumed_strings, new_size, char32_t*));
+	  result->assumed_strings_size = new_size;
+	}
       /* Add the assumption to the list. */
       result->assumed_strings[result->assumed_strings_ptr++] = data;
     }
@@ -1473,8 +1475,10 @@ static int compile_have(mds_kbdc_tree_assumption_have_t* restrict tree)
 	return free(data), 0;
       /* Make sure we can fit all key-combinations in the assumption list (part 2/2). */
       if (result->assumed_keys_ptr == result->assumed_keys_size)
-	fail_if (xxrealloc(old, result->assumed_keys, new_size, char*));
-      result->assumed_keys_size = new_size;
+	{
+	  fail_if (xxrealloc(old, result->assumed_keys, new_size, char32_t*));
+	  result->assumed_keys_size = new_size;
+	}
       /* Add the assumption to the list. */
       result->assumed_keys[result->assumed_keys_ptr++] = data;
     }
@@ -1516,7 +1520,7 @@ static int compile_have_chars(mds_kbdc_tree_assumption_have_chars_t* restrict tr
   if (result->assumed_strings_ptr + n > result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
-      fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
+      fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char32_t*));
     }
   
   /* Add all characters to the assumption list. */
@@ -1601,7 +1605,7 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   if (result->assumed_strings_ptr + n > result->assumed_strings_size)
     {
       result->assumed_strings_size += n;
-      fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char*));
+      fail_if (xxrealloc(old, result->assumed_strings, result->assumed_strings_size, char32_t*));
     }
   
   /* Add all characters to the assumption list. */
