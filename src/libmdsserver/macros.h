@@ -177,7 +177,7 @@
  * @param   buffer:char*  The buffer
  * @param   type          A data type
  * @param   count:size_t  The number elements of the data type `type` to increase the pointer with
- * @retrun  buffer:       The buffer
+ * @return  buffer:       The buffer
  */
 #define buf_next(buffer, type, count)  \
   buffer += (count) * sizeof(type) / sizeof(char)
@@ -189,7 +189,7 @@
  * @param   buffer:char*  The buffer
  * @param   type          A data type
  * @param   count:size_t  The number elements of the data type `type` to decrease the pointer with
- * @retrun  buffer:       The buffer
+ * @return  buffer:       The buffer
  */
 #define buf_prev(buffer, type, count)  \
   buffer -= (count) * sizeof(type) / sizeof(char)
