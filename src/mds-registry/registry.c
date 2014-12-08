@@ -125,6 +125,8 @@ static int handle_close_message(void)
  */
 static int registry_action_add(int has_key, char* command, size_t command_key, uint64_t client)
 {
+  int saved_errno;
+  
   if (has_key)
     {
       /* Add server to protocol if the protocol is already in the table. */
@@ -143,7 +145,7 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
       /* Duplicate the protocol name so it can be accessed later. */
       if ((command = strdup(command)) == NULL)
 	{
-	  free(list);
+	  saved_errno = errno, free(list), errno = saved_errno;
 	  fail_if (1);
 	}
       /* Create list of servers, add server to list and add the protocol to the table. */
@@ -152,9 +154,11 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
 	  client_list_add(list, client) ||
 	  (hash_table_put(&reg_table, command_key, (size_t)address) == 0))
 	{
+	  saved_errno = errno;
 	  client_list_destroy(list);
 	  free(list);
 	  free(command);
+	  errno = saved_errno;
 	  fail_if (1);
 	}
     }
@@ -210,6 +214,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
 {
   size_t command_key = (size_t)(void*)command;
   int has_key = hash_table_contains_key(&reg_table, command_key);
+  int saved_errno;
   
   if (action == 1)
     {
@@ -228,7 +233,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
       if (hash_table_put(wait_set, command_key, 1) == 0)
 	if (errno)
 	  {
-	    free(command);
+	    saved_errno = errno, free(command), errno = saved_errno;
 	    fail_if (1);
 	  }
     }

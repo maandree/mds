@@ -101,9 +101,8 @@ int create_slave(pthread_t* thread_slot, int slave_fd)
 client_t* initialise_client(int client_fd)
 {
   ssize_t entry = LINKED_LIST_UNUSED;
-  int locked = 0;
   client_t* information;
-  int errno_;
+  int locked = 0, saved_errno;
   size_t tmp;
   
   /* Create information table. */
@@ -132,7 +131,7 @@ client_t* initialise_client(int client_fd)
   
   
  pfail:
-  errno_ = errno;
+  saved_errno = errno;
   if (locked)
     pthread_mutex_unlock(&slave_mutex);
   free(information);
@@ -140,7 +139,6 @@ client_t* initialise_client(int client_fd)
     {
       with_mutex (slave_mutex, linked_list_remove(&client_list, entry););
     }
-  errno = errno_;
-  return NULL;
+  return saved_errno = errno, NULL;
 }
 

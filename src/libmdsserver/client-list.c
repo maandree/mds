@@ -101,6 +101,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
 {
   size_t n = this->capacity * sizeof(uint64_t);
   uint64_t* restrict new_clients = NULL;
+  int saved_errno;
   
   out->clients = NULL;
   
@@ -116,8 +117,9 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
   return 0;
   
  pfail:
+  saved_errno = errno;
   free(new_clients);
-  return -1;
+  return errno = saved_errno, -1;
 }
 
 

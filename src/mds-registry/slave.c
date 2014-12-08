@@ -271,6 +271,7 @@ int advance_slaves(char* command)
 slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv_client_id, const char* restrict recv_message_id)
 {
   slave_t* restrict rc = NULL;
+  int saved_errno;
   
   fail_if (xmalloc(rc, 1, slave_t));
   
@@ -284,9 +285,9 @@ slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv
   return rc;
   
  pfail:
-  slave_destroy(rc);
-  free(rc);
-  return NULL;
+  saved_errno = errno;
+  slave_destroy(rc), free(rc);
+  return errno = saved_errno, NULL;
 }
 
 

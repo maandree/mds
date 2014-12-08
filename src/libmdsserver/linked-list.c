@@ -116,6 +116,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
   ssize_t* restrict new_next = NULL;
   ssize_t* restrict new_previous = NULL;
   ssize_t* restrict new_reusable;
+  int saved_errno;
   
   out->values   = NULL;
   out->next     = NULL;
@@ -145,10 +146,11 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
   return 0;
 
  pfail:
+  saved_errno = errno;
   free(new_values);
   free(new_next);
   free(new_previous);
-  return -1;
+  return errno = saved_errno, -1;
 }
 
 
@@ -177,6 +179,7 @@ int linked_list_pack(linked_list_t* restrict this)
   size_t i = 0;
   ssize_t node;
   size_t* restrict vals;
+  int saved_errno;
   
   if (xmalloc(vals, cap, size_t))
     return -1;
@@ -219,10 +222,11 @@ int linked_list_pack(linked_list_t* restrict this)
   return 0;
 
  pfail:
+  saved_errno = errno;
   free(vals);
   free(new_next);
   free(new_previous);
-  return -1;
+  return errno = saved_errno, -1;
 }
 
 

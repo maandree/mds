@@ -403,6 +403,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   uint64_t modify_id;
   char modify_id_header[13 + 3 * sizeof(uint64_t)];
   void* new_buf;
+  int saved_errno;
   
   /* Count the number of headers. */
   for (i = 0; i < n; i++)
@@ -440,7 +441,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
       *colon = '\0';
       if ((headers[i] = strdup(msg)) == NULL)
 	{
-	  free(headers[i]);
+	  saved_errno = errno, free(headers[i]), errno = saved_errno;
 	  header_count = i;
 	  fail_if (1);
 	}

@@ -517,11 +517,11 @@ int unlink_recursive(const char* pathname)
   /* Check that we could examine the directory. */
   if (dir == NULL)
     {
-      int errno_ = errno;
+      int saved_errno = errno;
       struct stat _attr;
       if (stat(pathname, &_attr) < 0)
 	return 0; /* Directory does not exist. */
-      errno = errno_;
+      errno = saved_errno;
       fail_if (1);
     }
   
