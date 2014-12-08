@@ -219,15 +219,14 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
   if (action == 1)
     {
       /* Register server to protocol. */
-      if (registry_action_add(has_key, command, command_key, client))
-	return -1;
+      fail_if (registry_action_add(has_key, command, command_key, client));
     }
   else if ((action == -1) && has_key)
     /* Unregister server from protocol. */
     registry_action_remove(command_key, client);
   else if ((action == 0) && !has_key)
     {
-      /* Add protocl to wait set of not present in the protocol table. */
+      /* Add protocol to wait set of not present in the protocol table. */
       fail_if ((command = strdup(command)) == NULL);
       command_key = (size_t)(void*)command;
       if (hash_table_put(wait_set, command_key, 1) == 0)
@@ -241,8 +240,8 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
   return 0;
  fail:
   xperror(*argv);
-  hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL);
-  free(wait_set);
+  if (action != 1)
+    hash_table_destroy(wait_set, (free_func*)reg_table_free_key, NULL), free(wait_set);
   return -1;
 }
 
@@ -264,21 +263,15 @@ static int registry_action(size_t length, int action, const char* recv_client_id
   uint64_t client = action ? parse_client_id(recv_client_id) : 0;
   hash_table_t* wait_set = NULL;
   size_t begin;
+  int saved_errno;
   
   
   /* If ‘Action: wait’, create a set for the protocols that are not already available. */
   
   if (action == 0)
     {
-      wait_set = malloc(sizeof(hash_table_t));
-      if (wait_set == NULL)
-	return -1;
-      if (hash_table_create(wait_set))
-	{
-	  hash_table_destroy(wait_set, NULL, NULL);
-	  free(wait_set);
-	  return -1;
-	}
+      fail_if (xmalloc(wait_set, 1, hash_table_t));
+      fail_if (hash_table_create(wait_set));
       wait_set->key_comparator = (compare_func*)string_comparator;
       wait_set->hasher = (hash_func*)string_hash;
     }
@@ -288,14 +281,8 @@ static int registry_action(size_t length, int action, const char* recv_client_id
   
   if (received.payload_size == length)
     {
-      if (growalloc(old, received.payload, received.payload_size, char))
-	{
-	  if (wait_set != NULL)
-	    hash_table_destroy(wait_set, NULL, NULL), free(wait_set);
-	  return -1;
-	}
-      else
-	payload = received.payload;
+      fail_if (growalloc(old, received.payload, received.payload_size, char));
+      payload = received.payload;
     }
   
   
@@ -318,16 +305,22 @@ static int registry_action(size_t length, int action, const char* recv_client_id
       
       if (len > 0)
 	if (registry_action_act(command, action, client, wait_set))
-	  return -1;
+	  fail_if (wait_set = NULL, 1);
     }
   
   
   /* If ‘Action: wait’, start a new thread that waits for the protocols and the responds. */
   
   if (action == 0)
-    return start_slave(wait_set, recv_client_id, recv_message_id);
+    if (start_slave(wait_set, recv_client_id, recv_message_id))
+      fail_if (wait_set = NULL, 1);
   
   return 0;
+ fail:
+  saved_errno = errno;
+  if (wait_set != NULL)
+    hash_table_destroy(wait_set, NULL, NULL), free(wait_set);
+  return errno = saved_errno, -1;
 }
 
 
@@ -336,7 +329,7 @@ static int registry_action(size_t length, int action, const char* recv_client_id
  * 
  * @param   recv_client_id   The ID of the client
  * @param   recv_message_id  The ID of the received message
- * @return                   Zero on success -1 on error or interruption,
+ * @return                   Zero on success, -1 on error or interruption,
  *                           `errno` will be set accordingly
  */
 static int list_registry(const char* recv_client_id, const char* recv_message_id)
@@ -349,8 +342,7 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   
   if (send_buffer_size == 0)
     {
-      if (xmalloc(send_buffer, 256, char))
-	return -1;
+      fail_if (xmalloc(send_buffer, 256, char));
       send_buffer_size = 256;
     }
   
@@ -365,8 +357,7 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
       
       /* Make sure the send buffer can fit all protocols. */
       while (ptr + len + 1 >= send_buffer_size)
-	if (growalloc(old, send_buffer, send_buffer_size, char))
-	  return -1;
+	fail_if (growalloc(old, send_buffer, send_buffer_size, char));
       
       memcpy(send_buffer + ptr, command, len * sizeof(char));
       ptr += len;
@@ -380,8 +371,7 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   i += strlen("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nLength: %" PRIu64 "\n\n");
   
   while (ptr + i >= send_buffer_size)
-    if (growalloc(old, send_buffer, send_buffer_size, char))
-      return -1;
+    fail_if (growalloc(old, send_buffer, send_buffer_size, char));
   
   
   /* Construct message headers. */
@@ -392,9 +382,10 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   with_mutex (slave_mutex, message_id = message_id == UINT32_MAX ? 0 : (message_id + 1););
   
   /* Send message. */
-  if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)))
-    return 1;
+  fail_if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)));
   return full_send(send_buffer, ptr);
+ fail:
+  return -1;
 }
 
 
@@ -488,7 +479,7 @@ static int handle_register_message(void)
 /**
  * Handle the received message
  * 
- * @return  Zero on success -1 on error or interruption,
+ * @return  Zero on success, -1 on error or interruption,
  *          `errno` will be set accordingly
  */
 int handle_message(void)
@@ -496,7 +487,13 @@ int handle_message(void)
   size_t i;
   for (i = 0; i < received.header_count; i++)
     if (strequals(received.headers[i], "Command: register"))
-      return handle_register_message();
-  return handle_close_message();
+      {
+	fail_if (handle_register_message());
+	return 0;
+      }
+  fail_if (handle_close_message());
+  return 0;
+ fail:
+  return -1;
 }
 

@@ -99,6 +99,7 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
+  int stage = 0;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
@@ -106,15 +107,15 @@ int initialise_server(void)
     "\n"
     "Command: echo\n";
   
-  if (full_send(message, strlen(message)))
-    return 1;
-  fail_if (server_initialised() < 0);
+  fail_if (full_send(message, strlen(message)));
+  fail_if (server_initialised() < 0);  stage++;
   fail_if (mds_message_initialise(&received));
   
   return 0;
  fail:
   xperror(*argv);
-  mds_message_destroy(&received);
+  if (stage == 1)
+    mds_message_destroy(&received);
   return 1;
 }
 
@@ -130,13 +131,12 @@ int postinitialise_server(void)
   if (connected)
     return 0;
   
-  if (reconnect_to_display())
-    {
-      mds_message_destroy(&received);
-      return 1;
-    }
+  fail_if (reconnect_to_display());
   connected = 1;
   return 0;
+ fail:
+  mds_message_destroy(&received);
+  return 1;
 }
 
 
@@ -190,11 +190,11 @@ int unmarshal_server(char* state_buf)
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, uint32_t, message_id);
   r = mds_message_unmarshal(&received, state_buf);
-  if (r)
-    {
-      xperror(*argv);
-      mds_message_destroy(&received);
-    }
+  fail_if (r);
+  return 0;
+ fail:
+  xperror(*argv);
+  mds_message_destroy(&received);
   return r;
 }
 
@@ -264,10 +264,12 @@ int master_loop(void)
  */
 int echo_message(void)
 {
+  char* old_buffer = NULL;
   const char* recv_client_id = NULL;
   const char* recv_message_id = NULL;
   const char* recv_length = NULL;
   size_t i, n;
+  int saved_errno;
   
   /* Fetch headers. */
   
@@ -311,14 +313,7 @@ int echo_message(void)
     n += strlen(recv_length) + 1;
   
   if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
-    {
-      char* old_buffer = echo_buffer;
-      if (xrealloc(echo_buffer, echo_buffer_size = n, char))
-	{
-	  free(old_buffer);
-	  return -1;
-	}
-    }
+    fail_if (xxrealloc(old_buffer, echo_buffer, echo_buffer_size = n, char));
   
   sprintf(echo_buffer, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n%s%s\n",
 	  recv_client_id, recv_message_id, message_id,
@@ -329,9 +324,12 @@ int echo_message(void)
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
   /* Send echo. */
-  if (full_send(echo_buffer, strlen(echo_buffer)))
-    return 1;
+  fail_if (full_send(echo_buffer, strlen(echo_buffer)));
   return full_send(received.payload, received.payload_size);
+ fail:
+  saved_errno = errno;
+  free(old_buffer);
+  return errno = saved_errno, -1;
 }
 
 
@@ -354,14 +352,14 @@ int full_send(const char* message, size_t length)
 	  eprint("Sent more of a message than exists in the message, aborting.");
 	  return -1;
 	}
-      else if ((sent < length) && (errno != EINTR))
-	{
-	  xperror(*argv);
-	  return -1;
-	}
+      else
+	fail_if ((sent < length) && (errno != EINTR));
       message += sent;
       length -= sent;
     }
   return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 

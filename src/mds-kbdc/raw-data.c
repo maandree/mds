@@ -456,14 +456,15 @@ static char* encode_utf8(char* buffer, char32_t character)
   text[0] = character;
   text[1] = -1;
   
-  if (str_ = str = string_encode(text), str == NULL)
-    return NULL;
+  fail_if (str_ = str = string_encode(text), str == NULL);
   
   while (*str)
     *buffer++ = *str++;
   
   free(str_);
   return buffer;
+ fail:
+  return NULL;
 }
 
 
@@ -489,8 +490,7 @@ char* parse_raw_string(const char* restrict string)
    * is not code point whose UTF-8 encoding is longer than its
    * hexadecimal representation. */
   p = rc = malloc(strlen(string) * sizeof(char));
-  if (rc == NULL)
-    return NULL;
+  fail_if (rc == NULL);
   
   while ((c = *string++))
     if      (r(escape ==  8, '0', '7'))  buf = (buf << 3) | (c & 15);

@@ -75,15 +75,17 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity)
   this->values     = NULL;
   this->next       = NULL;
   this->previous   = NULL;
-  if (xmalloc(this->reusable, capacity, ssize_t))  return -1;
-  if (xmalloc(this->values,   capacity,  size_t))  return -1;
-  if (xmalloc(this->next,     capacity, ssize_t))  return -1;
-  if (xmalloc(this->previous, capacity, ssize_t))  return -1;
+  fail_if (xmalloc(this->reusable, capacity, ssize_t));
+  fail_if (xmalloc(this->values,   capacity,  size_t));
+  fail_if (xmalloc(this->next,     capacity, ssize_t));
+  fail_if (xmalloc(this->previous, capacity, ssize_t));
   this->values[this->edge]   = 0;
   this->next[this->edge]     = this->edge;
   this->previous[this->edge] = this->edge;
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -181,8 +183,7 @@ int linked_list_pack(linked_list_t* restrict this)
   size_t* restrict vals;
   int saved_errno;
   
-  if (xmalloc(vals, cap, size_t))
-    return -1;
+  fail_if (xmalloc(vals, cap, size_t));
   while (((size_t)head != this->end) && (this->next[head] == LINKED_LIST_UNUSED))
     head++;
   if ((size_t)head != this->end)
@@ -249,10 +250,7 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
       ssize_t* old;
       
       if ((ssize_t)(this->end) < 0)
-	{
-	  errno = ENOMEM;
-	  return LINKED_LIST_UNUSED;
-	}
+	fail_if ((errno = ENOMEM));
       
       this->capacity <<= 1;
 
@@ -260,7 +258,7 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
   if ((new_var = realloc(old_var = new_var, this->capacity * sizeof(type))) == NULL)  \
     {										      \
       new_var = old_var;							      \
-      return LINKED_LIST_UNUSED;						      \
+      fail_if (1);								      \
     }
 
       __realloc(this->values,   old_values, size_t)
@@ -271,6 +269,8 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
 #undef __realloc
     }
   return (ssize_t)(this->end++);
+ fail:
+  return LINKED_LIST_UNUSED;
 }
 
 
@@ -304,14 +304,15 @@ static ssize_t linked_list_unuse(linked_list_t* restrict this, ssize_t node)
 ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t predecessor)
 {
   ssize_t node = linked_list_get_next(this);
-  if (node == LINKED_LIST_UNUSED)
-    return LINKED_LIST_UNUSED;
+  fail_if (node == LINKED_LIST_UNUSED);
   this->values[node] = value;
   this->next[node] = this->next[predecessor];
   this->next[predecessor] = node;
   this->previous[node] = predecessor;
   this->previous[this->next[node]] = node;
   return node;
+ fail:
+  return LINKED_LIST_UNUSED;
 }
 
 
@@ -343,14 +344,15 @@ ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecess
 ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor)
 {
   ssize_t node = linked_list_get_next(this);
-  if (node == LINKED_LIST_UNUSED)
-    return LINKED_LIST_UNUSED;
+  fail_if (node == LINKED_LIST_UNUSED);
   this->values[node] = value;
   this->previous[node] = this->previous[successor];
   this->previous[successor] = node;
   this->next[node] = successor;
   this->next[this->previous[node]] = node;
   return node;
+ fail:
+  return LINKED_LIST_UNUSED;
 }
 
 
@@ -454,10 +456,10 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
   
   n = this->capacity * sizeof(size_t);
   
-  if ((this->reusable = malloc(n)) == NULL)  return -1;
-  if ((this->values   = malloc(n)) == NULL)  return -1;
-  if ((this->next     = malloc(n)) == NULL)  return -1;
-  if ((this->previous = malloc(n)) == NULL)  return -1;
+  fail_if ((this->reusable = malloc(n)) == NULL);
+  fail_if ((this->values   = malloc(n)) == NULL);
+  fail_if ((this->next     = malloc(n)) == NULL);
+  fail_if ((this->previous = malloc(n)) == NULL);
   
   memcpy(this->reusable, data, this->reuse_head * sizeof(ssize_t));
   buf_next(data, ssize_t, this->reuse_head);
@@ -471,6 +473,8 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
   memcpy(this->previous, data, this->end * sizeof(ssize_t));
   
   return 0;
+ fail:
+  return -1;
 }
 
 

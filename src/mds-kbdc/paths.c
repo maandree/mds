@@ -73,7 +73,10 @@ char* abspath(const char* path)
   size_t size, p;
   
   if (*path == '/')
-    return strdup(path);
+    {
+      fail_if (buf = strdup(path), buf == NULL);
+      return buf;
+    }
   
   fail_if (cwd = curpath(), cwd == NULL);
   size = (p = strlen(cwd)) + strlen(path) + 2;

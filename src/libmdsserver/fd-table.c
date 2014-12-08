@@ -48,10 +48,12 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
      the time overhead of `fd_table_contains_value`. */
   
   bitcap = (this->capacity + 63) / 64;
-  if (xcalloc(this->used,   bitcap,         size_t))  return -1;
-  if (xcalloc(this->values, this->capacity, size_t))  return -1;
+  fail_if (xcalloc(this->used,   bitcap,         size_t));
+  fail_if (xcalloc(this->values, this->capacity, size_t));
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -164,7 +166,7 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
       if (xrealloc(this->values, this->capacity << 1, size_t))
 	{
 	  this->values = old_values;
-	  return 0;
+	  fail_if (1);
 	}
       
       memset(this->values + this->capacity, 0, this->capacity * sizeof(size_t));
@@ -180,7 +182,7 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
 	    {
 	      this->used = old_used;
 	      this->capacity >>= 1;
-	      return 0;
+	      fail_if (1);
 	    }
 	  
 	  memset(this->used + old_bitcap, 0, (new_bitcap - old_bitcap) * sizeof(uint64_t));
@@ -191,6 +193,8 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
   this->used[key / 64] |= (uint64_t)1 << (key % 64);
   this->values[key] = value;
   this->size++;
+  return 0;
+ fail:
   return 0;
 }
 
@@ -285,12 +289,10 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
   this->used             = NULL;
   this->value_comparator = NULL;
   
-  if (xmalloc(this->values, this->capacity, size_t))
-    return -1;
+  fail_if (xmalloc(this->values, this->capacity, size_t));
   
   bitcap = (this->capacity + 63) / 64;
-  if (xmalloc(this->used, bitcap, size_t))
-    return -1;
+  fail_if (xmalloc(this->used, bitcap, size_t));
   
   memcpy(this->values, data, this->capacity * sizeof(size_t));
   buf_next(data, size_t, this->capacity);
@@ -306,5 +308,7 @@ int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_fun
     }
   
   return 0;
+ fail:
+  return -1;
 }
 

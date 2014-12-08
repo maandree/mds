@@ -154,21 +154,20 @@ int __attribute__((const)) preinitialise_server(void)
 static int write_vt_file(void)
 {
   char buf[(sizeof(int) + sizeof(struct stat)) / sizeof(char)];
-  int fd, r, old_errno;
   int* intbuf = (int*)buf;
+  int fd = -1, saved_errno;
   
   *intbuf = display_vt;
   *(struct stat*)(buf + sizeof(int) / sizeof(char)) = old_vt_stat;
   
-  fd = open(vtfile_path, O_WRONLY | O_CREAT);
-  if (fd < 0)
-    return -1;
-  
-  r = full_write(fd, buf, sizeof(buf));
-  old_errno = errno;
-  close(fd);
-  errno = old_errno;
-  return r;
+  fail_if (open(vtfile_path, O_WRONLY | O_CREAT), fd < 0);
+  fail_if (full_write(fd, buf, sizeof(buf)));
+  return 0;
+ fail:
+  saved_errno = errno;
+  if (fd >= 0)
+    close(fd);
+  return errno = saved_errno, -1;
 }
 
 
@@ -183,24 +182,20 @@ static int read_vt_file(void)
   size_t len;
   int fd;
   
-  fd = open(vtfile_path, O_RDONLY);
-  if (fd < 0)
-    return -1;
-  
-  buf = full_read(fd, &len);
-  if (buf == NULL)
-    return -1;
+  fail_if (fd = open(vtfile_path, O_RDONLY), fd < 0);
+  fail_if (buf = full_read(fd, &len), buf == NULL);
   
   if (len != sizeof(int) + sizeof(struct stat))
     {
       eprint("VT file is of wrong size.");
-      errno = 0;
-      return -1;
+      return errno = 0, -1;
     }
   
   display_vt = *(int*)buf;
   old_vt_stat = *(struct stat*)(buf + sizeof(int) / sizeof(char));
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -215,6 +210,7 @@ int initialise_server(void)
   struct vt_mode mode;
   char* display_env;
   int primary_socket_fd;
+  int stage = 0;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
@@ -231,8 +227,7 @@ int initialise_server(void)
     "Command: switching-vt\n";
   
   primary_socket_fd = socket_fd;
-  if (connect_to_display())
-    return 1;
+  fail_if (connect_to_display());
   secondary_socket_fd = socket_fd;
   socket_fd = primary_socket_fd;
   
@@ -243,6 +238,7 @@ int initialise_server(void)
   
   memset(vtfile_path, 0, sizeof(vtfile_path));
   xsnprintf(vtfile_path, "%s/%s.vt", MDS_RUNTIME_ROOT_DIRECTORY, display_env + 1);
+  stage = 1;
   
   if (is_respawn == 0)
     {
@@ -259,12 +255,10 @@ int initialise_server(void)
       fail_if (vt_is_active < 0);
     }
   
-  if (full_send(secondary_socket_fd, secondary_message, strlen(secondary_message)))
-    return 1;
-  if (full_send(socket_fd, message, strlen(message)))
-    return 1;
+  fail_if (full_send(secondary_socket_fd, secondary_message, strlen(secondary_message)));
+  fail_if (full_send(socket_fd, message, strlen(message)));
   fail_if (server_initialised() < 0);
-  fail_if (mds_message_initialise(&received));
+  fail_if (mds_message_initialise(&received)); stage = 2;
   
   fail_if (xsigaction(SIGRTMIN + 2, received_switch_vt) < 0);
   fail_if (xsigaction(SIGRTMIN + 3, received_switch_vt) < 0);
@@ -279,10 +273,12 @@ int initialise_server(void)
   return 1;
  fail:
   xperror(*argv);
-  unlink(vtfile_path);
+  if (stage >= 1)
+    unlink(vtfile_path);
   if (display_tty_fd >= 0)
     vt_close(display_tty_fd, &old_vt_stat);
-  mds_message_destroy(&received);
+  if (stage >= 2)
+    mds_message_destroy(&received);
   return 1;
 }
 
@@ -301,14 +297,15 @@ int postinitialise_server(void)
   if (reconnect_to_display())
     {
       mds_message_destroy(&received);
-      return 1;
+      fail_if (1);
     }
   connected = 1;
   
-  if ((errno = pthread_create(&secondary_thread, NULL, secondary_loop, NULL)))
-    return 1;
+  fail_if ((errno = pthread_create(&secondary_thread, NULL, secondary_loop, NULL)));
   
   return 0;
+ fail:
+  return 1;
 }
 
 
@@ -535,7 +532,10 @@ int switch_vt(int leave_foreground)
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
-  return -!!full_send(socket_fd, buf, strlen(buf));
+  fail_if (full_send(socket_fd, buf, strlen(buf)));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -638,7 +638,10 @@ int handle_get_vt(const char* client, const char* message)
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
   r = full_send(socket_fd, buf, strlen(buf));
-  return ((active < 0) || r) ? -1 : 0;
+  fail_if ((active < 0) || r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -682,7 +685,10 @@ int handle_configure_vt(const char* client, const char* message, const char* gra
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
-  return -!!full_send(socket_fd, buf, strlen(buf));
+  fail_if (full_send(socket_fd, buf, strlen(buf)));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -735,15 +741,15 @@ int full_send(int socket, const char* message, size_t length)
 	  eprint("Sent more of a message than exists in the message, aborting.");
 	  return -1;
 	}
-      else if ((sent < length) && (errno != EINTR))
-	{
-	  xperror(*argv);
-	  return -1;
-	}
+      else
+	fail_if ((sent < length) && (errno != EINTR));
       message += sent;
       length -= sent;
     }
   return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -768,7 +774,7 @@ int select_vt(void)
       if (r < 0)
 	{
 	  eprint("the environment variable XDG_VTNR contains an invalid value.");
-	  return errno = 0, -1;
+	  fail_if (errno = 0, 1);
 	}
     }
   else
@@ -778,11 +784,13 @@ int select_vt(void)
       if (rc == 0)
 	{
 	  eprint("out of available virtual terminals, I am stymied.");
-	  return errno = 0, -1;
+	  fail_if (errno = 0, 1);
 	}
     }
   
   return rc;
+ fail:
+  return -1;
 }
 
 
@@ -794,10 +802,10 @@ int select_vt(void)
 int vt_get_next_available(void)
 {
   int next_vt = -1;
-  int r = ioctl(STDIN_FILENO, VT_OPENQRY, &next_vt);
-  if (r < 0)
-    return r;
+  fail_if (ioctl(STDIN_FILENO, VT_OPENQRY, &next_vt) < 0);
   return ((next_vt < 0) || (MAX_NR_CONSOLES < next_vt)) ? 0 : next_vt;
+ fail:
+  return -1;
 }
 
 
@@ -809,9 +817,10 @@ int vt_get_next_available(void)
 int vt_get_active(void)
 {
   struct vt_stat state;
-  if (ioctl(STDIN_FILENO, VT_GETSTATE, &state) < 0)
-    return -1;
+  fail_if (ioctl(STDIN_FILENO, VT_GETSTATE, &state) < 0);
   return state.v_active;
+ fail:
+  return -1;
 }
 
 
@@ -823,13 +832,13 @@ int vt_get_active(void)
  */
 int vt_set_active(int vt)
 {
-  if (ioctl(STDIN_FILENO, VT_ACTIVATE, vt) < 0)
-    return -1;
-  
+  fail_if (ioctl(STDIN_FILENO, VT_ACTIVATE, vt) < 0);
   if (ioctl(STDIN_FILENO, VT_WAITACTIVE, vt) < 0)
     xperror(*argv);
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -845,18 +854,16 @@ int vt_open(int vt, struct stat* restrict old_stat)
   char vtpath[64]; /* Should be small enought and large enought for any
 		      lunatic alternative to /dev/ttyNNN, if not you
 		      will need to apply a patch (or fix your system.) */
-  int fd;
+  int fd = -1, saved_errno;
   sprintf(vtpath, VT_PATH_PATTERN, vt);
-  fd = open(vtpath, O_RDWR);
-  if (fd < 0)
-    return -1;
-  if ((fstat(fd, old_stat) < 0) ||
-      (fchown(fd, getuid(), getgid()) < 0))
-    {
-      close(fd);
-      return -1;
-    }
+  fail_if (fd = open(vtpath, O_RDWR), fd < 0);
+  fail_if ((fstat(fd, old_stat) < 0) || (fchown(fd, getuid(), getgid()) < 0));
   return fd;
+ fail:
+  saved_errno = errno;
+  if (fd >= 0)
+    close(fd);
+  return errno = saved_errno, -1;
 }
 
 

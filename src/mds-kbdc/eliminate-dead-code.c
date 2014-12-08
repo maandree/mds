@@ -82,11 +82,13 @@ static int eliminate_include(mds_kbdc_tree_include_t* restrict tree)
 {
   void* data;
   int r;
-  if (mds_kbdc_include_stack_push(tree, &data))
-    return -1;
+  fail_if (mds_kbdc_include_stack_push(tree, &data));
   r = eliminate_subtree(tree->inner);
   mds_kbdc_include_stack_pop(data);
-  return r;
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -118,9 +120,8 @@ static int eliminate_if(mds_kbdc_tree_if_t* restrict tree)
  */
 static int eliminate_subtree(mds_kbdc_tree_t* restrict tree)
 {
-#define e(type)  if ((r = eliminate_##type(&(tree->type))))     return r
-#define E(type)  if ((r = eliminate_##type(&(tree->type##_))))  return r
-  int r;
+#define e(type)  fail_if (eliminate_##type(&(tree->type)))
+#define E(type)  fail_if (eliminate_##type(&(tree->type##_)))
  again:
   if (tree == NULL)
     return 0;
@@ -134,8 +135,7 @@ static int eliminate_subtree(mds_kbdc_tree_t* restrict tree)
     case C(MACRO):
     case C(ASSUMPTION):
     case C(FOR):
-      if ((r = eliminate_subtree(tree->information.inner)))
-	return r;
+      fail_if (eliminate_subtree(tree->information.inner));
       if ((tree->type == C(FUNCTION)) || (tree->type == C(MACRO)))  elimination_level = 0;
       else if ((tree->type == C(FOR)) && (elimination_level == 1))  elimination_level = 0;
       break;
@@ -174,7 +174,11 @@ int eliminate_dead_code(mds_kbdc_parsed_t* restrict result_)
   int r;
   mds_kbdc_include_stack_begin(result = result_);
   r = eliminate_subtree(result_->tree);
-  return mds_kbdc_include_stack_end(), r;
+  mds_kbdc_include_stack_end();
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 

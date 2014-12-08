@@ -19,6 +19,8 @@
 
 #include "variables.h"
 
+#include <libmdsserver/macros.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,8 +36,7 @@
   size_t bn = string_length(b);					\
   size_t i, n = an > bn ? an : bn;				\
   char32_t* restrict rc = malloc((n + 1) * sizeof(char32_t));	\
-  if (rc == NULL)						\
-    return NULL;						\
+  fail_if (rc == NULL);						\
   rc[n] = -1
 
 /**
@@ -45,9 +46,18 @@
   const char32_t* restrict a = *args++;				\
   size_t i, n = string_length(a);				\
   char32_t* restrict rc = malloc((n + 1) * sizeof(char32_t));	\
-  if (rc == NULL)						\
-    return NULL;						\
+  fail_if (rc == NULL);						\
   rc[n] = -1
+
+/**
+ * Return a value, or if there was a failure somewhere, return `NULL`
+ * 
+ * @param  v:void*  The value to return on success
+ */
+#define return(v)				\
+  return v;					\
+ fail:						\
+  return NULL;
 
 
 /**
@@ -61,7 +71,7 @@ static char32_t* builtin_function_add_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] + b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -76,7 +86,7 @@ static char32_t* builtin_function_sub_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] - b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -91,7 +101,7 @@ static char32_t* builtin_function_mul_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] * b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -106,7 +116,7 @@ static char32_t* builtin_function_div_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] / b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -121,7 +131,7 @@ static char32_t* builtin_function_mod_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] % b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -136,7 +146,7 @@ static char32_t* builtin_function_rsh_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] << b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -151,7 +161,7 @@ static char32_t* builtin_function_lsh_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] >> b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -166,7 +176,7 @@ static char32_t* builtin_function_or_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] | b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -181,7 +191,7 @@ static char32_t* builtin_function_and_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] & b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -196,7 +206,7 @@ static char32_t* builtin_function_xor_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] ^ b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -211,7 +221,7 @@ static char32_t* builtin_function_not_1(const char32_t** restrict args)
   define_1;
   for (i = 0; i < n; i++)
     rc[i] = !a[i];
-  return rc;
+  return(rc);
 }
 
 
@@ -226,7 +236,7 @@ static char32_t* builtin_function_equals_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] == b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -241,7 +251,7 @@ static char32_t* builtin_function_greater_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] > b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -256,7 +266,7 @@ static char32_t* builtin_function_less_2(const char32_t** restrict args)
   define_2;
   for (i = 0; i < n; i++)
     rc[i] = a[i % an] < b[i % bn];
-  return rc;
+  return(rc);
 }
 
 
@@ -270,11 +280,13 @@ static char32_t* builtin_function_get_2(const char32_t** restrict args)
 {
   const char32_t* restrict a = *args++;
   const char32_t* restrict b = *args++;
+  char32_t* restrict rc;
   size_t n = (size_t)*b;
   mds_kbdc_tree_t* value = variables_get((size_t)*a);
   while (n--)
     value = value->next;
-  return string_dup(value->compiled_string.string);
+  fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
+  return(rc);
 }
 
 
@@ -289,20 +301,22 @@ static char32_t* builtin_function_set_3(const char32_t** restrict args)
   const char32_t* restrict a = *args++;
   const char32_t* restrict b = *args++;
   const char32_t* restrict c = *args++;
+  char32_t* restrict rc;
   size_t n = (size_t)*b;
   mds_kbdc_tree_t* value = variables_get((size_t)*a);
   while (n--)
     value = value->next;
   free(value->compiled_string.string);
   value->compiled_string.string = string_dup(c);
-  if (value->compiled_string.string == NULL)
-    return NULL;
-  return string_dup(c);
+  fail_if (value->compiled_string.string == NULL);
+  fail_if (rc = string_dup(c), rc == NULL);
+  return(rc);
 }
 
 
 #undef define_1
 #undef define_2
+#undef return
 
 
 /**
@@ -350,32 +364,33 @@ int builtin_function_defined(const char* restrict name, size_t arg_count)
  */
 char32_t* builtin_function_invoke(const char* restrict name, size_t arg_count, const char32_t** restrict args)
 {
-  if (arg_count == 3)
-    if (!strcmp(name, "set"))
-      return builtin_function_set_3(args);
+#define t(f)  do { fail_if (rc = builtin_function_##f(args), rc == NULL); return rc; } while (0)
+  char32_t* rc;
   
-  if (arg_count == 1)
-    if (!strcmp(name, "not"))
-      return builtin_function_not_1(args);
+  if ((arg_count == 3) && !strcmp(name, "set"))  t (set_3);
+  if ((arg_count == 1) && !strcmp(name, "not"))  t (not_1);
   
   if (arg_count != 2)
     abort();
   
-  if (!strcmp(name, "add"))      return builtin_function_add_2(args);
-  if (!strcmp(name, "sub"))      return builtin_function_sub_2(args);
-  if (!strcmp(name, "mul"))      return builtin_function_mul_2(args);
-  if (!strcmp(name, "div"))      return builtin_function_div_2(args);
-  if (!strcmp(name, "mod"))      return builtin_function_mod_2(args);
-  if (!strcmp(name, "rsh"))      return builtin_function_rsh_2(args);
-  if (!strcmp(name, "lsh"))      return builtin_function_lsh_2(args);
-  if (!strcmp(name, "or"))       return builtin_function_or_2(args);
-  if (!strcmp(name, "and"))      return builtin_function_and_2(args);
-  if (!strcmp(name, "xor"))      return builtin_function_xor_2(args);
-  if (!strcmp(name, "equals"))   return builtin_function_equals_2(args);
-  if (!strcmp(name, "greater"))  return builtin_function_greater_2(args);
-  if (!strcmp(name, "less"))     return builtin_function_less_2(args);
-  if (!strcmp(name, "get"))      return builtin_function_get_2(args);
+  if (!strcmp(name, "add"))      t (add_2);
+  if (!strcmp(name, "sub"))      t (sub_2);
+  if (!strcmp(name, "mul"))      t (mul_2);
+  if (!strcmp(name, "div"))      t (div_2);
+  if (!strcmp(name, "mod"))      t (mod_2);
+  if (!strcmp(name, "rsh"))      t (rsh_2);
+  if (!strcmp(name, "lsh"))      t (lsh_2);
+  if (!strcmp(name, "or"))       t (or_2);
+  if (!strcmp(name, "and"))      t (and_2);
+  if (!strcmp(name, "xor"))      t (xor_2);
+  if (!strcmp(name, "equals"))   t (equals_2);
+  if (!strcmp(name, "greater"))  t (greater_2);
+  if (!strcmp(name, "less"))     t (less_2);
+  if (!strcmp(name, "get"))      t (get_2);
   
   abort();
+ fail:
+  return NULL;
+#undef t
 }
 

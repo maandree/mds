@@ -76,14 +76,14 @@ int full_send(const char* message, size_t length)
 	  eprint("Sent more of a message than exists in the message, aborting.");
 	  return -1;
 	}
-      else if ((sent < length) && (errno != EINTR))
-	{
-	  xperror(*argv);
-	  return -1;
-	}
+      else
+	fail_if ((sent < length) && (errno != EINTR));
       message += sent;
       length -= sent;
     }
   return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 

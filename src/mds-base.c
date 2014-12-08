@@ -210,13 +210,8 @@ static int server_initialised_fork_for_safety(void)
   pid_t pid = fork();
   int status;
   
-  if (pid == (pid_t)-1)
-    {
-      xperror(*argv);
-      eprint("while forking for safety.");
-      return -1;
-    }
-  else if (pid == 0)
+  fail_if (pid == (pid_t)-1);
+  if (pid == 0)
     /* Reinstate the alarm for the child. */
     alarm(pending_alarm);
   else
@@ -246,6 +241,10 @@ static int server_initialised_fork_for_safety(void)
     }
   
   return 0;
+ fail:
+  xperror(*argv);
+  eprint("while forking for safety.");
+  return -1;
 }
 
 
@@ -261,14 +260,8 @@ int __attribute__((weak)) server_initialised(void)
   pid_t r;
   if (on_init_fork && (r = fork()))
     {
-      if (r == (pid_t)-1)
-	{
-	  xperror(*argv);
-	  eprint("while forking at completed initialisation.");
-	  return -1;
-	}
-      else
-	exit(0);
+      fail_if (r == (pid_t)-1);
+      exit(0);
     }
   
   if (on_init_sh != NULL)
@@ -276,7 +269,12 @@ int __attribute__((weak)) server_initialised(void)
   
   if (server_characteristics.fork_for_safety)
     return server_initialised_fork_for_safety();
+  
   return 0;
+ fail:
+  xperror(*argv);
+  eprint("while forking at completed initialisation.");
+  return -1;
 }
 
 
@@ -413,8 +411,7 @@ static int base_unmarshal(void)
   free(state_buf);
   
   /* Recover after failure. */
-  if (r)
-    fail_if (reexec_failure_recover());
+  fail_if (r && reexec_failure_recover());
   
   return 0;
  fail:

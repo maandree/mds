@@ -242,8 +242,7 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
  */
 static int process_includes_in_tree(mds_kbdc_tree_t* restrict tree)
 {
-#define p(expr)  if ((r = process_includes_in_tree(tree->expr)))  return r
-  int r;
+#define p(expr)  fail_if (process_includes_in_tree(tree->expr))
  again:
   if (tree == NULL)
     return 0;
@@ -257,8 +256,7 @@ static int process_includes_in_tree(mds_kbdc_tree_t* restrict tree)
     case C(FOR):          p (for_.inner);         break;
     case C(IF):           p (if_.inner);          p (if_.otherwise);  break;
     case C(INCLUDE):
-      if ((r = process_include(&(tree->include))))
-	return r;
+      fail_if (process_include(&(tree->include)));
       break;
     default:
       break;
@@ -266,6 +264,8 @@ static int process_includes_in_tree(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
+ fail:
+  return -1;
 #undef p
 }
 
@@ -290,7 +290,7 @@ int process_includes(mds_kbdc_parsed_t* restrict result_)
     {
       struct stat* old;
       if (xxrealloc(old, included, included_size += 4, struct stat))
-	return included = old, -1;
+	fail_if (included = old, 1);
     }
   
   for (i = 0; i < included_ptr; i++)

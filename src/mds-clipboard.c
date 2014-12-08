@@ -105,6 +105,7 @@ int __attribute__((const)) preinitialise_server(void)
 int initialise_server(void)
 {
   ssize_t i = 0;
+  int stage = 0;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
@@ -113,8 +114,7 @@ int initialise_server(void)
     "Command: clipboard\n"
     "Client closed\n";
   
-  if (full_send(message, strlen(message)))
-    return 1;
+  fail_if (full_send(message, strlen(message)));
   
   if (is_respawn)
     {
@@ -124,13 +124,13 @@ int initialise_server(void)
 	"Message ID: 1\n"
 	"\n";
       
-      if (full_send(crash_message, strlen(crash_message)))
-	return 1;
-      
+      fail_if (full_send(crash_message, strlen(crash_message)));
       message_id++;
     }
   
+  stage++;
   fail_if (server_initialised() < 0);
+  stage++;
   fail_if (mds_message_initialise(&received));
   
   for (i = 0; i < CLIPBOARD_LEVELS; i++)
@@ -140,8 +140,10 @@ int initialise_server(void)
   
  fail:
   xperror(*argv);
+  if (stage == 0)  return 1;
   mds_message_destroy(&received);
-  while (--i >= 0)
+  if (stage == 1)  return 1;
+  while (i--)
     free(clipboard[i]);
   return 1;
 }
@@ -158,13 +160,12 @@ int postinitialise_server(void)
   if (connected)
     return 0;
   
-  if (reconnect_to_display())
-    {
-      mds_message_destroy(&received);
-      return 1;
-    }
+  fail_if (reconnect_to_display());
   connected = 1;
   return 0;
+ fail:
+  mds_message_destroy(&received);
+  return 1;
 }
 
 
@@ -410,15 +411,15 @@ int full_send(const char* message, size_t length)
 	  eprint("Sent more of a message than exists in the message, aborting.");
 	  return -1;
 	}
-      else if ((sent < length) && (errno != EINTR))
-	{
-	  xperror(*argv);
-	  return -1;
-	}
+      else
+	fail_if ((sent < length) && (errno != EINTR));
       message += sent;
       length -= sent;
     }
   return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -575,8 +576,7 @@ static int clipboard_notify_pop(int level, size_t index)
 	      "Used: %zu\n"
 	      "\n");
   
-  if (xmalloc(message, n, char))
-    return -1;
+  fail_if (xmalloc(message, n, char));
   
   sprintf(message,
 	  "Command: clipboard-info\n"
@@ -591,6 +591,8 @@ static int clipboard_notify_pop(int level, size_t index)
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   return full_send(message, strlen(message)) ? -1 : 0;
+ fail:
+  return -1;
 }
 
 
@@ -651,9 +653,10 @@ int clipboard_danger(void)
 {
   int i;
   for (i = 0; i < CLIPBOARD_LEVELS; i++)
-    if (clipboard_purge(i, NULL))
-      return -1;
+    fail_if (clipboard_purge(i, NULL));
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -667,9 +670,10 @@ int clipboard_death(const char* recv_client_id)
 {
   int i;
   for (i = 0; i < CLIPBOARD_LEVELS; i++)
-    if (clipboard_purge(i, recv_client_id))
-      return -1;
+    fail_if (clipboard_purge(i, recv_client_id));
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -687,8 +691,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
   uint64_t client = recv_client_id ? parse_client_id(recv_client_id) : 0;
   clipitem_t new_clip;
   
-  if (clipboard_purge(level, NULL))
-    return -1;
+  fail_if (clipboard_purge(level, NULL));
   
   if (strequals(time_to_live, "forever"))
     autopurge = CLIPITEM_AUTOPURGE_NEVER;
@@ -748,8 +751,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   clipitem_t* clip = NULL;
   size_t n;
   
-  if (clipboard_purge(level, NULL))
-    return -1;
+  fail_if (clipboard_purge(level, NULL));
   
   if (clipboard_used[level] == 0)
     {
@@ -833,8 +835,7 @@ int clipboard_clear(int level)
 int clipboard_set_size(int level, size_t size)
 {
   size_t i;
-  if (clipboard_purge(level, NULL))
-    return -1;
+  fail_if (clipboard_purge(level, NULL));
   
   if (size < clipboard_size[level])
     {
@@ -877,8 +878,8 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
 {
   char* message = NULL;
   size_t n;
-  if (clipboard_purge(level, NULL))
-    return -1;
+  
+  fail_if (clipboard_purge(level, NULL));
   
   n = strlen("To: %s\n"
 	     "In response to: %s\n"

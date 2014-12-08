@@ -82,6 +82,7 @@ int preinitialise_server(void)
  */
 int initialise_server(void)
 {
+  int stage = 0;
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
@@ -103,14 +104,8 @@ int initialise_server(void)
         that happen between the crash and the recovery.
    */
   
-  if (full_send(message, strlen(message)))
-    return 1;
-  if (hash_table_create_tuned(&reg_table, 32))
-    {
-      xperror(*argv);
-      hash_table_destroy(&reg_table, NULL, NULL);
-      return 1;
-    }
+  fail_if (full_send(message, strlen(message)));  stage++;
+  fail_if (hash_table_create_tuned(&reg_table, 32));  stage++;
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
   fail_if (server_initialised() < 0);
@@ -119,7 +114,10 @@ int initialise_server(void)
   return 0;  
  fail:
   xperror(*argv);
-  mds_message_destroy(&received);
+  if (stage == 1)
+    hash_table_destroy(&reg_table, NULL, NULL);
+  if (stage == 2)
+    mds_message_destroy(&received);
   return 1;
 }
 
@@ -135,13 +133,12 @@ int postinitialise_server(void)
   if (connected)
     return 0;
   
-  if (reconnect_to_display())
-    {
-      mds_message_destroy(&received);
-      return 1;
-    }
+  fail_if (reconnect_to_display());
   connected = 1;
   return 0;
+ fail:
+  mds_message_destroy(&received);
+  return 1;
 }
 
 

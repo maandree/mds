@@ -106,11 +106,13 @@ static int validate_include(mds_kbdc_tree_include_t* restrict tree)
 {
   void* data;
   int r;
-  if (mds_kbdc_include_stack_push(tree, &data))
-    return -1;
+  fail_if (mds_kbdc_include_stack_push(tree, &data));
   r = validate_subtree(tree->inner);
   mds_kbdc_include_stack_pop(data);
-  return r;
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -339,9 +341,11 @@ static int validate_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 static int validate_for(mds_kbdc_tree_for_t* restrict tree)
 {
   int r;
-  fors++;
-  r = validate_subtree(tree->inner);
-  return fors--, r;
+  fors++, r = validate_subtree(tree->inner), fors--;
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -353,8 +357,10 @@ static int validate_for(mds_kbdc_tree_for_t* restrict tree)
  */
 static int validate_if(mds_kbdc_tree_if_t* restrict tree)
 {
-  return -(validate_subtree(tree->inner) ||
-	   validate_subtree(tree->otherwise));
+  fail_if ((validate_subtree(tree->inner) || validate_subtree(tree->otherwise)));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -446,9 +452,8 @@ static int validate_information_data(mds_kbdc_tree_t* restrict tree)
  */
 static int validate_subtree(mds_kbdc_tree_t* restrict tree)
 {
-#define v(type)  if ((r = validate_##type(&(tree->type))))     return r
-#define V(type)  if ((r = validate_##type(&(tree->type##_))))  return r
-  int r;
+#define v(type)  fail_if (validate_##type(&(tree->type)))
+#define V(type)  fail_if (validate_##type(&(tree->type##_)))
  again:
   if (tree == NULL)
     return 0;
@@ -470,14 +475,12 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
     case C(INFORMATION_LANGUAGE):
     case C(INFORMATION_COUNTRY):
     case C(INFORMATION_VARIANT):
-      if ((r = validate_information_data(tree)))
-	return r;
+      fail_if (validate_information_data(tree));
       break;
     case C(ASSUMPTION_HAVE):
     case C(ASSUMPTION_HAVE_CHARS):
     case C(ASSUMPTION_HAVE_RANGE):
-      if ((r = validate_assumption_data(tree)))
-	return r;
+      fail_if (validate_assumption_data(tree));
       break;
     default:
       break;
@@ -485,6 +488,8 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
+ fail:
+  return -1;
 #undef V
 #undef v
 }
@@ -502,7 +507,11 @@ int validate_tree(mds_kbdc_parsed_t* restrict result_)
   mds_kbdc_include_stack_begin(result = result_);
   r = validate_subtree(result_->tree);
   fors = 0;
-  return mds_kbdc_include_stack_end(), r;
+  mds_kbdc_include_stack_end();
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 

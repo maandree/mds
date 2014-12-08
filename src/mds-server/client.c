@@ -82,16 +82,18 @@ int client_initialise_threading(client_t* restrict this)
   
   /* Create mutex to make sure two thread to not try to send
      messages concurrently, and other client local actions. */
-  if ((errno = pthread_mutex_init(&(this->mutex), NULL)))         return -1;
+  fail_if ((errno = pthread_mutex_init(&(this->mutex), NULL)));
   this->mutex_created = 1;
   
   /* Create mutex and codition for multicast interception replies. */
-  if ((errno = pthread_mutex_init(&(this->modify_mutex), NULL)))  return -1;
+  fail_if ((errno = pthread_mutex_init(&(this->modify_mutex), NULL)));
   this->modify_mutex_created = 1;
-  if ((errno = pthread_cond_init(&(this->modify_cond), NULL)))    return -1;
+  fail_if ((errno = pthread_cond_init(&(this->modify_cond), NULL)));
   this->modify_cond_created = 1;
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -203,7 +205,7 @@ size_t client_marshal(const client_t* restrict this, char* restrict data)
 size_t client_unmarshal(client_t* restrict this, char* restrict data)
 {
   size_t i, n, rc = sizeof(ssize_t) + 3 * sizeof(int) + sizeof(uint64_t) + 5 * sizeof(size_t);
-  int saved_errno;
+  int saved_errno, stage = 0;
   this->interception_conditions = NULL;
   this->multicasts = NULL;
   this->send_pending = NULL;
@@ -219,8 +221,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   buf_get_next(data, uint64_t, this->id);
   buf_get_next(data, size_t, n);
   if (n > 0)
-    if (mds_message_unmarshal(&(this->message), data))
-      return 0;
+    fail_if (mds_message_unmarshal(&(this->message), data));
+  stage++;
   data += n / sizeof(char);
   rc += n;
   buf_get_next(data, size_t, this->interception_conditions_count);
@@ -264,6 +266,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   
  fail:
   saved_errno = errno;
+  if (stage == 0)
+    goto done_failing;
   mds_message_destroy(&(this->message));
   for (i = 0; i < this->interception_conditions_count; i++)
     free(this->interception_conditions[i].condition);
@@ -277,6 +281,7 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
       mds_message_destroy(this->modify_message);
       free(this->modify_message);
     }
+ done_failing:
   return errno = saved_errno, (size_t)0;
 }
 

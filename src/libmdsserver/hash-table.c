@@ -65,7 +65,7 @@ static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* res
  * Grow the table
  * 
  * @param   this  The hash table
- * @return        Non zero on error, `errno` will be set accordingly
+ * @return        Non-zero on error, `errno` will be set accordingly
  */
 static int rehash(hash_table_t* restrict this)
 {
@@ -76,8 +76,7 @@ static int rehash(hash_table_t* restrict this)
   hash_entry_t* destination;
   hash_entry_t* next;
   
-  if (xcalloc(this->buckets, old_capacity * 2 + 1, hash_entry_t*))
-    return -1;
+  fail_if (xcalloc(this->buckets, old_capacity * 2 + 1, hash_entry_t*));
   this->capacity = old_capacity * 2 + 1;
   this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
   
@@ -108,6 +107,8 @@ static int rehash(hash_table_t* restrict this)
   
   free(old_buckets);
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -124,8 +125,7 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
   this->buckets = NULL;
   
   this->capacity = initial_capacity ? initial_capacity : 1;
-  if (xcalloc(this->buckets, this->capacity, hash_entry_t*))
-    return -1;
+  fail_if (xcalloc(this->buckets, this->capacity, hash_entry_t*));
   this->load_factor = load_factor;
   this->threshold = (size_t)((float)(this->capacity) * load_factor);
   this->size = 0;
@@ -134,6 +134,8 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
   this->hasher = NULL;
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -299,20 +301,20 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
   if (++(this->size) > this->threshold)
     {
       errno = 0;
-      if (rehash(this))
-	return 0;
+      fail_if (rehash(this));
       index = truncate_hash(this, key_hash);
     }
   
   errno = 0;
-  if (xmalloc(bucket, 1, hash_entry_t))
-    return 0;
+  fail_if (xmalloc(bucket, 1, hash_entry_t));
   bucket->value = value;
   bucket->key = key;
   bucket->hash = key_hash;
   bucket->next = this->buckets[index];
   this->buckets[index] = bucket;
   
+  return 0;
+ fail:
   return 0;
 }
 
@@ -472,8 +474,7 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
   buf_get_next(data, size_t, this->threshold);
   buf_get_next(data, size_t, this->size);
   
-  if (xcalloc(this->buckets, this->capacity, hash_entry_t*))
-    return -1;
+  fail_if (xcalloc(this->buckets, this->capacity, hash_entry_t*));
   
   for (i = 0; i < n; i++)
     {
@@ -481,16 +482,14 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
       hash_entry_t* restrict bucket;
       buf_get_next(data, size_t, m);
       
-      if (xmalloc(this->buckets[i] = bucket, 1, hash_entry_t))
-	return -1;
+      fail_if (xmalloc(this->buckets[i] = bucket, 1, hash_entry_t));
       
       while (m--)
 	{
 	  if (m == 0)
 	    bucket->next = NULL;
 	  else
-	    if (xmalloc(bucket->next, 1, hash_entry_t))
-	      return -1;
+	    fail_if (xmalloc(bucket->next, 1, hash_entry_t));
 	  buf_get_next(data, size_t, bucket->key);
 	  buf_get_next(data, size_t, bucket->value);
 	  if (remapper != NULL)
@@ -500,5 +499,7 @@ int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap
     }
   
   return 0;
+ fail:
+  return -1;
 }
 
