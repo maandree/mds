@@ -36,9 +36,6 @@
 #include <fcntl.h>
 
 
-#define  try(INSTRUCTION)  fail_if ((r = (INSTRUCTION)))
-
-
 /**
  * Number of elements in `argv`
  */
@@ -504,8 +501,6 @@ static void perform_reexec(void)
  */
 int main(int argc_, char** argv_)
 {
-  int r = 1;
-  
   argc = argc_;
   argv = argv_;
   
@@ -513,7 +508,7 @@ int main(int argc_, char** argv_)
   if (server_characteristics.require_privileges == 0)
     /* Drop privileges like it's hot. */
     if (drop_privileges())
-      fail_if ((r = 1));
+      fail_if (1);
   
   
   /* Use /proc/self/exe when re:exec-ing */
@@ -526,7 +521,7 @@ int main(int argc_, char** argv_)
 	   eprint("that number of arguments is ridiculous, I will not allow it."););
   
   /* Parse command line arguments. */
-  try (parse_cmdline());
+  fail_if (parse_cmdline());
   
   
   /* Store the current thread so it can be killed from elsewhere. */
@@ -537,29 +532,29 @@ int main(int argc_, char** argv_)
   
   
   /* Initialise the server. */
-  try (preinitialise_server());
+  fail_if (preinitialise_server());
   
   if (is_reexec == 0)
     {
       if (server_characteristics.require_display)
 	/* Connect to the display. */
-	try (connect_to_display());
+	fail_if (connect_to_display());
       
       /* Initialise the server. */
-      try (initialise_server());
+      fail_if (initialise_server());
     }
   else
     {
       /* Unmarshal the server's saved state. */
-      try (base_unmarshal());
+      fail_if (base_unmarshal());
     }
   
   /* Initialise the server. */
-  try (postinitialise_server());
+  fail_if (postinitialise_server());
   
   
   /* Run the server. */
-  try (master_loop());
+  fail_if (master_loop());
   
   
   /* Re-exec server if signal to re-exec. */
@@ -577,7 +572,7 @@ int main(int argc_, char** argv_)
   xperror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
-  return r;
+  return 1;
 }
 
 
@@ -655,7 +650,4 @@ void __attribute__((weak)) fork_cleanup(int status)
   (void) status;
   fprintf(stderr, "Something is wrong, `fork_cleanup` has been called but not reimplemented.");
 }
-
-
-#undef try
 

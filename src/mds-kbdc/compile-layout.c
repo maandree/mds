@@ -2500,10 +2500,9 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
  */
 static int compile_subtree(mds_kbdc_tree_t* restrict tree)
 {
-#define t(expr)   if (r = (expr), r < 0)  return r
+#define t(expr)   fail_if ((expr) < 0)
 #define c(type)   t (compile_##type(&(tree->type)))
 #define c_(type)  t (compile_##type(&(tree->type##_)))
-  int r;
  again:
   if (tree == NULL)
     return 0;
@@ -2554,6 +2553,8 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
+ fail:
+  return -1;
 #undef c_
 #undef c
 #undef t

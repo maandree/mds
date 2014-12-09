@@ -184,18 +184,16 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
-  int r;
   /* buf_get_next(state_buf, int, MDS_ECHO_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, uint32_t, message_id);
-  r = mds_message_unmarshal(&received, state_buf);
-  fail_if (r);
+  fail_if (mds_message_unmarshal(&received, state_buf));
   return 0;
  fail:
   xperror(*argv);
   mds_message_destroy(&received);
-  return r;
+  return -1;
 }
 
 
