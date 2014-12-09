@@ -445,6 +445,12 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
 	  arguments_ptr++;
 	  break;
 	}
+      else if (**end == '\0')
+	{
+	  if (tree->processed != PROCESS_LEVEL)
+	    NEW_ERROR(tree, ERROR, "incomplete function call");
+	  goto error;
+	}
       r = parse_function_argument(tree, *end, lineoff + (size_t)(*end - raw), end, arguments + arguments_ptr++);
       fail_if (r < 0);
     }
