@@ -18,7 +18,7 @@
 #include "compile-layout.h"
 /* TODO add call stack */
 /* TODO fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
-/* TODO test all builtin functions */
+/* TODO test set/3 and get/2 */
 /* TODO test function- and macro-overloading */
 /* TODO test same-named macros and functions */
 
@@ -224,27 +224,28 @@ static int check_set_3_get_2_call(mds_kbdc_tree_t* restrict tree, int is_set, co
   
   mds_kbdc_tree_t* variable;
   mds_kbdc_tree_t* element;
-  size_t index;
+  size_t index, arg_count;
   
   if ((variable_arg[0] <= 0) || (variable_arg[1] != -1))
-    FUN_ERROR(tree, ERROR, "first argument in call to function ‘%s’ must be a variable index", F);/* TODO test */
+    FUN_ERROR(tree, ERROR, "first argument in call to function ‘%s’ must be a variable index", F);
   
   if ((index_arg[0] < 0) || (index_arg[1] != -1))
-    FUN_ERROR(tree, ERROR, "second argument in call to function ‘%s’ must be an element index", F);/* TODO test */
+    FUN_ERROR(tree, ERROR, "second argument in call to function ‘%s’ must be an element index", F);
   
   variable = variables_get((size_t)*variable_arg);
   if (variable == NULL)
-    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not declared", (size_t)*variable_arg);/* TODO test */
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not declared", (size_t)*variable_arg);
   if (variable->type != C(ARRAY))
-    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not an array", (size_t)*variable_arg);/* TODO test */
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ is not an array", (size_t)*variable_arg);
   
-  index = (size_t)*index_arg;
+  arg_count = index = (size_t)*index_arg;
   element = variable->array.elements;
   while (element && index--)
     element = element->next;
   
   if (element == NULL)
-    FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu elements", (size_t)*variable_arg, (size_t)*index_arg);/* TODO test */
+    FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu %s",
+	      (size_t)*variable_arg, arg_count + 1, arg_count ? "elements" : "element");
   
   return 0;
  fail:
@@ -361,7 +362,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
 	FUN_ERROR(tree, ERROR,
 		  "built-in function ‘%s/%zu’ requires that either none of"
 		  " the arguments are empty strings or that all of them are",
-		  name, arg_count);/* TODO test */
+		  name, arg_count);
     }
   
   /* Call the function. */

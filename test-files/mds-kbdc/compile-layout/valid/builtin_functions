@@ -1,0 +1,62 @@
+if \not(\equals(\add(1 2) 3))
+  "" : 0
+end if
+if \not(\equals(\sub(5 3) 2))
+  "" : 0
+end if
+if \not(\equals(\mul(2 3) 6))
+  "" : 0
+end if
+if \not(\equals(\div(8 2) 4))
+  "" : 0
+end if
+if \not(\equals(\mod(14 4) 2))
+  "" : 0
+end if
+if \not(\equals(\rsh(1024 2) 256))
+  "" : 0
+end if
+if \not(\equals(\lsh(1 10) 1024))
+  "" : 0
+end if
+if \not(\equals(\or(7 9) 15))
+  "" : 0
+end if
+if \not(\equals(\and(15 5) 5))
+  "" : 0
+end if
+if \not(\equals(\xor(15 21) 26))
+  "" : 0
+end if
+if \not(1)
+  "" : 0
+end if
+if \not(0)
+else
+  "" : 0
+end if
+if \not(\equals(0 0))
+  "" : 0
+end if
+if \equals(0 1)
+  "" : 0
+end if
+if \not(\greater(2 1))
+  "" : 0
+end if
+if \greater(2 2)
+  "" : 0
+end if
+if \greater(2 3)
+  "" : 0
+end if
+if \not(\less(1 2))
+  "" : 0
+end if
+if \less(2 2)
+  "" : 0
+end if
+if \less(3 2)
+  "" : 0
+end if
+

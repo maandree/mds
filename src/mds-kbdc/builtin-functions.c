@@ -145,7 +145,7 @@ static char32_t* builtin_function_rsh_2(const char32_t** restrict args)
 {
   define_2;
   for (i = 0; i < n; i++)
-    rc[i] = a[i % an] << b[i % bn];
+    rc[i] = a[i % an] >> b[i % bn];
   return(rc);
 }
 
@@ -160,7 +160,7 @@ static char32_t* builtin_function_lsh_2(const char32_t** restrict args)
 {
   define_2;
   for (i = 0; i < n; i++)
-    rc[i] = a[i % an] >> b[i % bn];
+    rc[i] = a[i % an] << b[i % bn];
   return(rc);
 }
 
