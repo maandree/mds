@@ -383,9 +383,15 @@
  * 
  * @param  ...  The condition
  */
-#define fail_if(...)										\
-  if (__VA_ARGS__)										\
-    do { fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__); goto fail; } while (0)
+#define fail_if(...)								\
+  if (__VA_ARGS__)								\
+    do										\
+      {										\
+	if ((errno != EMSGSIZE) && (errno != ECONNRESET) && (errno != EINTR))	\
+	  fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__);		\
+	goto fail;								\
+      }										\
+    while (0)
 
 
 /**
