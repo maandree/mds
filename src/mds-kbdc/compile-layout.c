@@ -1062,7 +1062,7 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   if (*raw == '0')   goto bad;
   if (*raw == '.')   goto bad;
   if (*raw == '\0')  goto bad;
-  for (raw++; *raw; raw++)
+  for (; *raw; raw++)
     /* Check that the variable consists only of digits. */
     if (('0' <= *raw) && (*raw <= '9'));
     /* However, it may end with a dot. */
