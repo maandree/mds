@@ -1,0 +1,8 @@
+\f~
+\~
+\u()
+\u
+\x00
+\undefinable_function() # no good, cannot startwith u because of the special \u-syntax
+\.
+

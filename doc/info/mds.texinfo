@@ -5895,7 +5895,9 @@ characters by their code point, for example if you want
 an `æ' you can write @code{"\u00E6"} or @code{"\uE6"},
 instead of @code{"æ"}. You can also write @code{"\0346"},
 the difference between `\0' and `\u' is that `\0' uses
-octal whereas `\u' uses hexadecimal.
+octal whereas `\u' uses hexadecimal. A noteworthy
+side-effect of this is that function names cannot start
+with a lower case `u'.
 
 `\' can also be used to access variables and parameters.
 For example `\1' in

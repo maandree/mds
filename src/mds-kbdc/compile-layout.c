@@ -414,7 +414,7 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   int r, saved_errno = 0;
   
   /* Find the opening bracket associated with the function call and validate the escape. */
-  for (; (c = *bracket); bracket++)
+  for (; c = *bracket, 1; bracket++)
     if ((c == '_') || R('0', '9') || R('a', 'z') || R('A', 'Z'));
     else if (c == '(')
       break;
@@ -422,7 +422,7 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
       {
 	*end = bracket;
 	if (tree->processed != PROCESS_LEVEL)
-	  NEW_ERROR(tree, ERROR, "invalid escape");/* TODO test */
+	  NEW_ERROR(tree, ERROR, "invalid escape");
 	goto error;
       }
   
@@ -665,7 +665,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     /* Function call. */
     *escape = 100;
   else
-    RETURN_ERROR(tree, ERROR, "invalid escape");/* TODO test */
+    RETURN_ERROR(tree, ERROR, "invalid escape");
   
   
   /* Read escape. */
@@ -683,8 +683,10 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     else if (CR(16, 'A', 'F'))  numbuf = 16 * numbuf + (c & 15) + 9;
     else if (CR(10, '0', '9'))  numbuf = 10 * numbuf + (c & 15);
     else                        break;
+  if (c == '.')
+    raw++;
   if (have == 0)
-    RETURN_ERROR(tree, ERROR, "invalid escape");/* TODO test */
+    RETURN_ERROR(tree, ERROR, "invalid escape");
   
   
   /* Evaluate escape. */
@@ -794,7 +796,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
 	/* Close or open quote, of it got closed, convert the buffered UTF-8 text to UTF-32. */
 	if (quote ^= 1)  continue;
 	if ((quote == 1) && (raw != raw_ + 1))
-	  CHAR_ERROR(tree, WARNING, "strings should either be unquoted or unclosed in one large quoted");/* TODO test */
+	  CHAR_ERROR(tree, WARNING, "strings should either be unquoted or unclosed in one large quoted");
 	STORE;
       }
     else if (c == '\\')
@@ -807,9 +809,9 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
       {
 	/* Only escapes may be used without quotes, if the string contains quotes. */
 	if (*raw_ == '"')
-	  CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");/* TODO test */
+	  CHAR_ERROR(tree, ERROR, "only escapes may be outside quotes in quoted strings");
 	else
-	  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");/* TODO test */
+	  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
 	tree->processed = PROCESS_LEVEL;
       }
     else
@@ -822,7 +824,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   /* Check that no escape is incomplete. */
   if (escape && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "incomplete escape");/* TODO test */
+      NEW_ERROR(tree, ERROR, "incomplete escape");
       error->start = escoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -831,7 +833,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   /* Check that the quote is complete. */
   if (quote && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "quote is not closed");/* TODO test */
+      NEW_ERROR(tree, ERROR, "quote is not closed");
       error->start = lineoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -887,9 +889,9 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
   
   while ((c = *raw++))
     if (R('0', '9'))     buf = 10 * buf + (c & 15);
-    else if (c == '\\')  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");/* TODO test */
-    else if (c == '"')   CHAR_ERROR(tree, ERROR, "mixing numericals and quotes is not allowed");/* TODO test */
-    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);/* TODO test */
+    else if (c == '\\')  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
+    else if (c == '"')   CHAR_ERROR(tree, ERROR, "mixing numericals and quotes is not allowed");
+    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);
   
  done:
   fail_if (rc = malloc(2 * sizeof(char32_t)), rc == NULL);
@@ -970,7 +972,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   int saved_errno;
   
   /* Parse the string. */
-  while (c = *raw++, *raw)
+  while (c = *raw++, c && *raw)
     if (escape && strchr("()[]{}<>\"\\,", c))
       {
 	/* Buffer UTF-8 text for convertion to UTF-32. */
@@ -1014,7 +1016,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   /* Check that no escape is incomplete. */
   if (escape && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "incomplete escape");/* TODO test */
+      NEW_ERROR(tree, ERROR, "incomplete escape");
       error->start = lineoff + (size_t)(strrchr(raw_, '\\') - raw_);
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
@@ -1023,7 +1025,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   /* Check that key-combination is complete. */
   if ((c != '>') && (tree->processed != PROCESS_LEVEL))
     {
-      NEW_ERROR(tree, ERROR, "key-combination is not closed");/* TODO test */
+      NEW_ERROR(tree, ERROR, "key-combination is not closed");
       error->start = lineoff;
       error->end = lineoff + strlen(raw_);
       tree->processed = PROCESS_LEVEL;
