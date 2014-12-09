@@ -368,6 +368,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
   *return_value = builtin_function_invoke(name, arg_count, arguments);
   fail_if (*return_value == NULL);
   have_side_effect |= is_set;
+  /* XXX ideally, we want to make sure it is in a scope that actually brings side-effects. */
   
   
  done:
