@@ -700,11 +700,11 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
     {
       /* Variable dereference. */
       if (value = variables_get((size_t)numbuf), value == NULL)
-	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is not defined", VARIABLE);/* TODO test */
+	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is not defined", VARIABLE);
       if (value->type == C(ARRAY))
-	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);/* TODO test */
+	RETURN_ERROR(tree, ERROR, "variable ‘%.*s’ is an array", VARIABLE);
       if (value->type != C(COMPILED_STRING))
-	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);/* TODO test */
+	NEW_ERROR(tree, INTERNAL_ERROR, "variable ‘%.*s’ is of impossible type", VARIABLE);
       fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
     }
   else
@@ -1621,14 +1621,14 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
   /* Check that the primary bound is single-character. */
   if ((first[0] == -1) || (first[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   /* Check that the secondary bound is single-character. */
   if ((last[0] == -1) || (last[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_last, lineoff_last = 0;
       error->end = error->start + strlen(tree->last);
     }
@@ -2080,14 +2080,14 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
   /* Check that the primary bound is single-character. */
   if ((first[0] == -1) || (first[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_first, lineoff_first = 0;
       error->end = error->start + strlen(tree->first);
     }
   /* Check that the secondary bound is single-character. */
   if ((last[0] == -1) || (last[1] != -1))
     {
-      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");/* TODO test */
+      NEW_ERROR(tree, ERROR, "iteration boundary must be a single character string");
       error->start = lineoff_last, lineoff_last = 0;
       error->end = error->start + strlen(tree->last);
     }
@@ -2253,7 +2253,7 @@ static int evaluate_element(mds_kbdc_tree_t* restrict node)
  */
 static int compile_keys(mds_kbdc_tree_keys_t* restrict tree)
 {
-  fail_if (evaluate_element((mds_kbdc_tree_t*)tree));
+  fail_if (evaluate_element((mds_kbdc_tree_t*)tree) < 0);
   return 0;
  fail:
   return -1;
@@ -2268,7 +2268,7 @@ static int compile_keys(mds_kbdc_tree_keys_t* restrict tree)
  */
 static int compile_string(mds_kbdc_tree_string_t* restrict tree)
 {
-  fail_if (evaluate_element((mds_kbdc_tree_t*)tree));
+  fail_if (evaluate_element((mds_kbdc_tree_t*)tree) < 0);
   return 0;
  fail:
   return -1;
@@ -2549,10 +2549,10 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(ASSUMPTION_HAVE_RANGE):  c (have_range);   break;
     case C(FOR):                    c_ (for);         break;
     case C(IF):                     c_ (if);          break;
-    case C(LET):                    c (let);          break;/* TODO test */
-    case C(KEYS):                   c (keys);         break;/* TODO test */
-    case C(STRING):                 c (string);       break;/* TODO test */
-    case C(ARRAY):                  c (array);        break;/* TODO test */
+    case C(LET):                    c (let);          break;
+    case C(KEYS):                   c (keys);         break;
+    case C(STRING):                 c (string);       break;
+    case C(ARRAY):                  c (array);        break;
     case C(MAP):                    c (map);          break;
     case C(MACRO_CALL):             c (macro_call);   break;/* TODO test */
     case C(RETURN):                 break_level = 3;  break;/* TODO test */

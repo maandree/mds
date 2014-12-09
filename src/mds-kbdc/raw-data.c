@@ -264,7 +264,7 @@ static size_t remove_comments(char* restrict content, size_t size)
       else if (quote)
 	{
 	  t;
-	  if (c == '"')            quote = 0;
+	  if (strchr("\"\n", c))   quote = 0;
 	}
       /* # is the comment symbol. */
       else if (c == '#')           comment = 1;

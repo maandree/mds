@@ -1,0 +1,6 @@
+for "" to "hello" as \1
+end for
+assumption
+  have_range "" "hello"
+end assumption
+

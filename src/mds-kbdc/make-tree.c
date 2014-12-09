@@ -1311,14 +1311,18 @@ static int parse_array_elements(void)
 	  end = line + strlen(line);
 	  END;
 	  line = end, prev_end_char = '\0';
-	  in_array = 0;
-	  stack_ptr -= 2;
-	  NEXT;
-	  return 0;
+	  goto done;
 	}
       else
 	{
 	  NEW_NODE(string, STRING);
+	  if (strchr("[]()<>{}", *line))
+	    {
+	      mds_kbdc_tree_free((mds_kbdc_tree_t*)node);
+	      NEW_ERROR(1, ERROR, "x-stray ‘%c’", *line);
+	      error->end = error->start + 1;
+	      goto done;
+	    }
 	  NO_JUMP;
 	  CHARS(string);
 	  LEAF;
@@ -1330,6 +1334,12 @@ static int parse_array_elements(void)
   
  fail:
   return -1;
+  
+ done:
+  in_array = 0;
+  stack_ptr -= 2;
+  NEXT;
+  return 0;
 }
 
 
