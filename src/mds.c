@@ -73,7 +73,7 @@ int main(int argc_, char** argv_)
   struct sockaddr_un address;
   char pathname[PATH_MAX];
   char piddata[64];
-  unsigned int display;
+  unsigned int display = DISPLAY_MAX;
   FILE* f;
   int rc;
   int j, r;
@@ -116,8 +116,7 @@ int main(int argc_, char** argv_)
   saved_umask = umask(0);
   
   /* Create directory for socket files, PID files and such. */
-  if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
-    return 1;
+  fail_if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY));
   
   
   /* Determine display index. */
@@ -148,14 +147,12 @@ int main(int argc_, char** argv_)
            /* Yes, the directory could have been removed, but it probably was not. */
   
   /* Create PID file. */
-  fail_if ((f = fopen(pathname, "w")) == NULL);
+  fail_if (f = fopen(pathname, "w"), f == NULL);
   xsnprintf(piddata, "%u\n", getpid());
   if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
     {
       fclose(f);
-      if (unlink(pathname) < 0)
-	xperror(*argv);
-      return 1;
+      fail_if (1);
     }
   fflush(f);
   fclose(f);
@@ -205,6 +202,9 @@ int main(int argc_, char** argv_)
       unlink(pathname);
     }
   
+  if (display == DISPLAY_MAX)
+    return rc;
+  
   /* Remove PID file. */
   xsnprintf(pathname, "%s/%u.pid", MDS_RUNTIME_ROOT_DIRECTORY, display);
   unlink(pathname);
@@ -236,9 +236,8 @@ int is_pid_file_reusable(FILE* f)
   size_t read_len;
   
   read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
-  if (ferror(f)) /* Failed to read. */
-    xperror(*argv);
-  else if (feof(f) == 0) /* Did not read everything. */
+  fail_if (ferror(f)); /* Failed to read. */
+  if (feof(f) == 0) /* Did not read everything. */
     eprint("the content of a PID file is larger than expected.");
   else
     {
@@ -250,6 +249,9 @@ int is_pid_file_reusable(FILE* f)
 	  return errno == ESRCH; /* PID is not used. */
     }
   
+  return 0;
+ fail:
+  xperror(*argv);
   return 0;
 }
 
@@ -293,11 +295,13 @@ static void exec_master_server(char** child_args)
 {
   /* Drop privileges. They most not be propagated non-authorised components. */
   /* setgid should not be set, but just to be safe we are restoring both user and group. */
-  if (drop_privileges())
-    return;
+  fail_if (drop_privileges());
   
   /* Start master server. */
   execv(master_server, child_args);
+  fail_if (1);
+ fail:
+  return;
 }
 
 
@@ -442,7 +446,8 @@ int create_directory_root(const char* pathname)
     /* Directory is missing, create it. */
     if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
       {
-	fail_if (errno != EEXIST); /* Unlikely race condition. */
+	/* Unlikely race condition. */
+	fail_if (errno != EEXIST);
       }
     else
       {
@@ -451,7 +456,6 @@ int create_directory_root(const char* pathname)
       }
   
   return 0;
-
  fail:
   xperror(*argv);
   return 1;
@@ -483,22 +487,18 @@ int create_directory_user(const char* pathname)
       /* Directory is missing, create it. */
       if (mkdir(pathname, S_IRWXU) < 0)
 	{
-	  if (errno != EEXIST) /* Unlikely race condition. */
-	    {
-	      xperror(*argv);
-	      return 1;
-	    }
+	  /* Unlikely race condition. */
+	  fail_if (errno != EEXIST);
 	}
       else
 	/* Set ownership. */
-	if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
-	  {
-	    xperror(*argv);
-	    return 1;
-	  }
+	fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
     }
   
   return 0;
+ fail:
+  xperror(*argv);
+  return 1;
 }
 
 

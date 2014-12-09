@@ -47,11 +47,15 @@ void* slave_loop(void*);
 int fetch_message(client_t* client)
 {
   int r = mds_message_read(&(client->message), client->socket_fd);
+  
   if (r == 0)
     return 0;
   
   if (r == -2)
-    eprint("corrupt message received.");
+    {
+      eprint("corrupt message received.");
+      fail_if (1);
+    }
   else if (errno == ECONNRESET)
     {
       r = mds_message_read(&(client->message), client->socket_fd);
@@ -60,11 +64,14 @@ int fetch_message(client_t* client)
     }
   else if (errno != EINTR)
     {
-      r = -2;
       xperror(*argv);
+      fail_if (1);
     }
   
+  fail_if (r == -2);
   return r;
+ fail:
+  return -2;
 }
 
 
@@ -81,14 +88,16 @@ int create_slave(pthread_t* thread_slot, int slave_fd)
     {
       xperror(*argv);
       with_mutex (slave_mutex, running_slaves--;);
-      return -1;
+      fail_if (1);
     }
   if ((errno = pthread_detach(*thread_slot)))
     {
       xperror(*argv);
-      return -1;
+      fail_if (1);
     }
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -96,7 +105,7 @@ int create_slave(pthread_t* thread_slot, int slave_fd)
  * Initialise a client, except for threading
  * 
  * @param   client_fd  The file descriptor of the client's socket
- * @return             The client information, NULL on error
+ * @return             The client information, `NULL` on error
  */
 client_t* initialise_client(int client_fd)
 {

@@ -130,8 +130,7 @@ int preinitialise_server(void)
 	  close_files((fd > 2) || (fd == socket_fd));
 	  
 	  /* Run mdsinitrc. */
-	  run_initrc(unparsed_args);
-	  return 1;
+	  run_initrc(unparsed_args); /* Does not return. */
 	}
     }
   
@@ -408,11 +407,8 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   /* Count the number of headers. */
   for (i = 0; i < n; i++)
     if (message[i] == '\n')
-      {
-	header_count++;
-	if (message[i + 1] == '\n')
-	  break;
-      }
+      if (header_count++, message[i + 1] == '\n')
+	break;
   
   if (header_count == 0)
     return; /* Invalid message. */
@@ -583,5 +579,7 @@ void run_initrc(char** args)
   
   /* Everything failed. */
   eprintf("unable to run %s file, you might as well kill me.", INITRC_FILE);
+  /* (‘me’ actually refers to the parant, whence it will to be coming.) */
+  exit(0);
 }
 

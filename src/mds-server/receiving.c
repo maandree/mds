@@ -116,14 +116,13 @@ static int modifying_notify(client_t* client, mds_message_t message, uint64_t mo
  */
 static int add_intercept_conditions_from_message(client_t* client, int modifying, int64_t priority, int stop)
 {
-  int errno_ = 0;
+  int saved_errno;
   char* payload = client->message.payload;
   size_t payload_size = client->message.payload_size;
   size_t size = 64;
   char* buf;
   
-  if (xmalloc(buf, size + 1, char))
-    return -1;
+  fail_if (xmalloc(buf, size + 1, char));
   
   /* All messages */
   if (client->message.payload_size == 0)
@@ -149,10 +148,10 @@ static int add_intercept_conditions_from_message(client_t* client, int modifying
 	  char* old_buf = buf;
 	  if (xrealloc(buf, (size <<= 1) + 1, char))
 	    {
-	      errno_ = errno;
+	      saved_errno = errno;
 	      free(old_buf);
 	      pthread_mutex_unlock(&(client->mutex));
-	      break;
+	      fail_if (errno = saved_errno, 1);
 	    }
 	}
       memcpy(buf, payload, len);
@@ -166,8 +165,9 @@ static int add_intercept_conditions_from_message(client_t* client, int modifying
   
  done:
   free(buf);
-  errno = errno_;
-  return errno_ ? -1 : 0;
+  return 0;
+ fail:
+  return -1;
 }
 
 

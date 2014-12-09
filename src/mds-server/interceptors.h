@@ -77,7 +77,7 @@ int find_matching_condition(client_t* client, size_t* hashes, char** keys, char*
  * @param   headers                  The header name–value pairs
  * @param   count                    The number of accepted patterns
  * @param   interceptions_count_out  Slot at where to store the number of found interceptors
- * @return                           The found interceptors, NULL on error
+ * @return                           The found interceptors, `NULL` on error
  */
 queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char** keys, char** headers,
 					size_t count, size_t* interceptions_count_out);

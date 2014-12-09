@@ -45,7 +45,7 @@ int create_slave(pthread_t* thread_slot, int slave_fd);
  * Initialise a client, except for threading
  * 
  * @param   client_fd  The file descriptor of the client's socket
- * @return             The client information, NULL on error
+ * @return             The client information, `NULL` on error
  */
 client_t* initialise_client(int client_fd);
 

@@ -179,15 +179,13 @@ int unmarshal_server(char* state_buf)
   ssize_t node;
   pthread_t slave_thread;
   
-  
+#define fail  soft_fail
+
   /* Create memory address remapping table. */
-  if (hash_table_create(&unmarshal_remap_map))
-    {
-      xperror(*argv);
-      hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
-      return -1;
-    }
-  
+  fail_if (hash_table_create(&unmarshal_remap_map));
+
+#undef fail
+#define fail  clients_fail
   
   /* Get the marshal protocal version. Not needed, there is only the one version right now. */
   /* buf_get(state_buf, int, 0, MDS_SERVER_VARS_VERSION); */
@@ -210,20 +208,16 @@ int unmarshal_server(char* state_buf)
       client_t* value;
       
       /* Allocate the client's information. */
-      if (xmalloc(value, 1, client_t))
-	goto clients_fail;
+      fail_if (xmalloc(value, 1, client_t));
       
       /* Unmarshal the address, it is used the the client list and the client map, that are also marshalled. */
       buf_get_next(state_buf, size_t, value_address);
       /* Unmarshal the client information. */
-      n = client_unmarshal(value, state_buf);
-      if (n == 0)
-	goto clients_fail;
+      fail_if (n = client_unmarshal(value, state_buf), n == 0);
       
       /* Populate the remapping table. */
       if (hash_table_put(&unmarshal_remap_map, value_address, (size_t)(void*)value) == 0)
-	if (errno)
-	  goto clients_fail;
+	fail_if (errno);
       
       /* Delayed seeking. */
       state_buf += n / sizeof(char);
@@ -247,14 +241,15 @@ int unmarshal_server(char* state_buf)
       break;
     }
   
+#undef fail
+#define fail  critical_fail
+  
   /* Unmarshal the client list. */
-  if (linked_list_unmarshal(&client_list, state_buf))
-    goto critical_fail;
+  fail_if (linked_list_unmarshal(&client_list, state_buf));
   state_buf += list_size / sizeof(char);
   
   /* Unmarshal the client map. */
-  if (fd_table_unmarshal(&client_map, state_buf, unmarshal_remapper))
-    goto critical_fail;
+  fail_if (fd_table_unmarshal(&client_map, state_buf, unmarshal_remapper));
   
   /* Remove non-found elements from the fd table. */
 #define __bit(I, _OP_)  client_map.used[I / 64] _OP_ ((uint64_t)1 << (I % 64))
@@ -291,8 +286,12 @@ int unmarshal_server(char* state_buf)
   hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
   
   return with_error;
+#undef fail
   
-  
+ soft_fail:
+  xperror(*argv);
+  hash_table_destroy(&unmarshal_remap_map, NULL, NULL);
+  return -1;
  critical_fail:
   xperror(*argv);
   abort();
