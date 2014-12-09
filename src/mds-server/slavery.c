@@ -137,9 +137,7 @@ client_t* initialise_client(int client_fd)
     pthread_mutex_unlock(&slave_mutex);
   free(information);
   if (entry != LINKED_LIST_UNUSED)
-    {
-      with_mutex (slave_mutex, linked_list_remove(&client_list, entry););
-    }
+    with_mutex (slave_mutex, linked_list_remove(&client_list, entry););
   errno = errno_;
   return NULL;
 }

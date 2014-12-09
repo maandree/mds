@@ -90,10 +90,18 @@
  * @param  mutex:pthread_mutex_t  The mutex
  * @param  instructions           The instructions to run while the mutex is locked
  */
-#define with_mutex(mutex, instructions)  \
-  errno = pthread_mutex_lock(&(mutex));  \
-  instructions                           \
-  errno = pthread_mutex_unlock(&(mutex))
+#define with_mutex(mutex, instructions)		\
+  do						\
+    {						\
+      errno = pthread_mutex_lock(&(mutex));	\
+      do					\
+	{					\
+	  instructions ;			\
+	}					\
+      while (0);				\
+      errno = pthread_mutex_unlock(&(mutex));	\
+    }						\
+  while (0)
 
 /**
  * Wrapper for `pthread_mutex_lock` and `pthread_mutex_unlock` with an embedded if-statement
@@ -103,12 +111,18 @@
  * @param  instructions           The instructions to run while the mutex is locked
  */
 #define with_mutex_if(mutex, condition, instructions)	\
-  errno = pthread_mutex_lock(&(mutex));			\
-  if (condition)					\
+  do							\
     {							\
-      instructions					\
+      errno = pthread_mutex_lock(&(mutex));		\
+      if (condition)					\
+        do						\
+	  {						\
+	    instructions ;				\
+	  }						\
+        while (0);					\
+      errno = pthread_mutex_unlock(&(mutex));		\
     }							\
-  errno = pthread_mutex_unlock(&(mutex))
+  while (0)
 
 
 /**
