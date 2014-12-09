@@ -384,14 +384,14 @@
  * @param  ...  The condition
  */
 #define fail_if(...)								\
-  if (__VA_ARGS__)								\
-    do										\
+  do										\
+    if (__VA_ARGS__)								\
       {										\
 	if ((errno != EMSGSIZE) && (errno != ECONNRESET) && (errno != EINTR))	\
 	  fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__);		\
-	goto fail;								\
+	goto fail;					       			\
       }										\
-    while (0)
+  while (0)
 
 
 /**

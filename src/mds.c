@@ -445,15 +445,11 @@ int create_directory_root(const char* pathname)
   else
     /* Directory is missing, create it. */
     if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
-      {
-	/* Unlikely race condition. */
-	fail_if (errno != EEXIST);
-      }
+      /* Unlikely race condition. */
+      fail_if (errno != EEXIST);
     else
-      {
-	/* Set ownership. */
-	fail_if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0);
-      }
+      /* Set ownership. */
+      fail_if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0);
   
   return 0;
  fail:
@@ -483,17 +479,13 @@ int create_directory_user(const char* pathname)
 	}
     }
   else
-    {
-      /* Directory is missing, create it. */
-      if (mkdir(pathname, S_IRWXU) < 0)
-	{
-	  /* Unlikely race condition. */
-	  fail_if (errno != EEXIST);
-	}
-      else
-	/* Set ownership. */
-	fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
-    }
+    /* Directory is missing, create it. */
+    if (mkdir(pathname, S_IRWXU) < 0)
+      /* Unlikely race condition. */
+      fail_if (errno != EEXIST);
+    else
+      /* Set ownership. */
+      fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
   
   return 0;
  fail:

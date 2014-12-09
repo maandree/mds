@@ -630,9 +630,9 @@ int trap_signals(void)
   
   /* Implement death on SIGDANGER or ignoral of SIGDANGER. */
   if (server_characteristics.danger_is_deadly && !is_immortal)
-    { fail_if (xsigaction(SIGDANGER, commit_suicide) < 0); }
+    fail_if (xsigaction(SIGDANGER, commit_suicide) < 0);
   else
-    { fail_if (xsigaction(SIGDANGER, received_danger) < 0); }
+    fail_if (xsigaction(SIGDANGER, received_danger) < 0);
   
   return 0;
  fail:
