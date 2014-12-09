@@ -1087,6 +1087,15 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   var = (size_t)atoll(dotless + 1);
   if (strlen(dotless + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
     fail_if ((errno = ERANGE));
+  if (var == 0)
+    {
+      NEW_ERROR(tree, INTERNAL_ERROR,
+		"parsed a variable string to be 0, which should not be possible");
+      error->start = lineoff;
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+      return 1;
+    }
   return var;
  fail:
   return 0;
