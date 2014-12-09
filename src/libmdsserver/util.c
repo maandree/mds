@@ -103,11 +103,12 @@ int prepare_reexec(void)
 {
   ssize_t len;
   len = readlink(SELF_EXE, self_exe, (sizeof(self_exe) / sizeof(char)) - 1);
-  if (len < 0)
-    return -1;
+  fail_if (len < 0);
   /* ‘readlink() does not append a null byte to buf.’ */
   self_exe[len] = '\0';
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -135,8 +136,7 @@ void reexec_server(int argc, char** argv, int reexeced)
     {
       *reexec_args_++ = *argv;
       *reexec_args_ = strdup("--re-exec");
-      if (*reexec_args_ == NULL)
-	return;
+      fail_if (*reexec_args_ == NULL);
       for (i = 1; i < argc; i++)
 	reexec_args_[i] = argv[i];
     }
@@ -146,6 +146,8 @@ void reexec_server(int argc, char** argv, int reexeced)
     reexec_args_[i] = argv[i];
   reexec_args_[argc] = NULL;
   execv(self_exe[0] ? self_exe : argv[0], reexec_args);
+ fail:
+  return;
 }
 
 
@@ -253,12 +255,13 @@ int full_write(int fd, const char* buffer, size_t length)
     {
       errno = 0;
       wrote = write(fd, buffer, length);
-      if (errno && (errno != EINTR))
-	return -1;
+      fail_if (errno && (errno != EINTR));
       length -= (size_t)max(wrote, 0);
       buffer += (size_t)max(wrote, 0);
     }
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -271,38 +274,29 @@ int full_write(int fd, const char* buffer, size_t length)
  */
 char* full_read(int fd, size_t* length)
 {
+  char* old_buf = NULL;
   size_t buffer_size = 8 << 10;
   size_t buffer_ptr = 0;
   char* buffer;
   ssize_t got;
+  int saved_errno;
+  
   if (length != NULL)
     *length = 0;
   
   /* Allocate buffer for data. */
-  if (xmalloc(buffer, buffer_size, char))
-    return NULL;
+  fail_if (xmalloc(buffer, buffer_size, char));
   
   /* Read the file. */
   for (;;)
     {
       /* Grow buffer if it is too small. */
       if (buffer_size == buffer_ptr)
-	{
-	  char* old_buf = buffer;
-	  if (xrealloc(buffer, buffer_size <<= 1, char))
-	    {
-	      free(old_buf);
-	      return NULL;
-	    }
-	}
+	fail_if (xxrealloc(old_buf, buffer, buffer_size <<= 1, char));
       
       /* Read from the file into the buffer. */
       got = read(fd, buffer + buffer_ptr, buffer_size - buffer_ptr);
-      if ((got < 0) && (errno != EINTR))
-	{
-	  free(buffer);
-	  return NULL;
-	}
+      fail_if ((got < 0) && (errno != EINTR));
       if (got == 0)
 	break;
       buffer_ptr += (size_t)got;
@@ -311,6 +305,11 @@ char* full_read(int fd, size_t* length)
   if (length != NULL)
     *length = buffer_ptr;
   return buffer;
+ fail:
+  saved_errno = errno;
+  free(old_buf);
+  free(buffer);
+  return errno = saved_errno, NULL;
 }
 
 
@@ -360,8 +359,7 @@ pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options)
   rc = waitpid(pid, status, options);
   if (rc == (pid_t)-1)
     {
-      if (errno != EINTR)
-	goto fail;
+      fail_if (errno != EINTR);
       if (have_time && (monotone(&time_intr) >= 0))
 	if (time_start.tv_sec != time_intr.tv_sec)
 	  intr_count = 0;

@@ -70,10 +70,11 @@ int client_list_create(client_list_t* restrict this, size_t capacity)
   this->capacity = capacity = to_power_of_two(capacity);
   this->size     = 0;
   this->clients  = NULL;
-  if (xmalloc(this->clients, capacity, uint64_t))
-    return -1;
+  fail_if (xmalloc(this->clients, capacity, uint64_t));
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -101,11 +102,11 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
 {
   size_t n = this->capacity * sizeof(uint64_t);
   uint64_t* restrict new_clients = NULL;
+  int saved_errno;
   
   out->clients = NULL;
   
-  if ((new_clients = malloc(n)) == NULL)
-    goto fail;
+  fail_if ((new_clients = malloc(n)) == NULL);
   
   out->clients = new_clients;
   
@@ -117,8 +118,9 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
   return 0;
   
  fail:
+  saved_errno = errno;
   free(new_clients);
-  return -1;
+  return errno = saved_errno, -1;
 }
 
 
@@ -138,12 +140,14 @@ int client_list_add(client_list_t* restrict this, uint64_t client)
 	{
 	  this->capacity >>= 1;
 	  this->clients = old;
-	  return -1;
+	  fail_if (1);
 	}
     }
   
   this->clients[this->size++] = client;
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -229,13 +233,14 @@ int client_list_unmarshal(client_list_t* restrict this, char* restrict data)
   
   n = this->capacity * sizeof(uint64_t);
   
-  if ((this->clients = malloc(n)) == NULL)
-    return -1;
+  fail_if ((this->clients = malloc(n)) == NULL);
   
   n = this->size * sizeof(uint64_t);
   
   memcpy(this->clients, data, n);
   
   return 0;
+ fail:
+  return -1;
 }
 

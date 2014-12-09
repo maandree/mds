@@ -48,9 +48,10 @@ int mds_message_initialise(mds_message_t* restrict this)
   this->buffer_size = 128;
   this->buffer_ptr = 0;
   this->stage = 0;
-  if (xmalloc(this->buffer, this->buffer_size, char))
-    return -1;
+  fail_if (xmalloc(this->buffer, this->buffer_size, char));
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -100,10 +101,11 @@ void mds_message_destroy(mds_message_t* restrict this)
 int mds_message_extend_headers(mds_message_t* restrict this, size_t extent)
 {
   char** new_headers = this->headers;
-  if (xrealloc(new_headers, this->header_count + extent, char*))
-    return -1;
+  fail_if (xrealloc(new_headers, this->header_count + extent, char*));
   this->headers = new_headers;
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -116,11 +118,12 @@ int mds_message_extend_headers(mds_message_t* restrict this, size_t extent)
 static int mds_message_extend_buffer(mds_message_t* restrict this)
 {
   char* new_buf = this->buffer;
-  if (xrealloc(new_buf, this->buffer_size << 1, char))
-      return -1;
+  fail_if (xrealloc(new_buf, this->buffer_size << 1, char));
   this->buffer = new_buf;
   this->buffer_size <<= 1;
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -231,10 +234,11 @@ static int initialise_payload(mds_message_t* restrict this)
   
   /* Allocate the payload buffer. */
   if (this->payload_size > 0)
-    if (xmalloc(this->payload, this->payload_size, char))
-      return -1;
+    fail_if (xmalloc(this->payload, this->payload_size, char));
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -250,8 +254,7 @@ static int store_header(mds_message_t* restrict this, size_t length)
   char* header;
   
   /* Allocate the header. */
-  if (xmalloc(header, length, char))
-    return -1;
+  fail_if (xmalloc(header, length, char));
   /* Copy the header data into the allocated header, */
   memcpy(header, this->buffer, length * sizeof(char));
   /* and NUL-terminate it. */
@@ -272,6 +275,8 @@ static int store_header(mds_message_t* restrict this, size_t length)
   this->headers[this->header_count++] = header;
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -305,15 +310,13 @@ static int continue_read(mds_message_t* restrict this, int fd)
   errno = 0;
   got = recv(fd, this->buffer + this->buffer_ptr, n, 0);
   this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
-  if (errno)
-    return -1;
+  fail_if (errno);
   if (got == 0)
-    {
-      errno = ECONNRESET;
-      return -1;
-    }
+    fail_if ((errno = ECONNRESET));
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -540,7 +543,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   
   return 0;
   
- pfail:
+ fail:
   return -1;
 }
 

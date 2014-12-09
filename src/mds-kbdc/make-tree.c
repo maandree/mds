@@ -425,7 +425,7 @@ static int too_few;
  * Get the pathname name of the parsed file
  * 
  * @param   filename  The filename of the parsed file
- * @return            The value the caller should return, or 1 if the caller should not return
+ * @return            The value the caller should return, or 1 if the caller should not return, -1 on error
  */
 static int get_pathname(const char* restrict filename)
 {
@@ -459,7 +459,7 @@ static int get_pathname(const char* restrict filename)
     }
   
   return 1;
- pfail:
+ fail:
   saved_errno = errno;
   free(cwd);
   return errno = saved_errno, -1;
@@ -488,7 +488,7 @@ static int allocate_stacks(void)
   fail_if (xmalloc(tree_stack, line_n + max_line_length + 1, mds_kbdc_tree_t**));
 
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -504,7 +504,7 @@ static int read_source_code(void)
   fail_if (read_source_lines(result->pathname, result->source_code) < 0);
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -545,7 +545,7 @@ static int check_for_premature_end_of_file(void)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -565,7 +565,7 @@ static int check_whether_file_is_empty(void)
       NEW_ERROR(0, WARNING, "file is empty");
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -592,7 +592,7 @@ static int no_parameters(const char* restrict keyword)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -653,7 +653,7 @@ static int names_1(char** restrict var)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -704,7 +704,7 @@ static int chars(char** restrict var)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -731,7 +731,7 @@ static int quotes(void)
   line = line_;
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -756,7 +756,7 @@ static int have_more_parameters(void)
       return 0;
     }
   return 1;
- pfail:
+ fail:
   return -1;
 }
 
@@ -769,9 +769,10 @@ static int have_more_parameters(void)
  */
 static int test_for_keyword(const char* restrict keyword)
 {
-  int r, ok;
-  if (r = have_more_parameters(), r <= 0)
-    return r;
+  int ok, r = have_more_parameters();
+  fail_if (r < 0);
+  if (r == 0)
+    return 0;
   
   ok = (strstr(line, keyword) == line);
   line += strlen(keyword);
@@ -789,7 +790,7 @@ static int test_for_keyword(const char* restrict keyword)
   NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", keyword);
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -807,8 +808,10 @@ static int keys(mds_kbdc_tree_t** restrict var)
   char* arg_end;
   char* call_end;
   int r, escape = 0, quote = 0, triangle;
-  if (r = have_more_parameters(), r <= 0)
-    return r;
+  r = have_more_parameters();
+  fail_if (r < 0);
+  if (r == 0)
+    return 0;
   
   arg_end = line;
   call_end = arg_end;
@@ -844,7 +847,7 @@ static int keys(mds_kbdc_tree_t** restrict var)
   line = end;
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -863,8 +866,10 @@ static int pure_keys(char** restrict var)
   char* arg_end;
   char* call_end;
   int r, escape = 0, quote = 0, triangle;
-  if (r = have_more_parameters(), r <= 0)
-    return r;
+  r = have_more_parameters();
+  fail_if (r < 0);
+  if (r == 0)
+    return 0;
   
   arg_end = line;
   call_end = arg_end;
@@ -889,7 +894,7 @@ static int pure_keys(char** restrict var)
   end = arg_end, line = end;
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -959,7 +964,7 @@ static int sequence(int mapseq, size_t stack_orig)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -984,7 +989,7 @@ static int sequence_fully_popped(size_t stack_orig)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1052,7 +1057,7 @@ static int parse_else(void)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1074,7 +1079,7 @@ static int parse_for(void)
   BRANCH("for");
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1128,7 +1133,7 @@ static int parse_let(void)
     }
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1159,7 +1164,7 @@ static int parse_end(void)
   NEXT;
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1218,7 +1223,7 @@ static int parse_map(void)
   NEW_ERROR(1, ERROR, "too many parameters");
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1283,7 +1288,7 @@ static int parse_macro_call(void)
     NEW_ERROR(1, ERROR, "invalid syntax ‘%s’", line);
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1323,7 +1328,7 @@ static int parse_array_elements(void)
 	}
     }
   
- pfail:
+ fail:
   return -1;
 }
 
@@ -1375,7 +1380,7 @@ static int parse_line(void)
   *end = prev_end_char;
   
   return 0;
- pfail:
+ fail:
   return -1;
 #undef p
 }
@@ -1408,8 +1413,10 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   fail_if (xmalloc(result->source_code, 1, mds_kbdc_source_code_t));
   mds_kbdc_source_code_initialise(result->source_code);
   
-  if (r = get_pathname(filename), r <= 0)
-    return r;
+  r = get_pathname(filename);
+  fail_if (r < 0);
+  if (r == 0)
+    return 0;
   
   fail_if (read_source_code());
   fail_if (allocate_stacks());
@@ -1442,7 +1449,7 @@ int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict res
   free(tree_stack);
   return 0;
   
- pfail:
+ fail:
   saved_errno = errno;
   free(keyword_stack);
   free(tree_stack);

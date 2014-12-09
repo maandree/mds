@@ -17,6 +17,8 @@
  */
 #include "variables.h"
 
+#include <libmdsserver/macros.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -149,9 +151,8 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
   /* Grow the table if necessary to fit the variable. */
   if (variable >= variable_count)
     {
-      new = realloc(variables, (variable + 1) * sizeof(variable_t*));
-      if (new == NULL)
-	return -1;
+      new = variables;
+      fail_if (xrealloc(new, variable + 1, variable_t*));
       variables = new;
       memset(variables + variable_count, 0, (variable + 1 - variable_count) * sizeof(variable_t*));
       variable_count = variable + 1;
@@ -169,13 +170,15 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
       previous = variables[variable];
       variables[variable] = malloc(sizeof(variable_t));
       if (variables[variable] == NULL)
-	return variables[variable] = previous, -1;
+	fail_if (variables[variable] = previous, 1);
       variables[variable]->value = value;
       variables[variable]->previous = previous;
       variables[variable]->scope = current_scope;
     }
   
   return 0;
+ fail:
+  return -1;
 }
 
 

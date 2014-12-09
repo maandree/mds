@@ -56,8 +56,7 @@ char32_t* string_decode(const char* restrict string)
       length++;
   
   /* Allocated UTF-32 string. */
-  if (xmalloc(rc, length + 1, char32_t))
-    return NULL;
+  fail_if (xmalloc(rc, length + 1, char32_t));
   
   /* Convert to UTF-32. */
   for (i = j = n = 0; string[i]; i++)
@@ -81,6 +80,8 @@ char32_t* string_decode(const char* restrict string)
   
   /* -1-terminate and return. */
   return rc[length] = -1, rc;
+ fail:
+  return NULL;
 }
 
 
@@ -98,8 +99,7 @@ char* string_encode(const char32_t* restrict string)
   char* restrict rc;
   
   /* Allocated Modified UTF-8 string. */
-  if (xmalloc(rc, 7 * n + 1, char))
-    return NULL;
+  fail_if (xmalloc(rc, 7 * n + 1, char));
   
   /* Convert to Modified UTF-8. */
   for (i = j = 0; i < n; i++)
@@ -127,6 +127,8 @@ char* string_encode(const char32_t* restrict string)
   
   /* NUL-terminate and return. */
   return rc[j] = '\0', rc;
+ fail:
+  return NULL;
 }
 
 
@@ -143,9 +145,10 @@ char32_t* string_dup(const char32_t* restrict string)
   if (string == NULL)
     return NULL;
   n = string_length(string) + 1;
-  if (xmalloc(rc, n, char32_t))
-    return NULL;
+  fail_if (xmalloc(rc, n, char32_t));
   memcpy(rc, string, n * sizeof(char32_t));
   return rc;
+ fail:
+  return NULL;
 }
 

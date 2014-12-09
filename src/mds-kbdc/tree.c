@@ -60,11 +60,12 @@ void mds_kbdc_tree_initialise(mds_kbdc_tree_t* restrict this, int type)
  */
 mds_kbdc_tree_t* mds_kbdc_tree_create(int type)
 {
-  mds_kbdc_tree_t* this = malloc(sizeof(mds_kbdc_tree_t));
-  if (this == NULL)
-    return NULL;
+  mds_kbdc_tree_t* this;
+  fail_if (xmalloc(this, 1, mds_kbdc_tree_t));
   mds_kbdc_tree_initialise(this, type);
   return this;
+ fail:
+  return NULL;
 }
 
 
@@ -331,7 +332,7 @@ mds_kbdc_tree_t* mds_kbdc_tree_dup(const mds_kbdc_tree_t* restrict this)
   node = &(n->next);
   goto again;
   
- pfail:
+ fail:
   saved_errno = errno;
   mds_kbdc_tree_free(rc);
   return errno = saved_errno, NULL;

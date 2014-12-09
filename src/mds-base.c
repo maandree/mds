@@ -36,9 +36,6 @@
 #include <fcntl.h>
 
 
-#define  try(INSTRUCTION)  if ((r = INSTRUCTION))  goto fail
-
-
 /**
  * Number of elements in `argv`
  */
@@ -156,11 +153,9 @@ int __attribute__((weak)) parse_cmdline(void)
   
   /* Check that mandatory arguments have been specified. */
   if (server_characteristics.require_respawn_info)
-    {
-      exit_if (is_respawn < 0,
-	       eprintf("missing state argument, require either %s or %s.",
-		       "--initial-spawn", "--respawn"););
-    }
+    exit_if (is_respawn < 0,
+	     eprintf("missing state argument, require either %s or %s.",
+		     "--initial-spawn", "--respawn"););
   return 0;
 }
 
@@ -189,7 +184,7 @@ int __attribute__((weak)) connect_to_display(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
@@ -210,13 +205,8 @@ static int server_initialised_fork_for_safety(void)
   pid_t pid = fork();
   int status;
   
-  if (pid == (pid_t)-1)
-    {
-      xperror(*argv);
-      eprint("while forking for safety.");
-      return -1;
-    }
-  else if (pid == 0)
+  fail_if (pid == (pid_t)-1);
+  if (pid == 0)
     /* Reinstate the alarm for the child. */
     alarm(pending_alarm);
   else
@@ -246,6 +236,10 @@ static int server_initialised_fork_for_safety(void)
     }
   
   return 0;
+ fail:
+  xperror(*argv);
+  eprint("while forking for safety.");
+  return -1;
 }
 
 
@@ -261,14 +255,8 @@ int __attribute__((weak)) server_initialised(void)
   pid_t r;
   if (on_init_fork && (r = fork()))
     {
-      if (r == (pid_t)-1)
-	{
-	  xperror(*argv);
-	  eprint("while forking at completed initialisation.");
-	  return -1;
-	}
-      else
-	exit(0);
+      fail_if (r == (pid_t)-1);
+      exit(0);
     }
   
   if (on_init_sh != NULL)
@@ -276,7 +264,12 @@ int __attribute__((weak)) server_initialised(void)
   
   if (server_characteristics.fork_for_safety)
     return server_initialised_fork_for_safety();
+  
   return 0;
+ fail:
+  xperror(*argv);
+  eprint("while forking at completed initialisation.");
+  return -1;
 }
 
 
@@ -413,11 +406,10 @@ static int base_unmarshal(void)
   free(state_buf);
   
   /* Recover after failure. */
-  if (r)
-    fail_if (reexec_failure_recover());
+  fail_if (r && reexec_failure_recover());
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -460,7 +452,7 @@ static int base_marshal(int reexec_fd)
   free(state_buf);
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   free(state_buf);
   return 1;
@@ -482,24 +474,21 @@ static void perform_reexec(void)
   /* Marshal the state of the server. */
   xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
   reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-  if (reexec_fd < 0)
-    {
-      xperror(*argv);
-      return;
-    }
-  if (base_marshal(reexec_fd) < 0)
-    goto fail;
+  fail_if (reexec_fd < 0);
+  fail_if (base_marshal(reexec_fd) < 0);
   close(reexec_fd);
   reexec_fd = -1;
   
   /* Re-exec the server. */
   reexec_server(argc, argv, is_reexec);
-  xperror(*argv);
   
  fail:
+  xperror(*argv);
   if (reexec_fd >= 0)
-    close(reexec_fd);
-  shm_unlink(shm_path);
+    {
+      close(reexec_fd);
+      shm_unlink(shm_path);
+    }
 }
 
 
@@ -512,15 +501,14 @@ static void perform_reexec(void)
  */
 int main(int argc_, char** argv_)
 {
-  int r = 1;
-  
   argc = argc_;
   argv = argv_;
   
   
   if (server_characteristics.require_privileges == 0)
     /* Drop privileges like it's hot. */
-    fail_if (drop_privileges());
+    if (drop_privileges())
+      fail_if (1);
   
   
   /* Use /proc/self/exe when re:exec-ing */
@@ -533,7 +521,7 @@ int main(int argc_, char** argv_)
 	   eprint("that number of arguments is ridiculous, I will not allow it."););
   
   /* Parse command line arguments. */
-  try (parse_cmdline());
+  fail_if (parse_cmdline());
   
   
   /* Store the current thread so it can be killed from elsewhere. */
@@ -544,49 +532,47 @@ int main(int argc_, char** argv_)
   
   
   /* Initialise the server. */
-  try (preinitialise_server());
+  fail_if (preinitialise_server());
   
   if (is_reexec == 0)
     {
       if (server_characteristics.require_display)
 	/* Connect to the display. */
-	try (connect_to_display());
+	fail_if (connect_to_display());
       
       /* Initialise the server. */
-      try (initialise_server());
+      fail_if (initialise_server());
     }
   else
     {
       /* Unmarshal the server's saved state. */
-      try (base_unmarshal());
+      fail_if (base_unmarshal());
     }
   
   /* Initialise the server. */
-  try (postinitialise_server());
+  fail_if (postinitialise_server());
   
   
   /* Run the server. */
-  try (master_loop());
+  fail_if (master_loop());
   
   
   /* Re-exec server if signal to re-exec. */
   if (reexecing)
     {
       perform_reexec();
-      goto fail;
+      fail_if (1);
     }
   
   close(socket_fd);
   return 0;
   
   
- pfail:
-  xperror(*argv);
-  r = 1;
  fail:
+  xperror(*argv);
   if (socket_fd >= 0)
     close(socket_fd);
-  return r;
+  return 1;
 }
 
 
@@ -637,12 +623,12 @@ int trap_signals(void)
   
   /* Implement death on SIGDANGER or ignoral of SIGDANGER. */
   if (server_characteristics.danger_is_deadly && !is_immortal)
-    { fail_if (xsigaction(SIGDANGER, commit_suicide) < 0); }
+    fail_if (xsigaction(SIGDANGER, commit_suicide) < 0);
   else
-    { fail_if (xsigaction(SIGDANGER, received_danger) < 0); }
+    fail_if (xsigaction(SIGDANGER, received_danger) < 0);
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -664,7 +650,4 @@ void __attribute__((weak)) fork_cleanup(int status)
   (void) status;
   fprintf(stderr, "Something is wrong, `fork_cleanup` has been called but not reimplemented.");
 }
-
-
-#undef try
 

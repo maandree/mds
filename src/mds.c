@@ -73,7 +73,7 @@ int main(int argc_, char** argv_)
   struct sockaddr_un address;
   char pathname[PATH_MAX];
   char piddata[64];
-  unsigned int display;
+  unsigned int display = DISPLAY_MAX;
   FILE* f;
   int rc;
   int j, r;
@@ -116,8 +116,7 @@ int main(int argc_, char** argv_)
   saved_umask = umask(0);
   
   /* Create directory for socket files, PID files and such. */
-  if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY))
-    return 1;
+  fail_if (create_directory_root(MDS_RUNTIME_ROOT_DIRECTORY));
   
   
   /* Determine display index. */
@@ -148,14 +147,12 @@ int main(int argc_, char** argv_)
            /* Yes, the directory could have been removed, but it probably was not. */
   
   /* Create PID file. */
-  fail_if ((f = fopen(pathname, "w")) == NULL);
+  fail_if (f = fopen(pathname, "w"), f == NULL);
   xsnprintf(piddata, "%u\n", getpid());
   if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
     {
       fclose(f);
-      if (unlink(pathname) < 0)
-	xperror(*argv);
-      return 1;
+      fail_if (1);
     }
   fflush(f);
   fclose(f);
@@ -205,6 +202,9 @@ int main(int argc_, char** argv_)
       unlink(pathname);
     }
   
+  if (display == DISPLAY_MAX)
+    return rc;
+  
   /* Remove PID file. */
   xsnprintf(pathname, "%s/%u.pid", MDS_RUNTIME_ROOT_DIRECTORY, display);
   unlink(pathname);
@@ -217,7 +217,7 @@ int main(int argc_, char** argv_)
   
   return rc;
   
- pfail:
+ fail:
   xperror(*argv);
   rc = 1;
   goto done;
@@ -236,9 +236,8 @@ int is_pid_file_reusable(FILE* f)
   size_t read_len;
   
   read_len = fread(piddata, 1, sizeof(piddata) / sizeof(char), f);
-  if (ferror(f)) /* Failed to read. */
-    xperror(*argv);
-  else if (feof(f) == 0) /* Did not read everything. */
+  fail_if (ferror(f)); /* Failed to read. */
+  if (feof(f) == 0) /* Did not read everything. */
     eprint("the content of a PID file is larger than expected.");
   else
     {
@@ -250,6 +249,9 @@ int is_pid_file_reusable(FILE* f)
 	  return errno == ESRCH; /* PID is not used. */
     }
   
+  return 0;
+ fail:
+  xperror(*argv);
   return 0;
 }
 
@@ -293,11 +295,13 @@ static void exec_master_server(char** child_args)
 {
   /* Drop privileges. They most not be propagated non-authorised components. */
   /* setgid should not be set, but just to be safe we are restoring both user and group. */
-  if (drop_privileges())
-    return;
+  fail_if (drop_privileges());
   
   /* Start master server. */
   execv(master_server, child_args);
+  fail_if (1);
+ fail:
+  return;
 }
 
 
@@ -336,8 +340,7 @@ int spawn_and_respawn_server(int fd)
  respawn:
   
   pid = fork();
-  if (pid == (pid_t)-1)
-    goto pfail;
+  fail_if (pid == (pid_t)-1);
   
   if (pid == 0) /* Child. */
     {
@@ -347,7 +350,7 @@ int spawn_and_respawn_server(int fd)
       umask(saved_umask);
       /* Change image into the master server. */
       exec_master_server(child_args);
-      goto pfail;
+      fail_if (1);
     }
   
   
@@ -358,13 +361,16 @@ int spawn_and_respawn_server(int fd)
     xperror(*argv);
   
   /* Wait for master server to die. */
-  if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
-    goto pfail;
+  fail_if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1);
   
   /* If the server exited normally or SIGTERM, do not respawn. */
   if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
       ((WTERMSIG(status) == SIGTERM) || (WTERMSIG(status) == SIGINT)))
-    goto done; /* Child exited normally, stop. */
+    {
+      /* Child exited normally, stop. */
+      rc--;
+      goto done;
+    }
   
   /* Get the current time. (End of child process.) */
   time_error |= (monotone(&time_end) < 0);
@@ -379,7 +385,7 @@ int spawn_and_respawn_server(int fd)
     {
       xperror(*argv);
       eprintf("`%s' died abnormally, not respawning because we could not read the time.", master_server);
-      goto fail;
+      goto done;
     }
   
       /* Respawn if the server did not die too fast. */
@@ -388,7 +394,7 @@ int spawn_and_respawn_server(int fd)
   else
     {
       eprintf("`%s' died abnormally, died too fast, not respawning.", master_server);
-      goto fail;
+      goto done;
     }
   
   if (first_spawn)
@@ -396,16 +402,13 @@ int spawn_and_respawn_server(int fd)
       first_spawn = 0;
       free(child_args[argc + 0]);
       child_args[argc + 0] = strdup("--respawn");
-      if (child_args[argc + 0] == NULL)
-	goto pfail;
+      fail_if (child_args[argc + 0] == NULL);
     }
   
   goto respawn;
   
   
  done:
-  rc--;
- fail:
   rc++;
   free(child_args[0]);
   free(child_args[argc + 0]);
@@ -413,9 +416,9 @@ int spawn_and_respawn_server(int fd)
     _exit(1);
   return rc;
   
- pfail:
+ fail:
   xperror(*argv);
-  goto fail;
+  goto done;
 }
 
 
@@ -442,20 +445,14 @@ int create_directory_root(const char* pathname)
   else
     /* Directory is missing, create it. */
     if (mkdir(pathname, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
-      {
-	if (errno != EEXIST) /* Unlikely race condition. */
-	  goto pfail;
-      }
+      /* Unlikely race condition. */
+      fail_if (errno != EEXIST);
     else
-      {
-	/* Set ownership. */
-	if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0)
-	  goto pfail;
-      }
+      /* Set ownership. */
+      fail_if (chown(pathname, ROOT_USER_UID, ROOT_GROUP_GID) < 0);
   
   return 0;
-
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -482,26 +479,18 @@ int create_directory_user(const char* pathname)
 	}
     }
   else
-    {
-      /* Directory is missing, create it. */
-      if (mkdir(pathname, S_IRWXU) < 0)
-	{
-	  if (errno != EEXIST) /* Unlikely race condition. */
-	    {
-	      xperror(*argv);
-	      return 1;
-	    }
-	}
-      else
-	/* Set ownership. */
-	if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0)
-	  {
-	    xperror(*argv);
-	    return 1;
-	  }
-    }
+    /* Directory is missing, create it. */
+    if (mkdir(pathname, S_IRWXU) < 0)
+      /* Unlikely race condition. */
+      fail_if (errno != EEXIST);
+    else
+      /* Set ownership. */
+      fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
   
   return 0;
+ fail:
+  xperror(*argv);
+  return 1;
 }
 
 
@@ -520,12 +509,12 @@ int unlink_recursive(const char* pathname)
   /* Check that we could examine the directory. */
   if (dir == NULL)
     {
-      int errno_ = errno;
+      int saved_errno = errno;
       struct stat _attr;
       if (stat(pathname, &_attr) < 0)
 	return 0; /* Directory does not exist. */
-      errno = errno_;
-      goto pfail;
+      errno = saved_errno;
+      fail_if (1);
     }
   
   /* Remove the content of the directory. */
@@ -534,14 +523,12 @@ int unlink_recursive(const char* pathname)
 	strcmp(file->d_name, "..") &&
 	(unlink(file->d_name) < 0))
       {
-	if (errno != EISDIR)
-	  goto pfail;
+	fail_if (errno != EISDIR);
 	unlink_recursive(file->d_name);
       }
   
   /* Remove the drectory. */
-  if (rmdir(pathname) < 0)
-    goto pfail;
+  fail_if (rmdir(pathname) < 0);
   
  done:
   if (dir != NULL)
@@ -549,7 +536,7 @@ int unlink_recursive(const char* pathname)
   return rc;
   
   
- pfail:
+ fail:
   xperror(*argv);
   rc = -1;
   goto done;

@@ -130,8 +130,7 @@ int preinitialise_server(void)
 	  close_files((fd > 2) || (fd == socket_fd));
 	  
 	  /* Run mdsinitrc. */
-	  run_initrc(unparsed_args);
-	  return 1;
+	  run_initrc(unparsed_args); /* Does not return. */
 	}
     }
   
@@ -148,7 +147,7 @@ int preinitialise_server(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -302,7 +301,7 @@ void* slave_loop(void* data)
       if ((r == 0) && message_received(information))
 	goto terminate;
       else if (r == -2)
-	goto fail;
+	goto done;
       else if (r && (errno == EINTR) && terminating)
       	goto terminate; /* Stop the thread if we are re-exec:ing or terminating the server. */
     }
@@ -329,7 +328,7 @@ void* slave_loop(void* data)
   if (reexecing)
     goto reexec;
   
- fail: /* This done on success as well. */
+ done:
   /* Close socket and free resources. */
   close(slave_fd);
   free(msgbuf);
@@ -348,9 +347,9 @@ void* slave_loop(void* data)
   return NULL;
   
   
- pfail:
+ fail:
   xperror(*argv);
-  goto fail;
+  goto done;
   
   
  reexec:
@@ -403,15 +402,13 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   uint64_t modify_id;
   char modify_id_header[13 + 3 * sizeof(uint64_t)];
   void* new_buf;
+  int saved_errno;
   
   /* Count the number of headers. */
   for (i = 0; i < n; i++)
     if (message[i] == '\n')
-      {
-	header_count++;
-	if (message[i + 1] == '\n')
-	  break;
-      }
+      if (header_count++, message[i + 1] == '\n')
+	break;
   
   if (header_count == 0)
     return; /* Invalid message. */
@@ -435,14 +432,14 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
       if ((header_values[i] = strdup(msg)) == NULL)
 	{
 	  header_count = i;
-	  goto pfail;
+	  fail_if (1);
 	}
       *colon = '\0';
       if ((headers[i] = strdup(msg)) == NULL)
 	{
-	  free(headers[i]);
+	  saved_errno = errno, free(headers[i]), errno = saved_errno;
 	  header_count = i;
-	  goto pfail;
+	  fail_if (1);
 	}
       *colon = ':';
       *end = '\n';
@@ -482,22 +479,22 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   multicast->message_prefix = n;
   message = NULL;
   
+#define fail  fail_in_mutex
   /* Queue message multicasting. */
   with_mutex (sender->mutex,
 	      new_buf = sender->multicasts;
-	      if (xrealloc(new_buf, sender->multicasts_count + 1, multicast_t))
-		{
-		  xperror(*argv);
-		  goto fail_queue;
-		}
+	      fail_if (xrealloc(new_buf, sender->multicasts_count + 1, multicast_t));
 	      sender->multicasts = new_buf;
 	      sender->multicasts[sender->multicasts_count++] = *multicast;
 	      free(multicast);
 	      multicast = NULL;
-	     fail_queue:
+	      errno = 0;
+	     fail_in_mutex:
+	      xperror(*argv);
 	      );
+#undef fail
   
- fail: /* This is done before this function returns even if there was no error. */
+ done:
   /* Release resources. */
   xfree(headers, header_count);
   xfree(header_values, header_count);
@@ -508,9 +505,9 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
   free(multicast);
   return;
   
- pfail:
+ fail:
   xperror(*argv);
-  goto fail;
+  goto done;
 }
 
 
@@ -582,5 +579,7 @@ void run_initrc(char** args)
   
   /* Everything failed. */
   eprintf("unable to run %s file, you might as well kill me.", INITRC_FILE);
+  /* (‘me’ actually refers to the parant, whence it will to be coming.) */
+  exit(0);
 }
 

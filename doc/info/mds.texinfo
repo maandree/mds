@@ -3934,9 +3934,9 @@ unless you have a specific reason be
 
 @item @code{fail_if} [(@code{condition}) @arrow{} @code{void}]
 If @code{condition} is satisfied, a jump
-is made to the label @code{pfail}.
-@code{pfail:} should be used for calling
-@code{xperror} and return @code{-1}.
+is made to the label @code{fail}.
+Additionally the location of failure will
+be printed to standard error.
 
 @item @code{exit_if} [(@code{condition, instructions}) @arrow{} @code{void}]
 If @code{condition} is satisfied,

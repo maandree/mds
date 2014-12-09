@@ -197,25 +197,15 @@ int unmarshal_server(char* state_buf)
     }
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   if (stage >= 1)
     hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
-  if (stage >= 2)
-    free(command);
-  if (stage >= 3)
-    {
-      client_list_destroy(list);
-      free(list);
-    }
-  if (stage >= 5)
-    linked_list_destroy(&slave_list);
-  if (stage >= 6)
-    {
-      slave_destroy(slave);
-      free(slave);
-    }
+  if (stage >= 2)  free(command);
+  if (stage >= 3)  client_list_destroy(list), free(list);
+  if (stage >= 5)  linked_list_destroy(&slave_list);
+  if (stage >= 6)  slave_destroy(slave), free(slave);
   abort();
   return -1;
 }

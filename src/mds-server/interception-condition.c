@@ -71,10 +71,11 @@ size_t interception_condition_unmarshal(interception_condition_t* restrict this,
   buf_get_next(data, int64_t, this->priority);
   buf_get_next(data, int, this->modifying);
   n = (strlen(data) + 1) * sizeof(char);
-  if ((this->condition = malloc(n)) == NULL)
-    return 0;
+  fail_if ((this->condition = malloc(n)) == NULL);
   memcpy(this->condition, data, n);
   return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + n;
+ fail:
+  return 0;
 }
 
 

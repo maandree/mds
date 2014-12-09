@@ -150,7 +150,7 @@ mds_kbdc_parse_error_t* mds_kbdc_parsed_new_error(mds_kbdc_parsed_t* restrict th
     }
   
   return error;
- pfail:
+ fail:
   saved_errno = errno;
   free(error);
   this->errors_ptr = old_errors_ptr;

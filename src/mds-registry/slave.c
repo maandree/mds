@@ -55,13 +55,14 @@ static int slave_notify_client(slave_t* slave)
   while (left > 0)
     {
       sent = send_message(socket_fd, buf + ptr, left);
-      if ((sent < left) && errno && (errno != EINTR))
-	return -1;
+      fail_if ((sent < left) && errno && (errno != EINTR));
       left -= sent;
       ptr += sent;
     }
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -114,7 +115,7 @@ static void* slave_loop(void* data)
   
   goto done;
   
- pfail:
+ fail:
   xperror(*argv);
  done:
   with_mutex (slave_mutex,
@@ -136,14 +137,12 @@ static void* slave_loop(void* data)
  */
 int start_created_slave(slave_t* restrict slave)
 {
-  if ((errno = pthread_mutex_lock(&slave_mutex)))
-    return -1;
+  int locked = 0;
   
-  if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)))
-    {
-      pthread_mutex_unlock(&slave_mutex);
-      return -1;
-    }
+  fail_if ((errno = pthread_mutex_lock(&slave_mutex)));
+  locked = 1;
+  
+  fail_if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)));
   
   if ((errno = pthread_detach(slave->thread)))
     xperror(*argv);
@@ -152,6 +151,10 @@ int start_created_slave(slave_t* restrict slave)
   pthread_mutex_unlock(&slave_mutex);
   
   return 0;
+ fail:
+  if (locked)
+    pthread_mutex_unlock(&slave_mutex);
+  return -1;
 }
 
 
@@ -168,29 +171,28 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
   slave_t* slave = slave_create(wait_set, recv_client_id, recv_message_id);
   size_t slave_address, i;
   ssize_t node = LINKED_LIST_UNUSED;
+  int locked = 0;
   
   fail_if (slave == NULL);
   fail_if ((errno = pthread_mutex_lock(&slave_mutex)));
+  locked = 1;
   
   slave_address = (size_t)(void*)slave;
   slave->node = node = linked_list_insert_end(&slave_list, slave_address);
-  if (slave->node == LINKED_LIST_UNUSED)
-    goto pfail_in_mutex;
+  fail_if (slave->node == LINKED_LIST_UNUSED);
   
   for (i = 0; i < received.header_count; i++)
     if (startswith(received.headers[i], "Time to live: "))
       {
 	const char* ttl = received.headers[i] + strlen("Time to live: ");
 	slave->timed = 1;
-	if (monotone(&(slave->dethklok)))
-	  goto pfail_in_mutex;
+	fail_if (monotone(&(slave->dethklok)));
 	slave->dethklok.tv_sec += (time_t)atoll(ttl);
-	/* It should really be `atol`, but we want to be future proof. */
+	/* It should really be `atol`, but we want to be future-proof. */
 	break;
       }
   
-  if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)))
-    goto pfail_in_mutex;
+  fail_if ((errno = pthread_create(&(slave->thread), NULL, slave_loop, (void*)(intptr_t)slave)));
   
   if ((errno = pthread_detach(slave->thread)))
     xperror(*argv);
@@ -199,13 +201,10 @@ int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_clien
   pthread_mutex_unlock(&slave_mutex);
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
-  goto more_fail;
- pfail_in_mutex:
-  xperror(*argv);
-  pthread_mutex_unlock(&slave_mutex);
- more_fail:
+  if (locked)
+    pthread_mutex_unlock(&slave_mutex);
   if (node != LINKED_LIST_UNUSED)
     linked_list_remove(&slave_list, node);
   return -1;
@@ -243,8 +242,7 @@ int advance_slaves(char* command)
   int signal_slaves = 0;
   ssize_t node;
   
-  if ((errno = pthread_mutex_lock(&slave_mutex)))
-    return -1;
+  fail_if ((errno = pthread_mutex_lock(&slave_mutex)));
   
   foreach_linked_list_node (slave_list, node)
     {
@@ -261,6 +259,8 @@ int advance_slaves(char* command)
 
   pthread_mutex_unlock(&slave_mutex);
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -275,26 +275,23 @@ int advance_slaves(char* command)
 slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv_client_id, const char* restrict recv_message_id)
 {
   slave_t* restrict rc = NULL;
+  int saved_errno;
   
-  if (xmalloc(rc, 1, slave_t))
-    return NULL;
+  fail_if (xmalloc(rc, 1, slave_t));
   
   slave_initialise(rc);
   rc->wait_set = wait_set;
   rc->client = parse_client_id(recv_client_id);
   
-  if ((rc->client_id = strdup(recv_client_id)) == NULL)
-    goto fail;
-  
-  if ((rc->message_id = strdup(recv_message_id)) == NULL)
-    goto fail;
+  fail_if ((rc->client_id = strdup(recv_client_id)) == NULL);
+  fail_if ((rc->message_id = strdup(recv_message_id)) == NULL);
   
   return rc;
   
  fail:
-  slave_destroy(rc);
-  free(rc);
-  return NULL;
+  saved_errno = errno;
+  slave_destroy(rc), free(rc);
+  return errno = saved_errno, NULL;
 }
 
 
@@ -322,6 +319,9 @@ void slave_initialise(slave_t* restrict this)
  */
 void slave_destroy(slave_t* restrict this)
 {
+  if (this == NULL)
+    return;
+  
   if (this->wait_set != NULL)
     {
       hash_table_destroy(this->wait_set, (free_func*)reg_table_free_key, NULL);
@@ -414,7 +414,8 @@ size_t slave_marshal(const slave_t* restrict this, char* restrict data)
 size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
 {
   size_t key, n, m, rc = 2 * sizeof(int) + sizeof(ssize_t) + sizeof(size_t) + sizeof(uint64_t);
-  char* protocol;
+  char* protocol = NULL;
+  int saved_errno;
   
   this->wait_set = NULL;
   this->client_id = NULL;
@@ -431,42 +432,37 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
   buf_get_next(data, long, this->dethklok.tv_nsec);
   
   n = (strlen((char*)data) + 1) * sizeof(char);
-  if ((this->client_id = malloc(n)) == NULL)
-    return 0;
+  fail_if ((this->client_id = malloc(n)) == NULL);
   memcpy(this->client_id, data, n);
   data += n, rc += n;
   
   n = (strlen((char*)data) + 1) * sizeof(char);
-  if ((this->message_id = malloc(n)) == NULL)
-    return 0;
+  fail_if ((this->message_id = malloc(n)) == NULL);
   memcpy(this->message_id, data, n);
   data += n, rc += n;
   
-  if ((this->wait_set = malloc(sizeof(hash_table_t))) == NULL)
-    return 0;
-  if (hash_table_create(this->wait_set))
-    return 0;
+  fail_if ((this->wait_set = malloc(sizeof(hash_table_t))) == NULL);
+  fail_if (hash_table_create(this->wait_set));
   
   buf_get_next(data, size_t, m);
   
   while (m--)
     {
       n = (strlen((char*)data) + 1) * sizeof(char);
-      if ((protocol = malloc(n)) == NULL)
-	return 0;
+      fail_if ((protocol = malloc(n)) == NULL);
       memcpy(protocol, data, n);
       data += n, rc += n;
       
       key = (size_t)(void*)protocol;
       if (hash_table_put(this->wait_set, key, 1) == 0)
-	if (errno)
-	  {
-	    free(protocol);
-	    return 0;
-	  }
+	fail_if (errno);
     }
   
   return rc;
+ fail:
+  saved_errno = errno;
+  free(protocol);
+  return errno = saved_errno, (size_t)0;
 }
 
 

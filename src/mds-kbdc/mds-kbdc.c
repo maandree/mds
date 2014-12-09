@@ -85,7 +85,7 @@ int main(int argc_, char** argv_)
   mds_kbdc_parsed_destroy(&result);
   return fatal;
   
- pfail:
+ fail:
   xperror(*argv);
   mds_kbdc_parsed_destroy(&result);
   return 1;

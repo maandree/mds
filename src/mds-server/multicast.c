@@ -124,8 +124,7 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data)
   buf_get_next(data, size_t, this->message_ptr);
   buf_get_next(data, size_t, this->message_prefix);
   if (this->interceptions_count > 0)
-    if (xmalloc(this->interceptions, this->interceptions_count, queued_interception_t))
-      return 0;
+    fail_if (xmalloc(this->interceptions, this->interceptions_count, queued_interception_t));
   for (i = 0; i < this->interceptions_count; i++)
     {
       n = queued_interception_unmarshal(this->interceptions + i, data);
@@ -134,12 +133,13 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data)
     }
   if (this->message_length > 0)
     {
-      if (xmalloc(this->message, this->message_length, char))
-	return 0;
+      fail_if (xmalloc(this->message, this->message_length, char));
       memcpy(this->message, data, this->message_length * sizeof(char));
       rc += this->message_length * sizeof(char);
     }
   return rc;
+ fail:
+  return 0;
 }
 
 

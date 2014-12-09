@@ -58,7 +58,7 @@
 /**
  * Beginning of failure clause
  */
-#define FAIL_BEGIN  pfail: saved_errno = errno
+#define FAIL_BEGIN  fail: saved_errno = errno
 
 /**
  * End of failure clause
@@ -247,7 +247,7 @@ static int check_set_3_get_2_call(mds_kbdc_tree_t* restrict tree, int is_set, co
     FUN_ERROR(tree, ERROR, "‘\\%zu’ does not hold %zu elements", (size_t)*variable_arg, (size_t)*index_arg);/* TODO test */
   
   return 0;
- pfail:
+ fail:
   return -1;
 #undef FUN_ERROR
 #undef F
@@ -470,7 +470,7 @@ static char32_t* parse_function_call(mds_kbdc_tree_t* restrict tree, const char*
   *rc = -1;
   goto done;
   
- pfail:
+ fail:
   saved_errno = errno;
   free(rc);
   if (old_arguments)
@@ -586,7 +586,7 @@ static void check_function_call(const mds_kbdc_tree_t* restrict tree, const char
   error->end = lineoff + (size_t)(*end - raw);
   return;
   
- pfail:
+ fail:
   *rc |= -1;
 }
 
@@ -604,6 +604,8 @@ static int check_function_calls_in_literal(const mds_kbdc_tree_t* restrict tree,
 {
   int rc = 0;
   (void) check_function_calls_in_literal_(tree, raw, lineoff, &raw, &rc);
+  fail_if (rc < 0);
+ fail:
   return rc;
 }
 
@@ -669,7 +671,10 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
   /* Read escape. */
   if (*escape == 100)
     /* Function call. */
-    return parse_function_call(tree, raw_, lineoff, escape, end);
+    {
+      fail_if (rc = parse_function_call(tree, raw_, lineoff, escape, end), rc == NULL);
+      return rc;
+    }
   /* Octal or hexadecimal representation, or variable dereference. */
   for (; (c = *raw); have = 1, raw++)
     if      (CR( 8, '0', '7'))  numbuf =  8 * numbuf + (c & 15);
@@ -706,7 +711,7 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
   *escape = 0;
   *end = raw;
   return rc;
- pfail:
+ fail:
   saved_errno = errno;
   free(rc);
   return errno = saved_errno, NULL;
@@ -838,7 +843,7 @@ static char32_t* parse_quoted_string(mds_kbdc_tree_t* restrict tree, const char*
   
   free(buf);
   return rc;
- pfail:
+ fail:
   saved_errno = errno;
   free(subrc);
   free(old_rc);
@@ -890,7 +895,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
   fail_if (rc = malloc(2 * sizeof(char32_t)), rc == NULL);
   return rc[0] = buf, rc[1] = -1, rc;
   
- pfail:
+ fail:
   return NULL;
 #undef CHAR_ERROR
 #undef R
@@ -909,7 +914,11 @@ static char32_t* parse_string(mds_kbdc_tree_t* restrict tree, const char* restri
 {
   mds_kbdc_tree_t* old_last_value_statement = last_value_statement;
   char32_t* rc = (strchr("\"\\", *raw) ? parse_quoted_string : parse_unquoted_string)(tree, raw, lineoff);
-  return last_value_statement = old_last_value_statement, rc;
+  last_value_statement = old_last_value_statement;
+  fail_if (rc == NULL);
+  return rc;
+ fail:
+  return NULL;
 }
 
 
@@ -1026,7 +1035,7 @@ static char32_t* parse_keys(mds_kbdc_tree_t* restrict tree, const char* restrict
   
   free(buf);
   return last_value_statement = old_last_value_statement, rc;
- pfail:
+ fail:
   saved_errno = errno;
   free(subrc);
   free(old_rc);
@@ -1077,9 +1086,18 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   memcpy(dotless, raw_, n * sizeof(char)), dotless[n] = '\0';
   var = (size_t)atoll(dotless + 1);
   if (strlen(dotless + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
-    return errno = ERANGE, (size_t)0;
+    fail_if ((errno = ERANGE));
+  if (var == 0)
+    {
+      NEW_ERROR(tree, INTERNAL_ERROR,
+		"parsed a variable string to be 0, which should not be possible");
+      error->start = lineoff;
+      error->end = lineoff + strlen(raw_);
+      tree->processed = PROCESS_LEVEL;
+      return 1;
+    }
   return var;
- pfail:
+ fail:
   return 0;
   
  bad:
@@ -1172,7 +1190,10 @@ static int parse_function_argument(mds_kbdc_tree_t* restrict tree, const char* r
 static int set_macro(mds_kbdc_tree_macro_t* restrict macro,
 		     mds_kbdc_include_stack_t* macro_include_stack)
 {
-  return callables_set(macro->name, 0, (mds_kbdc_tree_t*)macro, macro_include_stack);
+  fail_if (callables_set(macro->name, 0, (mds_kbdc_tree_t*)macro, macro_include_stack));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1224,7 +1245,7 @@ static int get_macro(mds_kbdc_tree_macro_call_t* restrict macro_call,
     *macro = NULL;
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -1246,7 +1267,10 @@ static int set_function(mds_kbdc_tree_function_t* restrict function,
   
   *suffix_start = '\0';
   r = callables_set(suffixless, arg_count, (mds_kbdc_tree_t*)function, function_include_stack);
-  return *suffix_start = '/', r;
+  fail_if (*suffix_start = '/', r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1304,8 +1328,7 @@ static int compile_include(mds_kbdc_tree_include_t* restrict tree)
 {
   void* data;
   int r;
-  if (mds_kbdc_include_stack_push(tree, &data))
-    return -1;
+  fail_if (mds_kbdc_include_stack_push(tree, &data));
   r = compile_subtree(tree->inner);
   mds_kbdc_include_stack_pop(data);
   
@@ -1314,7 +1337,10 @@ static int compile_include(mds_kbdc_tree_include_t* restrict tree)
    * include-stack as its overriding statement. */
   last_value_statement = NULL;
   
-  return r;
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1650,7 +1676,7 @@ static int compile_have_range(mds_kbdc_tree_assumption_have_range_t* restrict tr
  */
 static int check_marco_calls(mds_kbdc_tree_t* restrict tree)
 {
-#define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
+#define t(...)   fail_if (rc |= r = (__VA_ARGS__), r < 0)
   mds_kbdc_tree_macro_t* _macro;
   mds_kbdc_include_stack_t* _macro_include_stack;
   void* data;
@@ -1685,6 +1711,8 @@ static int check_marco_calls(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
+ fail:
+  return -1;
   (void) _macro;
   (void) _macro_include_stack;
 #undef t
@@ -1699,7 +1727,7 @@ static int check_marco_calls(mds_kbdc_tree_t* restrict tree)
  */
 static int check_function_calls_in_for(const mds_kbdc_tree_for_t* restrict tree)
 {
-#define t(...)  if (rc |= r = check_function_calls_in_literal(__VA_ARGS__), r < 0)  return r
+#define t(...)  fail_if (rc |= r = check_function_calls_in_literal(__VA_ARGS__), r < 0)
   size_t lineoff_first;
   size_t lineoff_last;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
@@ -1713,6 +1741,8 @@ static int check_function_calls_in_for(const mds_kbdc_tree_for_t* restrict tree)
   t ((const mds_kbdc_tree_t*)tree, tree->last, lineoff_last);
   
   return rc;
+ fail:
+  return -1;
 #undef t
 }
 
@@ -1727,9 +1757,13 @@ static int check_function_calls_in_if(const mds_kbdc_tree_if_t* restrict tree)
 {
   size_t lineoff;
   char* restrict code = result->source_code->real_lines[tree->loc_line];
+  int r;
   
   for (lineoff = tree->loc_end; code[lineoff] == ' '; lineoff++);
-  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->condition, lineoff);
+  r = check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->condition, lineoff);
+  fail_if (r < 0);
+ fail:
+  return r;
 }
 
 
@@ -1741,7 +1775,11 @@ static int check_function_calls_in_if(const mds_kbdc_tree_if_t* restrict tree)
  */
 static int check_function_calls_in_keys(const mds_kbdc_tree_keys_t* restrict tree)
 {
-  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->keys, tree->loc_start);
+  int r;
+  r = check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->keys, tree->loc_start);
+  fail_if (r < 0);
+ fail:
+  return r;
 }
 
 
@@ -1753,7 +1791,11 @@ static int check_function_calls_in_keys(const mds_kbdc_tree_keys_t* restrict tre
  */
 static int check_function_calls_in_string(const mds_kbdc_tree_string_t* restrict tree)
 {
-  return check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->string, tree->loc_start);
+  int r;
+  r = check_function_calls_in_literal((const mds_kbdc_tree_t*)tree, tree->string, tree->loc_start);
+  fail_if (r < 0);
+ fail:
+  return r;
 }
 
 
@@ -1765,7 +1807,7 @@ static int check_function_calls_in_string(const mds_kbdc_tree_string_t* restrict
  */
 static int check_function_calls(const mds_kbdc_tree_t* restrict tree)
 {
-#define t(...)   if (rc |= r = (__VA_ARGS__), r < 0)  return r
+#define t(...)   fail_if (rc |= r = (__VA_ARGS__), r < 0)
   void* data;
   int r, rc = 0;
  again:
@@ -1801,6 +1843,8 @@ static int check_function_calls(const mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
+ fail:
+  return -1;
 #undef t
 }
 
@@ -1848,7 +1892,7 @@ static int check_name_suffix(struct mds_kbdc_tree_callable* restrict tree)
       }
   
   return 0;
- pfail:
+ fail:
   return -1;
  name_error:
   error->start = tree->loc_end;
@@ -2103,12 +2147,13 @@ static int compile_if(mds_kbdc_tree_if_t* restrict tree)
   /* Evaluate whether the evaluted value is true. */
   for (ok = 1, i = 0; data[i] >= 0; i++)
     ok &= !!(data[i]);
-  free(data);
+  free(data), data = NULL;;
   
   /* Compile the appropriate clause. */
   ok = compile_subtree(ok ? tree->inner : tree->otherwise);
   last_value_statement = NULL;
-  return ok;
+  fail_if (ok < 0);
+  return 0;
   FAIL_BEGIN;
   free(data);
   FAIL_END;
@@ -2187,7 +2232,7 @@ static int evaluate_element(mds_kbdc_tree_t* restrict node)
     }
   
   return bad;
- pfail:
+ fail:
   return -1;
 }
 
@@ -2200,7 +2245,10 @@ static int evaluate_element(mds_kbdc_tree_t* restrict node)
  */
 static int compile_keys(mds_kbdc_tree_keys_t* restrict tree)
 {
-  return evaluate_element((mds_kbdc_tree_t*)tree) < 0 ? -1 : 0;
+  fail_if (evaluate_element((mds_kbdc_tree_t*)tree));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -2212,7 +2260,10 @@ static int compile_keys(mds_kbdc_tree_keys_t* restrict tree)
  */
 static int compile_string(mds_kbdc_tree_string_t* restrict tree)
 {
-  return evaluate_element((mds_kbdc_tree_t*)tree) < 0 ? -1 : 0;
+  fail_if (evaluate_element((mds_kbdc_tree_t*)tree));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -2225,11 +2276,12 @@ static int compile_string(mds_kbdc_tree_string_t* restrict tree)
 static int compile_array(mds_kbdc_tree_array_t* restrict tree)
 {
   int r = evaluate_element(tree->elements);
-  if (r < 0)
-    return -1;
+  fail_if (r < 0);
   if (r)
     tree->processed = PROCESS_LEVEL;
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -2260,8 +2312,8 @@ static int check_nonnul(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
- pfail:
-   return -1;
+ fail:
+  return -1;
 }
 
 
@@ -2458,10 +2510,9 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
  */
 static int compile_subtree(mds_kbdc_tree_t* restrict tree)
 {
-#define t(expr)   if (r = (expr), r < 0)  return r
+#define t(expr)   fail_if ((expr) < 0)
 #define c(type)   t (compile_##type(&(tree->type)))
 #define c_(type)  t (compile_##type(&(tree->type##_)))
-  int r;
  again:
   if (tree == NULL)
     return 0;
@@ -2512,6 +2563,8 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
   
   tree = tree->next;
   goto again;
+ fail:
+  return -1;
 #undef c_
 #undef c
 #undef t
@@ -2534,7 +2587,10 @@ int compile_layout(mds_kbdc_parsed_t* restrict result_)
   variables_terminate();
   callables_terminate();
   errno = saved_errno;
-  return r;
+  fail_if (r);
+  return 0;
+ fail:
+  return -1;
 }
 
 

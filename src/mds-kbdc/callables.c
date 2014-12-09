@@ -142,7 +142,7 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
   list_ptr++;
   
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   free(dupname);
   free(new_names);

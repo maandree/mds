@@ -53,7 +53,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender);
  * 
  * @param  args  The arguments to the child process
  */
-void run_initrc(char** args);
+void run_initrc(char** args) __attribute__((noreturn));
 
 
 #endif

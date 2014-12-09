@@ -157,7 +157,7 @@ int parse_cmdline(void)
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -243,7 +243,7 @@ int preinitialise_server(void)
   fail_if (xsigaction(SIGUSR2, received_revive) < 0);
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }
@@ -292,8 +292,7 @@ int postinitialise_server(void)
     if (commands_args[i] == NULL)
       j++;
     else if (strequals(commands_args[i], "--initial-spawn"))
-      if ((commands_args[i] = strdup("--respawn")) == NULL)
-	goto pfail;
+      fail_if ((commands_args[i] = strdup("--respawn")) == NULL);
   
   /* Respawn dead and dead and buried servers.*/
   
@@ -303,7 +302,7 @@ int postinitialise_server(void)
       spawn_server(i);
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   return 1;
 }

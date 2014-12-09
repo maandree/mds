@@ -85,7 +85,7 @@ int mds_kbdc_include_stack_dump(size_t ptr)
   result->pathname = old_pathname;
   result->source_code = old_source_code;
   return 0;
- pfail:
+ fail:
   result->pathname = old_pathname;
   result->source_code = old_source_code;
   return -1;
@@ -149,7 +149,7 @@ int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, vo
   latest_save = NULL;
   
   return 0;
- pfail:
+ fail:
   saved_errno = errno;
   free(old);
   return errno = saved_errno, -1;
@@ -190,9 +190,7 @@ mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void)
       return latest_save;
     }
   
-  latest_save = malloc(sizeof(mds_kbdc_include_stack_t));
-  if (latest_save == NULL)
-    return NULL;
+  fail_if (xmalloc(latest_save, 1, mds_kbdc_include_stack_t));
   
   latest_save->stack = NULL;
   latest_save->ptr = includes_ptr;
@@ -205,10 +203,10 @@ mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void)
   memcpy(latest_save->stack, includes, latest_save->ptr * sizeof(const mds_kbdc_tree_include_t*));
   
   return latest_save;
- pfail:
+ fail:
   saved_errno = errno;
-  free(latest_save->stack);
-  latest_save = NULL;
+  if (latest_save)
+    free(latest_save->stack), latest_save = NULL;
   errno = saved_errno;
   return NULL;
 }
@@ -229,8 +227,7 @@ int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t* restrict stack)
   if (stack->ptr > includes_size)
     {
       new = realloc(includes, stack->ptr * sizeof(const mds_kbdc_tree_include_t*));
-      if (new == NULL)
-	return -1;
+      fail_if (new == NULL);
       includes = new;
       includes_size = stack->ptr;
     }
@@ -238,6 +235,8 @@ int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t* restrict stack)
   memcpy(includes, stack->stack, stack->ptr * sizeof(const mds_kbdc_tree_include_t*));
   includes_ptr = stack->ptr;
   return 0;
+ fail:
+  return -1;
 }
 
 

@@ -50,7 +50,7 @@ char* curpath(void)
     }
   
   return cwd;
- pfail:
+ fail:
   saved_errno = errno;
   free(old);
   free(cwd);
@@ -73,7 +73,10 @@ char* abspath(const char* path)
   size_t size, p;
   
   if (*path == '/')
-    return strdup(path);
+    {
+      fail_if (buf = strdup(path), buf == NULL);
+      return buf;
+    }
   
   fail_if (cwd = curpath(), cwd == NULL);
   size = (p = strlen(cwd)) + strlen(path) + 2;
@@ -104,7 +107,7 @@ char* abspath(const char* path)
   
   free(cwd);
   return buf;
- pfail:
+ fail:
   saved_errno = errno;
   free(cwd);
   errno = saved_errno;
@@ -154,7 +157,7 @@ char* relpath(const char* path, const char* base)
   free(abs);
   free(absbase);
   return buf;
- pfail:
+ fail:
   saved_errno = errno;
   free(abs);
   free(absbase);

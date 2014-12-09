@@ -399,11 +399,21 @@
 
 
 /**
- * Go to the label `pfail` if a condition is met
+ * Go to the label `fail` if a condition is met
  * 
  * @param  ...  The condition
  */
-#define fail_if(...)  if (__VA_ARGS__)  goto pfail
+#define fail_if(...)								\
+  do										\
+    if (__VA_ARGS__)								\
+      {										\
+	int _fail_if_saved_errno = errno;					\
+	if ((errno != EMSGSIZE) && (errno != ECONNRESET) && (errno != EINTR))	\
+	  fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__);		\
+	errno = _fail_if_saved_errno;						\
+	goto fail;					       			\
+      }										\
+  while (0)
 
 
 /**
@@ -412,7 +422,7 @@
  * @param  condition     The condition
  * @param  instructions  The instruction (semicolon-terminated)
  */
-#define exit_if(condition, instructions)  if (condition)  { instructions return 1; }
+#define exit_if(condition, instructions)  do { if (condition) { instructions return 1; } } while (0)
 
 
 /**

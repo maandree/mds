@@ -232,36 +232,26 @@ int initialise_server(void)
     "\n"
     KEYBOARD_ID "\n";
   
-  fail_if (open_leds() < 0);
-  stage = 1;
-  fail_if (open_input() < 0);
-  stage = 2;
-  fail_if (pthread_mutex_init(&send_mutex, NULL));
-  stage = 3;
-  fail_if (pthread_mutex_init(&mapping_mutex, NULL));
-  stage = 4;
-  
-  if (full_send(message, strlen(message)))
-    return 1;
-  
-  fail_if (server_initialised());
-  stage = 5;
+  fail_if (open_leds() < 0);  stage++;
+  fail_if (open_input() < 0);  stage++;
+  fail_if (pthread_mutex_init(&send_mutex, NULL));  stage++;
+  fail_if (pthread_mutex_init(&mapping_mutex, NULL));  stage++;
+  fail_if (full_send(message, strlen(message)));
+  fail_if (server_initialised());  stage++;
   fail_if (mds_message_initialise(&received));
   
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   if (stage < 5)
     {
       if (stage >= 2)  close_input();
       if (stage >= 1)  close_leds();
     }
-  if (stage >= 3)
-    pthread_mutex_destroy(&send_mutex);
-  if (stage >= 4)
-    pthread_mutex_destroy(&mapping_mutex);
-  mds_message_destroy(&received);
+  if (stage >= 3)  pthread_mutex_destroy(&send_mutex);
+  if (stage >= 4)  pthread_mutex_destroy(&mapping_mutex);
+  if (stage >= 5)  mds_message_destroy(&received);
   return 1;
 }
 
@@ -277,13 +267,12 @@ int postinitialise_server(void)
   if (connected)
     return 0;
   
-  if (reconnect_to_display())
-    {
-      mds_message_destroy(&received);
-      return 1;
-    }
+  fail_if (reconnect_to_display());
   connected = 1;
   return 0;
+ fail:
+  mds_message_destroy(&received);
+  return 1;
 }
 
 
@@ -386,7 +375,7 @@ int unmarshal_server(char* state_buf)
   fail_if (mds_message_unmarshal(&received, state_buf));
   
   return 0;
- pfail:
+ fail:
   xperror(*argv);
   mds_message_destroy(&received);
   free(mapping);
@@ -437,29 +426,28 @@ int master_loop(void)
       if (r == -2)
 	{
 	  eprint("corrupt message received, aborting.");
-	  goto fail;
+	  goto done;
 	}
       else if (errno == EINTR)
 	continue;
-      else if (errno != ECONNRESET)
-	goto pfail;
+      else
+	fail_if (errno != ECONNRESET);
       
       eprint("lost connection to server.");
       mds_message_destroy(&received);
       mds_message_initialise(&received);
       connected = 0;
-      if (reconnect_to_display())
-	goto fail;
+      fail_if (reconnect_to_display());
       connected = 1;
     }
   
   joined = 1;
   fail_if ((errno = pthread_join(kbd_thread, &kbd_ret)));
   rc = kbd_ret == NULL ? 0 : 1;
-  goto fail;
- pfail:
-  xperror(*argv);
+  goto done;
  fail:
+  xperror(*argv);
+ done:
   pthread_mutex_destroy(&send_mutex);
   pthread_mutex_destroy(&mapping_mutex);
   free(send_buffer);
@@ -487,12 +475,11 @@ void* keyboard_loop(void* data)
   
   while (!reexecing && !terminating)
     if (fetch_keys() < 0)
-      if (errno != EINTR)
-	goto pfail;
+      fail_if (errno != EINTR);
   
   return NULL;
   
- pfail:
+ fail:
   xperror(*argv);
   raise(SIGTERM);
   return (void*)1024;
@@ -542,19 +529,23 @@ int handle_message(void)
   
   if (recv_command == NULL)
     return 0; /* How did that get here, not matter, just ignore it? */
-  
+
+#define t(expr)  do { fail_if (expr); return 0; } while (0)
   if (strequals(recv_command, "enumerate-keyboards"))
-    return handle_enumerate_keyboards(recv_client_id, recv_message_id, recv_modify_id);
+    t (handle_enumerate_keyboards(recv_client_id, recv_message_id, recv_modify_id));
   if (strequals(recv_command, "keyboard-enumeration"))
-    return handle_keyboard_enumeration(recv_modify_id);
+    t (handle_keyboard_enumeration(recv_modify_id));
   if (strequals(recv_command, "set-keyboard-leds"))
-    return handle_set_keyboard_leds(recv_active, recv_mask, recv_keyboard);
+    t (handle_set_keyboard_leds(recv_active, recv_mask, recv_keyboard));
   if (strequals(recv_command, "get-keyboard-leds"))
-    return handle_get_keyboard_leds(recv_client_id, recv_message_id, recv_keyboard);
+    t (handle_get_keyboard_leds(recv_client_id, recv_message_id, recv_keyboard));
   if (strequals(recv_command, "keycode-map"))
-    return handle_keycode_map(recv_client_id, recv_message_id, recv_action, recv_keyboard);
+    t (handle_keycode_map(recv_client_id, recv_message_id, recv_action, recv_keyboard));
+#undef t
   
   return 0; /* How did that get here, not matter, just ignore it? */
+ fail:
+  return -1;
 }
 
 
@@ -571,15 +562,13 @@ static int ensure_send_buffer_size(size_t size)
   if (send_buffer_size >= size)
     return 0;
   
-  if (xrealloc(send_buffer, size, char))
-    {
-      send_buffer = old;
-      return -1;
-    }
-  else
-    send_buffer_size = size;
+  fail_if (xrealloc(send_buffer, size, char));
+  send_buffer_size = size;
   
   return 0;
+ fail:
+  send_buffer = old;
+  return -1;
 }
 
 
@@ -615,8 +604,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 		  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
 		  );
       
-      if (ensure_send_buffer_size(48 + strlen(recv_modify_id) + 1) < 0)
-	return -1;
+      fail_if (ensure_send_buffer_size(48 + strlen(recv_modify_id) + 1) < 0);
       sprintf(send_buffer,
 	      "Modify: no\n"
 	      "Modify ID: %s\n"
@@ -626,8 +614,10 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
       
       with_mutex (send_mutex,
 		  r = full_send(send_buffer, strlen(send_buffer));
+		  if (r)  r = errno ? errno : -1;
 		  );
-      return r;
+      fail_if (errno = (r == -1 ? 0 : r), r);
+      return 0;
     }
   
   with_mutex (send_mutex,
@@ -638,8 +628,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   
   n = 176 + 3 * sizeof(size_t) + strlen(KEYBOARD_ID);
   n += strlen(recv_modify_id) + strlen(recv_message_id);
-  if (ensure_send_buffer_size(n + 1) < 0)
-    return -1;
+  fail_if (ensure_send_buffer_size(n + 1) < 0);
   sprintf(send_buffer,
 	  "Modify: yes\n"
 	  "Modify ID: %s\n"
@@ -658,8 +647,12 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer, strlen(send_buffer));
+	      if (r)  r = errno ? errno : -1;
 	      );
-  return r;
+  fail_if (errno = (r == -1 ? 0 : r), r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -689,8 +682,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   
   n += off = 64 + strlen(recv_modify_id) + 3 * sizeof(size_t);
   
-  if (ensure_send_buffer_size(n + 1) < 0)
-    return -1;
+  fail_if (ensure_send_buffer_size(n + 1) < 0);
   
   with_mutex (send_mutex,
 	      msgid = message_id;
@@ -734,9 +726,13 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer + off, n);
+	      if (r)  r = errno ? errno : -1;
 	      );
   
-  return r;
+  fail_if (errno = (r == -1 ? 0 : r), r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -856,7 +852,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
       int error = errno;
       xperror(*argv);
       send_errno(error, recv_client_id, recv_message_id);
-      return -1;
+      fail_if (errno = error, 1);
     }
   
   with_mutex (send_mutex,
@@ -866,8 +862,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
   
   n = 95 + 3 * sizeof(size_t) + 2 * strlen(PRESENT_LEDS);
   n += strlen(recv_client_id) + strlen(recv_message_id);
-  if (ensure_send_buffer_size(n + 1) < 0)
-    return -1;
+  fail_if (ensure_send_buffer_size(n + 1) < 0);
   sprintf(send_buffer,
 	  "To: %s\n"
 	  "In response to: %s\n"
@@ -888,9 +883,14 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer, strlen(send_buffer));
+	      if (r)  r = errno ? errno : -1;
 	      );
   
-  return r;
+  fail_if (errno = (r == -1 ? 0 : r), r);
+  return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -915,10 +915,7 @@ static int parse_remap_line(char* begin, char* end, size_t n, int* restrict in, 
     return 0;
   
   if (delimiter == NULL)
-    {
-      *in = -1, *out = -1;
-      return -1;
-    }
+    fail_if (*in = -1, *out = -1);
   
   *delimiter++ = '\0';
   *in = atoi(begin);
@@ -935,6 +932,8 @@ static int parse_remap_line(char* begin, char* end, size_t n, int* restrict in, 
     }
   
   return 1;
+ fail:
+  return -1;
 }
 
 
@@ -956,10 +955,7 @@ static int add_mapping(int in, int out)
 	return 0;
       
       if (old = mapping, xrealloc(mapping, n, int))
-	{
-	  mapping = old;
-	  return -1;
-	}
+	fail_if (mapping = old, 1);
       
       for (; mapping_size < n; mapping_size++)
 	mapping[mapping_size] = (int)mapping_size;
@@ -967,6 +963,8 @@ static int add_mapping(int in, int out)
   
   mapping[in] = out;
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -999,8 +997,7 @@ static int remap(char* table, size_t n)
       if (in != out)  greatest_remap = max(greatest_remap, in);
       else            greatest_reset = max(greatest_reset, in);
       
-      if (add_mapping(in, out) < 0)
-	return -1;
+      fail_if (add_mapping(in, out) < 0);
       
     next:
       if (end == NULL)
@@ -1014,6 +1011,8 @@ static int remap(char* table, size_t n)
     shrink_map();
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1039,8 +1038,7 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
   
   n *= 3 + (size_t)(greatest > 0x00FF ? 5 : 3);
   
-  if (ensure_send_buffer_size(top + n + 2) < 0)
-    return -1;
+  fail_if (ensure_send_buffer_size(top + n + 2) < 0);
   
   with_mutex (send_mutex,
 	      msgid = message_id;
@@ -1071,9 +1069,13 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer + off, top + n);
+	      if (r)  r = errno ? errno : -1;
 	      );
   
-  return r;
+  fail_if (errno = (r == -1 ? 0 : r), r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1090,8 +1092,7 @@ static int mapping_query(const char* recv_client_id, const char* recv_message_id
 int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
 		       const char* recv_action, const char* recv_keyboard)
 {
-  int r = 0;
-  
+  int r;
   if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
     return 0;
   
@@ -1107,7 +1108,9 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
       
       with_mutex (mapping_mutex,
 		  r = remap(received.payload, received.payload_size);
+		  if (r)  r = errno ? errno : -1;
 		  );
+      fail_if (errno = (r == -1 ? 0 : r), r);
     }
   else if (strequals(recv_action, "reset"))
     {
@@ -1124,12 +1127,14 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
 	  return 0;
 	}
       
-      r = mapping_query(recv_client_id, recv_message_id);
+      fail_if (mapping_query(recv_client_id, recv_message_id));
     }
   else
     eprint("received keycode map request with invalid action, ignoring.");
   
-  return r;
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1170,15 +1175,15 @@ int full_send(const char* message, size_t length)
 	  eprint("Sent more of a message than exists in the message, aborting.");
 	  return -1;
 	}
-      else if ((sent < length) && (errno != EINTR))
-	{
-	  xperror(*argv);
-	  return -1;
-	}
+      else
+	fail_if ((sent < length) && (errno != EINTR));
       message += sent;
       length -= sent;
     }
   return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -1190,17 +1195,19 @@ int full_send(const char* message, size_t length)
 int open_leds(void)
 {
 #ifdef __sparc__
-  if ((ledfd = open(SPARC_KBD, O_RDONLY)) < 0)
-    return -1;
+  fail_if ((ledfd = open(SPARC_KBD, O_RDONLY)) < 0);
   if (ioctl(ledfd, GET_LED, &saved_leds) < 0)
     {
       close(ledfd);
-      return -1;
+      fail_if (1);
     }
   return 0;
 #else
-  return ioctl(ledfd, GET_LED, &saved_leds);
+  fail_if (ioctl(ledfd, GET_LED, &saved_leds));
 #endif
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1225,12 +1232,13 @@ void close_leds(void)
 int get_leds(void)
 {
   int leds;
-  if (ioctl(ledfd, GET_LED, &leds) < 0)
-    return -1;
+  fail_if (ioctl(ledfd, GET_LED, &leds) < 0);
 #ifdef __sparc__
   leds &= 15;
 #endif
   return leds;
+ fail:
+  return -1;
 }
 
 
@@ -1242,7 +1250,10 @@ int get_leds(void)
  */
 int set_leds(int leds)
 {
-  return ioctl(ledfd, SET_LED, leds);
+  fail_if (ioctl(ledfd, SET_LED, leds));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1259,16 +1270,15 @@ int open_input(void)
   stty = saved_stty;
   stty.c_lflag &= (tcflag_t)~(ECHO | ICANON | ISIG);
   stty.c_iflag = 0;
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty) < 0)
-    return -1;
+  fail_if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &stty) < 0);
   /* K_MEDIUMRAW: utilise keyboard drivers, but not layout */
   if ((ioctl(STDIN_FILENO, KDGKBMODE, &saved_kbd_mode) < 0) ||
       (ioctl(STDIN_FILENO, KDSKBMODE, K_MEDIUMRAW) < 0))
-    {
-      xperror(*argv);
-      return tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty);
-    }
+    fail_if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &saved_stty));
   return 0;
+ fail:
+  xperror(*argv);
+  return -1;
 }
 
 
@@ -1339,8 +1349,12 @@ int send_key(int* restrict scancode, int trio)
   
   with_mutex (send_mutex,
 	      r = full_send(key_send_buffer, strlen(key_send_buffer));
+	      if (r)  r = errno ? errno : 0;
 	      );
-  return r;
+  fail_if (errno = (r == -1 ? 0 : r), r);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1414,7 +1428,10 @@ int fetch_keys(void)
 	}
     }
   
-  return errno == 0 ? 0 : -1;
+  fail_if (errno);
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -1431,8 +1448,7 @@ int send_errno(int error, const char* recv_client_id, const char* recv_message_i
   size_t n = 79 + strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int);
   int r;
   
-  if (ensure_send_buffer_size(n + 1) < 0)
-    return -1;
+  fail_if (ensure_send_buffer_size(n + 1) < 0);
   
   with_mutex (send_mutex,
 	      sprintf(send_buffer,
@@ -1446,8 +1462,12 @@ int send_errno(int error, const char* recv_client_id, const char* recv_message_i
 	      
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
 	      r = full_send(send_buffer, strlen(send_buffer));
+	      if (r)  r = errno ? errno : -1;
 	      );
-  return r;
+  fail_if (errno = (r == -1 ? 0 : r), r);
+  return 0;
+ fail:
+  return -1;
 }
 
 

@@ -130,8 +130,8 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
       /* Read a chunk of the file. */
       got = read(fd, content + buf_ptr, (buf_size - buf_ptr) * sizeof(char));
       if ((got < 0) && (errno == EINTR))  continue;
-      else if (got < 0)                   goto pfail;
-      else if (got == 0)                  break;
+      if (got == 0)                       break;
+      fail_if (got < 0);
       buf_ptr += (size_t)got;
     }
   
@@ -145,7 +145,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
   *size = buf_ptr;
   return content;
   
- pfail:
+ fail:
   xperror(*argv);
   free(old);
   free(content);
@@ -325,7 +325,7 @@ static char** line_split(char* content, size_t length)
   
   return lines;
   
- pfail:
+ fail:
   xperror(*argv);
   return NULL;
 }
@@ -370,7 +370,7 @@ static int expand(char** restrict content, size_t* restrict content_size)
       while (++col % 8);
   
   return 0;
- pfail:
+ fail:
   return -1;
 }
 
@@ -429,7 +429,7 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
   source_code->line_count = line_count;
   return 0;
   
- pfail:
+ fail:
   xperror(*argv);
   free(old);
   free(content);
@@ -456,14 +456,15 @@ static char* encode_utf8(char* buffer, char32_t character)
   text[0] = character;
   text[1] = -1;
   
-  if (str_ = str = string_encode(text), str == NULL)
-    return NULL;
+  fail_if (str_ = str = string_encode(text), str == NULL);
   
   while (*str)
     *buffer++ = *str++;
   
   free(str_);
   return buffer;
+ fail:
+  return NULL;
 }
 
 
@@ -489,8 +490,7 @@ char* parse_raw_string(const char* restrict string)
    * is not code point whose UTF-8 encoding is longer than its
    * hexadecimal representation. */
   p = rc = malloc(strlen(string) * sizeof(char));
-  if (rc == NULL)
-    return NULL;
+  fail_if (rc == NULL);
   
   while ((c = *string++))
     if      (r(escape ==  8, '0', '7'))  buf = (buf << 3) | (c & 15);
@@ -519,7 +519,7 @@ char* parse_raw_string(const char* restrict string)
   
   *p = '\0';
   return rc;
- pfail:
+ fail:
   free(rc);
   return NULL;
 #undef r

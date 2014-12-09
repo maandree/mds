@@ -140,19 +140,10 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
   else
     {
       /* Duplicate condition string. */
-      if ((condition = strdup(condition)) == NULL)
-	{
-	  xperror(*argv);
-	  return;
-	}
+      fail_if ((condition = strdup(condition)) == NULL);
       
       /* Grow the interception condition list. */
-      if (xrealloc(conds, n + 1, interception_condition_t))
-	{
-	  xperror(*argv);
-	  free(condition);
-	  return;
-	}
+      fail_if (xrealloc(conds, n + 1, interception_condition_t));
       client->interception_conditions = conds; 
       /* Store condition. */
       client->interception_conditions_count++;
@@ -174,6 +165,12 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
 	  conds[n] = temp;
 	}
     }
+  
+  return;
+ fail:
+  xperror(*argv);
+  free(condition);
+  return;
 }
 
 
@@ -220,9 +217,7 @@ int find_matching_condition(client_t* client, size_t* hashes, char** keys, char*
   interception_condition_t* conds = client->interception_conditions;
   size_t n = 0, i;
   
-  errno = pthread_mutex_lock(&(mutex));
-  if (errno)
-    return -1;
+  fail_if ((errno = pthread_mutex_lock(&(mutex))));
   
   /* Look for a matching condition. */
   if (client->open)
@@ -240,6 +235,8 @@ int find_matching_condition(client_t* client, size_t* hashes, char** keys, char*
   pthread_mutex_unlock(&(mutex));
   
   return i < n;
+ fail:
+  return -1;
 }
 
 
@@ -252,23 +249,22 @@ int find_matching_condition(client_t* client, size_t* hashes, char** keys, char*
  * @param   headers                  The header name–value pairs
  * @param   count                    The number of accepted patterns
  * @param   interceptions_count_out  Slot at where to store the number of found interceptors
- * @return                           The found interceptors, NULL on error
+ * @return                           The found interceptors, `NULL` on error
  */
 queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char** keys, char** headers,
 					size_t count, size_t* interceptions_count_out)
 {
   queued_interception_t* interceptions = NULL;
-  size_t interceptions_count = 0;
-  size_t n = 0;
+  size_t interceptions_count = 0, n = 0;
   ssize_t node;
+  int saved_errno;
   
   /* Count clients. */
   foreach_linked_list_node (client_list, node)
     n++;
   
   /* Allocate interceptor list. */
-  if (xmalloc(interceptions, n, queued_interception_t))
-    return NULL;
+  fail_if (xmalloc(interceptions, n, queued_interception_t));
   
   /* Search clients. */
   foreach_linked_list_node (client_list, node)
@@ -280,11 +276,7 @@ queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char**
 	{
 	  int r = find_matching_condition(client, hashes, keys, headers, count,
 					  interceptions + interceptions_count);
-	  if (r == -1)
-	    {
-	      free(interceptions);
-	      return NULL;
-	    }
+	  fail_if (r == -1);
 	  if (r)
 	    /* List client of there was a matching condition. */
 	    interceptions_count++;
@@ -293,5 +285,10 @@ queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char**
   
   *interceptions_count_out = interceptions_count;
   return interceptions;
+  
+ fail:
+  saved_errno = errno;
+  free(interceptions);
+  return errno = saved_errno, NULL;
 }
 
