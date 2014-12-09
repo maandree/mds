@@ -156,11 +156,9 @@ int __attribute__((weak)) parse_cmdline(void)
   
   /* Check that mandatory arguments have been specified. */
   if (server_characteristics.require_respawn_info)
-    {
-      exit_if (is_respawn < 0,
-	       eprintf("missing state argument, require either %s or %s.",
-		       "--initial-spawn", "--respawn"););
-    }
+    exit_if (is_respawn < 0,
+	     eprintf("missing state argument, require either %s or %s.",
+		     "--initial-spawn", "--respawn"););
   return 0;
 }
 

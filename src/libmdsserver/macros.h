@@ -400,7 +400,7 @@
  * @param  condition     The condition
  * @param  instructions  The instruction (semicolon-terminated)
  */
-#define exit_if(condition, instructions)  if (condition)  do { instructions return 1; } while (0)
+#define exit_if(condition, instructions)  do { if (condition) { instructions return 1; } } while (0)
 
 
 /**
