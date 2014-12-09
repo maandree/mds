@@ -2404,7 +2404,8 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the macro
      call arguments. */
-  fail_if (arg = mds_kbdc_tree_dup(tree->arguments), arg == NULL);
+  if (tree->arguments)
+    fail_if (arg = mds_kbdc_tree_dup(tree->arguments), arg == NULL);
   fail_if (bad = evaluate_element(arg), bad < 0);
   if (bad)
     return 0;
