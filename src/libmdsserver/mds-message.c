@@ -81,14 +81,12 @@ void mds_message_zero_initialise(mds_message_t* restrict this)
  */
 void mds_message_destroy(mds_message_t* restrict this)
 {
+  size_t i;
   if (this->headers != NULL)
-    {
-      size_t i;
-      xfree(this->headers, this->header_count);
-    }
+    xfree(this->headers, this->header_count);
   
-  free(this->payload);
-  free(this->buffer);
+  free(this->payload), this->payload = NULL;
+  free(this->buffer),  this->buffer  = NULL;
 }
 
 
@@ -133,12 +131,9 @@ static int mds_message_extend_buffer(mds_message_t* restrict this)
  */
 static void reset_message(mds_message_t* restrict this)
 {
+  size_t i;
   if (this->headers != NULL)
-    {
-      size_t i;
-      xfree(this->headers, this->header_count);
-      this->headers = NULL;
-    }
+    xfree(this->headers, this->header_count);
   this->header_count = 0;
   
   free(this->payload);

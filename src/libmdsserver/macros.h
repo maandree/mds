@@ -142,7 +142,7 @@
  * @return  [type]        A slot that can be set or get
  */
 #define buf_cast(buffer, type, index)  \
-  ((type*)(buffer))[index]
+  (((type*)(buffer))[index])
 
 
 /**
@@ -155,7 +155,7 @@
  * @return  variable:      The new value of the element
  */
 #define buf_set(buffer, type, index, variable)	\
-  ((type*)(buffer))[index] = (variable)
+  (((type*)(buffer))[index] = (variable))
 
 
 /**
@@ -168,7 +168,7 @@
  * @return  variable:           The value of the element
  */
 #define buf_get(buffer, type, index, variable)	\
-  variable = ((const type*)(buffer))[index]
+  (variable = ((const type*)(buffer))[index])
 
 
 /**
@@ -180,7 +180,7 @@
  * @return  buffer:       The buffer
  */
 #define buf_next(buffer, type, count)  \
-  buffer += (count) * sizeof(type) / sizeof(char)
+  (buffer += (count) * sizeof(type) / sizeof(char))
 
 
 /**
@@ -192,7 +192,7 @@
  * @return  buffer:       The buffer
  */
 #define buf_prev(buffer, type, count)  \
-  buffer -= (count) * sizeof(type) / sizeof(char)
+  (buffer -= (count) * sizeof(type) / sizeof(char))
 
 
 /**
@@ -205,8 +205,8 @@
  * @return  variable:      The new value of the element
  */
 #define buf_set_next(buffer, type, variable)  \
-  buf_set(buffer, type, 0, variable),         \
-  buf_next(buffer, type, 1)
+  (buf_set(buffer, type, 0, variable),        \
+   buf_next(buffer, type, 1))
 
 
 /**
@@ -219,8 +219,8 @@
  * @return  variable:      The value of the element
  */
 #define buf_get_next(buffer, type, variable)  \
-  buf_get(buffer, type, 0, variable),         \
-  buf_next(buffer, type, 1)
+  (buf_get(buffer, type, 0, variable),        \
+   buf_next(buffer, type, 1))
 
 
 /**
@@ -273,24 +273,26 @@
  * 
  * @param  condition  The condition, it should evaluate the variable `fd`
  */
-#define close_files(condition)                                                              \
-{                                                                                           \
-  DIR* dir = opendir(SELF_FD);                                                              \
-  struct dirent* file;                                                                      \
-                                                                                            \
-  if (dir == NULL)                                                                          \
-    perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */  \
-  else                                                                                      \
-    while ((file = readdir(dir)) != NULL)                                                   \
-      if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))                          \
-	{                                                                                   \
-	  int fd = atoi(file->d_name);                                                      \
-	  if (condition)                                                                    \
-	    close(fd);                                                                      \
-	}                                                                                   \
-                                                                                            \
-  closedir(dir);                                                                            \
-}
+#define close_files(condition)									\
+  do												\
+    {												\
+      DIR* dir = opendir(SELF_FD);								\
+      struct dirent* file;									\
+												\
+      if (dir == NULL)										\
+	perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */	\
+      else											\
+	while ((file = readdir(dir)) != NULL)							\
+	  if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))				\
+	    {											\
+	      int fd = atoi(file->d_name);							\
+	      if (condition)									\
+		close(fd);									\
+	    }											\
+												\
+      closedir(dir);										\
+    }												\
+  while (0)
 
 
 /**
@@ -300,10 +302,14 @@
  * @param  elements:size_t  The number of elements, in the array, to free
  * @scope  i:size_t         The variable `i` must be declared as `size_t` and avaiable for use
  */
-#define xfree(array, elements)    \
-  for (i = 0; i < elements; i++)  \
-    free((array)[i]);		  \
-  free(array)
+#define xfree(array, elements)		\
+  do					\
+    {					\
+      for (i = 0; i < (elements); i++)	\
+	free((array)[i]);		\
+      free(array), (array) = NULL;	\
+    }					\
+  while (0)
 
 
 /**
