@@ -387,8 +387,10 @@
   do										\
     if (__VA_ARGS__)								\
       {										\
+	int _fail_if_saved_errno = errno;					\
 	if ((errno != EMSGSIZE) && (errno != ECONNRESET) && (errno != EINTR))	\
 	  fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__);		\
+	errno = _fail_if_saved_errno;						\
 	goto fail;					       			\
       }										\
   while (0)
