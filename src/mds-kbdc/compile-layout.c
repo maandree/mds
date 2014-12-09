@@ -174,7 +174,7 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
       statement && (statement->processed != PROCESS_LEVEL))
     {
       statement->processed = PROCESS_LEVEL;
-      NEW_ERROR(statement, WARNING, "does not shadow existing definition");/* TODO test */
+      NEW_ERROR(statement, WARNING, "does not shadow existing definition");
       error->start = lineoff;
       error->end = lineoff + (size_t)snprintf(NULL, 0, "\\%zu", variable);
     }
@@ -315,7 +315,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
       /* Push call stack and set parameters. */
       variables_stack_push();
       for (i = 0; i < arg_count; i++)
-	fail_if (let(i, arguments[i], NULL, NULL, 0, 0));
+	fail_if (let(i + 1, arguments[i], NULL, NULL, 0, 0));
       
       /* Switch include-stack to the function's. */
       fail_if (our_include_stack = mds_kbdc_include_stack_save(), our_include_stack == NULL);
@@ -333,7 +333,7 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
       
       /* Check that the function returned a value. */
       if (*return_value == NULL)
-	FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ did not return a value", name, arg_count);/* TODO test */
+	FUN_ERROR(tree, ERROR, "function ‘%s/%zu’ did not return a value", name, arg_count);
       
       goto done;
     }
@@ -2410,7 +2410,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
      array that is not shadowed by an inner function- or macro-call. */
   if (r && !have_side_effect)
     {
-      NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");/* TODO test */
+      NEW_ERROR(tree, ERROR, "value-statement outside function without side-effects");
       tree->processed = PROCESS_LEVEL;
     }
   if (have_side_effect)
@@ -2422,7 +2422,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
       /* For simplicity we set `last_value_statement` on includes,
        * so we are sure `last_value_statement` has the same include-stack. */
       
-      NEW_ERROR(previous_last_value_statement, WARNING, "value-statement has no effects");/* TODO test */
+      NEW_ERROR(previous_last_value_statement, WARNING, "value-statement has no effects");
       NEW_ERROR(tree, NOTE, "overridden here");
     }
   
@@ -2469,7 +2469,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
     fail_if (arg = mds_kbdc_tree_dup(tree->arguments), arg == NULL);
   fail_if (bad = evaluate_element(arg), bad < 0);
   if (bad)
-    return 0;
+    return mds_kbdc_tree_free(arg), 0;
   
   /* Get the macro's subtree and include-stack, if it has
      not been defined `get_macro` will add an error message

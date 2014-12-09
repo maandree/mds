@@ -1,0 +1,7 @@
+let \1 : 0
+function f/0
+end function
+for "a" to "a" as \1
+end for
+\1 : ""
+

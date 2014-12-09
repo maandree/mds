@@ -1,0 +1,7 @@
+let \1 : "a"
+function f/1
+  ""
+end function
+"" : "\f(0)"
+\1 : ""
+

@@ -1,0 +1,7 @@
+let \1 : "a"
+function f/0
+  for 0 to 0 as \1
+  end for
+end function
+\1 : ""
+

@@ -1,0 +1,6 @@
+let \4 : { 0 }
+function xset/3
+  "\set(\1 \2 \3)"
+end function
+"\xset(4 0 0)"
+

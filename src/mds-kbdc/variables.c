@@ -168,8 +168,7 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
     {
       /* Shadow or define. */
       previous = variables[variable];
-      variables[variable] = malloc(sizeof(variable_t));
-      if (variables[variable] == NULL)
+      if (xmalloc(variables[variable], 1, variable_t))
 	fail_if (variables[variable] = previous, 1);
       variables[variable]->value = value;
       variables[variable]->previous = previous;

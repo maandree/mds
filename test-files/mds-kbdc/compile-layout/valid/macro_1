@@ -1,0 +1,5 @@
+macro m/1
+  <letter \1> : \1
+end macro
+m("a")
+

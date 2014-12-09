@@ -1,0 +1,9 @@
+let \1 : "a"
+function f/0
+  let \1 : "b"
+end function
+if \equals(\1 "b")
+  let \1 : 0
+end if
+\1 : ""
+

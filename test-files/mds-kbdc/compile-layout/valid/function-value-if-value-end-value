@@ -1,0 +1,11 @@
+# It is acceptable not to find unneccessary statements
+
+function f/0
+  "a"
+  if 1
+    "a"
+  end if
+  "a"
+end function
+<letter \f()> : ""
+

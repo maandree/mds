@@ -1,0 +1,5 @@
+macro m/0
+  "a"
+end macro
+m()
+

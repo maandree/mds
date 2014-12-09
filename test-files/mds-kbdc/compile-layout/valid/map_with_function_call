@@ -1,0 +1,5 @@
+function f/0
+  "a"
+end function
+<letter \f()> : "\f()"
+

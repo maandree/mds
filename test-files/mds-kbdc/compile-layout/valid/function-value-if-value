@@ -1,0 +1,8 @@
+function f/0
+  "a"
+  if 1
+    "a"
+  end if
+end function
+<letter \f()> : ""
+

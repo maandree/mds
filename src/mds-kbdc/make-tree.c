@@ -788,6 +788,7 @@ static int test_for_keyword(const char* restrict keyword)
   SKIP_SPACES(end);
   prev_end_char = *end, *end = '\0';
   NEW_ERROR(1, ERROR, "expecting keyword ‘%s’", keyword);
+  error->end = error->start + 1;
   
   return 0;
  fail:
