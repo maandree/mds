@@ -48,6 +48,7 @@ char* curpath(void)
       else
 	fail_if (errno != ERANGE);
     }
+  cwd_size >>= 1;
   
   return cwd;
  fail:
