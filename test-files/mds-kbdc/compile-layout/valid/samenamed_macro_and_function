@@ -1,0 +1,8 @@
+function c/0
+  "a"
+end function
+macro c/0
+  \c() : \c()
+end macro
+c()
+

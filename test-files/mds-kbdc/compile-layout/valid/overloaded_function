@@ -1,0 +1,10 @@
+function f/0
+  1
+end function
+function f/1
+  \1
+end function
+if \equals(\f() \f(2))
+  "" : 0
+end if
+

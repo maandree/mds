@@ -1,0 +1,9 @@
+macro m/1
+  "" : \1
+end macro
+macro m/2
+  \add(1 \1) : 2
+end macro
+m(1)
+m(0 1)
+

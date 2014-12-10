@@ -19,8 +19,6 @@
 /* TODO add call stack */
 /* TODO fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
 /* TODO test set/3 and get/2 */
-/* TODO test function- and macro-overloading */
-/* TODO test same-named macros and functions */
 
 #include "include-stack.h"
 #include "builtin-functions.h"
@@ -521,7 +519,7 @@ static size_t check_function_calls_in_literal_(const mds_kbdc_tree_t* restrict t
   
   while ((c = *raw++))
     {
-      if ((c != ' ') && space)
+      if (space && !strchr(" )", c))
 	space = 0, count++;
       
       if (escape)
@@ -2556,7 +2554,7 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(STRING):                 c (string);       break;
     case C(ARRAY):                  c (array);        break;
     case C(MAP):                    c (map);          break;
-    case C(MACRO_CALL):             c (macro_call);   break;/* TODO test */
+    case C(MACRO_CALL):             c (macro_call);   break;
     case C(RETURN):                 break_level = 3;  break;/* TODO test */
     case C(BREAK):                  break_level = 2;  break;
     case C(CONTINUE):               break_level = 1;  break;
