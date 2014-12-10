@@ -1,0 +1,15 @@
+let \1 : {0}
+function f/0
+  if 1 # if statement is just to reduce warnings
+    "\set(1 0 0)"
+    "c"
+  end if
+end function
+macro m/0
+  "a"
+  "\f()"
+  "b"
+  "\f()"
+end macro
+m()
+

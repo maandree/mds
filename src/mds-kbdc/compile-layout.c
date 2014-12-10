@@ -2428,7 +2428,7 @@ static int compile_map(mds_kbdc_tree_map_t* restrict tree)
  done:
   mds_kbdc_tree_free(seq);
   mds_kbdc_tree_free(res);
-  have_side_effect = old_have_side_effect;
+  have_side_effect |= old_have_side_effect;
   return 0;
   FAIL_BEGIN;
   mds_kbdc_include_stack_free(include_stack);
