@@ -33,7 +33,7 @@
  */
 char* curpath(void)
 {
-  static size_t cwd_size = 4096 >> 1;
+  static size_t cwd_size = 4096;
   char* cwd = NULL;
   char* old = NULL;
   int saved_errno;
@@ -42,13 +42,13 @@ char* curpath(void)
    * but we will not assume that glibc is used here. */
   for (;;)
     {
-      fail_if (xxrealloc(old, cwd, (cwd_size <<= 1) + 1, char));
+      fail_if (xxrealloc(old, cwd, cwd_size + 1, char));
       if (getcwd(cwd, cwd_size))
 	break;
       else
 	fail_if (errno != ERANGE);
+      cwd_size <<= 1;
     }
-  cwd_size >>= 1;
   
   return cwd;
  fail:
