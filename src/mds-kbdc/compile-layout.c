@@ -2555,7 +2555,7 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(ARRAY):                  c (array);        break;
     case C(MAP):                    c (map);          break;
     case C(MACRO_CALL):             c (macro_call);   break;
-    case C(RETURN):                 break_level = 3;  break;/* TODO test */
+    case C(RETURN):                 break_level = 3;  break;
     case C(BREAK):                  break_level = 2;  break;
     case C(CONTINUE):               break_level = 1;  break;
     default:

@@ -1,0 +1,24 @@
+function f/0
+  "a"
+  if 1
+    return
+  end if
+  0
+end function
+function g/0
+  "a"
+  if 1
+    "b"
+    return
+  end if
+  0
+end function
+macro m/0
+  "\f()" : "\g()"
+  if 1
+    return
+  end if
+  "" : 0
+end macro
+m()
+
