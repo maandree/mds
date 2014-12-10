@@ -282,7 +282,7 @@ static char32_t* builtin_function_get_2(const char32_t** restrict args)
   const char32_t* restrict b = *args++;
   char32_t* restrict rc;
   size_t n = (size_t)*b;
-  mds_kbdc_tree_t* value = variables_get((size_t)*a);
+  mds_kbdc_tree_t* value = variables_get((size_t)*a)->array.elements;
   while (n--)
     value = value->next;
   fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
@@ -303,7 +303,7 @@ static char32_t* builtin_function_set_3(const char32_t** restrict args)
   const char32_t* restrict c = *args++;
   char32_t* restrict rc;
   size_t n = (size_t)*b;
-  mds_kbdc_tree_t* value = variables_get((size_t)*a);
+  mds_kbdc_tree_t* value = variables_get((size_t)*a)->array.elements;
   while (n--)
     value = value->next;
   free(value->compiled_string.string);

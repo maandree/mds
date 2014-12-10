@@ -1,0 +1,8 @@
+let \1 : { 0 }
+if \get(1 0)
+  "" : 0
+end if
+\set(1 0 1)
+if \not(\get(1 0))
+  "" : 0
+end if
