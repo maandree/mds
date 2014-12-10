@@ -336,6 +336,16 @@
  */
 #define xmalloc(var, elements, type)  \
   ((var = malloc((elements) * sizeof(type))) == NULL)
+/*
+#define xmalloc(var, elements, type)					\
+  ({									\
+    size_t _x_elements = (elements);					\
+    size_t _x_size = _x_elements * sizeof(type);			\
+    fprintf(stderr, "xmalloc(%s, %zu, %s)(=%zu) @ %s:%i\n",		\
+	    #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
+    ((var = malloc(_x_size)) == NULL);					\
+  })
+*/
 
 
 /**
@@ -345,8 +355,17 @@
  * @param   bytes:size_t  The number of bytes to allocate
  * @return  :int          Evaluates to true if an only if the allocation failed
  */
-#define xbmalloc(var, elements)  \
-  ((var = malloc(elements)) == NULL)
+#define xbmalloc(var, bytes)  \
+  ((var = malloc(bytes)) == NULL)
+/*
+#define xbmalloc(var, bytes)					\
+  ({								\
+    size_t _x_bytes = (bytes);					\
+    fprintf(stderr, "xbmalloc(%s, %zu) @ %s:%i\n",		\
+	    #var, _x_bytes, __FILE__, __LINE__);		\
+    ((var = malloc(_x_bytes)) == NULL);				\
+  })
+*/
 
 
 /**
@@ -359,6 +378,16 @@
  */
 #define xcalloc(var, elements, type)  \
   ((var = calloc(elements, sizeof(type))) == NULL)
+/*
+#define xcalloc(var, elements, type)					\
+  ({									\
+    size_t _x_elements = (elements);					\
+    size_t _x_size = _x_elements * sizeof(type);			\
+    fprintf(stderr, "xcalloc(%s, %zu, %s)(=%zu) @ %s:%i\n",		\
+	    #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
+    ((var = calloc(_x_elements, sizeof(type))) == NULL);		\
+  })
+*/
 
 
 /**
@@ -370,6 +399,15 @@
  */
 #define xbcalloc(var, bytes)  \
   ((var = calloc(bytes, sizeof(char))) == NULL)
+/*
+#define xbcalloc(var, bytes)					\
+  ({								\
+    size_t _x_bytes = (bytes);					\
+    fprintf(stderr, "xbcalloc(%s, %zu) @ %s:%i\n",		\
+	    #var, _x_bytes, __FILE__, __LINE__);		\
+    ((var = calloc(_x_bytes, sizeof(char))) == NULL);		\
+  })
+*/
 
 
 /**
@@ -382,6 +420,16 @@
  */
 #define xrealloc(var, elements, type)  \
   ((var = realloc(var, (elements) * sizeof(type))) == NULL)
+/*
+#define xrealloc(var, elements, type)					\
+  ({									\
+    size_t _x_elements = (elements);					\
+    size_t _x_size = _x_elements * sizeof(type);			\
+    fprintf(stderr, "xrealloc(%s, %zu, %s)(=%zu) @ %s:%i\n",		\
+	    #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
+    ((var = realloc(var, _x_size)) == NULL);				\
+  })
+*/
 
 
 /**
@@ -396,6 +444,16 @@
  */
 #define xxrealloc(old, var, elements, type)  \
   (old = var, (((var = realloc(var, (elements) * sizeof(type))) == NULL) ? 1 : (old = NULL, 0)))
+/*
+#define xxrealloc(old, var, elements, type)						\
+  ({											\
+    size_t _x_elements = (elements);							\
+    size_t _x_size = _x_elements * sizeof(type);					\
+    fprintf(stderr, "xxrealloc(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",			\
+	    #old, #var, _x_elements, #type, _x_size, __FILE__, __LINE__);		\
+    (old = var, (((var = realloc(var, _x_size)) == NULL) ? 1 : (old = NULL, 0)));	\
+  })
+*/
 
 
 /**
@@ -410,6 +468,17 @@
 #define yrealloc(tmp, var, elements, type)                               \
   ((tmp = var, (var = realloc(var, (elements) * sizeof(type))) == NULL)  \
    ? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0))
+/*
+#define yrealloc(tmp, var, elements, type)					\
+  ({										\
+    size_t _x_elements = (elements);						\
+    size_t _x_size = _x_elements * sizeof(type);				\
+    fprintf(stderr, "yrealloc(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",		\
+	    #tmp, #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
+    ((tmp = var, (var = realloc(var, _x_size)) == NULL)				\
+     ? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0));				\
+  })
+*/
 
 
 /**
@@ -422,7 +491,17 @@
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define growalloc(old, var, elements, type)  \
-  (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, perror(*argv), 1) : 0)
+  (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, 1) : 0)
+/*
+#define growalloc(old, var, elements, type)							\
+  ({												\
+    size_t _x_elements_ = (elements);								\
+    size_t _x_size_ = _x_elements_ * sizeof(type);						\
+    fprintf(stderr, "growalloc(%s, %s, %zu, %s)(=%zu)\n-->  ",					\
+	    #old, #var, _x_elements_, #type, _x_size_, __FILE__, __LINE__); 			\
+    (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, 1) : 0);	\
+  })
+*/
 
 
 /**
@@ -434,6 +513,15 @@
  */
 #define xstrdup(var, original)  \
   (original ? ((var = strdup(original)) == NULL) : (var = NULL, 0))
+/*
+#define xstrdup(var, original)									\
+  ({												\
+    size_t _x_size = original ? strlen(original) : 0;						\
+    fprintf(stderr, "xstrdup(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",				\
+	    #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__); 	\
+    (original ? ((var = strdup(original)) == NULL) : (var = NULL, 0));				\
+  })
+*/
 
 
 /**
@@ -449,6 +537,16 @@
 #define xmemdup(var, original, elements, type)	              \
   (((var = malloc((elements) * sizeof(type))) == NULL) ? 1 :  \
    (memcpy(var, original, (elements) * sizeof(type)), 0))
+/*
+#define xmemdup(var, original, elements, type)						\
+  ({											\
+    size_t _x_elements = (elements);							\
+    size_t _x_size = _x_elements * sizeof(type);					\
+    fprintf(stderr, "xmemdup(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",				\
+	    #var, #original, _x_elements, #type, _x_size, __FILE__, __LINE__);		\
+    (((var = malloc(_x_size)) == NULL) ? 1 : (memcpy(var, original, _x_size), 0));	\
+  })
+*/
 
 
 
