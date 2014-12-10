@@ -431,15 +431,13 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
   buf_get_next(data, time_t, this->dethklok.tv_sec);
   buf_get_next(data, long, this->dethklok.tv_nsec);
   
-  n = (strlen((char*)data) + 1) * sizeof(char);
-  fail_if (xbmalloc(this->client_id, n));
-  memcpy(this->client_id, data, n);
-  data += n, rc += n;
+  n = strlen((char*)data) + 1;
+  fail_if (xmemdup(this->client_id, data, n, char));
+  data += n, rc += n * sizeof(char);
   
-  n = (strlen((char*)data) + 1) * sizeof(char);
-  fail_if (xbmalloc(this->message_id, n));
-  memcpy(this->message_id, data, n);
-  data += n, rc += n;
+  n = strlen((char*)data) + 1;
+  fail_if (xmemdup(this->message_id, data, n, char));
+  data += n, rc += n * sizeof(char);
   
   fail_if (xmalloc(this->wait_set, 1, hash_table_t));
   fail_if (hash_table_create(this->wait_set));
@@ -448,10 +446,9 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
   
   while (m--)
     {
-      n = (strlen((char*)data) + 1) * sizeof(char);
-      fail_if (xbmalloc(protocol, n));
-      memcpy(protocol, data, n);
-      data += n, rc += n;
+      n = strlen((char*)data) + 1;
+      fail_if (xmemdup(protocol, data, n, char));
+      data += n, rc += n * sizeof(char);
       
       key = (size_t)(void*)protocol;
       if (hash_table_put(this->wait_set, key, 1) == 0)

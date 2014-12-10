@@ -383,7 +383,8 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   
   /* Send message. */
   fail_if (full_send(send_buffer + ptr, strlen(send_buffer + ptr)));
-  return full_send(send_buffer, ptr);
+  fail_if (full_send(send_buffer, ptr));
+  return 0;
  fail:
   return -1;
 }

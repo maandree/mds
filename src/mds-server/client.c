@@ -251,10 +251,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data)
   buf_get_next(data, size_t, this->send_pending_size);
   if (this->send_pending_size > 0)
     {
-      fail_if (xmalloc(this->send_pending, this->send_pending_size, char));
-      memcpy(this->send_pending, data, this->send_pending_size * sizeof(char));
-      data += this->send_pending_size;
-      rc += this->send_pending_size * sizeof(char);
+      fail_if (xmemdup(this->send_pending, data, this->send_pending_size, char));
+      data += this->send_pending_size, rc += this->send_pending_size * sizeof(char);
     }
   buf_get_next(data, size_t, n);
   if (n > 0)

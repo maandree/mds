@@ -299,8 +299,7 @@ int unmarshal_server(char* state_buf)
 	  buf_get_next(state_buf, long, clip->dethklok.tv_nsec);
 	  buf_get_next(state_buf, uint64_t, clip->client);
 	  buf_get_next(state_buf, int, clip->autopurge);
-	  fail_if (xmalloc(clip->content, clip->length, char));
-	  memcpy(clip->content, state_buf, clip->length * sizeof(char));
+	  fail_if (xmemdup(clip->content, state_buf, clip->length, char));
 	  state_buf += clip->length;
 	}
     }
@@ -721,8 +720,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
   new_clip.autopurge = autopurge;
   new_clip.length = received.payload_size;
   
-  fail_if (xmalloc(new_clip.content, new_clip.length, char));
-  memcpy(new_clip.content, received.payload, new_clip.length * sizeof(char));
+  fail_if (xmemdup(new_clip.content, received.payload, new_clip.length, char));
   
   if (clipboard_used[level] == clipboard_size[level])
     free_clipboard_entry(clipboard[level] + clipboard_used[level] - 1);

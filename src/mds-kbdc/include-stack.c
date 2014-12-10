@@ -199,8 +199,7 @@ mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void)
   if (latest_save->ptr == 0)
     return latest_save;
   
-  fail_if (xmalloc(latest_save->stack, latest_save->ptr, const mds_kbdc_tree_include_t*));
-  memcpy(latest_save->stack, includes, latest_save->ptr * sizeof(const mds_kbdc_tree_include_t*));
+  fail_if (xmemdup(latest_save->stack, includes, latest_save->ptr, const mds_kbdc_tree_include_t*));
   
   return latest_save;
  fail:

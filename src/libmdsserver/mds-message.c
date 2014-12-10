@@ -254,7 +254,7 @@ static int store_header(mds_message_t* restrict this, size_t length)
   char* header;
   
   /* Allocate the header. */
-  fail_if (xmalloc(header, length, char));
+  fail_if (xmalloc(header, length, char)); /* FIXME this do not feel right (but it works perfectly...) */
   /* Copy the header data into the allocated header, */
   memcpy(header, this->buffer, length * sizeof(char));
   /* and NUL-terminate it. */
@@ -530,8 +530,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   for (i = 0; i < this->header_count; i++)
     {
       n = strlen(data) + 1;
-      fail_if (xmalloc(this->headers[i], n, char));
-      memcpy(this->headers[i], data, n * sizeof(char));
+      fail_if (xmemdup(this->headers[i], data, n, char));
       buf_next(data, char, n);
       this->header_count++;
     }

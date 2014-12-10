@@ -368,8 +368,7 @@ int unmarshal_server(char* state_buf)
   buf_get_next(state_buf, size_t, mapping_size);
   if (mapping_size > 0)
     {
-      fail_if (xmalloc(mapping, mapping_size, int));
-      memcpy(mapping, state_buf, mapping_size * sizeof(int));
+      fail_if (xmemdup(mapping, state_buf, mapping_size, int));
       state_buf += mapping_size * sizeof(int) / sizeof(char);
     }
   fail_if (mds_message_unmarshal(&received, state_buf));

@@ -3942,7 +3942,7 @@ an auxiliary @code{type*} variable and
 specify it in as the @code{old} parameter.
 Returns zero on and only on success.
 
-@item @code{xstrdup} [(@code{char* var, const char original}) @arrow{} @code{int}]
+@item @code{xstrdup} [(@code{char* var, const char* original}) @arrow{} @code{int}]
 Wrapper for @code{strdup} that
 returns zero on and only on success.
 @code{original} is duplicate and the
@@ -3950,6 +3950,15 @@ duplicate is stored in the variable
 @code{var}. If @code{original} is
 @code{NULL}, @code{var} is set to
 @code{NULL} and zero is returned.
+
+@item @code{xmemdup} [(@code{void* var, const void* original, size_t elements, type}) @arrow{} @code{int}]
+Allocates a pointer of the type @code{type*}
+with room for @code{elements} elements and
+stores the pointer to @code{var}. If successful,
+the content of @code{original} (@code{elements}
+elements of size @code{sizeof(type*)}) is
+copied to @code{var}, and zero is returned.
+On failure, a non-zero value is returned.
 
 @item @code{xperror} [(@code{const char* str}) @arrow{} @code{void}]
 Invokes @code{perror(str)} if and only if

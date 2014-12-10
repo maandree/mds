@@ -133,8 +133,7 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data)
     }
   if (this->message_length > 0)
     {
-      fail_if (xmalloc(this->message, this->message_length, char));
-      memcpy(this->message, data, this->message_length * sizeof(char));
+      fail_if (xmemdup(this->message, data, this->message_length, char));
       rc += this->message_length * sizeof(char);
     }
   return rc;

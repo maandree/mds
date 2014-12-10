@@ -437,6 +437,22 @@
 
 
 /**
+ * `malloc` and `memcpy` wrapper that creates a duplicate of a pointer and
+ * returns whether the allocation was not successful
+ *  
+ * @param   var:void*             The variable to which to assign the duplicate
+ * @param   original:const void*  The buffer to duplicate
+ * @param   elements:size_t       The number of elements to duplicate
+ * @param   type                  The data type of the elements to duplicate
+ * @return  :int                  Evaluates to true if an only if the allocation failed
+ */
+#define xmemdup(var, original, elements, type)	              \
+  (((var = malloc((elements) * sizeof(type))) == NULL) ? 1 :  \
+   (memcpy(var, original, (elements) * sizeof(type)), 0))
+
+
+
+/**
  * Call `perror` if `errno` is non-zero and set `errno` to zero
  * 
  * @param  str:const char*  The argument passed to `perror`

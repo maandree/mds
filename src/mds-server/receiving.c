@@ -78,8 +78,7 @@ static int modifying_notify(client_t* client, mds_message_t message, uint64_t mo
   recipient = (client_t*)(void*)address;
   fail_if (xmalloc(multicast = recipient->modify_message, 1, mds_message_t));
   mds_message_zero_initialise(multicast);
-  fail_if (xmalloc(multicast->payload, message.payload_size, char));
-  memcpy(multicast->payload, message.payload, message.payload_size * sizeof(char));
+  fail_if (xmemdup(multicast->payload, message.payload, message.payload_size, char));
   fail_if (xmalloc(multicast->headers, message.header_count, char*));
   for (i = 0; i < message.header_count; i++, multicast->header_count++)
     fail_if (xstrdup(multicast->headers[i], message.headers[i]));

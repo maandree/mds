@@ -145,8 +145,7 @@ char32_t* string_dup(const char32_t* restrict string)
   if (string == NULL)
     return NULL;
   n = string_length(string) + 1;
-  fail_if (xmalloc(rc, n, char32_t));
-  memcpy(rc, string, n * sizeof(char32_t));
+  fail_if (xmemdup(rc, string, n, char32_t));
   return rc;
  fail:
   return NULL;

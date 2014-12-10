@@ -113,46 +113,20 @@ void linked_list_destroy(linked_list_t* restrict this)
  */
 int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out)
 {
-  size_t n = this->capacity * sizeof(ssize_t);
-  size_t*  restrict new_values = NULL;
-  ssize_t* restrict new_next = NULL;
-  ssize_t* restrict new_previous = NULL;
-  ssize_t* restrict new_reusable;
-  int saved_errno;
-  
-  out->values   = NULL;
-  out->next     = NULL;
-  out->previous = NULL;
-  out->reusable = NULL;
-  
-  fail_if (xbmalloc(new_values,   n));
-  fail_if (xbmalloc(new_next,     n));
-  fail_if (xbmalloc(new_previous, n));
-  fail_if (xbmalloc(new_reusable, n));
-  
-  out->values   = new_values;
-  out->next     = new_next;
-  out->previous = new_previous;
-  out->reusable = new_reusable;
+  fail_if (xmemdup(out->values,   this->values,   this->capacity, size_t));
+  fail_if (xmemdup(out->next,     this->next,     this->capacity, ssize_t));
+  fail_if (xmemdup(out->previous, this->previous, this->capacity, ssize_t));
+  fail_if (xmemdup(out->reusable, this->reusable, this->capacity, ssize_t));
   
   out->capacity   = this->capacity;
   out->end        = this->end;
   out->reuse_head = this->reuse_head;
   out->edge       = this->edge;
   
-  memcpy(out->values,   this->values,   n);
-  memcpy(out->next,     this->next,     n);
-  memcpy(out->previous, this->previous, n);
-  memcpy(out->reusable, this->reusable, n);
-  
   return 0;
 
  fail:
-  saved_errno = errno;
-  free(new_values);
-  free(new_next);
-  free(new_previous);
-  return errno = saved_errno, -1;
+  return -1;
 }
 
 

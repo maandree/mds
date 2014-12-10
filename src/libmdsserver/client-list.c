@@ -100,27 +100,15 @@ void client_list_destroy(client_list_t* restrict this)
  */
 int client_list_clone(const client_list_t* restrict this, client_list_t* restrict out)
 {
-  size_t n = this->capacity * sizeof(uint64_t);
-  uint64_t* restrict new_clients = NULL;
-  int saved_errno;
-  
-  out->clients = NULL;
-  
-  fail_if (xbmalloc(new_clients, n));
-  
-  out->clients = new_clients;
+  fail_if (xmemdup(out->clients, this->clients, this->capacity, uint64_t));
   
   out->capacity = this->capacity;
   out->size     = this->size;
   
-  memcpy(out->clients, this->clients, n);
-  
   return 0;
   
  fail:
-  saved_errno = errno;
-  free(new_clients);
-  return errno = saved_errno, -1;
+  return -1;
 }
 
 

@@ -408,8 +408,7 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
     }
   
   /* Simplify file. */
-  fail_if (xmalloc(real_content, content_size, char));
-  memcpy(real_content, content, content_size * sizeof(char));
+  fail_if (xmemdup(real_content, content, content_size, char));
   real_content_size = content_size;
   content_size = remove_comments(content, content_size);
   fail_if (xxrealloc(old, content, content_size, char));
