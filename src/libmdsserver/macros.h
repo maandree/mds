@@ -351,7 +351,7 @@
 
 
 /**
- * `remalloc` wrapper that returns whether the allocation was not successful
+ * `realloc` wrapper that returns whether the allocation was not successful
  *  
  * @param   var:type*        The variable to which to assign the reallocation
  * @param   elements:size_t  The number of elements to allocate
@@ -363,7 +363,7 @@
 
 
 /**
- * `xremalloc` that stores the old variable
+ * `xrealloc` that stores the old variable
  *  
  * @param   old:type*        The variable to which to  store with the old variable that needs
  *                           to be `free`:ed on failure, and set to `NULL` on success.
