@@ -138,15 +138,14 @@ mds_kbdc_parse_error_t* mds_kbdc_parsed_new_error(mds_kbdc_parsed_t* restrict th
   if (this->severest_error_level < severity)
     this->severest_error_level = severity;
   
-  fail_if ((error->pathname = strdup(this->pathname)) == NULL);
+  fail_if (xstrdup(error->pathname, this->pathname));
   
   if ((error->error_is_in_file = error_is_in_file))
     {
       error->line = line;
       error->start = start;
       error->end = end;
-      error->code = strdup(this->source_code->real_lines[line]);
-      fail_if (error->code == NULL);
+      fail_if (xstrdup(error->code, this->source_code->real_lines[line]));
     }
   
   return error;

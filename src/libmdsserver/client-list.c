@@ -106,7 +106,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
   
   out->clients = NULL;
   
-  fail_if ((new_clients = malloc(n)) == NULL);
+  fail_if (xbmalloc(new_clients, n));
   
   out->clients = new_clients;
   
@@ -221,8 +221,6 @@ void client_list_marshal(const client_list_t* restrict this, char* restrict data
  */
 int client_list_unmarshal(client_list_t* restrict this, char* restrict data)
 {
-  size_t n;
-  
   /* buf_get(data, int, 0, CLIENT_LIST_T_VERSION); */
   buf_next(data, int, 1);
   
@@ -231,13 +229,8 @@ int client_list_unmarshal(client_list_t* restrict this, char* restrict data)
   buf_get_next(data, size_t, this->capacity);
   buf_get_next(data, size_t, this->size);
   
-  n = this->capacity * sizeof(uint64_t);
-  
-  fail_if ((this->clients = malloc(n)) == NULL);
-  
-  n = this->size * sizeof(uint64_t);
-  
-  memcpy(this->clients, data, n);
+  fail_if (xmalloc(this->clients, this->capacity, uint64_t));
+  memcpy(this->clients, data, this->size * sizeof(uint64_t));
   
   return 0;
  fail:

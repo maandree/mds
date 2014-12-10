@@ -324,10 +324,10 @@ int spawn_and_respawn_server(int fd)
   pid_t pid;
   int status;
   
-  child_args[0] = strdup(master_server);
+  fail_if (xstrdup(child_args[0], master_server));
   for (i = 1; i < argc; i++)
     child_args[i] = argv[i];
-  child_args[argc + 0] = strdup("--initial-spawn");
+  fail_if (xstrdup(child_args[argc + 0], "--initial-spawn"));
   xsnprintf(fdstr, "--socket-fd=%i", fd);
   child_args[argc + 1] = fdstr;
   child_args[argc + 2] = NULL;
@@ -401,8 +401,7 @@ int spawn_and_respawn_server(int fd)
     {
       first_spawn = 0;
       free(child_args[argc + 0]);
-      child_args[argc + 0] = strdup("--respawn");
-      fail_if (child_args[argc + 0] == NULL);
+      fail_if (xstrdup(child_args[argc + 0], "--respawn"));
     }
   
   goto respawn;

@@ -140,7 +140,7 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
   else
     {
       /* Duplicate condition string. */
-      fail_if ((condition = strdup(condition)) == NULL);
+      fail_if (xstrdup(condition, condition));
       
       /* Grow the interception condition list. */
       fail_if (xrealloc(conds, n + 1, interception_condition_t));

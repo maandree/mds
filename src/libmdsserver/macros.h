@@ -339,6 +339,17 @@
 
 
 /**
+ * `malloc` wrapper that returns whether the allocation was not successful
+ *  
+ * @param   var:type*     The variable to which to assign the allocation
+ * @param   bytes:size_t  The number of bytes to allocate
+ * @return  :int          Evaluates to true if an only if the allocation failed
+ */
+#define xbmalloc(var, elements)  \
+  ((var = malloc(elements)) == NULL)
+
+
+/**
  * `calloc` wrapper that returns whether the allocation was not successful
  *  
  * @param   var:type*        The variable to which to assign the allocation
@@ -348,6 +359,17 @@
  */
 #define xcalloc(var, elements, type)  \
   ((var = calloc(elements, sizeof(type))) == NULL)
+
+
+/**
+ * `calloc` wrapper that returns whether the allocation was not successful
+ *  
+ * @param   var:type*     The variable to which to assign the allocation
+ * @param   bytes:size_t  The number of bytes to allocate
+ * @return  :int          Evaluates to true if an only if the allocation failed
+ */
+#define xbcalloc(var, bytes)  \
+  ((var = calloc(bytes, sizeof(char))) == NULL)
 
 
 /**
@@ -365,7 +387,7 @@
 /**
  * `xrealloc` that stores the old variable
  *  
- * @param   old:type*        The variable to which to  store with the old variable that needs
+ * @param   old:type*        The variable to which to store with the old variable that needs
  *                           to be `free`:ed on failure, and set to `NULL` on success.
  * @param   var:type*        The variable to which to assign the reallocation
  * @param   elements:size_t  The number of elements to allocate
@@ -373,7 +395,21 @@
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define xxrealloc(old, var, elements, type)  \
-  (old = var, (xrealloc(var, elements, type) ? 1 : (old = NULL, 0)))
+  (old = var, (((var = realloc(var, (elements) * sizeof(type))) == NULL) ? 1 : (old = NULL, 0)))
+
+
+/**
+ * `xrealloc` that restores the variable on failure
+ *  
+ * @param   tmp:type*        The variable to which to store with the old variable temporarily
+ * @param   var:type*        The variable to which to assign the reallocation
+ * @param   elements:size_t  The number of elements to allocate
+ * @param   type             The data type of the elements for which to create an allocation
+ * @return  :int             Evaluates to true if an only if the allocation failed
+ */
+#define yrealloc(tmp, var, elements, type)                               \
+  ((tmp = var, (var = realloc(var, (elements) * sizeof(type))) == NULL)  \
+   ? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0))
 
 
 /**
@@ -387,6 +423,17 @@
  */
 #define growalloc(old, var, elements, type)  \
   (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, perror(*argv), 1) : 0)
+
+
+/**
+ * `strdup` wrapper that returns whether the allocation was not successful
+ *  
+ * @param   var:char*             The variable to which to assign the duplicate
+ * @param   original:const char*  The string to duplicate
+ * @return  :int                  Evaluates to true if an only if the allocation failed
+ */
+#define xstrdup(var, original)  \
+  (original ? ((var = strdup(original)) == NULL) : (var = NULL, 0))
 
 
 /**

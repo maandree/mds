@@ -441,8 +441,7 @@ static int get_pathname(const char* restrict filename)
       fail_if (errno != ENOENT);
       saved_errno = errno;
       fail_if (cwd = curpath(), cwd == NULL);
-      result->pathname = strdup(filename);
-      fail_if (result->pathname == NULL);
+      fail_if (xstrdup(result->pathname, filename));
       NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 1, "no such file or directory in ‘%s’", cwd);
       free(cwd);
       return 0;
@@ -453,8 +452,7 @@ static int get_pathname(const char* restrict filename)
     {
       saved_errno = errno;
       NEW_ERROR_(result, ERROR, 0, 0, 0, 0, 0, NULL);
-      error->description = strdup(strerror(saved_errno));
-      fail_if (error->description == NULL);
+      fail_if (xstrdup(error->description, strerror(saved_errno)));
       return 0;
     }
   
@@ -649,7 +647,7 @@ static int names_1(char** restrict var)
       end = name_end;
       prev_end_char = *end;
       *end = '\0';
-      fail_if ((*var = strdup(line)) == NULL);
+      fail_if (xstrdup(*var, line));
     }
   
   return 0;
@@ -699,7 +697,7 @@ static int chars(char** restrict var)
 	  else                           quote = (c == '"');
 	}
       prev_end_char = *arg_end, *arg_end = '\0', end = arg_end;
-      fail_if ((*var = strdup(line)) == NULL);
+      fail_if (xstrdup(*var, line));
       line = end;
     }
   
@@ -837,13 +835,13 @@ static int keys(mds_kbdc_tree_t** restrict var)
     {
       NEW_SUBNODE(keys, KEYS);
       *var = (mds_kbdc_tree_t*)subnode;
-      fail_if ((subnode->keys = strdup(line)) == NULL);
+      fail_if (xstrdup(subnode->keys, line));
     }
   else
     {
       NEW_SUBNODE(string, STRING);
       *var = (mds_kbdc_tree_t*)subnode;
-      fail_if ((subnode->string = strdup(line)) == NULL);
+      fail_if (xstrdup(subnode->string, line));
     }
   line = end;
   
@@ -891,7 +889,7 @@ static int pure_keys(char** restrict var)
       else if (IS_END(c) && !triangle)   { arg_end--; break; }
     }
   prev_end_char = *arg_end, *arg_end = '\0';
-  fail_if ((*var = strdup(line)) == NULL);
+  fail_if (xstrdup(*var, line));
   end = arg_end, line = end;
   
   return 0;

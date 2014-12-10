@@ -220,15 +220,13 @@ mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void)
  */
 int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t* restrict stack)
 {
-  const mds_kbdc_tree_include_t** new;
+  const mds_kbdc_tree_include_t** tmp;
   
   latest_save = stack;
   
   if (stack->ptr > includes_size)
     {
-      new = realloc(includes, stack->ptr * sizeof(const mds_kbdc_tree_include_t*));
-      fail_if (new == NULL);
-      includes = new;
+      fail_if (yrealloc(tmp, includes, stack->ptr, const mds_kbdc_tree_include_t*));
       includes_size = stack->ptr;
     }
   

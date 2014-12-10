@@ -139,11 +139,11 @@ static int registry_action_add(int has_key, char* command, size_t command_key, u
       /* If the protocol is not already in the table. */
       
       /* Allocate list of servers for the protocol. */
-      client_list_t* list = malloc(sizeof(client_list_t));
-      void* address = list;
-      fail_if (list == NULL);
+      client_list_t* list;
+      void* address;
+      fail_if (xmalloc(address = list, 1, client_list_t));
       /* Duplicate the protocol name so it can be accessed later. */
-      if ((command = strdup(command)) == NULL)
+      if (xstrdup(command, command))
 	{
 	  saved_errno = errno, free(list), errno = saved_errno;
 	  fail_if (1);
@@ -227,7 +227,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
   else if ((action == 0) && !has_key)
     {
       /* Add protocol to wait set of not present in the protocol table. */
-      fail_if ((command = strdup(command)) == NULL);
+      fail_if (xstrdup(command, command));
       command_key = (size_t)(void*)command;
       if (hash_table_put(wait_set, command_key, 1) == 0)
 	if (errno)

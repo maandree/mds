@@ -169,7 +169,7 @@ static int process_include(mds_kbdc_tree_include_t* restrict tree)
   mds_kbdc_parsed_initialise(&subresult);
   
   /* Get dirname of current file. */
-  fail_if ((dirname = strdup(result->pathname)) == NULL);
+  fail_if (xstrdup(dirname, result->pathname));
   *(strrchr(dirname, '/')) = '\0';
   
   /* Get the current working directory. */

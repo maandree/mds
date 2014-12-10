@@ -100,27 +100,25 @@ void callables_terminate(void)
 int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* restrict callable,
 		  mds_kbdc_include_stack_t* restrict callable_include_stack)
 {
-#define yrealloc(var, elements, type)					\
-  (new_##var = realloc(var, (elements) * sizeof(type)),			\
-   (new_##var == NULL) ? -1 : (var = new_##var, new_##var = NULL, 0))
+#define _yrealloc(var, elements, type)  (yrealloc(tmp_##var, var, elements, type))
   
   char* dupname = NULL;
-  char*** new_names = NULL;
-  size_t** new_callables = NULL;
-  size_t* new_bucket_sizes = NULL;
+  char*** tmp_names = NULL;
+  size_t** tmp_callables = NULL;
+  size_t* tmp_bucket_sizes = NULL;
   char** old_names = NULL;
   size_t* old_callables = NULL;
-  mds_kbdc_tree_t** new_callable_list = NULL;
-  mds_kbdc_include_stack_t** new_callable_include_stack_list = NULL;
+  mds_kbdc_tree_t** tmp_callable_list = NULL;
+  mds_kbdc_include_stack_t** tmp_callable_include_stack_list = NULL;
   int saved_errno;
   
-  fail_if (dupname = strdup(name), dupname == NULL);
+  fail_if (xstrdup(dupname, name));
   
   if (arg_count >= buckets)
     {
-      fail_if (yrealloc(names,        arg_count + 1, char**));
-      fail_if (yrealloc(callables,    arg_count + 1, size_t*));
-      fail_if (yrealloc(bucket_sizes, arg_count + 1, size_t));
+      fail_if (_yrealloc(names,        arg_count + 1, char**));
+      fail_if (_yrealloc(callables,    arg_count + 1, size_t*));
+      fail_if (_yrealloc(bucket_sizes, arg_count + 1, size_t));
       memset(names        + buckets, 0, (arg_count + 1 - buckets) * sizeof(char**));
       memset(callables    + buckets, 0, (arg_count + 1 - buckets) * sizeof(size_t*));
       memset(bucket_sizes + buckets, 0, (arg_count + 1 - buckets) * sizeof(size_t));
@@ -134,8 +132,8 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
   callables[arg_count][bucket_sizes[arg_count]] = list_ptr;
   bucket_sizes[arg_count]++;
   
-  fail_if (yrealloc(callable_list, list_ptr + 1, mds_kbdc_tree_t*));
-  fail_if (yrealloc(callable_include_stack_list, list_ptr + 1, mds_kbdc_include_stack_t*));
+  fail_if (_yrealloc(callable_list, list_ptr + 1, mds_kbdc_tree_t*));
+  fail_if (_yrealloc(callable_include_stack_list, list_ptr + 1, mds_kbdc_include_stack_t*));
   
   callable_list[list_ptr] = callable;
   callable_include_stack_list[list_ptr] = callable_include_stack;
@@ -145,17 +143,12 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
  fail:
   saved_errno = errno;
   free(dupname);
-  free(new_names);
-  free(new_callables);
-  free(new_bucket_sizes);
-  free(new_callable_list);
-  free(new_callable_include_stack_list);
   if (old_names)
     names[arg_count] = old_names;
   if (old_callables)
     callables[arg_count] = old_callables;
   return errno = saved_errno, -1;
-#undef yrealloc
+#undef _yrealloc
 }
 
 

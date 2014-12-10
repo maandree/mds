@@ -489,8 +489,7 @@ char* parse_raw_string(const char* restrict string)
    * but when parsed it generateds 2 bytes in UTF-8, and their
    * is not code point whose UTF-8 encoding is longer than its
    * hexadecimal representation. */
-  p = rc = malloc(strlen(string) * sizeof(char));
-  fail_if (rc == NULL);
+  fail_if (xmalloc(p = rc, strlen(string), char));
   
   while ((c = *string++))
     if      (r(escape ==  8, '0', '7'))  buf = (buf << 3) | (c & 15);

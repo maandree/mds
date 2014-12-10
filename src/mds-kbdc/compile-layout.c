@@ -633,20 +633,20 @@ static char32_t* parse_escape(mds_kbdc_tree_t* restrict tree, const char* restri
 #define R(LOWER, UPPER)         (((LOWER) <= c) && (c <= (UPPER)))
 #define CR(COND, LOWER, UPPER)  ((*escape == (COND)) && R(LOWER, UPPER))
 #define VARIABLE                (int)(raw - raw_) - (c == '.'), raw_
-#define RETURN_ERROR(...)					\
-  do								\
-    {								\
-      NEW_ERROR(__VA_ARGS__);					\
-      error->start = lineoff;					\
-      error->end = lineoff + (size_t)(raw - raw_);		\
-      tree->processed = PROCESS_LEVEL;				\
-      *escape = 0;						\
-      if (rc)							\
-	goto done;						\
-      fail_if (rc = malloc(sizeof(char32_t)), rc == NULL);	\
-      *rc = -1;							\
-      goto done;						\
-    }								\
+#define RETURN_ERROR(...)				\
+  do							\
+    {							\
+      NEW_ERROR(__VA_ARGS__);				\
+      error->start = lineoff;				\
+      error->end = lineoff + (size_t)(raw - raw_);	\
+      tree->processed = PROCESS_LEVEL;			\
+      *escape = 0;					\
+      if (rc)						\
+	goto done;					\
+      fail_if (xmalloc(rc, 1, char32_t));		\
+      *rc = -1;						\
+      goto done;					\
+    }							\
   while (0)
   
   const char* restrict raw_ = raw++;
@@ -900,7 +900,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
     else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);
   
  done:
-  fail_if (rc = malloc(2 * sizeof(char32_t)), rc == NULL);
+  fail_if (xmalloc(rc, 2, char32_t));
   return rc[0] = buf, rc[1] = -1, rc;
   
  fail:

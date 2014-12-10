@@ -157,11 +157,11 @@ int unmarshal_server(char* state_buf)
   for (i = 0; i < n; i++)
     {
       stage = 1;
-      fail_if ((command = strdup(state_buf)) == NULL);
+      fail_if (xstrdup(command, state_buf));
       state_buf += strlen(command) + 1;
       
       stage = 2;
-      fail_if ((list = malloc(sizeof(client_list_t))) == NULL);
+      fail_if (xmalloc(list, 1, client_list_t));
       buf_get_next(state_buf, size_t, m);
       stage = 3;
       fail_if (client_list_unmarshal(list, state_buf));
@@ -183,7 +183,7 @@ int unmarshal_server(char* state_buf)
   foreach_linked_list_node (slave_list, node)
     {
       stage = 5;
-      fail_if ((slave = malloc(sizeof(slave_t))) == NULL);
+      fail_if (xmalloc(slave, 1, slave_t));
       stage = 6;
       fail_if ((n = slave_unmarshal(slave, state_buf)) == 0);
       state_buf += n / sizeof(char);

@@ -74,7 +74,7 @@ char* abspath(const char* path)
   
   if (*path == '/')
     {
-      fail_if (buf = strdup(path), buf == NULL);
+      fail_if (xstrdup(buf, path));
       return buf;
     }
   

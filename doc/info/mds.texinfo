@@ -3884,14 +3884,23 @@ requires @code{size_t i} is declared.
 
 @item @code{xmalloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
 Allocates a @code{type*} with @code{elements}
-elements and store the allocated pointer to
+elements and stores the allocated pointer to
 @code{var}. Returns zero on and only on success.
+
+@item @code{xbmalloc} [(@code{type* var, size_t bytes}) @arrow{} @code{int}]
+Allocates @code{bytes} bytes and stores the allocated
+pointer to @code{var}. Returns zero on and only on success.
 
 @item @code{xcalloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
 Allocates a zero-initialised @code{type*} with
-@code{elements} elements and store the allocated
+@code{elements} elements and stores the allocated
 pointer to @code{var}. Returns zero on and only
 on success.
+
+@item @code{xbcalloc} [(@code{type* var, size_t bytes}) @arrow{} @code{int}]
+Allocates and zero-initialises @code{bytes} bytess
+and stores the allocated pointer to @code{var}.
+Returns zero on and only on success.
 
 @item @code{xrealloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
 Reallocates @code{var} and updates the variable
@@ -3913,6 +3922,14 @@ on success, and @code{old} set to @code{var}
 on error. Like @code{xrealloc}, @code{xxrealloc}
 returns zero on and only on success.
 
+@item @code{yrealloc} [(@code{type* tmp, type* var, size_t elements, type}) @arrow{} @code{int}]
+Variant of @code{xrealloc} that will
+store @code{var} to @code{tmp} before
+reallocating @code{var} and then restore
+@code{var} if the reallocation failed.
+Like @code{xrealloc}, @code{yrealloc}
+returns zero on and only on success.
+
 @item @code{growalloc} [(@code{type* old, type* var, size_t elements, type}) @arrow{} @code{int}]
 When using this macro @code{var} should
 be a @code{type*} pointer allocated for
@@ -3924,6 +3941,15 @@ On failure nothing changes. You must specify
 an auxiliary @code{type*} variable and
 specify it in as the @code{old} parameter.
 Returns zero on and only on success.
+
+@item @code{xstrdup} [(@code{char* var, const char original}) @arrow{} @code{int}]
+Wrapper for @code{strdup} that
+returns zero on and only on success.
+@code{original} is duplicate and the
+duplicate is stored in the variable
+@code{var}. If @code{original} is
+@code{NULL}, @code{var} is set to
+@code{NULL} and zero is returned.
 
 @item @code{xperror} [(@code{const char* str}) @arrow{} @code{void}]
 Invokes @code{perror(str)} if and only if

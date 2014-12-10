@@ -432,8 +432,7 @@ static int base_marshal(int reexec_fd)
   state_n += marshal_server_size();
   
   /* Allocate a buffer for all data. */
-  state_buf = state_buf_ = malloc(state_n);
-  fail_if (state_buf == NULL);
+  fail_if (xbmalloc(state_buf = state_buf_, state_n));
   
   
   /* Marshal the state of the server. */

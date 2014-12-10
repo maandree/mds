@@ -254,7 +254,7 @@ void mds_kbdc_tree_free(mds_kbdc_tree_t* restrict this)
  * 
  * @param  member:identifer  The member in the tree to duplicate
  */
-#define S(member)  fail_if (t->member && (n->member = strdup(t->member), n->member == NULL))
+#define S(member)  fail_if (t->member && xstrdup(n->member, t->member))
 
 
 /**

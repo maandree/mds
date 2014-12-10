@@ -82,10 +82,7 @@ static int modifying_notify(client_t* client, mds_message_t message, uint64_t mo
   memcpy(multicast->payload, message.payload, message.payload_size * sizeof(char));
   fail_if (xmalloc(multicast->headers, message.header_count, char*));
   for (i = 0; i < message.header_count; i++, multicast->header_count++)
-    {
-      multicast->headers[i] = strdup(message.headers[i]);
-      fail_if (multicast->headers[i] == NULL);
-    }
+    fail_if (xstrdup(multicast->headers[i], message.headers[i]));
  done:
   pthread_mutex_unlock(&(modify_mutex));
   with_mutex (client->modify_mutex, pthread_cond_signal(&(client->modify_cond)););
@@ -199,8 +196,7 @@ static int assign_and_send_id(client_t* client, const char* message_id)
   n = strlen(msgbuf);
   
   /* Multicast the reply. */
-  msgbuf_ = strdup(msgbuf);
-  fail_if (msgbuf_ == NULL);
+  fail_if (xstrdup(msgbuf_, msgbuf));
   queue_message_multicast(msgbuf_, n, client);
   
   /* Queue message to be sent when this function returns.
@@ -317,7 +313,7 @@ int message_received(client_t* client)
   
   /* Multicast the message. */
   n = mds_message_compose_size(&message);
-  fail_if ((msgbuf = malloc(n)) == NULL);
+  fail_if (xbmalloc(msgbuf, n));
   mds_message_compose(&message, msgbuf);
   queue_message_multicast(msgbuf, n / sizeof(char), client);
   msgbuf = NULL;

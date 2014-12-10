@@ -429,13 +429,13 @@ void queue_message_multicast(char* message, size_t length, client_t* sender)
       char* colon = strchr(msg, ':');
       
       *end = '\0';
-      if ((header_values[i] = strdup(msg)) == NULL)
+      if (xstrdup(header_values[i], msg))
 	{
 	  header_count = i;
 	  fail_if (1);
 	}
       *colon = '\0';
-      if ((headers[i] = strdup(msg)) == NULL)
+      if (xstrdup(headers[i], msg))
 	{
 	  saved_errno = errno, free(headers[i]), errno = saved_errno;
 	  header_count = i;

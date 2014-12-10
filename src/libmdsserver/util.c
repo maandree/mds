@@ -135,8 +135,7 @@ void reexec_server(int argc, char** argv, int reexeced)
   if (reexeced == 0)
     {
       *reexec_args_++ = *argv;
-      *reexec_args_ = strdup("--re-exec");
-      fail_if (*reexec_args_ == NULL);
+      fail_if (xstrdup(*reexec_args_, "--re-exec"));
       for (i = 1; i < argc; i++)
 	reexec_args_[i] = argv[i];
     }

@@ -125,10 +125,10 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
   out->previous = NULL;
   out->reusable = NULL;
   
-  fail_if ((new_values   = malloc(n)) == NULL);
-  fail_if ((new_next     = malloc(n)) == NULL);
-  fail_if ((new_previous = malloc(n)) == NULL);
-  fail_if ((new_reusable = malloc(n)) == NULL);
+  fail_if (xbmalloc(new_values,   n));
+  fail_if (xbmalloc(new_next,     n));
+  fail_if (xbmalloc(new_previous, n));
+  fail_if (xbmalloc(new_reusable, n));
   
   out->values   = new_values;
   out->next     = new_next;
@@ -242,31 +242,22 @@ int linked_list_pack(linked_list_t* restrict this)
  */
 static ssize_t linked_list_get_next(linked_list_t* restrict this)
 {
+  size_t* tmp_values;
+  ssize_t* tmp;
+  
   if (this->reuse_head > 0)
     return this->reusable[--(this->reuse_head)];
   if (this->end == this->capacity)
     {
-      size_t* old_values;
-      ssize_t* old;
-      
       if ((ssize_t)(this->end) < 0)
 	fail_if ((errno = ENOMEM));
       
       this->capacity <<= 1;
-
-#define __realloc(new_var, old_var, type)					      \
-  if ((new_var = realloc(old_var = new_var, this->capacity * sizeof(type))) == NULL)  \
-    {										      \
-      new_var = old_var;							      \
-      fail_if (1);								      \
-    }
-
-      __realloc(this->values,   old_values, size_t)
-      __realloc(this->next,     old,        ssize_t)
-      __realloc(this->previous, old,        ssize_t)
-      __realloc(this->reusable, old,        ssize_t)
-
-#undef __realloc
+      
+      fail_if (yrealloc(tmp_values, this->values,   this->capacity, size_t));
+      fail_if (yrealloc(tmp,        this->next,     this->capacity, ssize_t));
+      fail_if (yrealloc(tmp,        this->previous, this->capacity, ssize_t));
+      fail_if (yrealloc(tmp,        this->reusable, this->capacity, ssize_t));
     }
   return (ssize_t)(this->end++);
  fail:
@@ -438,8 +429,6 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
  */
 int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
 {
-  size_t n;
-  
   /* buf_get(data, int, 0, LINKED_LIST_T_VERSION); */
   buf_next(data, int, 1);
   
@@ -454,12 +443,10 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
   buf_get(data, ssize_t, 3, this->edge);
   buf_next(data, size_t, 4);
   
-  n = this->capacity * sizeof(size_t);
-  
-  fail_if ((this->reusable = malloc(n)) == NULL);
-  fail_if ((this->values   = malloc(n)) == NULL);
-  fail_if ((this->next     = malloc(n)) == NULL);
-  fail_if ((this->previous = malloc(n)) == NULL);
+  fail_if (xmalloc(this->reusable, this->capacity, size_t));
+  fail_if (xmalloc(this->values,   this->capacity, size_t));
+  fail_if (xmalloc(this->next,     this->capacity, size_t));
+  fail_if (xmalloc(this->previous, this->capacity, size_t));
   
   memcpy(this->reusable, data, this->reuse_head * sizeof(ssize_t));
   buf_next(data, ssize_t, this->reuse_head);

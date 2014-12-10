@@ -283,8 +283,8 @@ slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv
   rc->wait_set = wait_set;
   rc->client = parse_client_id(recv_client_id);
   
-  fail_if ((rc->client_id = strdup(recv_client_id)) == NULL);
-  fail_if ((rc->message_id = strdup(recv_message_id)) == NULL);
+  fail_if (xstrdup(rc->client_id,  recv_client_id));
+  fail_if (xstrdup(rc->message_id, recv_message_id));
   
   return rc;
   
@@ -432,16 +432,16 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
   buf_get_next(data, long, this->dethklok.tv_nsec);
   
   n = (strlen((char*)data) + 1) * sizeof(char);
-  fail_if ((this->client_id = malloc(n)) == NULL);
+  fail_if (xbmalloc(this->client_id, n));
   memcpy(this->client_id, data, n);
   data += n, rc += n;
   
   n = (strlen((char*)data) + 1) * sizeof(char);
-  fail_if ((this->message_id = malloc(n)) == NULL);
+  fail_if (xbmalloc(this->message_id, n));
   memcpy(this->message_id, data, n);
   data += n, rc += n;
   
-  fail_if ((this->wait_set = malloc(sizeof(hash_table_t))) == NULL);
+  fail_if (xmalloc(this->wait_set, 1, hash_table_t));
   fail_if (hash_table_create(this->wait_set));
   
   buf_get_next(data, size_t, m);
@@ -449,7 +449,7 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data)
   while (m--)
     {
       n = (strlen((char*)data) + 1) * sizeof(char);
-      fail_if ((protocol = malloc(n)) == NULL);
+      fail_if (xbmalloc(protocol, n));
       memcpy(protocol, data, n);
       data += n, rc += n;
       

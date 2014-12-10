@@ -29,24 +29,24 @@
 /**
  * Define useful data for built-in function with 2 parameters
  */
-#define define_2						\
-  const char32_t* restrict a = *args++;				\
-  const char32_t* restrict b = *args++;				\
-  size_t an = string_length(a);					\
-  size_t bn = string_length(b);					\
-  size_t i, n = an > bn ? an : bn;				\
-  char32_t* restrict rc = malloc((n + 1) * sizeof(char32_t));	\
-  fail_if (rc == NULL);						\
+#define define_2				\
+  const char32_t* restrict a = *args++;		\
+  const char32_t* restrict b = *args++;		\
+  size_t an = string_length(a);			\
+  size_t bn = string_length(b);			\
+  size_t i, n = an > bn ? an : bn;		\
+  char32_t* restrict rc;			\
+  fail_if (xmalloc(rc, n + 1, char32_t));	\
   rc[n] = -1
 
 /**
  * Define useful data for built-in function with 1 parameter
  */
-#define define_1						\
-  const char32_t* restrict a = *args++;				\
-  size_t i, n = string_length(a);				\
-  char32_t* restrict rc = malloc((n + 1) * sizeof(char32_t));	\
-  fail_if (rc == NULL);						\
+#define define_1				\
+  const char32_t* restrict a = *args++;		\
+  size_t i, n = string_length(a);		\
+  char32_t* restrict rc;			\
+  fail_if (xmalloc(rc, n + 1, char32_t));	\
   rc[n] = -1
 
 /**
