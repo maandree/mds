@@ -5767,7 +5767,7 @@ You call also use if-statments. For example
 @example
 for "à" to "þ" as \1
   # times sign is not upper case of division sign
-  if \not(\equals(\a "\u00F7"))
+  if \not(\equals(\1 "\u00F7"))
     letter(\1 \add(\sub(\1 "à") "À"))
   end if
 end for
@@ -5777,7 +5777,7 @@ or equivalently
 
 @example
 for "à" to "þ" as \1
-  if \equals(\a "\u00F7")
+  if \equals(\1 "\u00F7")
     continue # times sign is not upper case of division sign
   end if
   letter(\1 \add(\sub(\1 "à") "À"))
