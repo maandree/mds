@@ -896,7 +896,7 @@ static char32_t* parse_unquoted_string(mds_kbdc_tree_t* restrict tree, const cha
     if (R('0', '9'))     buf = 10 * buf + (c & 15);
     else if (c == '\\')  CHAR_ERROR(tree, ERROR, "mixing numericals and escapes is not allowed");
     else if (c == '"')   CHAR_ERROR(tree, ERROR, "mixing numericals and quotes is not allowed");
-    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c);
+    else                 CHAR_ERROR(tree, ERROR, "stray ‘%c’", c); /* XXX support multibyte */
   
  done:
   fail_if (xmalloc(rc, 2, char32_t));

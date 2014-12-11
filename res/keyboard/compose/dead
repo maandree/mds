@@ -1242,28 +1242,28 @@ macro boxes/2
   let \4 : { \and(\4 1) \and(\4 2) \and(\4 4) \and(\4 8) }
   let \5 : { \and(\5 1) \and(\5 2) \and(\5 4) \and(\5 8) }
   for 0 to 3 as \8
-    \set(4 \8 \add(\rsh(\get(4 \8) \8) \mul(2 \rsh(\get(6 \8)))))
-    \set(5 \8 \add(\rsh(\get(5 \8) \8) \mul(2 \rsh(\get(7 \8)))))
+    \set(4 \8 \add(\rsh(\get(4 \8) \8) \mul(2 \rsh(\get(6 \8) \8))))
+    \set(5 \8 \add(\rsh(\get(5 \8) \8) \mul(2 \rsh(\get(7 \8) \8))))
     \set(4 \8 \add(\get(4 \8) \get(4 \8)))
     if \greater(\get(4 \8) 2)
       \set(4 \8 2)
     end if
   end for
-  for 0 to 127 as \5
-    let \6 : \get(3 \5)
-    if \equals(\4 999)
+  for 0 to 127 as \9
+    let \6 : \get(3 \9)
+    if \equals(\6 999)
       continue
     end if
     let \7 : { \and(\6 16) \and(\6 32) \and(\6 64) \and(\6 128) }
     let \6 : { \and(\6 1) \and(\6 2) \and(\6 4) \and(\6 8) }
     for 0 to 3 as \8
-      \set(6 \8 \add(\rsh(\get(6 \8) \8) \mul(2 \rsh(\get(7 \8)))))
+      \set(6 \8 \add(\rsh(\get(6 \8) \8) \mul(2 \rsh(\get(7 \8) \8))))
     end for
     if \equals(\get(6 0) \get(4 0))
       if \equals(\get(6 1) \get(4 1))
         if \equals(\get(6 2) \get(4 2))
           if \equals(\get(6 3) \get(4 3))
-            <dead compose> ("\add(\u2500 \1)" "\add(\u2500 \2)") : "\add(\u2500 \5)"
+            <dead compose> ("\add(\u2500 \1)" "\add(\u2500 \2)") : "\add(\u2500 \9)"
           end if
         end if
       end if
@@ -2053,8 +2053,8 @@ composite("∅" "°" "⦲")
 <dead compose> "⨟" "⨟" : "⨾"
 <dead compose> "." "⨟" : "⨾"
 <shift dead compose> "∐" "∐" : "⨿"
-<dead compose> (∩ ["." "⋅"]) : "⩀"
-<dead compose> (∪ ["." "−"]) : "⩁"
+<dead compose> ("∩" ["." "⋅"]) : "⩀"
+<dead compose> ("∪" ["." "−"]) : "⩁"
 <dead compose> ("_" "∪") : "⩂"
 <dead compose> "⩌" "⩌" : "⩂"
 <dead compose> ("_" "∩") : "⩃" # the font "fixed" places the bar beneath instead of above in ⩃
@@ -2770,7 +2770,7 @@ end for
 
 # Playing Cards:
 <shift dead compose> "p" "c" : "🂠"
-dead_ascii(🂠)
+dead_ascii("🂠")
 macro playing_card/2
   <dead compose> (["♠" "♤"] "\1") : "\add(\u1F0A0 \2)"
   <dead compose> (["♥" "♡"] "\1") : "\add(\u1F0B0 \2)"
@@ -2778,7 +2778,7 @@ macro playing_card/2
   <dead compose> (["♣" "♧"] "\1") : "\add(\u1F0D0 \2)"
 end macro
 for "1" to "9" as \1
-  playing_card("\1" \sub(\1 "0") 1)
+  playing_card("\1" \sub(\1 "0"))
 end for
 playing_card(["a" "A"] 1)
 playing_card("0" 10)
@@ -2815,7 +2815,7 @@ playing_card(["k" "K"] 14)
 # Enclosed Alphanumeric Supplement:
 <dead compose> "0" "." : "\u1F100"
 for "0" to "9" as \1
-  <dead compose> "\1" "," : "\add(\u1F101 \sub(\1 "0")"
+  <dead compose> "\1" "," : "\add(\u1F101 \sub(\1 "0"))"
 end for
 <dead compose> "(" "0" "." ")" : "\u1F10B"
 <dead compose> "(" "(" "(" "0" "." ")" ")" ")" : "\u1F10C"
