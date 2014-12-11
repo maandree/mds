@@ -17,7 +17,7 @@
  */
 #include "compile-layout.h"
 /* TODO add call stack */
-/* TODO fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
+/* XXX fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
 
 #include "include-stack.h"
 #include "builtin-functions.h"
