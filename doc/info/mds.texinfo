@@ -12,7 +12,7 @@
 
 @dircategory Graphics environment
 @direntry
-* mds: (mds).                        The micro-display server
+* mds: (mds).                        The avant-garde micro-display server
 @end direntry
 
 
@@ -31,13 +31,13 @@ Texts. A copy of the license is included in the section entitled
 
 @ifnottex
 @node Top
-@top mds -- The micro-display server
+@top mds -- The avant-garde micro-display server
 @insertcopying
 @end ifnottex
 
 @titlepage
 @title mds
-@subtitle The micro-display server
+@subtitle The avant-garde micro-display server
 @author by Mattias Andrée (maandree)
 
 @page
