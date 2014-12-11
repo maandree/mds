@@ -1,0 +1,23 @@
+assumption
+  macro letter/1
+    <letter \1> : \1
+  end macro
+end assumption
+
+# (assumption (@ 1 0-10)
+#   (.inner
+#     (macro (@ 2 2-7) ‘letter/1’
+#       (.inner
+#         (map (@ 3 4-20)
+#           (.sequence
+#             (keys (@ 3 4-15) ‘<letter \1>’)
+#           )
+#           (.result
+#             (string (@ 3 18-20) ‘\1’)
+#           )
+#         )
+#       )
+#     )
+#   )
+# )
+

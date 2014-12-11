@@ -30,6 +30,11 @@
 #define C(TYPE)  MDS_KBDC_TREE_TYPE_##TYPE
 
 /**
+ * Check the value of `innermost_visit`
+ */
+#define VISITING(TYPE)  (innermost_visit == MDS_KBDC_TREE_TYPE_##TYPE)
+
+/**
  * Add an error with “included from here”-notes to the error list
  * 
  * @param  NODE:const mds_kbdc_tree_t*    The node the triggered the error
@@ -84,6 +89,13 @@ static mds_kbdc_tree_assumption_t* assumption = NULL;
  */
 static size_t def_includes_ptr = 0;
 
+/**
+ * The type of the currently innermost visited node
+ * of `C(FUNCTION)`, `C(MACRO)`, `C(INFORMATION)` and
+ * `C(ASSUMPTION)`, -1 if none
+ */
+static int innermost_visit = -1;
+
 
 
 /**
@@ -125,30 +137,25 @@ static int validate_include(mds_kbdc_tree_include_t* restrict tree)
 static int validate_function(mds_kbdc_tree_function_t* restrict tree)
 {
   int r;
-  if (function)
+  if (VISITING(FUNCTION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "nested function definition");
       NEW_ERROR(function, def_includes_ptr, NOTE, "outer function defined here");
       return 0;
     }
-  else if (macro)
+  else if (VISITING(MACRO))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "function definition inside macro definition");
       NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
-  else if (information)
+  else if (VISITING(INFORMATION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "function definition inside information clause");
       NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
-  else if (assumption)
-    {
-      NEW_ERROR(tree, includes_ptr, ERROR, "function definition inside assumption clause");
-      NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
-      return 0;
-    }
+  innermost_visit = tree->type;
   function = tree;
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
@@ -167,30 +174,25 @@ static int validate_function(mds_kbdc_tree_function_t* restrict tree)
 static int validate_macro(mds_kbdc_tree_macro_t* restrict tree)
 {
   int r;
-  if (function)
+  if (VISITING(FUNCTION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "macro definition inside function definition");
       NEW_ERROR(function, def_includes_ptr, NOTE, "outer function definition defined here");
       return 0;
     }
-  else if (macro)
+  else if (VISITING(MACRO))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "nested macro definition");
       NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
-  else if (information)
+  else if (VISITING(INFORMATION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "macro definition inside information clause");
       NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
-  else if (assumption)
-    {
-      NEW_ERROR(tree, includes_ptr, ERROR, "macro definition inside assumption clause");
-      NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
-      return 0;
-    }
+  innermost_visit = tree->type;
   macro = tree;
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
@@ -209,30 +211,31 @@ static int validate_macro(mds_kbdc_tree_macro_t* restrict tree)
 static int validate_information(mds_kbdc_tree_information_t* restrict tree)
 {
   int r;
-  if (function)
+  if (VISITING(FUNCTION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "information clause inside function definition");
       NEW_ERROR(function, def_includes_ptr, NOTE, "outer function definition defined here");
       return 0;
     }
-  else if (macro)
+  else if (VISITING(MACRO))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "information clause inside macro definition");
       NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
-  else if (information)
+  else if (VISITING(INFORMATION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "nested information clause");
       NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
-  else if (assumption)
+  else if (VISITING(ASSUMPTION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "information clause inside assumption clause");
       NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
+  innermost_visit = tree->type;
   information = tree;
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
@@ -251,30 +254,31 @@ static int validate_information(mds_kbdc_tree_information_t* restrict tree)
 static int validate_assumption(mds_kbdc_tree_assumption_t* restrict tree)
 {
   int r;
-  if (function)
+  if (VISITING(FUNCTION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "assumption clause inside function definition");
       NEW_ERROR(function, def_includes_ptr, NOTE, "outer function definition defined here");
       return 0;
     }
-  else if (macro)
+  else if (VISITING(MACRO))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "assumption clause inside macro definition");
       NEW_ERROR(macro, def_includes_ptr, NOTE, "outer macro defined here");
       return 0;
     }
-  else if (information)
+  else if (VISITING(INFORMATION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "assumption clause inside information clause");
       NEW_ERROR(information, def_includes_ptr, NOTE, "outer information clause defined here");
       return 0;
     }
-  else if (assumption)
+  else if (VISITING(ASSUMPTION))
     {
       NEW_ERROR(tree, includes_ptr, ERROR, "nested assumption clause");
       NEW_ERROR(assumption, def_includes_ptr, NOTE, "outer assumption clause defined here");
       return 0;
     }
+  innermost_visit = tree->type;
   assumption = tree;
   def_includes_ptr = includes_ptr;
   r = validate_subtree(tree->inner);
@@ -300,11 +304,11 @@ static int validate_map(mds_kbdc_tree_map_t* restrict tree)
      * at this process level, determine whether a
      * value-statement is used correctly or not.
      */
-  else if (information)
+  else if (VISITING(INFORMATION))
     NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside information clause");
-  else if (assumption)
+  else if (VISITING(ASSUMPTION))
     NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside assumption clause");
-  else if (function)
+  else if (VISITING(FUNCTION))
     NEW_ERROR(tree, includes_ptr, ERROR, "mapping-statement inside function definition");
   return 0;
  fail:
@@ -320,11 +324,11 @@ static int validate_map(mds_kbdc_tree_map_t* restrict tree)
  */
 static int validate_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
 {
-  if (information)
+  if (VISITING(INFORMATION))
     NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside information clause");
-  else if (assumption)
+  else if (VISITING(ASSUMPTION))
     NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside assumption clause");
-  else if (function)
+  else if (VISITING(FUNCTION))
     NEW_ERROR(tree, includes_ptr, ERROR, "macro call inside function definition");
   return 0;
  fail:
@@ -454,6 +458,7 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
 {
 #define v(type)  fail_if (validate_##type(&(tree->type)))
 #define V(type)  fail_if (validate_##type(&(tree->type##_)))
+  int old_innermost_visit = innermost_visit;
  again:
   if (tree == NULL)
     return 0;
@@ -486,10 +491,11 @@ static int validate_subtree(mds_kbdc_tree_t* restrict tree)
       break;
     }
   
+  innermost_visit = old_innermost_visit;
   tree = tree->next;
   goto again;
  fail:
-  return -1;
+  return innermost_visit = old_innermost_visit, -1;
 #undef V
 #undef v
 }
@@ -517,5 +523,6 @@ int validate_tree(mds_kbdc_parsed_t* restrict result_)
 
 
 #undef NEW_ERROR
+#undef VISITING
 #undef C
 

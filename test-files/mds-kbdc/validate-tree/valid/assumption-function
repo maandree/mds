@@ -1,0 +1,21 @@
+assumption
+  function digit/1
+    "\add(\1 "0")"
+  end function
+end assumption
+
+# (assumption (@ 1 0-10)
+#   (.inner
+#     (function (@ 2 2-10) ‘digit/1’
+#       (.inner
+#         (map (@ 3 4-18)
+#           (.sequence
+#             (string (@ 3 4-18) ‘"\add(\1 "0")"’)
+#           )
+#           (.result nil)
+#         )
+#       )
+#     )
+#   )
+# )
+
