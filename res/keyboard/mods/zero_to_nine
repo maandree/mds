@@ -1,3 +1,9 @@
+assumption
+  function digit/1
+    \add(\1 "0")
+  end function
+end assumption
+
 <letter \digit(1)> : "\digit(0)"
 <letter \digit(2)> : "\digit(1)"
 <letter \digit(3)> : "\digit(2)"

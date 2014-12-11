@@ -1,3 +1,12 @@
+assumption
+  function digit/1
+    \add(\1 "0")
+  end function
+  function before_one/0
+    "§"
+  end function
+end assumption
+
 <letter \before_one()> : "\digit(0)"
 <letter \digit(0)> : "\before_one()"
 
