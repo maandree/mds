@@ -1093,7 +1093,7 @@ static size_t parse_variable(mds_kbdc_tree_t* restrict tree, const char* restric
   n = (size_t)(raw - raw_);
   dotless = alloca((n + 1) * sizeof(char));
   memcpy(dotless, raw_, n * sizeof(char)), dotless[n] = '\0';
-  var = (size_t)atoll(dotless + 1);
+  var = atoz(dotless + 1);
   if (strlen(dotless + 1) != (size_t)snprintf(NULL, 0, "%zu", var))
     fail_if ((errno = ERANGE));
   if (var == 0)
@@ -1271,7 +1271,7 @@ static int set_function(mds_kbdc_tree_function_t* restrict function,
 {
   char* suffixless = function->name;
   char* suffix_start = strchr(suffixless, '/');
-  size_t arg_count = (size_t)atoll(suffix_start + 1);
+  size_t arg_count = atoz(suffix_start + 1);
   int r;
   
   *suffix_start = '\0';
@@ -1938,7 +1938,7 @@ static int compile_function(mds_kbdc_tree_function_t* restrict tree)
   suffixless = tree->name;
   suffix_start = strchr(suffixless, '/');
   *suffix_start++ = '\0';
-  arg_count = (size_t)atoll(suffix_start--);
+  arg_count = atoz(suffix_start--);
   
   /* Check that the function is not already defined as a builtin function. */
   if (builtin_function_defined(suffixless, arg_count))
