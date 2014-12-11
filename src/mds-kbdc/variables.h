@@ -74,6 +74,21 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value);
  */
 mds_kbdc_tree_t* variables_get(size_t variable) __attribute__((pure));
 
+/**
+ * Mark a variable as having been unsed in a for-loop in the current scope
+ * 
+ * @param   variable  The variable index, must already be defined
+ * @return            Zero on success, -1 on error
+ */
+int variables_was_used_in_for(size_t variable);
+
+/**
+ * Check whether a variable has been used in a for-loop in the current scope
+ * 
+ * @param   variable  The variable index, must already be defined
+ * @return            Whether `variables_was_used_in_for` has been unused on the variable
+ */
+int variables_has_been_used_in_for(size_t variable) __attribute__((pure));
 
 
 #endif

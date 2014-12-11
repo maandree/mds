@@ -41,10 +41,17 @@ typedef struct variable
   struct variable* restrict previous;
   
   /**
-   * The original scope the current shadow
-   * of the variable was created in
+   * The original scope in which the current
+   * shadow of the variable was created
    */
   size_t scope;
+  
+  /**
+   * The latest scope the in which the
+   * variable has been used in a for-loop,
+   * `~0' if never, or below `scope`
+   */
+  size_t used_in_for;
   
 } variable_t;
 
@@ -173,6 +180,7 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
       variables[variable]->value = value;
       variables[variable]->previous = previous;
       variables[variable]->scope = current_scope;
+      variables[variable]->used_in_for = (size_t)(~0LL);
     }
   
   return 0;
@@ -195,5 +203,51 @@ mds_kbdc_tree_t* variables_get(size_t variable)
   if (variable >= variable_count)   return NULL;
   if (variables[variable] == NULL)  return NULL;
   return variables[variable]->value;
+}
+
+
+/**
+ * Mark a variable as having been unsed in a for-loop in the current scope
+ * 
+ * @param   variable  The variable index, must already be defined
+ * @return            Zero on success, -1 on error
+ */
+int variables_was_used_in_for(size_t variable)
+{
+  variable_t* previous;
+  
+  /* Already marked. */
+  if (variables[variable]->used_in_for == current_scope)
+    return 0;
+  
+  /* Not marked. */
+  if (variables[variable]->used_in_for == (size_t)(~0LL))
+    return variables[variable]->used_in_for = current_scope, 0;
+  
+  /* Marked for another scope. */
+  previous = variables[variable];
+  if (xmalloc(variables[variable], 1, variable_t))
+    fail_if (variables[variable] = previous, 1);
+  variables[variable]->value = mds_kbdc_tree_dup(previous->value);
+  fail_if (variables[variable]->value == NULL);
+  variables[variable]->previous = previous;
+  variables[variable]->scope = current_scope;
+  variables[variable]->used_in_for = current_scope;
+  
+  return 0;
+ fail:
+  return -1;
+}
+
+
+/**
+ * Check whether a variable has been used in a for-loop in the current scope
+ * 
+ * @param   variable  The variable index, must already be defined
+ * @return            Whether `variables_was_used_in_for` has been unused on the variable
+ */
+int variables_has_been_used_in_for(size_t variable)
+{
+  return variables[variable]->used_in_for == current_scope;
 }
 

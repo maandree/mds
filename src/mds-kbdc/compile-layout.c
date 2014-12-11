@@ -167,8 +167,8 @@ static int let(size_t variable, const char32_t* restrict string, const mds_kbdc_
   int saved_errno;
   
   /* Warn if this is a possible shadow attempt. */
-  if (possibile_shadow_attempt && variables_let_will_override(variable) &&
-      statement && (statement->processed != PROCESS_LEVEL))
+  if (possibile_shadow_attempt && variables_let_will_override(variable) && statement &&
+      (variables_has_been_used_in_for(variable) == 0) && (statement->processed != PROCESS_LEVEL))
     {
       statement->processed = PROCESS_LEVEL;
       NEW_ERROR(statement, WARNING, "does not shadow existing definition");
@@ -2110,6 +2110,7 @@ static int compile_for(mds_kbdc_tree_for_t* restrict tree)
       if (*first == *last)
 	break;
     }
+  fail_if (variables_was_used_in_for(variable));
   
   /* Catch `break` and `continue`, they may not propagate further. */
   if (break_level < 3)
