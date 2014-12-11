@@ -524,7 +524,8 @@ static size_t check_function_calls_in_literal_(const mds_kbdc_tree_t* restrict t
       if (escape)
 	{
 	  escape = 0;
-	  if ((c == '_') || R('a', 'z') || R('A', 'Z'))
+	  if (((c == '_') || R('a', 'z') || R('A', 'Z')) &&(c != 'u'))
+	    /* \u*() is disallowed because \u* is used for hexadecimal representation. */
 	    if (check_function_call(tree, raw - 2, lineoff + (size_t)(raw - 2 - raw_), &raw, rc), *rc < 0)
 	      break;
 	}

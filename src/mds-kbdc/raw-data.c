@@ -360,9 +360,9 @@ static int expand(char** restrict content, size_t* restrict content_size)
   /* Expand tab spaces. */
   memmove(data + extra, data, n);
   for (ptr = 0; ptr < n; ptr++, added--)
-    if (data[ptr] == '\n')
+    if (data[ptr + extra] == '\n')
       data[ptr + added++] = data[ptr + extra], col = 0;
-    else if (data[ptr] != '\t')
+    else if (data[ptr + extra] != '\t')
       data[ptr + added++] = data[ptr + extra], col++;
     else
       do
