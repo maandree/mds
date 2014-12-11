@@ -1,3 +1,15 @@
+assumption
+  function digit/1
+    \add(\1 "0")
+  end function
+  function comma/0
+    ","
+  end function
+  function altcomma/0
+    "."
+  end function
+end assumption
+
 include "control_keys"
 include "keypad"
 include "../../compose/dead"

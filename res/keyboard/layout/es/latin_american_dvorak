@@ -143,12 +143,12 @@ nocaps("r" "®" "™")
 caps("t" "þ" "Þ")
 caps("n" "ŋ" "Ŋ")
 nocaps("s" "ß" "§")
-<letter {"> : "{"
-<shift letter {"> : "["
-<altgr letter {"> : <dead letter `>
-<altgr shift letter {"> : <dead letter ¨>
-<letter }"> : "}"
-<shift letter }"> : "]"
+<letter \{> : "{"
+<shift letter \{> : "["
+<altgr letter \{> : <dead letter `>
+<altgr shift letter \{> : <dead letter ¨>
+<letter \}> : "}"
+<shift letter \}> : "]"
 caps("}" "ç" "Ç")
 
 

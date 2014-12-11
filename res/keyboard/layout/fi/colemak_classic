@@ -122,7 +122,7 @@ key("<" ">" "|" "¦")
 <altgr "T"> : "Þ"
 
 <altgr letter y> : "←"
-<altgr shift letter y> : →"
+<altgr shift letter y> : "→"
 
 <altgr letter u> : "↓"
 <altgr shift letter u> : "↑"
