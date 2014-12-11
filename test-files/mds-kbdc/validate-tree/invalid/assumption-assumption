@@ -1,0 +1,19 @@
+assumption
+  assumption
+  end assumption
+end assumption
+
+# (assumption (@ 1 0-10)
+#   (.inner
+#     (assumption (@ 2 2-12)
+#       (.inner nil)
+#     )
+#   )
+# )
+# :2:2–12: error: nested assumption clause
+#    assumption
+#    ^^^^^^^^^^
+# :1:0–10: note: outer assumption clause defined here
+#  assumption
+#  ^^^^^^^^^^
+
