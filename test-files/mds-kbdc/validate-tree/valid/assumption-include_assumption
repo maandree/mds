@@ -1,0 +1,26 @@
+assumption
+  have_range "a" "z"
+end assumption
+include "assumption"
+
+# (assumption (@ 1 0-10)
+#   (.inner
+#     (have_range (@ 2 2-12) ‘"a"’ ‘"z"’)
+#   )
+# )
+# (include (@ 4 0-7) ‘.../assumption’
+#   (.inner
+#     (assumption (@ 1 0-10)
+#       (.inner
+#         (have (@ 2 2-6)
+#           (.data
+#             (keys (@ 2 7-14) ‘<space>’)
+#           )
+#         )
+#         (have_chars (@ 3 2-12) ‘" "’)
+#         (have_range (@ 4 2-12) ‘"a"’ ‘"z"’)
+#       )
+#     )
+#   )
+# )
+
