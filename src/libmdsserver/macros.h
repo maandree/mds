@@ -37,6 +37,9 @@
 */
 
 
+/* # pragma GCC diagnostic ignored "-Wpedantic" */
+
+
 /**
  * Wrapper around `asprintf` that makes sure that first
  * argument gets set to `NULL` on error and that zero is
@@ -49,6 +52,16 @@
  */
 #define xasprintf(VAR, ...)					\
   (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
+/*
+#define xasprintf(VAR, ...)								\
+  ({											\
+    int _x_rc = (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0);		\
+    fprintf(stderr, "xasprintf(%s, %s)(=%zu) @ %s:%i\n",				\
+	    #VAR, #__VA_ARGS__, _x_rc ? 0 : (strlen(VAR) + 1), __FILE__, __LINE__);	\
+    _x_rc;										\
+  })
+*/
+
 
 /**
  * Wrapper for `snprintf` that allows you to forget about the buffer size
