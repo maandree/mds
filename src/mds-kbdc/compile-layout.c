@@ -16,11 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "compile-layout.h"
-/* TODO add call stack */
 /* XXX fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
 /* XXX add pragma support */
 
-#include "include-stack.h"
+#include "call-stack.h"
 #include "builtin-functions.h"
 #include "string.h"
 #include "variables.h"
@@ -2590,9 +2589,12 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
 int compile_layout(mds_kbdc_parsed_t* restrict result_)
 {
   int r, saved_errno;
-  mds_kbdc_include_stack_begin(result = result_);
+  result = result_;
+  mds_kbdc_include_stack_begin(result_);
+  mds_kbdc_call_stack_begin(result_);
   r = compile_subtree(result_->tree);
   saved_errno = errno;
+  mds_kbdc_call_stack_end();
   mds_kbdc_include_stack_end();
   variables_terminate();
   callables_terminate();
