@@ -30,7 +30,7 @@
 static mds_kbdc_parse_error_t* error;
 
 /**
- * The `result` parameter of root procedure that requires the include stack
+ * The `result` parameter of root procedure that requires the include-stack
  */
 static mds_kbdc_parsed_t* result;
 
@@ -95,7 +95,7 @@ int mds_kbdc_include_stack_dump(size_t ptr)
 /**
  * Mark the root of the tree as included
  * 
- * @param  result_  The `result` parameter of root procedure that requires the include stack
+ * @param  result_  The `result` parameter of root procedure that requires the include-stack
  */
 void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result_)
 {

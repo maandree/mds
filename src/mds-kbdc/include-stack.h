@@ -63,7 +63,7 @@
 
 
 /**
- * A saved state of the include stack
+ * A saved state of the include-stack
  */
 typedef struct mds_kbdc_include_stack
 {
@@ -105,7 +105,7 @@ int mds_kbdc_include_stack_dump(size_t ptr);
 /**
  * Mark the root of the tree as included
  * 
- * @param  result  The `result` parameter of root procedure that requires the include stack
+ * @param  result  The `result` parameter of root procedure that requires the include-stack
  */
 void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result);
 
