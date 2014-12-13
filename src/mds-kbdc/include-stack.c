@@ -99,7 +99,6 @@ int mds_kbdc_include_stack_dump(size_t ptr)
  */
 void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result_)
 {
-  latest_save = NULL;
   result = result_;
   original_pathname = result_->pathname;
   original_source_code = result_->source_code;
@@ -135,7 +134,7 @@ int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, vo
   int saved_errno;
   
   if (includes_ptr == includes_size)
-    fail_if (xxrealloc(old, includes, includes_size += 4, mds_kbdc_tree_include_t*));
+    fail_if (xxrealloc(old, includes, includes_size += 4, const mds_kbdc_tree_include_t*));
   
   fail_if (xmalloc(*data, 3, void*));
   
