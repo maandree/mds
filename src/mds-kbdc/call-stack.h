@@ -36,6 +36,23 @@ void mds_kbdc_call_stack_begin(mds_kbdc_parsed_t* restrict result);
  */
 void mds_kbdc_call_stack_end(void);
 
+/**
+ * Mark an function- or macro-call
+ * 
+ * @param   tree   The tree node where the call was made
+ * @param   start  The position of the line of the tree node where the call begins
+ * @param   end    The position of the line of the tree node where the call end
+ * @return         Zero on success, -1 on error
+ */
+int mds_kbdc_call_stack_push(const mds_kbdc_tree_t* restrict tree, size_t start, size_t end);
+
+/**
+ * Undo the lasted not-undone call to `mds_kbdc_call_stack_push`
+ * 
+ * This function is guaranteed not to modify `errno`
+ */
+void mds_kbdc_call_stack_pop(void);
+
 
 
 #endif
