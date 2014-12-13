@@ -1,0 +1,10 @@
+function f/0
+  let \0 : 0
+end function
+function g/0
+  "\f()"
+end function
+function h/0
+  "\g()"
+end function
+

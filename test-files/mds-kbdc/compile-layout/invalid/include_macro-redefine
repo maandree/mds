@@ -1,0 +1,4 @@
+include "_include_macro-redefine"
+macro m/0
+end macro
+

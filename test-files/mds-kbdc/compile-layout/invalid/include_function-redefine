@@ -1,0 +1,4 @@
+include "_include_function-redefine"
+function f/0
+end function
+

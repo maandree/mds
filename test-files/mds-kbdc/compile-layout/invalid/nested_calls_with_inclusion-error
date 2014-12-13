@@ -1,0 +1,9 @@
+include "_nested_calls_with_inclusion-error"
+macro m/0
+  "\h()"
+end macro
+macro n/0
+  m()
+end macro
+n()
+
