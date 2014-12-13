@@ -25,6 +25,21 @@
 
 
 /**
+ * Add “called from here”-notes
+ */
+#define DUMP_CALL_STACK			\
+  fail_if (mds_kbdc_call_stack_dump())
+
+
+
+/**
+ * Add “called from here”-notes
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int mds_kbdc_call_stack_dump(void);
+
+/**
  * Prepare for usage of call-stacks
  * 
  * @param  result  The `result` parameter of root procedure that requires the call-stack

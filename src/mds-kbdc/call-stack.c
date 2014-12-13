@@ -91,6 +91,40 @@ static size_t calls_ptr = 0;
 
 
 /**
+ * Add “called from here”-notes
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int mds_kbdc_call_stack_dump(void)
+{
+  char* old_pathname = result->pathname;
+  mds_kbdc_source_code_t* old_source_code = result->source_code;
+  size_t ptr = calls_ptr, iptr;
+  mds_kbdc_call_t* restrict call;
+  mds_kbdc_include_stack_t* restrict includes;
+  
+  while (ptr--)
+    {
+      call = calls + ptr;
+      includes = call->include_stack;
+      iptr = includes->ptr;
+      result->pathname    = iptr ? includes->stack[iptr - 1]->filename    : original_pathname;
+      result->source_code = iptr ? includes->stack[iptr - 1]->source_code : original_source_code;
+      NEW_ERROR_(result, NOTE, 1, call->tree->loc_line, call->start, call->end, 1, "called from here");
+      DUMP_INCLUDE_STACK(iptr);
+    }
+  
+  result->pathname = old_pathname;
+  result->source_code = old_source_code;
+  return 0;
+ fail:
+  result->pathname = old_pathname;
+  result->source_code = old_source_code;
+  return -1;
+}
+
+
+/**
  * Prepare for usage of call-stacks
  * 
 xo * @param  result_  The `result` parameter of root procedure that requires the call-stack

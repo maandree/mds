@@ -17,7 +17,7 @@
  */
 #include "compile-layout.h"
 /* XXX fix so that for-loops do not generate the same errors/warnings in all iterations [loopy_error]. */
-/* XXX add pragma support */
+/* XXX add pragma support: mark as shadowable, stop warnings, print variable value */
 
 #include "call-stack.h"
 #include "builtin-functions.h"
@@ -49,8 +49,13 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR(NODE, SEVERITY, ...)					\
-  NEW_ERROR_WITH_INCLUDES(NODE, includes_ptr, SEVERITY, __VA_ARGS__)
+#define NEW_ERROR(NODE, SEVERITY, ...)						\
+  do										\
+    {										\
+      NEW_ERROR_WITH_INCLUDES(NODE, includes_ptr, SEVERITY, __VA_ARGS__);	\
+      DUMP_CALL_STACK;								\
+    }										\
+  while (0)
 
 /**
  * Beginning of failure clause
