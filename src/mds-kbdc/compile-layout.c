@@ -290,6 +290,9 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
   mds_kbdc_include_stack_t* our_include_stack = NULL;
   int r, is_set, builtin, saved_errno;
   
+  /* Push call-stack. */
+  mds_kbdc_call_stack_push(tree, start, end);
+  
   /* Count the number of arguments we have. */
   while (arguments[arg_count])
     arg_count++;
@@ -370,11 +373,15 @@ static int call_function(mds_kbdc_tree_t* restrict tree, const char* restrict na
   
   
  done:
+  /* Pop call-stack. */
+  mds_kbdc_call_stack_pop();
+  
   /* Pop return-stack. */
   current_return_value = old_return_value;
   return 0;
   
   FAIL_BEGIN;
+  mds_kbdc_call_stack_pop();
   mds_kbdc_include_stack_free(our_include_stack);
   free(*return_value), *return_value = NULL;
   current_return_value = old_return_value;
@@ -2462,6 +2469,9 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   
   last_value_statement = NULL;
   
+  /* Push call-stack. */
+  mds_kbdc_call_stack_push((mds_kbdc_tree_t*)tree, tree->loc_start, tree->loc_end);
+  
   /* Duplicate arguments and evaluate function calls,
      variable dereferences and escapes in the macro
      call arguments. */
@@ -2479,7 +2489,7 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
     goto done;
   
   
-  /* Push call stack and set parameters. */
+  /* Push variable-stack and set parameters. */
   variables_stack_push();
   for (arg_ = arg; arg_; arg_ = arg_->next)
     fail_if (let(++variable, NULL, arg_, NULL, 0, 0));
@@ -2495,16 +2505,19 @@ static int compile_macro_call(mds_kbdc_tree_macro_call_t* restrict tree)
   fail_if (mds_kbdc_include_stack_restore(our_include_stack));
   mds_kbdc_include_stack_free(our_include_stack), our_include_stack = NULL;
   
-  /* Pop call stack. */
+  /* Pop variable-stack. */
   variables_stack_pop();
   
-  
  done:
+  /* Pop call-stack. */
+  mds_kbdc_call_stack_pop();
+  
   last_value_statement = NULL;
   break_level = 0;
   mds_kbdc_tree_free(arg);
   return 0;
   FAIL_BEGIN;
+  mds_kbdc_call_stack_pop();
   mds_kbdc_tree_free(arg);
   mds_kbdc_include_stack_free(our_include_stack);
   FAIL_END;
