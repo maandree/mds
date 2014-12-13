@@ -78,7 +78,7 @@ int mds_kbdc_include_stack_dump(size_t ptr)
   mds_kbdc_source_code_t* old_source_code = result->source_code;
   while (ptr--)
     {
-      result->pathname = ptr ? includes[ptr - 1]->filename : original_pathname;
+      result->pathname    = ptr ? includes[ptr - 1]->filename    : original_pathname;
       result->source_code = ptr ? includes[ptr - 1]->source_code : original_source_code;
       NEW_ERROR_WITHOUT_INCLUDES(includes[ptr], NOTE, "included from here");
     }
