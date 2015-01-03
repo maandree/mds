@@ -42,7 +42,8 @@
 #define C(TYPE)  MDS_KBDC_TREE_TYPE_##TYPE
 
 /**
- * Add an error with “included from here”-notes to the error list
+ * Add an error with “included from here”-notes and, unless
+ * it is a note, “called from here”-notes to the error list
  * 
  * @param  NODE:const mds_kbdc_tree_t*    The node the triggered the error
  * @param  SEVERITY:identifier            * in `MDS_KBDC_PARSE_ERROR_*` to indicate severity
@@ -53,7 +54,8 @@
   do										\
     {										\
       NEW_ERROR_WITH_INCLUDES(NODE, includes_ptr, SEVERITY, __VA_ARGS__);	\
-      DUMP_CALL_STACK;								\
+      if (strcmp(#SEVERITY, "NOTE"))						\
+	DUMP_CALL_STACK;							\
     }										\
   while (0)
 
