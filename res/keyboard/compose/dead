@@ -109,6 +109,10 @@ end macro
 macro diaeresis/2
   composite("¨" "\"" "\1" "\2")
 end macro
+# TODO hook
+# TODO topbar
+# TODO double_grave
+# TODO inverted_breve
 
 
 <shift dead compose> "u" "+" : <dead hexcompose>
@@ -224,7 +228,7 @@ acute("y" "ý")
 <dead compose> "t" "h" : "þ"
 diaeresis("y" "ÿ")
 
-# Latin Extended-A
+# Latin Extended-A:
 macron("A" "Ā")
 macron("a" "ā")
 breve("A" "Ă")
@@ -352,7 +356,210 @@ caron("Z" "Ž")
 caron("z" "ž")
 <dead compose> "s" "f" : "ſ"
 
-# TODO Latin Extended-B
+# Latin Extended-B:
+stroke("b" "ƀ")
+hook("B" "Ɓ")
+topbar("B" "Ƃ")
+topbar("b" "ƃ")
+# TODO (Ƅ) latin capital letter tone six
+# TODO (ƅ) latin small letter tone six
+# TODO (Ɔ) latin captial letter open o
+hook("C" "Ƈ")
+hook("c" "ƈ")
+# TODO (Ɖ) latin captial letter african d
+hook("D" "Ɗ")
+topbar("D" "Ƌ")
+topbar("d" "ƌ")
+# TODO (ƍ) latin small letter turned delta
+# TODO (Ǝ) latin capital letter reversed e
+# TODO (Ə) latin capital letter schwa
+# TODO (Ɛ) latin capital letter open e
+hook("F" "Ƒ")
+hook("f" "ƒ")
+hook("G" "Ɠ")
+# TODO (Ɣ) latin capital letter gamma
+<dead compose> "h" "v" : "ƕ"
+# TODO (Ɩ) latin capital letter iota
+stroke("I" "Ɨ")
+hook("K" "Ƙ")
+hook("k" "ƙ")
+# TODO (ƚ) latin small letter l with bar
+# TODO (ƛ) latin small letter lambda with stroke
+# TODO (Ɯ) latin capital letter turned m
+# TODO (Ɲ) latin capital letter n with left hook
+# TODO (ƞ) latin small letter n with long right leg
+# TODO (Ɵ) latin capital letter o with middle tilde
+# TODO (Ơ) latin capital letter o with horn
+# TODO (ơ) latin small letter o with horn
+<dead compose> "O" ["I" "i"] : "Ƣ"
+<dead compose> "o" "i" : "ƣ"
+hook("P" "Ƥ")
+hook("p" "ƥ")
+<dead compose> ["Y" "y"] ["R" "r"] : "Ʀ"
+# TODO (Ƨ) latin capital letter tone two
+# TODO (ƨ) latin small letter tone two
+# TODO (Ʃ) latin capital letter esh
+# TODO (ƪ) latin letter reversed esh loop
+# TODO (ƫ) latin small letter t with palatal hook
+hook("T" "Ƭ")
+hook("t" "ƭ")
+# TODO (Ʈ) latin capital letter t with retroflex hook
+hook("U" "Ư")
+hook("u" "ư")
+# TODO (Ʊ) latin capital letter upsilon
+hook("V" "Ʋ")
+hook("Y" "Ƴ")
+hook("y" "ƴ")
+stroke("Z" "Ƶ")
+stroke("z" "ƶ")
+# TODO (Ʒ) latin capital letter ezh
+# TODO (Ƹ) latin capital letter ezh reversed
+# TODO (ƹ) latin small letter ezh reversed
+# TODO (ƺ) latin small letter ezh with tail
+# TODO (ƻ) latin letter two with stroke
+# TODO (Ƽ) latin capital letter tone five
+# TODO (ƽ) latin small letter tone five
+# TODO (ƾ) latin letter inverted glottal stop with stroke
+# TODO (ƿ) latin letter wynn
+# TODO (ǀ) latin letter dental click
+# TODO (ǁ) latin letter lateral click
+# TODO (ǂ) latin letter alveolar click
+# TODO (ǃ) latin letter retroflex click
+# TODO (Ǆ) latin capital letter dz with caron (dŽ caron(Ǳ))
+# TODO (ǅ) latin capital letter d with small letter z with caron (Dž caron(ǲ))
+# TODO (ǆ) latin small letter dz with caron (dž caron(ǳ))
+<dead compose> "L" "J" : "Ǉ"
+<dead compose> "L" "j" : "ǈ"
+<dead compose> "l" "j" : "ǉ"
+<dead compose> "N" "J" : "Ǌ"
+<dead compose> "N" "j" : "ǋ"
+<dead compose> "n" "j" : "ǌ"
+caron("A" "Ǎ")
+caron("a" "ǎ")
+caron("I" "Ǐ")
+caron("i" "ǐ")
+caron("O" "Ǒ")
+caron("o" "ǒ")
+caron("U" "Ǔ")
+caron("u" "ǔ")
+# TODO (Ǖǖ) Uu diaeresis+maron
+# TODO (Ǘǘ) Uu diaeresis+acute
+# TODO (Ǚǚ) Uu diaeresis+caron
+# TODO (Ǜǜ) Uu diaeresis+grave
+# TODO (ǝ) latin small letter turned e
+# TODO (Ǟǟ) Aa diaeresis+maron
+# TODO (Ǡǡ) Aa dot above+maron
+# TODO (Ǣǣ) Ææ maron
+maron("Æ" "Ǣ")
+maron("æ" "ǣ")
+stroke("G" "Ǥ")
+stroke("g" "ǥ")
+caron("G" "Ǧ")
+caron("g" "ǧ")
+caron("K" "Ǩ")
+caron("k" "ǩ")
+ogonek("O" "Ǫ")
+ogonek("o" "ǫ")
+# TODO (Ǭǭ) Oo ogonek+macron
+# TODO (Ǯ) latin capital letter ezh with caron
+# TODO (ǯ) latin small letter ezh with caron
+caron("j" "ǰ")
+<dead compose> "D" "Z" : "Ǳ"
+<dead compose> "D" "z" : "ǲ"
+<dead compose> "d" "z" : "ǳ"
+acute("G" "Ǵ")
+acute("g" "ǵ")
+<dead compose> "H" ["V" "v"] : "Ƕ"
+# TODO (Ƿ) latin capital letter wynn
+grave("N" "Ǹ")
+grave("n" "ǹ")
+acute("Å" "Ǻ") # TODO latin capital letter a with ring above and acute
+acute("å" "ǻ") # TODO latin small letter a with ring above and acute
+acute("Æ" "Ǽ") # TODO latin capital letter ae with acute
+acute("æ" "ǽ") # TODO latin small letter ae with acute
+acute("Ø" "Ǿ") # TODO latin capital letter o with stroke and acute
+acute("ø" "ǿ") # TODO latin small letter o with stroke and acute
+double_grave("A" "Ȁ")
+double_grave("a" "ȁ")
+inverted_breve("A" "Ȃ")
+inverted_breve("a" "ȃ")
+double_grave("E" "Ȅ")
+double_grave("e" "ȅ")
+inverted_breve("E" "Ȇ")
+inverted_breve("e" "ȇ")
+double_grave("I" "Ȉ")
+double_grave("i" "ȉ")
+inverted_breve("I" "Ȋ")
+inverted_breve("i" "ȋ")
+double_grave("O" "Ȍ")
+double_grave("o" "ȍ")
+inverted_breve("O" "Ȏ")
+inverted_breve("o" "ȏ")
+double_grave("R" "Ȑ")
+double_grave("r" "ȑ")
+inverted_breve("R" "Ȓ")
+inverted_breve("r" "ȓ")
+double_grave("U" "Ȕ")
+double_grave("u" "ȕ")
+inverted_breve("U" "Ȗ")
+inverted_breve("u" "ȗ")
+# TODO (Ș) latin capital letter s with comma below
+# TODO (ș) latin small letter s with comma below
+# TODO (Ț) latin capital letter t with comma below
+# TODO (ț) latin small letter t with comma below
+# TODO (Ȝ) latin capital letter yogh
+# TODO (ȝ) latin small letter yogh
+caron("H" "Ȟ")
+caron("h" "ȟ")
+# TODO (Ƞ) latin capital letter n with long right leg
+# TODO (ȡ) latin small letter d with curl
+<dead compose> "O" ["U" "u"] : "Ȣ"
+<dead compose> "o" "u" : "ȣ"
+hook("Z" "Ȥ")
+hook("z" "ȥ")
+dot_above("A" "Ȧ")
+dot_above("a" "ȧ")
+cedilla("E" "Ȩ")
+cedilla("e" "ȩ")
+# TODO (Ȫ) latin capital letter o with diaeresis and macron
+# TODO (ȫ) latin small letter o with diaeresis and macron
+# TODO (Ȭ) latin capital letter o with tilde and macron
+# TODO (ȭ) latin small letter o with tilde and macron
+dot_above("O" "Ȯ")
+dot_above("o" "ȯ")
+# TODO (Ȱ) latin capital letter o with dot above and macron
+# TODO (ȱ) latin small letter o with dot above and macron
+macron("Y" "Ȳ")
+macron("y" "ȳ")
+# TODO (ȴ) latin small letter l with curl
+# TODO (ȵ) latin small letter n with curl
+# TODO (ȶ) latin small letter t with curl
+dot_above("j" "ȷ")
+<dead compose> "d" "b" : "ȸ"
+<dead compose> "q" "p" : "ȹ"
+stroke("A" "Ⱥ")
+stroke("C" "Ȼ")
+stroke("c" "ȼ")
+# TODO (Ƚ) latin capital letter l with bar
+# TODO (Ⱦ) latin capital letter t with diagonal stroke
+# TODO (ȿ) latin small letter s with swash tail
+# TODO (ɀ) latin small letter z with swash tail
+# TODO (Ɂ) latin capital letter glottal stop
+# TODO (ɂ) latin small letter glottal stop
+stroke("B" "Ƀ")
+# TODO (Ʉ) latin capital letter u bar
+# TODO (Ʌ) latin capital letter turned v
+stroke("E" "Ɇ")
+stroke("e" "ɇ")
+stroke("J" "Ɉ")
+stroke("j" "ɉ")
+# TODO (Ɋ) latin capital letter small q with hook tail
+# TODO (ɋ) latin small letter q with hook tail
+stroke("R" "Ɍ")
+stroke("r" "ɍ")
+stroke("Y" "Ɏ")
+stroke("y" "ɏ")
+
 # TODO IPA Extensions
 # TODO Spacing Modifier Letter
 # TODO Combining Diacritical Marks
