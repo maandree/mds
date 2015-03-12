@@ -125,6 +125,10 @@ end macro
 dead_ascii("^")
 dead_ascii("`")
 dead_ascii("~")
+<dead compose> "v" "v" : "w"
+<dead compose> "V" ["V" "v"] : "W"
+<dead compose> "k" "s" : "x"
+<dead compose> "K" ["S" "s"] : "X"
 
 # TODO C1 Controls
 
@@ -2728,7 +2732,16 @@ composite("∅" "°" "⦲")
 <dead compose> "<" "?" ">" : "\u2BD1"
 
 # TODO Glagolitic
-# TODO Latin Extended-C
+
+# Latin Extended-C:
+# Ⱡ LATIN CAPITAL LETTER L WITH DOUBLE BAR
+# ⱡ LATIN SMALL LETTER L WITH DOUBLE BAR
+# Ɫ LATIN CAPITAL LETTER L WITH MIDDLE TILDE
+# Ᵽ LATIN CAPITAL LETTER P WITH STROKE
+# Ɽ LATIN CAPITAL LETTER R WITH TAIL
+# ⱥ LATIN SMALL LETTER A WITH (DIAGONAL) STROKE
+# ⱦ LATIN SMALL LETTER T WITH DIAGONAL STROKE
+
 # TODO Coptic
 # TODO Georgian Supplement
 # TODO Tifinagh
