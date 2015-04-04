@@ -1242,6 +1242,7 @@ actually a server.
 * mds-kbdbind::                     The @command{mds-kbdbind} server.
 * mds-multikey::                    The @command{mds-multikey} server.
 * mds-rat::                         The @command{mds-rat} server.
+* mds-ratbarrier::                  The @command{mds-ratbarrier} server.
 * mds-ratbind::                     The @command{mds-ratbind} server.
 * mds-gestures::                    The @command{mds-gestures} server.
 * mds-kbd2rat::                     The @command{mds-kbd2rat} server.
@@ -1479,6 +1480,21 @@ them; or `<super>x, 5' to press `x' five times.
 
 @command{mds-rat} is a server that implements
 support of rat (also known as mouse) devices.
+
+
+
+@node mds-ratbarrier
+@section @command{mds-ratbarrier}
+
+@command{mds-ratbarrier} is a server that
+lets you set up barriers for the rat pointer,
+for example at the screen edges.
+
+A barrier requires that the rat be moved a
+bit extra move it can move on to the next
+pixel. A barrier can be directional. A barrier
+can also be infinite, which blocks the rat
+pointer fully and it cannot pass through at all.
 
 
 
