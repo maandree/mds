@@ -19,7 +19,10 @@ Extra servers:
 	ratbarrier
 	a speech-to-keyboard server
 	some server that hides the cursor when appropriate, such
-	as when the user starts typing
+	  as when the user starts typing
+	some server for drawing on the screen
+	some server for delaying video output from programs
+          (used if a video is not in sync with its audio, and is ahead)
 
 Missing commands:
 
