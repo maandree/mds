@@ -643,7 +643,7 @@ turned("y" "ʎ")
 # (ʛ) latin letter small capital g with hook
 # (ʜ) latin letter small capital h
 # (ʝ) latin small letter j with crossed-tail
-# (ʞ) latin small letter turned k
+turned("k" "ʞ")
 # (ʟ) latin letter small captial l
 hook("q" "ʠ")
 # (ʡ) latin letter glottal stop with stroke (stroke ʔ)
