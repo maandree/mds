@@ -113,6 +113,7 @@ end macro
 # TODO topbar
 # TODO double_grave
 # TODO inverted_breve
+# TODO turned
 
 
 <shift dead compose> "u" "+" : <dead hexcompose>
@@ -389,7 +390,7 @@ hook("K" "Ƙ")
 hook("k" "ƙ")
 # TODO (ƚ) latin small letter l with bar
 # TODO (ƛ) latin small letter lambda with stroke
-# TODO (Ɯ) latin capital letter turned m
+turned("M" "Ɯ")
 # TODO (Ɲ) latin capital letter n with left hook
 # TODO (ƞ) latin small letter n with long right leg
 # TODO (Ɵ) latin capital letter o with middle tilde
@@ -450,7 +451,7 @@ caron("u" "ǔ")
 # TODO (Ǘǘ) Uu diaeresis+acute
 # TODO (Ǚǚ) Uu diaeresis+caron
 # TODO (Ǜǜ) Uu diaeresis+grave
-# TODO (ǝ) latin small letter turned e
+turned("e" "ǝ")
 # TODO (Ǟǟ) Aa diaeresis+maron
 # TODO (Ǡǡ) Aa dot above+maron
 # TODO (Ǣǣ) Ææ maron
@@ -552,7 +553,7 @@ stroke("c" "ȼ")
 # TODO (ɂ) latin small letter glottal stop
 stroke("B" "Ƀ")
 # TODO (Ʉ) latin capital letter u bar
-# TODO (Ʌ) latin capital letter turned v
+turned("V" "Ʌ")
 stroke("E" "Ɇ")
 stroke("e" "ɇ")
 stroke("J" "Ɉ")
@@ -564,7 +565,104 @@ stroke("r" "ɍ")
 stroke("Y" "Ɏ")
 stroke("y" "ɏ")
 
-# TODO IPA Extensions
+# IPA Extensions: (TODO)
+turned("a" "ɐ")
+# (ɑ) latin small letter alpha
+turned("ɑ" "ɒ")
+hook("b" "ɓ")
+# (ɔ) latin small letter open o (turned c)
+# (ɕ) latin small letter c with curl
+# (ɖ) latin small letter d with tail (d retroflex hook)
+# (ɗ) latin small letter d with hook
+# (ɘ) latin small letter reversed e
+# (ə) latin small letter schwa (latin small letter turned e [already exists])
+hook("ə" "ɚ")
+# (ɛ) latin small letter open e (epsilon)
+# (ɜ) latin small letter reversed open e
+hook("ɜ" "ɝ")
+# (ɞ) latin small letter closed reversed open e
+# (ɟ) latin small letter dotless j with stroke
+hook("g" "ɠ")
+# (ɡ) latin small letter script g
+# (ɢ) latin letter small captial g
+# (ɣ) latin small letter gamma
+# (ɤ) latin small letter rams horn (latin small letter baby gamma)
+turned("h" "ɥ")
+hook("h" "ɦ")
+# (ɧ) latin small letter heng with hook
+# (ɨ) latin small letter i with stroke (barred i, i bar)
+# (ɩ) latin small letter iota
+# (ɪ) latin letter small capital i
+# (ɫ) latin small letter l with middle tilde
+# (ɬ) latin small letter l with belt
+# (ɭ) latin small letter l with retroflex hook
+<dead compose> "l" "ʒ" : "ɮ"
+turned("m" "ɯ")
+# (ɰ) latin small letter turned m with long leg
+hook("m" "ɱ")
+# (ɲ) latin small letter n with left hook
+# (ɳ) latin small letter n with retroflex hook
+# (ɴ) latin letter small captial n
+# (ɵ) latin small letter barred o (o bar)
+# (ɶ) latin letter small capital oe
+# (ɷ) latin small letter closed omega
+# (ɸ) latin small letter phi
+turned("r" "ɹ")
+# (ɺ) latin small letter turned r with long leg
+# (ɻ) latin small letter turned r with hook
+# (ɼ) latin small letter r with long leg
+# (ɽ) latin small letter r with tail
+# (ɾ) latin small letter r with fishhook
+# (ɿ) latin small letter revered r with fishhook
+# (ʀ) latin small letter captial r
+# (ʁ) latin small letter inverted r
+hook("s" "ʂ")
+# (ʄ) latin small letter dotless j with stroke and hook
+# (ʅ) latin small letter squat reversed esh
+# (ʆ) latin small letter esh with curl
+turned("t" "ʇ")
+# (ʈ) latin small letter t with retroflex hook
+# (ʉ) latin small letter u bar
+# (ʊ) latin small letter upsilon
+hook("v" "ʋ")
+turned("v" "ʌ")
+turned("w" "ʍ")
+turned("y" "ʎ")
+# (ʏ) latin letter small captial y
+# (ʐ) latin small letter z with retroflex hook
+# (ʑ) latin small letter z with curl
+# (ʒ) latin small letter ezh
+# (ʓ) latin small letter ezh with curl
+# (ʔ) latin letter glottal stop
+# (ʕ) latin letter pharyngeal covied fricative (revered glottal stop(ʔ))
+# (ʖ) latin letter inverted glottal stop
+# (ʗ) latin letter stretched c
+# (ʘ) latin letter bilabial click
+# (ʙ) latin letter small capital b
+# (ʚ) latin small letter closed open e (closed epsilon(ɛ))
+# (ʛ) latin letter small capital g with hook
+# (ʜ) latin letter small capital h
+# (ʝ) latin small letter j with crossed-tail
+# (ʞ) latin small letter turned k
+# (ʟ) latin letter small captial l
+hook("q" "ʠ")
+# (ʡ) latin letter glottal stop with stroke (stroke ʔ)
+# (ʢ) latin letter reversed glottal stop with stroke (reversed ʡ, stroke ʕ)
+<dead compose> "d" "z" : "ʣ"
+<dead compose> "d" "ʒ" : "ʤ"
+<dead compose> "d" "ʑ" : "ʥ"
+# (ʥ) ʣ with curl
+<dead compose> "t" "s" : "ʦ"
+# <dead compose> "t" esh : "ʧ"
+# (ʨ) latin small letter tc digraph with curl
+# (ʩ) latin small letter feng digraph
+<dead compose> "l" "s" : "ʪ"
+<dead compose> "l" "z" : "ʫ"
+# (ʬ) latin letter bilabial percussive (two stacked w)
+# (ʭ) latin letter didental percussive (two rotated [)
+# (ʮ) latin small letter turned h with fishhook
+# (ʯ) latin small letter turned h with fishhook and tail
+
 # TODO Spacing Modifier Letter
 # TODO Combining Diacritical Marks
 # TODO Greek and Coptic
