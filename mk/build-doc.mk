@@ -36,17 +36,17 @@ bin/%.info: doc/info/%.texinfo doc/info/*.texinfo
 	mv $*.info $@
 
 bin/%.pdf: doc/info/%.texinfo doc/info/*.texinfo
-	@mkdir -p obj bin
-	cd obj && yes X | texi2pdf $(TEXIFLAGS) ../$<
-	mv obj/$*.pdf $@
+	@mkdir -p obj/pdf bin
+	cd obj/pdf && yes X | texi2pdf $(TEXIFLAGS) ../../$<
+	mv obj/pdf/$*.pdf $@
 
 bin/%.dvi: doc/info/%.texinfo doc/info/*.texinfo
-	@mkdir -p obj bin
-	cd obj && yes X | $(TEXI2DVI) $(TEXIFLAGS) ../$<
-	mv obj/$*.dvi $@
+	@mkdir -p obj/dvi bin
+	cd obj/dvi && yes X | $(TEXI2DVI) $(TEXIFLAGS) ../../$<
+	mv obj/dvi/$*.dvi $@
 
 bin/%.ps: doc/info/%.texinfo doc/info/*.texinfo
-	@mkdir -p obj bin
-	cd obj && yes X | texi2pdf $(TEXIFLAGS) --ps ../$<
-	mv obj/$*.ps $@
+	@mkdir -p obj/ps bin
+	cd obj/ps && yes X | texi2pdf $(TEXIFLAGS) --ps ../../$<
+	mv obj/ps/$*.ps $@
 
