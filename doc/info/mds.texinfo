@@ -1952,6 +1952,9 @@ and resizes them accordingly when they are created.
 
 @command{mds-decorator} is a server that provides a
 simple, reference implementation of a, window decorator.
+This window decorator should implement snappy and sticky
+edges and stacking (the title bars is split into tabs with
+different windows that have been stacked togather.)
 
 
 
@@ -6295,6 +6298,7 @@ max speed ((hold down time - delay) / time to max speed)^(1 + curve)
 @menu
 * Server Architecture::                       Discussion on fundamental design choices.
 * Fixing X.org Issues::                       Can we avoid the problems X.org has?
+* Desktop Environments::                      What are desktop environments' relationship to mds?
 @end menu
 
 
@@ -6762,6 +6766,112 @@ system, can suffer from this. It is however easy
 for mds servers to implement pervasive threading,
 that is, letting each request spin up a new thread
 in the server.
+
+
+
+@node Desktop Environments
+@section Desktop Environments
+
+A design goal of @command{mds} is to bring unity
+to the graphical environment. Something desktop
+environments traditionally have been impairing.
+Traditionally a desktop environment would
+implement, or implement some of:
+@itemize @bullet{}
+@item
+Window layout management (window manager)
+@item
+Window decoration (window manager)
+@item
+Workspaces (window manager)
+@item
+Compositor (window manager)
+@item
+Taskbars
+@item
+Status icon trays
+@item
+Launchers
+@item
+Application menus
+@item
+Keyboard bindings
+@item
+Rat bindings
+@item
+Rat barriers
+@item
+Autostart of applications
+@item
+A bunch of random graphical tools
+@item
+Their own display manager (login screen)
+@item
+Their own screensaver and screenlocker
+@item
+Their own graphical toolkit
+@item
+Widgets
+@item
+Desktop
+@end itemize
+
+This is absolute madness, a waste of time
+and creates fragmentation.
+
+There is no problem of a desktop environment
+development team to implement all this for
+their desktop environment for @command{mds}.
+However doing so is discourage for the mentioned
+reasons as well as because doing so means that
+the use needs to know what not too launch,
+that is, what the desktop environment will start.
+
+For @command{mds}, a desktop environment should
+not have its own window layout manager. A better
+solution is to have a few well written window
+layout manager that are different from each
+other in how windows are layed out. These should
+not listen for keyboard actions to figure out
+how it shall rearrange the windows. Instead
+they should listen on the display server's
+messaging system for such commands, and
+@command{mds-keybind} or similar server should
+be configured with all hotkeys.
+
+There are a few classes of window decorator.
+A desktop environment still do not need its
+own. They can however create themes for existing
+decorators. What we need here is a small set
+of window decorators that are very customisable.
+
+Workspaces in X is poorly done. Window managers
+implement it, and pagers are window manager
+dependent. Yet there are very few properties
+they can have:
+@itemize @bullet{}
+@item
+Do workspaces span outputs, screens or the display?
+@item
+Are workspaces dependent on outputs, screens or displays?
+@item
+Are workspaces have a geometrical position?
+@item
+Are new workspaces created when needed?
+@end itemize
+Clearly what we need is one workspace manager where
+these can be configured. And the desktop environments
+can create their own pagers if they see fit, but
+all pagers work everywhere.
+
+Traditionally desktop environments wrote their own
+compositor for flash or otherwise fancy effects, or
+write a quirks to a common one so the common on could
+be used. With all other parts, of what has traditionally
+be the window manager, independent of the desktop
+environment, creating one universal compositor with
+pluggin support for effects the desktop environment
+want to have, such be no problem.
 
 
 
