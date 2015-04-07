@@ -942,7 +942,7 @@ by the signal @code{SIGTERM}.
 @node mds-reg
 @section @command{mds-reg}
 
-@command{mds-reg} is a utility that can be used to list,
+@command{mds-reg} is a utility that can be used to list
 available protocols provided by running servers. It can
 also wait for a set of protocols to become available. To
 list all available protocols run @command{mds-reg --list}.
