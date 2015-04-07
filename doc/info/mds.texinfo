@@ -532,8 +532,8 @@ integers are forbidden because it is
 not supportable natively be some
 programming languages.
 
-Before a has gotten a unique client ID
-assigned to it, it will be `0:0'.
+Before a client has gotten a unique client
+ID assigned to it, it will be `0:0'.
 
 If a client gets disconnected from the
 master server, the master server will
@@ -584,7 +584,7 @@ Not only does it enable servers to select
 which message it wants to receive in order
 to provide it's service. It also enables
 clients to do anything, things that was
-never anticipated. As an exaple of its
+never anticipated. As an example of its
 power, @command{mds} does not provide any
 protocol for taking screenshots or recording
 a session. Instead, a screenshot application
@@ -833,7 +833,7 @@ to be @code{-INT16_MAX} (@math{-32767}) rather than
 @code{INT16_MIN} (@math{-32768} with two's complement.)
 
 @item
-Integer that are not especially encoded must not be
+Integers that are not especially encoded must not be
 larger than 64-bits if they use fixed bit-size. If,
 for example, @code{size_t} is 128-bits on your
 platform but you are using a language that only have
@@ -844,6 +844,10 @@ can be properly stored and used.
 @item
 Integer 64-bits that are not especially encoded
 must not be unsigned if the bit-size is fixed.
+This is because some programming languages
+primitive integers are limited to 64-bits and
+are signed; a large enough unsigned 64-bit
+integer would overflow.
 
 @item
 Native endianness when a endianness is choosen.
@@ -853,14 +857,17 @@ using C.
 
 @item
 All strings musts be encoded in UTF-8 without
-any NUL-character unless expressive permission
+any NUL-character unless express permission
 is given. NUL-character may be encoded either
 using a zero byte or using Modified UTF-8, where
 it is encoded using two bytes. Which is used is
 selected in the protocol, however headers and
 their values must not include NUL-characters.
 No character may be encoded with more bytes than
-necessary.
+necessary. Encoding a character in extra long
+form is a security issue, and is prune to bugs,
+and is hence disallowed by newer specifications
+of UTF-8.
 
 @item
 The new line-character is always LF (@code{'\n'},
