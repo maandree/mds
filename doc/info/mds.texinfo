@@ -356,7 +356,7 @@ time they were closed.
 
 A crucial task of any display server is letting child
 processes know which display server they should
-connect to. @command{X.org} does by setting the
+connect to. @command{X.org} does this by setting the
 environment variable @env{DISPLAY} to
 @code{<host>:<display index>}, where @code{<host>}
 is empty if the display is one the local machine.
