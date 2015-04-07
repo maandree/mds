@@ -109,7 +109,7 @@ to use. Then the kernel creates a domain socket for the
 master server and spawns the master server and respawns
 it if it crashes. Because of this, if the master server
 crashes it will not lose its socket when it is respawned.
-The master server than, on its initial spawn, starts
+The master server then, on its initial spawn, starts
 the all servers and other programs that the user have
 choosen and then starts accepting connections to it and
 coordinates messages between servers and clients. Further,
@@ -129,7 +129,7 @@ kernel cannot do this because when it has spawned the
 master server it has no reason to re-execute, its only mission
 is to respawn the master server it if would happen to crash.
 It would technically be possible to enable the kernel to
-re-execute but it is not worth it as it as no reason to
+re-execute but it is not worth it as there is no reason to
 re-execute, and doing so puts the display server at risk
 of crashing.
 
@@ -1225,7 +1225,7 @@ to starta process in a new process group.
 An @command{mds} display server instance is comprised of
 multiple small servers that each implements a small part
 of the display server's functionallity. This chapter will
-include all servers but the master sever, @command{mds-server}
+include all servers but the master server, @command{mds-server}
 and the kernel, @command{mds}, the latter of which is not
 actually a server.
 
