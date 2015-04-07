@@ -354,7 +354,7 @@ time they were closed.
 @node Environment Variables
 @section Environment Variables
 
-A crucial of any display server is letting child
+A crucial task of any display server is letting child
 processes know which display server they should
 connect to. @command{X.org} does by setting the
 environment variable @env{DISPLAY} to
