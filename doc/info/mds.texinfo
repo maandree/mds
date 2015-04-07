@@ -3,9 +3,22 @@
 @c %**start of header
 @setfilename mds.info
 @settitle mds
+
 @afourpaper
+@c This document does not support @afivepaper
+@c This document does not support @smallbook
+
 @documentencoding UTF-8
 @documentlanguage en
+
+@c @set HARDCOPY
+@c @set LOGO
+
+@ifset HARDCOPY
+@cropmarks
+@setchapternewpage odd
+@end ifset
+
 @finalout
 @c %**end of header
 
@@ -16,6 +29,7 @@
 @end direntry
 
 
+@ifclear HARDCOPY
 @copying
 Copyright @copyright{} 2014, 2015 Mattias Andrée
 
@@ -28,6 +42,10 @@ Texts. A copy of the license is included in the section entitled
 ``GNU Free Documentation License''.
 @end quotation
 @end copying
+@end ifclear
+@ifset HARDCOPY
+@include hardcopy-copying.texinfo
+@end ifset
 
 @ifnottex
 @node Top
@@ -38,6 +56,15 @@ Texts. A copy of the license is included in the section entitled
 @titlepage
 @title mds
 @subtitle The avant-garde micro-display server
+@ifset LOGO
+@vskip 0pt plus 1filll
+@comment this way, it is centered exactly in pdf and approximently in dvi and ps
+@comment @center does not work for @image in dvi and ps
+@multitable @columnfractions 0.15 0.7
+@item @tab @center @image{../logo,250px}
+@end multitable
+@vskip 0pt plus 2filll
+@end ifset
 @author by Mattias Andrée (maandree)
 
 @page
@@ -45,6 +72,11 @@ Texts. A copy of the license is included in the section entitled
 @c  Well, here we are 23 years later and we are still
 @c  doing, but where it is even easier not to.
 @vskip 0pt plus 1filll
+@ifclear HARDCOPY
+If you prefer a dead tree edition, you can order one from
+...
+@*
+@end ifclear
 @insertcopying
 @end titlepage
 

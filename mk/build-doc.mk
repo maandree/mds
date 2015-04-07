@@ -14,20 +14,20 @@ ps: bin/mds.ps
 dvi: bin/mds.dvi
 
 
-#obj/logo.svg: logo.svg
-#	@mkdir -p obj
-#	cp $< $@
-#
-#obj/logo.pdf: logo.svg
-#	@mkdir -p obj
-#	rsvg-convert --format=pdf $< > $@
-#
-#obj/logo.eps: obj/logo.ps
-#	ps2eps $<
-#
-#obj/logo.ps: logo.svg
-#	@mkdir -p obj
-#	rsvg-convert --format=ps $< > $@
+obj/logo.svg: doc/logo.svg
+	@mkdir -p obj
+	cp $< $@
+
+obj/logo.pdf: doc/logo.svg
+	@mkdir -p obj
+	rsvg-convert --format=pdf $< > $@
+
+obj/logo.eps: obj/logo.ps
+	ps2eps $<
+
+obj/logo.ps: doc/logo.svg
+	@mkdir -p obj
+	rsvg-convert --format=ps $< > $@
 
 
 bin/%.info: doc/info/%.texinfo doc/info/*.texinfo
@@ -35,17 +35,17 @@ bin/%.info: doc/info/%.texinfo doc/info/*.texinfo
 	$(MAKEINFO) $(TEXIFLAGS) $<
 	mv $*.info $@
 
-bin/%.pdf: doc/info/%.texinfo doc/info/*.texinfo
+bin/%.pdf: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.pdf
 	@mkdir -p obj/pdf bin
 	cd obj/pdf && yes X | texi2pdf $(TEXIFLAGS) ../../$<
 	mv obj/pdf/$*.pdf $@
 
-bin/%.dvi: doc/info/%.texinfo doc/info/*.texinfo
+bin/%.dvi: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.eps
 	@mkdir -p obj/dvi bin
 	cd obj/dvi && yes X | $(TEXI2DVI) $(TEXIFLAGS) ../../$<
 	mv obj/dvi/$*.dvi $@
 
-bin/%.ps: doc/info/%.texinfo doc/info/*.texinfo
+bin/%.ps: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.eps
 	@mkdir -p obj/ps bin
 	cd obj/ps && yes X | texi2pdf $(TEXIFLAGS) --ps ../../$<
 	mv obj/ps/$*.ps $@
