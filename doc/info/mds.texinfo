@@ -264,7 +264,7 @@ the master server sends the message to the
 recipients is determined by priority the
 servers registed with. The message first sent
 to the recipients with highest priority and
-last to the recipients with lowestr priority,
+last to the recipients with lowest priority,
 and orderd by the priority between those
 priorities. Of two or more servers have the
 same priority the order in which they will
