@@ -6795,15 +6795,17 @@ Launchers
 @item
 Application menus
 @item
+Autostart of applications
+@item
 Keyboard bindings
 @item
 Rat bindings
 @item
 Rat barriers
 @item
-Autostart of applications
+Widgets
 @item
-A bunch of random graphical tools
+Desktop
 @item
 Their own display manager (login screen)
 @item
@@ -6811,9 +6813,7 @@ Their own screensaver and screenlocker
 @item
 Their own graphical toolkit
 @item
-Widgets
-@item
-Desktop
+A bunch of random graphical tools
 @end itemize
 
 This is absolute madness, a waste of time
@@ -6826,6 +6826,17 @@ However doing so is discourage for the mentioned
 reasons as well as because doing so means that
 the use needs to know what not too launch,
 that is, what the desktop environment will start.
+
+@menu
+* Window Management::                         Window management in mds.
+* Application Management::                    Application management in mds.
+* Input Management::                          Management of input peripherals in mds.
+@end menu
+
+
+
+@node Window Management
+@subsection Window Management
 
 For @command{mds}, a desktop environment should
 not have its own window layout manager. A better
@@ -6870,8 +6881,42 @@ write a quirks to a common one so the common on could
 be used. With all other parts, of what has traditionally
 be the window manager, independent of the desktop
 environment, creating one universal compositor with
-pluggin support for effects the desktop environment
+plugin support for effects the desktop environment
 want to have, such be no problem.
+
+
+
+@node Application Management
+@subsection Application Management
+
+TODO
+
+@c Taskbars
+@c Status icon trays
+@c Launchers
+@c Application menus
+@c Autostart of applications
+
+
+
+@node Input Management
+@subsection Input Management
+
+TODO
+
+@c Keyboard bindings
+@c Rat bindings
+@c Rat barriers
+
+
+
+@comment TODO
+@c Widgets
+@c Desktop
+@c Their own display manager (login screen)
+@c Their own screensaver and screenlocker
+@c Their own graphical toolkit
+@c A bunch of random graphical tools
 
 
 
