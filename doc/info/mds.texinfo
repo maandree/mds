@@ -184,7 +184,7 @@ users are allowed to implement this in C
 or any other language of their choosing.}
 @c Which is better: cray-cray users, lunatic users,
 @c moonstruck users, insane users, ballers, madmen,
-@c loony tunes?
+@c loony tunes, systemd-lovers?
 These servers implements the actual functionality
 of the display server.
 
@@ -209,7 +209,7 @@ Request assignment of a unique ID.
 Multicast a message.
 
 @item
-Join or leave a multicast groups.
+Join or leave a multicast group.
 @end itemize
 
 Upon assignment of an ID the master server
@@ -225,15 +225,15 @@ the client, refered to by it's ID, have closed.
 A message in the @command{mds} protocol is
 comprised of two parts: headers and a payload.
 When a client joins a multicast group it is
-actually say that it is interested and receiving
-broadcasts containing a specific header or a
-specific header--value pair, or that it is
-interesting in all messages@footnote{This
+actually saying that it is interested in
+receiving broadcasts containing a specific header
+or a specific header--value pair, or that it
+is interesting in all messages@footnote{This
 could be used for logging, possibly spying and
 networking.}. Thus a message is automatically
 multicasted to groups indicated by its headers.
 
-The multicast groups and receiving of groups
+The multicast groups and receiving of message
 is called interceptions. The interesting
 property of interceptions is that they may
 be modifying. When a server registers for
@@ -284,16 +284,16 @@ received in its other connection and the
 let the OS kernel switch virtual terminal.
 The secondary connection to the display
 has registered interception with lower
-priority of the message that the primary
+priority of the message than the primary
 connection broadcasts. This message will
 be received by other servers that will
 let the message continue to the next
 server in the interception list once that
 server is ready for the OS kernel to switch
-virtual terminal. All of these server has
+virtual terminal. All of these servers have
 registered modifying interception of the
-message but none will actually modify or
-consume the message; it is only used a
+message but none of them will actually modify
+or consume the message; it is only used a
 mechanism for letting @command{mds-vt} know
 when all servers are ready for the switch
 without having to know how many they are
@@ -419,7 +419,7 @@ For example if the display server index is zero,
 temporary data may be stored in
 @file{/tmp/.@{system-directory@}.mds/0.data}
 
-As defined by @code{SHM_PATH_PATTERN} by
+As defined by @code{SHM_PATH_PATTERN} in
 @file{<libmdsserver/config.h>}, when a server
 re-executes itself it will marshal its state to
 the POSIX shared memory unit named
