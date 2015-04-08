@@ -37,6 +37,7 @@ Missing protocols:
 	screensaver	compositor	crtc		presentation
 	network		decorator	workspace
 	embed		Embedding windows inside other windows such as a status icon tray
+	arcade          A game taskes over control over outputs for increased performance
 
 
 Need testing:
