@@ -6890,7 +6890,9 @@ of window decorators that are very customisable.
 
 Workspaces in X is poorly done. Window managers
 implement it, and pagers are window manager
-dependent. Yet there are very few properties
+dependent@footnote{Well, there is Extended Window
+Manager Hints (EWMH), but for it is very
+restrictly.}. Yet there are very few properties
 they can have:
 @itemize @bullet{}
 @item
