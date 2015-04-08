@@ -6923,10 +6923,35 @@ want to have, such be no problem.
 @node Application Management
 @subsection Application Management
 
-TODO
+Many X desktop environments provide taskbars, where
+all windows are listed. However because of Extended
+Window Manager Hints (EWMH), and the ability to
+read windows' position and wait for windows to
+move, this is not actually necessary. Of course,
+desktop environments may need to do this to theme
+the environment. A taskbar for @command{mds} should:
+@itemize @bullet{}
+@item
+be about to restrict listed windows a those under
+specific outputs, and
+@item
+be about to restrict listed windows to viewed
+workspaces.
+@end itemize
 
-@c Taskbars
-@c Status icon trays
+Traditionally, status icon trays have been
+implemented with window embed method. And apart
+from there being two competing standard, this
+is be pretty sane. But ther have been some
+restrictions @command{mds} does not suffer:
+@itemize @bullet{}
+@item
+icons should not be rearranged, and
+@item
+embedder did not know of the background
+looked where the icon was added.
+@end itemize
+
 @c Launchers
 @c Application menus
 @c Autostart of applications
