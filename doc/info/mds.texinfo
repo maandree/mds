@@ -101,6 +101,7 @@ Texts. A copy of the license is included in the section entitled
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 @c TODO New Concepts
+@c TODO Specifications
 
 
 
@@ -6845,9 +6846,9 @@ Rat bindings
 @item
 Rat barriers
 @item
-Widgets
-@item
 Desktop
+@item
+Widgets
 @item
 Their own display manager (login screen)
 @item
@@ -6873,6 +6874,7 @@ that is, what the desktop environment will start.
 * Window Management::                         Window management in mds.
 * Application Management::                    Application management in mds.
 * Input Management::                          Management of input peripherals in mds.
+* The Desktop::                               The desktop in mds.
 @end menu
 
 
@@ -6988,16 +6990,43 @@ Configurations of the keyboard bindings should
 be done in a server like @command{mds-keybind}.
 
 Similarily some desktop environments implement
-rat bindings@footnote{Notably hot corners} and
+rat bindings@footnote{Notably hot corners.} and
 rat barriers. This too should be done via servers
 like like @command{mds-ratbind} and like
 @command{mds-ratbarrier}.
 
 
 
+@node The Desktop
+@subsection The Desktop
+
+Desktop environments provide their own desktop
+because they want it to fit the rest of the
+environment. For example, it can use components
+of the desktop environment's file manager.
+This practice is however problematic, because
+they also implement the background, which is
+also implemented on top of the root windows.
+@command{mds} desktops should use a transparent
+background and let the root window be used for
+implementing the background.
+
+Additionally, some desktop environments provide
+desktop widgets. These can either be drawn on
+the root window, the desktop window or as
+always-on-bottom windows. In @command{mds},
+windows can have Z-order priority. That is, you
+can specify how important it is that your window
+is at the bottom or at the top. For widgets
+with input, it is recommended to use this
+to put the widget just above the desktop window.
+For windows without input, it is recommended
+draw on the root windows. However doing so
+requires that be listen for updates to the
+backgrund.
+
+
 @comment TODO
-@c Widgets
-@c Desktop
 @c Their own display manager (login screen)
 @c Their own screensaver and screenlocker
 @c Their own graphical toolkit
