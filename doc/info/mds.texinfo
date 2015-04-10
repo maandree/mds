@@ -100,6 +100,7 @@ Texts. A copy of the license is included in the section entitled
 * Discussion::                      Discussion on display server-architecture.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
+@c TODO New Concepts
 
 
 
@@ -3960,7 +3961,7 @@ pointer to @code{var}. Returns zero on and only
 on success.
 
 @item @code{xbcalloc} [(@code{type* var, size_t bytes}) @arrow{} @code{int}]
-Allocates and zero-initialises @code{bytes} bytess
+Allocates and zero-initialises @code{bytes} bytes
 and stores the allocated pointer to @code{var}.
 Returns zero on and only on success.
 
@@ -4894,7 +4895,7 @@ When the server has been initialised, run the
 command @var{COMMAND}.
 
 @item --immortal
-The server should to its best not to die. For example
+The server should do its best not to die. For example
 do not die if @code{SIGDANGER} is received even if that
 is the server's default action.
 @end table
@@ -6952,20 +6953,36 @@ embedder did not know of the background
 looked where the icon was added.
 @end itemize
 
-@c Launchers
-@c Application menus
-@c Autostart of applications
+Desktop environments should feel free to create
+their own themed application launchers and
+application menus. This functionally is already
+de facto standardised, and there is no reason to
+change anything.
+
+Some desktop environments provide a method to for
+automatically starting applications during the
+startup of a desktop environment. This is
+discouraged. It is better to teach the user to
+edit @file{~/.mdsinitrc}.
 
 
 
 @node Input Management
 @subsection Input Management
 
-TODO
+Many desktop environments and window managers
+for X implement global keyboard bindings.
+This is not how you should do this. The servers
+should recognise commands passed via
+@command{mds}'s interprocess communication.
+Configurations of the keyboard bindings should
+be done in a server like @command{mds-keybind}.
 
-@c Keyboard bindings
-@c Rat bindings
-@c Rat barriers
+Similarily some desktop environments implement
+rat bindings@footnote{Notably hot corners} and
+rat barriers. This too should be done via servers
+like like @command{mds-ratbind} and like
+@command{mds-ratbarrier}.
 
 
 
