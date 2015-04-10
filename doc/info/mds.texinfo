@@ -1324,6 +1324,7 @@ actually a server.
 * mds-decorator::                   The @command{mds-decorator} server.
 * mds-tile::                        The @command{mds-tile} server.
 * mds-stack::                       The @command{mds-stack} server.
+* mds-desktop::                     The @command{mds-desktop} server.
 * mds-workspace::                   The @command{mds-workspace} server.
 * mds-tray::                        The @command{mds-tray} server.
 @end menu
@@ -2004,6 +2005,14 @@ simple, reference implementation of a, tiling window manager.
 
 @command{mds-stack} is a server that provides a
 simple, reference implementation of a, stack window manager.
+
+
+
+@node mds-desktop
+@section @command{mds-desktop}
+
+@command{mds-desktop} is a server that provides a
+simple, reference implementation of a, desktop.
 
 
 
