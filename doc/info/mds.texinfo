@@ -7026,13 +7026,6 @@ requires that be listen for updates to the
 backgrund.
 
 
-@comment TODO
-@c Their own display manager (login screen)
-@c Their own screensaver and screenlocker
-@c Their own graphical toolkit
-@c A bunch of random graphical tools
-
-
 
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
