@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+sed -e 's/ //g' | sed -e 's/\./  /g' -e 's/X/\x1b[07m  \x1b[27m/g'
+
