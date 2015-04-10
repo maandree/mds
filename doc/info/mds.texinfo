@@ -29,6 +29,9 @@
 @end direntry
 
 
+@c TODO indicies
+
+
 @ifclear HARDCOPY
 @copying
 Copyright @copyright{} 2014, 2015 Mattias Andrée
