@@ -6384,9 +6384,9 @@ is missing this cursor too.
 This cursor indicates that the interface is idle and prepared
 to accept commands from the user.
 
-This cursor is usually a north-west pointing arrow.
-For left-handed themes this cursor is usually a north-east
-pointing arrow.
+This cursor is usually a north-west or north-north-west
+pointing arrow. For left-handed themes this cursor is
+usually a north-east or north-north-east pointing arrow.
 @example
 XX
 XXXX
