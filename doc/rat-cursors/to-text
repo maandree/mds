@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
-sed 's/\(.\) /\1\1/g' | sed 's/\./ /g' | sed 's/                $//g' |
-  sed 's/        $//g' | sed 's/    $//g' | sed 's/  $//g' | sed 's/ $//g'
+sed 's/\(.\) /\1\1/g' | sed 's/\./ /g' | sed 's/@/X/g' |
+  sed 's/                $//g' | sed 's/        $//g' |
+  sed 's/    $//g' | sed 's/  $//g' | sed 's/ $//g'
 

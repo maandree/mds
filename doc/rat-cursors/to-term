@@ -1,4 +1,4 @@
 #!/bin/sh -e
 
-sed -e 's/ //g' | sed -e 's/\./  /g' -e 's/X/\x1b[07m  \x1b[27m/g'
+sed -e 's/ //g' | sed -e 's/\./  /g' -e 's/X/\x1b[07m  \x1b[27m/g' -e 's/@/\x1b[07;31m  \x1b[00m/g'
 

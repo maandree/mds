@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+data="$(cat)"
+
+y=$(echo "${data}" | grep -n @ | cut -d : -f 1)
+x=$(echo "${data}" | grep -n @ | cut -d : -f 2 | sed 's/ /\n/g' | grep -n @ | cut -d : -f 1)
+
+echo x: $(expr $x - 1)
+echo y: $(expr $y - 1)
+
