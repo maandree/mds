@@ -7356,7 +7356,7 @@ second fallback.
 
 This cursor is typically rendered as a
 east and west pointing twin-arrow,
-optionally with a corner at the arrow heads.
+optionally with a wall at the arrow heads.
 @example
 XX        XX        XX        XX
 XX      XX            XX      XX
@@ -7394,7 +7394,7 @@ second fallback.
 
 This cursor is typically rendered as a
 north and south pointing twin-arrow,
-optionally with a corner at the arrow heads.
+optionally with a wall at the arrow heads.
 @example
 XXXXXXXXXXXXXX
 
