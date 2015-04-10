@@ -6343,6 +6343,8 @@ max speed ((hold down time - delay) / time to max speed)^(1 + curve)
 
 @menu
 * Rat Cursors::                               Rat cursor specifications.
+* Nesting Applications::                      Specifications for nesting applications.
+* The Real Display Server::                   Identifying the real display server.
 @end menu
 
 
@@ -7515,6 +7517,42 @@ XXXX                      XXXX
 XXXXXXXXXX          XXXXXXXXXX
 @end example
 @end table
+
+
+
+@node Nesting Applications
+@section Nesting Applications
+
+Applications that want to embed another other
+application within it, should create a socket
+and start the other application with the
+environment variable @env{MDS_EMBED} set to
+the windows ID of the socket that the application
+should be embedded in.
+
+All @command{mds} applications must be aware
+of the environment variable @env{MDS_EMBED}.
+The application may choose not to embed itself
+in the announced socket, however it should have
+good reason for not doing this.
+
+All @command{mds} application must unset the
+environment variable @env{MDS_EMBED} before
+it starts any other program.
+
+@comment TODO
+@c How do we solve this for compatibility with X, Wayland and Mir?
+
+
+
+@node The Real Display Server
+@section The Real Display Server
+
+The environment variable @env{REAL_DISPLAY},
+should be set with the value @code{MDS_DISPLAY},
+if and only if @command{mds} is started
+as a display server and not as a compatibility
+layer.
 
 
 
