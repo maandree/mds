@@ -425,12 +425,8 @@ instead of @command{SIGUSR1}.
 If you need servers to free up allocated
 memory that they do not use, send the signal
 @command{SIGDANGER}, or if not defined
-@command{SIGRTMIN + 1}@footnote{@command{valgrind}
-uses @command{SIGRTMIN} for internal stuff, so
-we cannot use @command{SIGRTMIN} as it is hence
-unavailable when running under @command{valgrind}}.
-Unimportant servers may choose to die on
-@command{SIGDANGER}.
+@command{SIGRTMIN + 1}. Unimportant servers
+may choose to die on @command{SIGDANGER}.
 
 Server may also choose to support the signal
 @command{SIGINFO}, or if not defined
@@ -440,6 +436,11 @@ thay must not die when received. @command{SIGINFO}
 is send by a user to the server, if she wants
 the server to dump information about the
 server's state or statistics to the TTY.
+
+@command{valgrind} uses @command{SIGRTMAX} for
+its own internal stuff. Therefore servers must
+not use @command{SIGRTMAX} as it is hence unavailable
+when running under @command{valgrind}.
 
 
 
