@@ -101,10 +101,10 @@ Texts. A copy of the license is included in the section entitled
 * Keyboard Layouts::                Writing and compiling keyboard layouts.
 * Accessibility::                   Dealing with disabilities.
 * Specifications::                  Specifications.
+* New Concepts::                    Discussion of new display server concepts.
 * Discussion::                      Discussion on display server-architecture.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
-@c TODO New Concepts
 
 
 
@@ -1828,21 +1828,21 @@ It creates a window that emulates a monitor.
 @node mds-meta
 @section @command{mds-meta}
 
-@command{mds-meta} is a meta-display server.
-It creates or joins a named meta-display server,
-and creates and alternative values for
+@command{mds-meta} is a metadisplay server.
+It creates or joins a named metadisplay server,
+and creates an alternative value for
 @env{MDS_DISPLAY}. Any server connecting to
 this alternative @env{MDS_DISPLAY} connects
-to this meta-display server. This can be used
+to this metadisplay server. This can be used
 to make servers shared between display server
 instances.
 
 @command{mds-meta} uses the environment variable
 @env{MDS_METADISPLAY} to acquire the name of the
-meta-display server instance it should join or
+metadisplay server instance it should join or
 create. If @env{MDS_METADISPLAY} has not been set
 it is treated as having an empty string for its
-value which is a valid meta-display server
+value which is a valid metadisplay server
 instance name.
 
 @command{mds-meta} works by connecting to the
@@ -7557,6 +7557,60 @@ layer.
 @env{REAL_DISPLAY} is a space-separated (U+0020)
 list of supported display server protocol, ordered
 by preference. 
+
+
+
+@node New Concepts
+@chapter New Concepts
+
+@menu
+* Metadisplay Server::                        Goals and features and metadisplays.
+@end menu
+
+
+
+@node Metadisplay Server
+@section Metadisplay Server
+
+A metadisplay server is a server that is connected
+to one or more display server's simultaneously.
+Additionally, it is acting as a display server on
+its own. Any server, or even client, running in
+this display will effectively be running in all
+of the displays connected to the metadisplay.
+
+The idea of the the metadisplay server came from
+the idea of letting the user have the clipboard
+shared across any number of @emph{selected}
+display server. Rather than having a clipboard
+server written specifically for this, it was
+seen as more appropriate to have a server than
+could let any server run inside any number of
+display server. Not only will this let the user
+run any server this way. It also makes it possible
+to run them across any number of computers.
+
+If a hosting server, like @command{mds-host}, runs
+inside a metadisplay, any number of computers can
+connect to the metadisplay using a server like
+@command{mds-remote}. This creates a metadisplay
+with multiple display from multiple computers.
+If a clipboard server runs in this metadisplay,
+all of these display on all of these computers
+will share clipboard server.
+
+Whilst not removing or degrading any functionality.
+A negative property of this setup it that it is
+centralised rather than distributed. If the computer
+hosting the metadisplay crashes, the other computers
+will no longer share this metadisplay, and lose the
+connection to any server running in it.
+
+In addition to a the clipboard server, there is a
+host of other servers that makes sense to run in
+multiple displays or across multiple computer:
+drag-and-drop servers, human input device servers,
+output servers, and even windowing servers.
 
 
 
