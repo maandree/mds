@@ -238,6 +238,15 @@ void received_terminate(int signo); /* __attribute__((weak)) */
 void received_danger(int signo); /* __attribute__((weak)) */
 
 /**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_info(int signo); /* __attribute__((weak)) */
+
+/**
  * This function should be implemented by the actual server implementation
  * 
  * This function will be invoked before `initialise_server` (if not re-exec:ing)

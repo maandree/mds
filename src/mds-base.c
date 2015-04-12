@@ -367,6 +367,19 @@ void __attribute__((weak)) received_danger(int signo)
 
 
 /**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void __attribute__((weak)) received_info(int signo)
+{
+  (void) signo;
+}
+
+
+/**
  * Unmarshal the server's saved state
  * 
  * @return  Non-zero on error
@@ -625,6 +638,9 @@ int trap_signals(void)
     fail_if (xsigaction(SIGDANGER, commit_suicide) < 0);
   else
     fail_if (xsigaction(SIGDANGER, received_danger) < 0);
+  
+  /* Implement support of SIGINFO. */
+  fail_if (xsigaction(SIGINFO, received_info) < 0);
   
   return 0;
  fail:

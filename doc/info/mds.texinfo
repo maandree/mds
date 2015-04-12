@@ -4971,6 +4971,12 @@ signal is specified by the parameter @code{signo}. When
 this function is invoked, it should set the variable
 @code{terminating} to a non-zero value.
 
+@item @code{received_info} [(@code{int signo}) @arrow{} @code{void}]
+This function is called when a signal that signals the
+server to dump state information and statistics has been
+received. The exact received signal is specified by the
+parameter @code{signo}.
+
 @item @code{fork_cleanup} [(@code{int status}) @arrow{} @code{void}]
 This function should be implemented by the actual server
 implementation if the server has set
