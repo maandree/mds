@@ -437,10 +437,18 @@ is send by a user to the server, if she wants
 the server to dump information about the
 server's state or statistics to the TTY.
 
+All servers configured to be interrupted
+when the signal @command{SIGRTMIN} is received.
+No further action is taked. This may be used
+by the user to test that the program supports
+being interrupted. It can also be used by
+the server to interrupt itself from another
+thread.
+
 @command{valgrind} uses @command{SIGRTMAX} for
 its own internal stuff. Therefore servers must
-not use @command{SIGRTMAX} as it is hence unavailable
-when running under @command{valgrind}.
+not use @command{SIGRTMAX} as it is hence
+unavailable when running under @command{valgrind}.
 
 
 
