@@ -610,6 +610,15 @@
 
 
 /**
+ * The user want the server to dump information
+ * about the server's state or statistics
+ */
+#ifndef SIGINFO
+# define SIGINFO  (SIGRTMIN + 2)
+#endif
+
+
+/**
  * The user wants the program to re-exec.
  * into an updated binary
  */

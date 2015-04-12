@@ -432,6 +432,15 @@ unavailable when running under @command{valgrind}}.
 Unimportant servers may choose to die on
 @command{SIGDANGER}.
 
+Server may also choose to support the signal
+@command{SIGINFO}, or if not defined
+@command{SIGRTMIN + 2}. It is not expected
+that server do support this signal, but
+thay must not die when received. @command{SIGINFO}
+is send by a user to the server, if she wants
+the server to dump information about the
+server's state or statistics to the TTY.
+
 
 
 @node Filesystem
@@ -4056,8 +4065,8 @@ If @code{condition} is satisfied,
 @end table
 
 Additionally, @file{<libmdsserver/macros.h>}
-defines any missing signal name:
-currently @code{SIGDANGER} and
+defines any missing signal name: currently
+@code{SIGDANGER}, @code{SIGINFO} and
 @code{SIGUPDATE}, and by inclusion of
 @file{<libmdsserver/macro-bits.h>}, variants
 of @code{atoi} for portability and
