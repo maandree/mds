@@ -4057,7 +4057,7 @@ If @code{condition} is satisfied,
 
 Additionally, @file{<libmdsserver/macros.h>}
 defines any missing signal name:
-currenly @code{SIGDANGER} and
+currently @code{SIGDANGER} and
 @code{SIGUPDATE}, and by inclusion of
 @file{<libmdsserver/macro-bits.h>}, variants
 of @code{atoi} for portability and
