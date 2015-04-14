@@ -7593,11 +7593,11 @@ Be sure to keep the list ordered by preference.
 
 @table @code
 @item mir
-Should be added if you are running an
+Should be added if you are running a
 @command{mir}-to-@command{mds} server,
 like @command{mds-mmds}.
 @item wayland
-Should be added if you are running an
+Should be added if you are running a
 @command{wayland}-to-@command{mds} server,
 like @command{mds-wmds}.
 @item x11
