@@ -7572,13 +7572,13 @@ it starts any other program.
 @node The Real Display Server
 @section The Real Display Server
 
-The environment variable @env{REAL_DISPLAY},
-should be set with the value @code{MDS_DISPLAY},
+The environment variable @env{PREFERRED_DISPLAY},
+should be set with the value @code{mds},
 if and only if @command{mds} is started
 as a display server and not as a compatibility
 layer.
 
-@env{REAL_DISPLAY} is a space-separated (U+0020)
+@env{PREFERRED_DISPLAY} is a space-separated (U+0020)
 list of supported display server protocol, ordered
 by preference. 
 
