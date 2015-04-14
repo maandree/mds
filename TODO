@@ -38,6 +38,7 @@ Missing protocols:
 	network		decorator	workspace
 	embed		Embedding windows inside other windows such as a status icon tray
 	arcade          A game taskes over control over outputs for increased performance
+	startup		A mechanism allowing a desktop environment to track application startup
 
 
 Need testing:
