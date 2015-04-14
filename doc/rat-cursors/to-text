@@ -1,10 +1,13 @@
 #!/bin/sh
 
-data="$(sed 's/\(.\) /\1\1/g' | sed 's/\./ /g' | sed 's/@/X/g' | sed 's/ \+$//g')"
+data="$(sed 's/\(.\) /\1\1/g' | sed 's/\./ /g' | sed 's/O/#/g' | sed 's/ \+$//g')"
 
 while [ $(echo "${data}" | grep -v '^ ' | grep -v '^$' | wc -l) = 0 ]; do
     data="$(echo "${data}" | sed 's/^ //')"
 done
 
-echo "${data}"
+while [ "$(echo "${data}" | sed 1q)" = "" ]; do
+    data="$(echo "${data}" | sed 1d)"
+done
 
+echo "${data}"

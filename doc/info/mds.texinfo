@@ -6414,22 +6414,22 @@ This cursor is usually a north-west or north-north-west
 pointing arrow. For left-handed themes this cursor is
 usually a north-east or north-north-east pointing arrow.
 @example
-XX
-XXXX
-XXXXXX
-XXXXXXXX
-XXXXXXXXXX
-XXXXXXXXXXXX
-XXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXX
-XXXXXX  XXXX
-XXXX    XXXXXX
-XX        XXXX
-          XXXXXX
-            XXXX
-            XXXX
+##
+####
+######
+########
+##########
+############
+##############
+################
+##################
+############
+######  ####
+####    ######
+##        ####
+          ######
+            ####
+            ####
 @end example
 
 @page
@@ -6442,22 +6442,22 @@ context menu.
 This cursor is typically @command{default} combined with a
 small menu.
 @example
-XX                  XXXXXXXXXXXX
-XXXX                XXXXXXXXXXXX
-XXXXXX              XX        XX
-XXXXXXXX            XXXXXXXXXXXX
-XXXXXXXXXX          XX        XX
-XXXXXXXXXXXX        XXXXXXXXXXXX
-XXXXXXXXXXXXXX      XX        XX
-XXXXXXXXXXXXXXXX    XXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXX
-XXXXXX  XXXX
-XXXX    XXXXXX
-XX        XXXX
-          XXXXXX
-            XXXX
-            XXXX
+##                  ############
+####                ############
+######              ##        ##
+########            ############
+##########          ##        ##
+############        ############
+##############      ##        ##
+################    ############
+##################
+############
+######  ####
+####    ######
+##        ####
+          ######
+            ####
+            ####
 @end example
 
 @item text
@@ -6466,22 +6466,22 @@ an horizontal text that can be selected and possibly edited.
 
 This cursor is usually a vertical I-beam.
 @example
-XXXXXXXXXXXXXX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-XXXXXXXXXXXXXX
+##############
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+##############
 @end example
 
 @item vertical-text
@@ -6493,13 +6493,13 @@ the first fallback.
 
 This cursor is usually a horizontal I-beam.
 @example
-XX                            XX
-XX                            XX
-XX                            XX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XX                            XX
-XX                            XX
-XX                            XX
+##                            ##
+##                            ##
+##                            ##
+################################
+##                            ##
+##                            ##
+##                            ##
 @end example
 
 @item progress
@@ -6511,22 +6511,22 @@ with command the user previously issued.
 This cursor is usually rendered as a combination
 of @command{default} and @command{wait}.
 @example
-XX                  XXXXXXXXXXXX
-XXXX                XXXXXXXXXXXX
-XXXXXX                XXXXXXXX
-XXXXXXXX                XXXX
-XXXXXXXXXX              XXXX
-XXXXXXXXXXXX          XXXXXXXX
-XXXXXXXXXXXXXX      XXXXXXXXXXXX
-XXXXXXXXXXXXXXXX    XXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXX
-XXXXXX  XXXX
-XXXX    XXXXXX
-XX        XXXX
-          XXXXXX
-            XXXX
-            XXXX
+##                  ############
+####                ############
+######                ########
+########                ####
+##########              ####
+############          ########
+##############      ############
+################    ############
+##################
+############
+######  ####
+####    ######
+##        ####
+          ######
+            ####
+            ####
 @end example
 
 @item wait
@@ -6538,22 +6538,22 @@ This cursor is typically rendered as a
 hourglass, watch, sundial or some sort
 of animated ring.
 @example
-      XXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
-          XXXXXXXXXXXX
-            XXXXXXXX
-              XXXX
-              XXXX
-              XXXX
-              XXXX
-              XXXX
-              XXXX
-            XXXXXXXX
-          XXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
+      ####################
+      ####################
+        ################
+          ############
+            ########
+              ####
+              ####
+              ####
+              ####
+              ####
+              ####
+            ########
+          ############
+        ################
+      ####################
+      ####################
 @end example
 
 @page
@@ -6567,22 +6567,22 @@ apparent by design that the object is clickable.
 This cursor is usually a right hand (left hand if
 left-handed) pointing with the index-finger.
 @example
-        XXXX
-        XXXX
-        XXXX
-        XXXX
-        XXXX  XXXX
-        XXXX  XXXX  XXXX
-  XX    XXXX  XXXX  XXXX  XXXX
-XXXXXX  XXXXXXXXXXXXXXXX  XXXX
-  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXXXXXXXXXX
-          XXXXXXXXXXXXXXXXXXXX
-            XXXXXXXXXXXXXXXX
+        ####
+        ####
+        ####
+        ####
+        ####  ####
+        ####  ####  ####
+  ##    ####  ####  ####  ####
+######  ################  ####
+  ##############################
+    ############################
+      ##########################
+      ##########################
+        ########################
+        ########################
+          ####################
+            ################
 @end example
 
 @item help
@@ -6594,22 +6594,22 @@ question mark on it --- on the titlebar.
 This cursor is typically renderas as @code{default}
 with a question mark next to it.
 @example
-XX                XXXXXX
-XXXX            XXXXXXXXXX
-XXXXXX        XXXX      XXXX
-XXXXXXXX                XXXX
-XXXXXXXXXX            XXXX
-XXXXXXXXXXXX        XXXX
-XXXXXXXXXXXXXX      XXXX
-XXXXXXXXXXXXXXXX    XXXX
-XXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXX        XXXX
-XXXXXX  XXXX        XXXX
-XXXX    XXXXXX
-XX        XXXX
-          XXXXXX
-            XXXX
-            XXXX
+##                ######
+####            ##########
+######        ####      ####
+########                ####
+##########            ####
+############        ####
+##############      ####
+################    ####
+##################
+############        ####
+######  ####        ####
+####    ######
+##        ####
+          ######
+            ####
+            ####
 @end example
 
 @page
@@ -6620,16 +6620,16 @@ being dragged.
 This cursor is usually a closed right hand,
 or closed left hand if left-handed.
 @example
-    XXXX  XXXX  XXXX
-    XXXXXXXXXXXXXXXX  XXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XXXXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
+    ####  ####  ####
+    ################  ####
+############################
+############################
+############################
+  ##########################
+    ########################
+    ########################
+      ####################
+        ################
 @end example
 
 @item copy
@@ -6642,22 +6642,22 @@ be used as the first fallback.
 This cursor is usually rendered as
 @code{drag} with a plus-sign next to it.
 @example
-                          XX
-                          XX
-                      XXXXXXXXXX
-                          XX
-                          XX
+                          ##
+                          ##
+                      ##########
+                          ##
+                          ##
  
-    XXXX  XXXX  XXXX
-    XXXXXXXXXXXXXXXX  XXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XXXXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
+    ####  ####  ####
+    ################  ####
+############################
+############################
+############################
+  ##########################
+    ########################
+    ########################
+      ####################
+        ################
 @end example
 
 @page
@@ -6674,22 +6674,22 @@ This cursor is usually rendered as
 The arrow is usually point north east,
 or north west if left-handed.
 @example
-                      XXXXXX
-                      XXXX
-                      XX  XX
-                            XX
-                              XX
+                      ######
+                      ####
+                      ##  ##
+                            ##
+                              ##
 
-    XXXX  XXXX  XXXX
-    XXXXXXXXXXXXXXXX  XXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XXXXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
+    ####  ####  ####
+    ################  ####
+############################
+############################
+############################
+  ##########################
+    ########################
+    ########################
+      ####################
+        ################
 @end example
 
 @item alias
@@ -6704,22 +6704,22 @@ This cursor is usually rendered as
 @code{drag} with an two or three linked
 links next to it, or an arced arrow.
 @example
-                  XXXX    XXXX
-                XX            XX
-                XX  XXXXXXXX  XX
-                XX            XX
-                  XXXX    XXXX
+                  ####    ####
+                ##            ##
+                ##  ########  ##
+                ##            ##
+                  ####    ####
  
-    XXXX  XXXX  XXXX
-    XXXXXXXXXXXXXXXX  XXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XXXXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
+    ####  ####  ####
+    ################  ####
+############################
+############################
+############################
+  ##########################
+    ########################
+    ########################
+      ####################
+        ################
 @end example
 
 @page
@@ -6737,22 +6737,22 @@ should be used as the first fallback, and
 This cursor is typically rendered as a
 combination of @code{drag} and @code{not-allowed}.
 @example
-                      XXXXXXXX
-                    XX      XXXX
-                    XX    XX  XX
-                    XX  XX    XX
-                    XXXX      XX
-                      XXXXXXXX
-    XXXX  XXXX  XXXX
-    XXXXXXXXXXXXXXXX  XXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XXXXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-    XXXXXXXXXXXXXXXXXXXXXXXX
-      XXXXXXXXXXXXXXXXXXXX
-        XXXXXXXXXXXXXXXX
+                      ########
+                    ##      ####
+                    ##    ##  ##
+                    ##  ##    ##
+                    ####      ##
+                      ########
+    ####  ####  ####
+    ################  ####
+############################
+############################
+############################
+  ##########################
+    ########################
+    ########################
+      ####################
+        ################
 @end example
 
 @item not-allowed
@@ -6763,22 +6763,22 @@ operation.
 This cursor is often rendered as a circle with
 a diagonal line through it.
 @example
-            XXXXXXXX
-        XXXX        XXXX
-      XX                XX
-    XX                  XXXX
-  XX                  XX    XX
-  XX                XX      XX
-XX                XX          XX
-XX              XX            XX
-XX            XX              XX
-XX          XX                XX
-  XX      XX                XX
-  XX    XX                  XX
-    XXXX                  XX
-      XX                XX
-        XXXX        XXXX
-            XXXXXXXX
+            ########
+        ####        ####
+      ##                ##
+    ##                  ####
+  ##                  ##    ##
+  ##                ##      ##
+##                ##          ##
+##              ##            ##
+##            ##              ##
+##          ##                ##
+  ##      ##                ##
+  ##    ##                  ##
+    ####                  ##
+      ##                ##
+        ####        ####
+            ########
 @end example
 
 @page
@@ -6790,21 +6790,21 @@ below the cursor
 This cursor is often rendered as a combined
 vertical and horizontal twin-headed arrow.
 @example
-              XX
-            XXXXXX
-          XXXXXXXXXX
-              XX
-              XX
-    XX        XX        XX
-  XXXX        XX        XXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XXXX        XX        XXXX
-    XX        XX        XX
-              XX
-              XX
-          XXXXXXXXXX
-            XXXXXX
-              XX
+              ##
+            ######
+          ##########
+              ##
+              ##
+    ##        ##        ##
+  ####        ##        ####
+##############################
+  ####        ##        ####
+    ##        ##        ##
+              ##
+              ##
+          ##########
+            ######
+              ##
 @end example
 
 @item up-arrow
@@ -6813,17 +6813,17 @@ insertion point.
 
 It is often rendered an upwards pointing arrow.
 @example
-      XX
-    XXXXXX
-  XXXXXXXXXX
-XXXXXXXXXXXXXX
-    XXXXXX
-    XXXXXX
-    XXXXXX
-    XXXXXX
-    XXXXXX
-    XXXXXX
-    XXXXXX
+      ##
+    ######
+  ##########
+##############
+    ######
+    ######
+    ######
+    ######
+    ######
+    ######
+    ######
 @end example
 
 @item cell
@@ -6832,19 +6832,19 @@ when selecting cells
 
 It is typically rendered as a thick plus-sign.
 @example
-          XXXXXX
-          XXXXXX
-          XXXXXX
-          XXXXXX
-          XXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXX
-XXXXXXXXXXXXXXXXXXXXXXXXXX
-          XXXXXX
-          XXXXXX
-          XXXXXX
-          XXXXXX
-          XXXXXX
+          ######
+          ######
+          ######
+          ######
+          ######
+##########################
+##########################
+##########################
+          ######
+          ######
+          ######
+          ######
+          ######
 @end example
 
 @item col-resize
@@ -6860,21 +6860,21 @@ with an arrow from the left side pointing horizontally
 towards it and an arrow from the right side pointing
 horizontally towards it.
 @example
-              XX
-              XX
-              XX
-              XX
-              XX
-      XX      XX      XX
-      XXXX    XX    XXXX
-XXXXXXXXXXXX  XX  XXXXXXXXXXXX
-      XXXX    XX    XXXX
-      XX      XX      XX
-              XX
-              XX
-              XX
-              XX
-              XX
+              ##
+              ##
+              ##
+              ##
+              ##
+      ##      ##      ##
+      ####    ##    ####
+############  ##  ############
+      ####    ##    ####
+      ##      ##      ##
+              ##
+              ##
+              ##
+              ##
+              ##
 @end example
 
 @item row-resize
@@ -6890,21 +6890,21 @@ with an arrow from the left side pointing vertically
 towards it and an arrow from the right side pointing
 vertically towards it.
 @example
-              XX
-              XX
-              XX
-          XXXXXXXXXX
-            XXXXXX
-              XX
+              ##
+              ##
+              ##
+          ##########
+            ######
+              ##
 
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+##############################
 
-              XX
-            XXXXXX
-          XXXXXXXXXX
-              XX
-              XX
-              XX
+              ##
+            ######
+          ##########
+              ##
+              ##
+              ##
 @end example
 
 @page
@@ -6914,21 +6914,21 @@ precision manipulation of an area.
 
 This cursor typically a thin crosshair.
 @example
-              XX
-              XX
-              XX
-              XX
-              XX
-              XX
-              XX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-              XX
-              XX
-              XX
-              XX
-              XX
-              XX
-              XX
+              ##
+              ##
+              ##
+              ##
+              ##
+              ##
+              ##
+##############################
+              ##
+              ##
+              ##
+              ##
+              ##
+              ##
+              ##
 @end example
 
 @item w-resize
@@ -6944,13 +6944,13 @@ This cursor is typically rendered as a
 west pointing arrow, optionally with a
 wall at the arrow head.
 @example
-XX        XX
-XX      XX
-XX    XX
-XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-XX    XX
-XX      XX
-XX        XX
+##        ##
+##      ##
+##    ##
+##  ############################
+##    ##
+##      ##
+##        ##
 @end example
 
 @item w-select
@@ -6965,13 +6965,13 @@ the fourth fallback.
 This cursor is typically rendered as a
 west pointing arrow.
 @example
-      XX
-    XX
-  XX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-  XX
-    XX
-      XX
+      ##
+    ##
+  ##
+############################
+  ##
+    ##
+      ##
 @end example
 
 @page
@@ -6988,13 +6988,13 @@ This cursor is typically rendered as a
 east pointing arrow, optionally with a
 wall at the arrow head.
 @example
-                    XX        XX
-                      XX      XX
-                        XX    XX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX  XX
-                        XX    XX
-                      XX      XX
-                    XX        XX
+                    ##        ##
+                      ##      ##
+                        ##    ##
+############################  ##
+                        ##    ##
+                      ##      ##
+                    ##        ##
 @end example
 
 @item e-select
@@ -7009,13 +7009,13 @@ the fourth fallback.
 This cursor is typically rendered as a
 east pointing arrow.
 @example
-                    XX
-                      XX
-                        XX
-XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                        XX
-                      XX
-                    XX
+                    ##
+                      ##
+                        ##
+############################
+                        ##
+                      ##
+                    ##
 @end example
 
 @item n-resize
@@ -7031,22 +7031,22 @@ This cursor is typically rendered as a
 north pointing arrow, optionally with a
 wall at the arrow head.
 @example
-XXXXXXXXXXXXXX
+##############
 
-      XX
-    XXXXXX
-  XX  XX  XX
-XX    XX    XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
+      ##
+    ######
+  ##  ##  ##
+##    ##    ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
 @end example
 
 @page
@@ -7062,20 +7062,20 @@ the fourth fallback.
 This cursor is typically rendered as a
 north pointing arrow.
 @example
-      XX
-    XXXXXX
-  XX  XX  XX
-XX    XX    XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
+      ##
+    ######
+  ##  ##  ##
+##    ##    ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
 @end example
 
 @item s-resize
@@ -7091,22 +7091,22 @@ This cursor is typically rendered as a
 south pointing arrow, optionally with a
 wall at the arrow head.
 @example
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-XX    XX    XX
-  XX  XX  XX
-    XXXXXX
-      XX
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+##    ##    ##
+  ##  ##  ##
+    ######
+      ##
 
-XXXXXXXXXXXXXX
+##############
 @end example
 
 @page
@@ -7122,20 +7122,20 @@ the fourth fallback.
 This cursor is typically rendered as a
 south pointing arrow.
 @example
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-      XX
-XX    XX    XX
-  XX  XX  XX
-    XXXXXX
-      XX
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+      ##
+##    ##    ##
+  ##  ##  ##
+    ######
+      ##
 @end example
 
 @item nw-resize
@@ -7151,22 +7151,22 @@ This cursor is typically rendered as a
 north-west pointing arrow, optionally
 with a corner at the arrow head.
 @example
-XXXXXXXXXXXXXXXXXX
-XX
-XX
-XX    XXXXXXXXXXXX
-XX    XXXX
-XX    XX  XX
-XX    XX    XX
-XX    XX      XX
-XX    XX        XX
-                  XX
-                    XX
-                      XX
-                        XX
-                          XX
-                            XX
-                              XX
+##################
+##
+##
+##    ############
+##    ####
+##    ##  ##
+##    ##    ##
+##    ##      ##
+##    ##        ##
+                  ##
+                    ##
+                      ##
+                        ##
+                          ##
+                            ##
+                              ##
 @end example
 
 @page
@@ -7182,19 +7182,19 @@ the fourth fallback.
 This cursor is typically rendered as a
 north-west pointing arrow.
 @example
-XXXXXXXXXXXX
-XXXX
-XX  XX
-XX    XX
-XX      XX
-XX        XX
-            XX
-              XX
-                XX
-                  XX
-                    XX
-                      XX
-                        XX
+############
+####
+##  ##
+##    ##
+##      ##
+##        ##
+            ##
+              ##
+                ##
+                  ##
+                    ##
+                      ##
+                        ##
 @end example
 
 @item se-resize
@@ -7210,22 +7210,22 @@ This cursor is typically rendered as a
 south-east pointing arrow, optionally
 with a corner at the arrow head.
 @example
-XX
-  XX
-    XX
-      XX
-        XX
-          XX
-            XX
-              XX        XX    XX
-                XX      XX    XX
-                  XX    XX    XX
-                    XX  XX    XX
-                      XXXX    XX
-              XXXXXXXXXXXX    XX
-                              XX
-                              XX
-              XXXXXXXXXXXXXXXXXX
+##
+  ##
+    ##
+      ##
+        ##
+          ##
+            ##
+              ##        ##    ##
+                ##      ##    ##
+                  ##    ##    ##
+                    ##  ##    ##
+                      ####    ##
+              ############    ##
+                              ##
+                              ##
+              ##################
 @end example
 
 @page
@@ -7241,19 +7241,19 @@ the fourth fallback.
 This cursor is typically rendered as a
 south-east pointing arrow.
 @example
-XX
-  XX
-    XX
-      XX
-        XX
-          XX
-            XX
-              XX        XX
-                XX      XX
-                  XX    XX
-                    XX  XX
-                      XXXX
-              XXXXXXXXXXXX
+##
+  ##
+    ##
+      ##
+        ##
+          ##
+            ##
+              ##        ##
+                ##      ##
+                  ##    ##
+                    ##  ##
+                      ####
+              ############
 @end example
 
 @item ne-resize
@@ -7269,22 +7269,22 @@ This cursor is typically rendered as a
 north-east pointing arrow, optionally
 with a corner at the arrow head.
 @example
-              XXXXXXXXXXXXXXXXXX
-                              XX
-                              XX
-              XXXXXXXXXXXX    XX
-                      XXXX    XX
-                    XX  XX    XX
-                  XX    XX    XX
-                XX      XX    XX
-              XX        XX    XX
-            XX
-          XX
-        XX
-      XX
-    XX
-  XX
-XX
+              ##################
+                              ##
+                              ##
+              ############    ##
+                      ####    ##
+                    ##  ##    ##
+                  ##    ##    ##
+                ##      ##    ##
+              ##        ##    ##
+            ##
+          ##
+        ##
+      ##
+    ##
+  ##
+##
 @end example
 
 @page
@@ -7300,19 +7300,19 @@ the fourth fallback.
 This cursor is typically rendered as a
 north-east pointing arrow.
 @example
-              XXXXXXXXXXXX
-                      XXXX
-                    XX  XX
-                  XX    XX
-                XX      XX
-              XX        XX
-            XX
-          XX
-        XX
-      XX
-    XX
-  XX
-XX
+              ############
+                      ####
+                    ##  ##
+                  ##    ##
+                ##      ##
+              ##        ##
+            ##
+          ##
+        ##
+      ##
+    ##
+  ##
+##
 @end example
 
 @item sw-resize
@@ -7328,22 +7328,22 @@ This cursor is typically rendered as a
 south-west pointing arrow, optionally
 with a corner at the arrow head.
 @example
-                              XX
-                            XX
-                          XX
-                        XX
-                      XX
-                    XX
-                  XX
-XX    XX        XX
-XX    XX      XX
-XX    XX    XX
-XX    XX  XX
-XX    XXXX
-XX    XXXXXXXXXXXX
-XX
-XX
-XXXXXXXXXXXXXXXXXX
+                              ##
+                            ##
+                          ##
+                        ##
+                      ##
+                    ##
+                  ##
+##    ##        ##
+##    ##      ##
+##    ##    ##
+##    ##  ##
+##    ####
+##    ############
+##
+##
+##################
 @end example
 
 @page
@@ -7359,19 +7359,19 @@ the fourth fallback.
 This cursor is typically rendered as a
 south-west pointing arrow.
 @example
-                        XX
-                      XX
-                    XX
-                  XX
-                XX
-              XX
-            XX
-XX        XX
-XX      XX
-XX    XX
-XX  XX
-XXXX
-XXXXXXXXXXXX
+                        ##
+                      ##
+                    ##
+                  ##
+                ##
+              ##
+            ##
+##        ##
+##      ##
+##    ##
+##  ##
+####
+############
 @end example
 
 @item ew-resize
@@ -7384,13 +7384,13 @@ This cursor is typically rendered as a
 east and west pointing twin-arrow,
 optionally with a wall at the arrow heads.
 @example
-XX        XX        XX        XX
-XX      XX            XX      XX
-XX    XX                XX    XX
-XX  XXXXXXXXXXXXXXXXXXXXXXXX  XX
-XX    XX                XX    XX
-XX      XX            XX      XX
-XX        XX        XX        XX
+##        ##        ##        ##
+##      ##            ##      ##
+##    ##                ##    ##
+##  ########################  ##
+##    ##                ##    ##
+##      ##            ##      ##
+##        ##        ##        ##
 @end example
 
 @item ew-select
@@ -7402,13 +7402,13 @@ second fallback.
 This cursor is typically rendered as a
 east and west pointing twin-arrow.
 @example
-      XX        XX
-    XX            XX
-  XX                XX
-XXXXXXXXXXXXXXXXXXXXXXXX
-  XX                XX
-    XX            XX
-      XX        XX
+      ##        ##
+    ##            ##
+  ##                ##
+########################
+  ##                ##
+    ##            ##
+      ##        ##
 @end example
 
 @page
@@ -7422,22 +7422,22 @@ This cursor is typically rendered as a
 north and south pointing twin-arrow,
 optionally with a wall at the arrow heads.
 @example
-XXXXXXXXXXXXXX
+##############
 
-      XX
-    XXXXXX
-  XX  XX  XX
-XX    XX    XX
-      XX
-      XX
-      XX
-      XX
-XX    XX    XX
-  XX  XX  XX
-    XXXXXX
-      XX
+      ##
+    ######
+  ##  ##  ##
+##    ##    ##
+      ##
+      ##
+      ##
+      ##
+##    ##    ##
+  ##  ##  ##
+    ######
+      ##
 
-XXXXXXXXXXXXXX
+##############
 @end example
 
 @item ns-select
@@ -7449,18 +7449,18 @@ second fallback.
 This cursor is typically rendered as a
 north and south pointing twin-arrow.
 @example
-      XX
-    XXXXXX
-  XX  XX  XX
-XX    XX    XX
-      XX
-      XX
-      XX
-      XX
-XX    XX    XX
-  XX  XX  XX
-    XXXXXX
-      XX
+      ##
+    ######
+  ##  ##  ##
+##    ##    ##
+      ##
+      ##
+      ##
+      ##
+##    ##    ##
+  ##  ##  ##
+    ######
+      ##
 @end example
 
 @page
@@ -7472,22 +7472,22 @@ This cursor is typically rendered as a
 north-west and south-east pointing twin-arrow,
 optionally with a corner at the arrow heads.
 @example
-XXXXXXXXXXXXXXXXXX
-XX
-XX
-XX    XXXXXXXXXXXX
-XX    XXXX
-XX    XX  XX
-XX    XX    XX
-XX    XX      XX        XX    XX
-XX    XX        XX      XX    XX
-                  XX    XX    XX
-                    XX  XX    XX
-                      XXXX    XX
-              XXXXXXXXXXXX    XX
-                              XX
-                              XX
-              XXXXXXXXXXXXXXXXXX
+##################
+##
+##
+##    ############
+##    ####
+##    ##  ##
+##    ##    ##
+##    ##      ##        ##    ##
+##    ##        ##      ##    ##
+                  ##    ##    ##
+                    ##  ##    ##
+                      ####    ##
+              ############    ##
+                              ##
+                              ##
+              ##################
 @end example
 
 @item nesw-resize
@@ -7498,22 +7498,22 @@ This cursor is typically rendered as a
 north-east and south-west pointing twin-arrow,
 optionally with a corner at the arrow heads.
 @example
-              XXXXXXXXXXXXXXXXXX
-                              XX
-                              XX
-              XXXXXXXXXXXX    XX
-                      XXXX    XX
-                    XX  XX    XX
-                  XX    XX    XX
-XX    XX        XX      XX    XX
-XX    XX      XX        XX    XX
-XX    XX    XX
-XX    XX  XX
-XX    XXXX
-XX    XXXXXXXXXXXX
-XX
-XX
-XXXXXXXXXXXXXXXXXX
+              ##################
+                              ##
+                              ##
+              ############    ##
+                      ####    ##
+                    ##  ##    ##
+                  ##    ##    ##
+##    ##        ##      ##    ##
+##    ##      ##        ##    ##
+##    ##    ##
+##    ##  ##
+##    ####
+##    ############
+##
+##
+##################
 @end example
 
 @page
@@ -7524,21 +7524,21 @@ twin-arrow and a north-west and south-east
 pointing twin-arrow, optionally with a corner
 at the arrow heads.
 @example
-XXXXXXXXXX          XXXXXXXXXX
-XXXX                      XXXX
-XX  XX                  XX  XX
-XX    XX              XX    XX
-XX      XX          XX      XX
-          XX      XX
-            XX  XX
-              XX
-            XX  XX
-          XX      XX
-XX      XX          XX      XX
-XX    XX              XX    XX
-XX  XX                  XX  XX
-XXXX                      XXXX
-XXXXXXXXXX          XXXXXXXXXX
+##########          ##########
+####                      ####
+##  ##                  ##  ##
+##    ##              ##    ##
+##      ##          ##      ##
+          ##      ##
+            ##  ##
+              ##
+            ##  ##
+          ##      ##
+##      ##          ##      ##
+##    ##              ##    ##
+##  ##                  ##  ##
+####                      ####
+##########          ##########
 @end example
 @end table
 
