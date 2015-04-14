@@ -7582,6 +7582,30 @@ layer.
 list of supported display server protocol, ordered
 by preference. 
 
+If @command{mds} is started as a compatibility layer,
+@code{mds} should be added to @env{PREFERRED_DISPLAY}
+if and only if @env{PREFERRED_DISPLAY} lists any
+other display protocol.
+
+If a compatibility server is successfully started,
+it shoul be listed in @env{PREFERRED_DISPLAY}.
+Be sure to keep the list ordered by preference.
+
+@table @code
+@item mir
+Should be added if you are running an
+@command{mir}-to-@command{mds} server,
+like @command{mds-mmds}.
+@item wayland
+Should be added if you are running an
+@command{wayland}-to-@command{mds} server,
+like @command{mds-wmds}.
+@item x11
+Should be added if you are running an
+@command{X}-to-@command{mds} server,
+like @command{mds-xmds}.
+@end table
+
 
 
 @node New Concepts
