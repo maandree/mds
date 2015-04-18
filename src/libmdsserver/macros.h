@@ -98,6 +98,33 @@
 
 
 /**
+ * Wrapper for `fprintf` that prints to `stderr` with
+ * the prefixed with information telling the user that
+ * the output is part of an state and statistics dump
+ * and a new line suffixed
+ * 
+ * @param   format:const char*  The format
+ * @return  :int                The number of bytes written, including the NUL-termination, negative on error
+ */
+#define iprint(format)  \
+  fprintf(stderr, "%s: info: " format "\n", *argv)
+
+
+/**
+ * Wrapper for `fprintf` that prints to `stderr` with
+ * the prefixed with information telling the user that
+ * the output is part of an state and statistics dump
+ * and a new line suffixed
+ * 
+ * @param   format:const char*  The format
+ * @param   ...                 The arguments
+ * @return  :int                The number of bytes written, including the NUL-termination, negative on error
+ */
+#define iprintf(format, ...)  \
+  fprintf(stderr, "%s: info: " format "\n", *argv, __VA_ARGS__)
+
+
+/**
  * Wrapper for `pthread_mutex_lock` and `pthread_mutex_unlock`
  * 
  * @param  mutex:pthread_mutex_t  The mutex

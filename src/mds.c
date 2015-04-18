@@ -112,6 +112,10 @@ int main(int argc_, char** argv_)
   if (xsigaction(SIGDANGER, SIG_IGN) < 0)
     xperror(*argv);
   
+  /* Set up to ignore SIGINFO. */
+  if (xsigaction(SIGINFO, SIG_IGN) < 0)
+    xperror(*argv);
+  
   /* Remove umask. */
   saved_umask = umask(0);
   

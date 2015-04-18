@@ -64,7 +64,7 @@ static int interval = RESPAWN_TIME_LIMIT_SECONDS;
 static size_t servers = 0;
 
 /**
- * Command line arguments, for each server — concatenated, with NULL termination
+ * Command line arguments, for each server — concatenated, with NULL-termination
  */
 static char** commands_args = NULL;
 
@@ -533,5 +533,49 @@ int master_loop(void)
     free(states);
   
   return rc;
+}
+
+
+/**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_info(int signo)
+{
+  server_state_t state;
+  size_t i, n = servers;
+  char** cmdline;
+  struct timespec now;
+  (void) signo;
+  if (monotone(&now) < 0)
+    iprint("(unable to get current time)");
+  else
+    iprintf("current time: %ji.%09li", (intmax_t)(now.tv_sec), (long)(now.tv_nsec));
+  iprintf("do-not-resuscitate period: %i seconds", interval);
+  iprintf("managed servers: %zu", n);
+  iprintf("alive servers: %zu", live_count);
+  iprintf("reviving: %s", reviving ? "yes" : "no");
+  for (i = 0; i < n; i++)
+    {
+      state = states[i];
+      cmdline = commands[i];
+      iprintf("managed server %zu: pid: %li", i, (long)(state.pid));
+      iprintf("managed server %zu: state: %s", i,
+	      state.state == UNBORN          ? "not started yet" :
+	      state.state == ALIVE           ? "up and running" :
+	      state.state == DEAD            ? "about to be respawn" :
+	      state.state == DEAD_AND_BURIED ? "requires SIGUSR2 to respawn" :
+	      state.state == CREMATED        ? "will never respawn" :
+	      "unrecognised state, something is wrong here!");
+      iprintf("managed server %zu: started: %ji.%09li", i,
+	      (intmax_t)(state.started.tv_sec),
+	      (long)(state.started.tv_nsec));
+      iprintf("managed server %zu: cmdline:", i);
+      while (*cmdline)
+	iprintf("  %z", *cmdline++);
+    }
 }
 

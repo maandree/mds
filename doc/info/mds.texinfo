@@ -3885,12 +3885,26 @@ this to find out how large the buffer is so it can call
 
 @item @code{eprint} [(@code{const char* format}) @arrow{} @code{int}]
 A wrapper for @code{fprintf} that prints a string prefixed
-with the value value of @code{*argv} to @code{stderr}.
+with the value of @code{*argv} to @code{stderr}.
+This wrapper also as a line feed to the end of the text.
 Because @code{eprintf} naïvely wraps @code{fprintf}, all
 `%':s in the string must be duplicated.
 
 @item @code{eprintf} [(@code{const char* format, ...}) @arrow{} @code{int}]
 @code{eprint} extends @code{eprint} with variadic arguments
+that can be used to insert values into the format string
+just like you can do in @code{fprintf}.
+
+@item @code{iprint} [(@code{const char* format}) @arrow{} @code{int}]
+A wrapper for @code{fprintf} that prints a string prefixed
+with the value of @code{*argv}, as well a label telling the
+user that the output is part of a state and statistics dump,
+to @code{stderr}. This wrapper also as a line feed to the
+end of the text. Because @code{eprintf} naïvely wraps
+@code{fprintf}, all `%':s in the string must be duplicated.
+
+@item @code{iprintf} [(@code{const char* format, ...}) @arrow{} @code{int}]
+@code{eprint} extends @code{iprint} with variadic arguments
 that can be used to insert values into the format string
 just like you can do in @code{fprintf}.
 

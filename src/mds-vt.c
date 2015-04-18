@@ -903,3 +903,30 @@ void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
   mode->acqsig = (short int)vt_enter_signal;
 }
 
+
+/**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_info(int signo)
+{
+  (void) signo;
+  iprintf("next message ID: %" PRIu32, message_id);
+  iprintf("connected: %s", connected ? "yes" : "no");
+  iprintf("VT of the display: %i", display_vt);
+  iprintf("TTY FD of the display: %i", display_tty_fd);
+  iprintf("TTY in foreground: %s", vt_is_active ? "yes" : "no");
+  iprintf("old VT stat: mode: %lo", (long)(old_vt_stat.st_mode));
+  iprintf("old VT stat: uid: %li", (long)(old_vt_stat.st_uid));
+  iprintf("old VT stat: gid: %li", (long)(old_vt_stat.st_gid));
+  iprintf("switching VT: %s", switching_vt ? "yes" : "no");
+  iprintf("VT-file pathname: %s", vtfile_path);
+  iprintf("secondary socket FD: %i", secondary_socket_fd);
+  iprintf("secondary thread started: %s", secondary_thread_started ? "yes" : "no");
+  iprintf("secondary thread failed: %s", secondary_thread_failed ? "yes" : "no");
+  iprintf("non-exclusive counter: %zi", nonexclusive_counter);
+}
+

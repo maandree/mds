@@ -373,10 +373,13 @@ void __attribute__((weak)) received_danger(int signo)
  * 
  * @param  signo  The signal that has been received
  */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
 void __attribute__((weak)) received_info(int signo)
 {
   (void) signo;
 }
+# pragma GCC diagnostic pop
 
 
 /**
