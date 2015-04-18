@@ -3809,7 +3809,7 @@ process. It is up to networking protocols to
 translate these numbers of the display spans
 multiple operating systems. The signal zero
 can usually be used if no signal is to be sent,
-this is however dependent on he operating system.
+this is however dependent on the operating system.
 
 @item Response:
 The server will respond with a
@@ -8359,4 +8359,60 @@ backgrund.
 @include fdl.texinfo
 
 @bye
+
+
+TODO toolkit guidelines
+       screen reading
+       keyboard commands
+       rat commands
+       look and feel
+       configurations
+TODO other input devices
+       3d pointer
+       joystick
+       gamepad
+       infrared remote
+       steering wheel
+       pedals
+       gloves
+       multitouch (screen, rat)
+       acceleroscope
+       gyroscope
+       camera
+       3d camera
+
+TODO protocol: embed: embedding windows inside other windows such as a status icon tray
+TODO protocol: arcade: a game takes over control over outputs for increased performance
+TODO protocol: startup: a mechanism allowing a desktop environment to track application startup
+TODO protocol: drag;; drag and drop should be usable for saving files.
+TODO protocol: kkbdrate
+TODO protocol: keytrans
+TODO protocol: rat
+TODO protocol: cursor
+TODO protocol: colour
+TODO protocol: state
+TODO protocol: focus;; multifocus
+TODO protocol: screensaver;; dpms
+TODO protocol: compositor
+TODO protocol: crtc
+TODO protocol: presentation
+TODO protocol: network
+TODO protocol: decorator
+TODO protocol: workspace
+TODO protocol: ping
+
+TODO notifications (balloons, bubbles)
+
+TODO taskbar features:
+  progress bars (any number) with colours
+  control buttons such as play, pause, previous and next
+  urgency alert
+  stack all windows that belongs to the same process
+  stack all windows with the same class
+  extensible right-click menu
+  right-click menu includes actions to start a new process
+
+TODO application menu features:
+  different ways to start an program, for example,
+    browers may include a safe-browsing mode.
 

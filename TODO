@@ -30,17 +30,6 @@ Missing commands:
 	chvt
 	conf		Command line interface for reconfiguring servers
 
-Missing protocols:
-
-	drag		kkbdrate  	keytrans	rat
-	cursor		colour		state		focus
-	screensaver	compositor	crtc		presentation
-	network		decorator	workspace
-	embed		Embedding windows inside other windows such as a status icon tray
-	arcade          A game taskes over control over outputs for increased performance
-	startup		A mechanism allowing a desktop environment to track application startup
-
-
 Need testing:
 
 	registry
@@ -71,21 +60,4 @@ to autorelease.
 IPA keyboard layout
 
 Add support for SIGINFO
-
-Notifications (balloons)
-
-Drag and drop should be usable for saving files.
-
-Tasbar features:
-  progress bars (any number) with colours
-  control buttons such as play, pause, previous and next
-  urgency alert
-  stack all windows that belongs to the same process
-  stack all windows with the same class
-  extensible right-click menu
-  right-click menu includes actions to start a new process
-
-Application menu features:
-  different ways to start an program, for example,
-    browers may include a safe-browsing mode.
 
