@@ -50,7 +50,7 @@ Need testing:
 	vt
 
 Fast lanes
-Optimise use of mutexe by replace them with rwlocks
+Optimise use of mutexe by replace them with rwlocks (where appropriate)
 Listen for `Command: reregister`
 Register protocols
 A facility is needed to lookup available compose sequences to any character,
