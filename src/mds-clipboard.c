@@ -909,3 +909,53 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   return -1;
 }
 
+
+/**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_info(int signo)
+{
+  clipitem_t clipitem;
+  size_t i, j, n;
+  struct timespec now;
+  (void) signo;
+  if (monotone(&now) < 0)
+    iprint("(unable to get current time)");
+  else
+    iprintf("current time: %ji.%09li", (intmax_t)(now.tv_sec), (long)(now.tv_nsec));
+  iprintf("next message ID: %" PRIu32, message_id);
+  iprintf("connected: %s", connected ? "yes" : "no");
+  for (i = 0; i < CLIPBOARD_LEVELS; i++)
+    {
+      n = clipboard_used[i];
+      iprintf("clipstack %zu: allocated: %zu", i, clipboard_size[i]);
+      iprintf("clipstack %zu: used: %zu", i, n);
+      for (j = 0; j < n; j++)
+	{
+	  clipitem = clipboard[i][j];
+	  iprintf("clipstack %zu: item %zu:", i, j);
+	  iprintf("  autopurge: %s",
+		  clipitem.autopurge == CLIPITEM_AUTOPURGE_NEVER ? "as needed" :
+		  clipitem.autopurge == CLIPITEM_AUTOPURGE_UPON_DEATH ? "upon death or as needed" :
+		  clipitem.autopurge == CLIPITEM_AUTOPURGE_UPON_CLOCK ? "timeout or as needed" :
+		  clipitem.autopurge == CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK ? "upon death, timeout or as needed" :
+		  "unrecognised rule, something is wrong here!");
+	  iprintf("  client: %" PRIu32 ":%" PRIu32,
+		  (uint32_t)(clipitem.client >> 32),
+		  (uint32_t)(clipitem.client));
+	  if (clipitem.autopurge & CLIPITEM_AUTOPURGE_UPON_CLOCK)
+	    iprintf("  timeout: %ji.%09li",
+		    (intmax_t)(clipitem.dethklok.tv_sec),
+		    (long)(clipitem.dethklok.tv_nsec));
+	  iprintf("  butes: %zu", clipitem.length);
+	  iprintf("  content (possibily truncated): %.*s",
+		  (int)strnlen(clipitem.content, clipitem.length > 50 ? (size_t)50 : clipitem.length),
+		  clipitem.content);
+	}
+    }
+}
+

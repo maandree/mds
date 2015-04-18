@@ -1505,3 +1505,30 @@ void shrink_map(void)
     }
 }
 
+/**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_info(int signo)
+{
+  size_t i;
+  (void) signo;
+  iprintf("next message ID: %" PRIu32, message_id);
+  iprintf("connected: %s", connected ? "yes" : "no");
+  iprintf("LED FD: %i", ledfd);
+  iprintf("saved LED:s: %i", saved_leds);
+  iprintf("scancode buffer: %i, %i, %i", scancode_buf[0], scancode_buf[1], scancode_buf[2]);
+  iprintf("scancode buffer pointer: %i", scancode_ptr);
+  iprintf("saved keyboard mode: %i", saved_kbd_mode);
+  iprintf("send buffer size: %zu bytes", send_buffer_size);
+  iprintf("keyboard thread started: %s", connected ? "yes" : "no");
+  iprintf("keycode remapping tabel size: %zu", mapping_size);
+  iprint("keycode remapping tabel:");
+  for (i = 0; i < mapping_size; i++)
+    if ((int)i != mapping[i])
+      iprintf("  %zu -> %i", i, mapping[i]);
+}
+

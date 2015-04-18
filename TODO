@@ -60,5 +60,5 @@ to autorelease.
 IPA keyboard layout
 
 Add support for SIGINFO
-  mds-clipboard  mds-echo  mds-kkbd  mds-registry  mds-server
+  mds-registry  mds-server
 

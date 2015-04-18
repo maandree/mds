@@ -361,3 +361,19 @@ int full_send(const char* message, size_t length)
   return -1;
 }
 
+
+/**
+ * This function is called when a signal that
+ * signals that the system to dump state information
+ * and statistics has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_info(int signo)
+{
+  (void) signo;
+  iprintf("next message ID: %" PRIu32, message_id);
+  iprintf("connected: %s", connected ? "yes" : "no");
+  iprintf("echo buffer size: %zu bytes", echo_buffer_size);
+}
+
