@@ -62,3 +62,7 @@ IPA keyboard layout
 Add support for SIGINFO
   mds-registry  mds-server
 
+If getpgrp() == tcgetpgrp(STDOUT_FILENO), a graphical program
+should be able to commandeer a window (in particular a terminal
+emulator) and return it when exiting.
+
