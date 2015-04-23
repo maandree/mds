@@ -99,6 +99,7 @@ Texts. A copy of the license is included in the section entitled
 * mds-base.o::                      Overview of @file{mds-base.o}.
 * Keyboard Codes::                  Scancodes and keycodes.
 * Keyboard Layouts::                Writing and compiling keyboard layouts.
+* Default Keyboard Layouts::        The keyboard layouts installed with @command{mds}.
 * Accessibility::                   Dealing with disabilities.
 * Specifications::                  Specifications.
 * New Concepts::                    Discussion of new display server concepts.
@@ -6147,6 +6148,481 @@ For example after @code{\set(1 0 4)} or
 @code{let \1 : @{ 4 3 2 1 0 @}} has been
 used, @code{\get(1 0)} evaluates to 4.
 @end table
+
+
+
+@node Default Keyboard Layouts
+@chapter Default Keyboard Layouts
+
+The chapter is about the special keyboard layouts
+and compose tables included with @command{mds}.
+
+@menu
+* Dead Compose Table::                        The compose table for the dead compose key.
+@end menu
+
+
+
+@node Dead Compose Table
+@section Dead Compose Table
+
+This section describes the structure for the mappings
+used in the compose table for the dead key version of
+the compose key.
+
+@menu
+@c * Aegean Numbers::                            Aegean Numbers.
+@c * Alchemical Symbols::                        Alchemical Symbols.
+@c * Alphabetic Presentation Forms::             Alphabetic Presentation Forms.
+@c * Ancient Greek Musical Notation::            Ancient Greek Musical Notation.
+@c * Ancient Greek Numbers::                     Ancient Greek Numbers.
+@c * Ancient Symbols::                           Ancient Symbols.
+@c * Arabic::                                    Arabic.
+@c * Arabic Extended-A::                         Arabic Extended-A.
+@c * Arabic Mathematical Alphabetic Symbols::    Arabic Mathematical Alphabetic Symbols.
+@c * Arabic Presentation Forms-A::               Arabic Presentation Forms-A.
+@c * Arabic Presentation Forms-B::               Arabic Presentation Forms-B.
+@c * Arabic Supplement::                         Arabic Supplement.
+@c * Armenian::                                  Armenian.
+* Arrows::                                    Arrows.
+@c * Avestan::                                   Avestan.
+@c * Balinese::                                  Balinese.
+@c * Bamum::                                     Bamum.
+@c * Bamum Supplement::                          Bamum Supplement.
+* Basic Latin::                               Basic Latin.
+@c * Bassa Vah::                                 Bassa Vah.
+@c * Batak::                                     Batak.
+@c * Bengali::                                   Bengali.
+* Block Elements::                            Block Elements.
+@c * Bopomofo::                                  Bopomofo.
+@c * Bopomofo Extended::                         Bopomofo Extended.
+* Box Drawing::                               Box Drawing.
+* Braille Patterns::                          Braille Patterns.
+@c * Brahmi::                                    Brahmi.
+@c * Buginese::                                  Buginese.
+@c * Buhid::                                     Buhid.
+@c * Byzantine Musical Symbols::                 Byzantine Musical Symbols.
+@c * C0 Controls::                               C0 Controls.
+@c * C1 Controls::                               C1 Controls.
+@c * Carian::                                    Carian.
+@c * Caucasian Albanian::                        Caucasian Albanian.
+@c * Chakma::                                    Chakma.
+@c * Cham::                                      Cham.
+@c * Cherokee::                                  Cherokee.
+@c * CJK Compatibility::                         CJK Compatibility.
+@c * CJK Compatibility Forms::                   CJK Compatibility Forms.
+@c * CJK Compatibility Ideographs::              CJK Compatibility Ideographs.
+@c * CJK Compatibility Ideographs Supplement::   CJK Compatibility Ideographs Supplement.
+@c * CJK Radicals Supplement::                   CJK Radicals Supplement.
+@c * CJK Strokes::                               CJK Strokes.
+@c * CJK Symbols and Punctuation::               CJK Symbols and Punctuation.
+@c * CJK Unified Ideographs::                    CJK Unified Ideographs.
+@c * CJK Unified Ideographs Extension A::        CJK Unified Ideographs Extension A.
+@c * CJK Unified Ideographs Extension B::        CJK Unified Ideographs Extension B.
+@c * CJK Unified Ideographs Extension C::        CJK Unified Ideographs Extension C.
+@c * CJK Unified Ideographs Extension D::        CJK Unified Ideographs Extension D.
+@c * Combining Diacritical Marks::               Combining Diacritical Marks.
+@c * Combining Diacritical Marks Extended::      Combining Diacritical Marks Extended.
+@c * Combining Diacritical Marks for Symbols::   Combining Diacritical Marks for Symbols.
+@c * Combining Diacritical Marks Supplement::    Combining Diacritical Marks Supplement.
+@c * Combining Half Marks::                      Combining Half Marks.
+@c * Common Indic Number Forms::                 Common Indic Number Forms.
+@c * Control Pictures::                          Control Pictures.
+@c * Coptic::                                    Coptic.
+@c * Coptic Epact Numbers::                      Coptic Epact Numbers.
+@c * Counting Rod Numerals::                     Counting Rod Numerals.
+@c * Cuneiform::                                 Cuneiform.
+@c * Cuneiform Numbers and Punctuation::         Cuneiform Numbers and Punctuation.
+@c * Currency Symbols::                          Currency Symbols.
+@c * Cypriot Syllabary::                         Cypriot Syllabary.
+@c * Cyrillic::                                  Cyrillic.
+@c * Cyrillic Extended-A::                       Cyrillic Extended-A.
+@c * Cyrillic Extended-B::                       Cyrillic Extended-B.
+@c * Cyrillic Supplement::                       Cyrillic Supplement.
+@c * Deseret::                                   Deseret.
+@c * Devanagari::                                Devanagari.
+@c * Devanagari Extended::                       Devanagari Extended.
+@c * Dingbats::                                  Dingbats.
+* Domino Tiles::                              Domino Tiles.
+@c * Duployan::                                  Duployan.
+@c * Egyptian Hieroglyphs::                      Egyptian Hieroglyphs.
+@c * Elbasan::                                   Elbasan.
+@c * Emoticons::                                 Emoticons.
+* Enclosed Alphanumeric Supplement::          Enclosed Alphanumeric Supplement.
+@c * Enclosed Ideographic Supplement::           Enclosed Ideographic Supplement.
+* Enclosed Alphanumerics::                    Enclosed Alphanumerics.
+@c * Enclosed CJK Letters and Months::           Enclosed CJK Letters and Months.
+@c * Ethiopic::                                  Ethiopic.
+@c * Ethiopic Extended::                         Ethiopic Extended.
+@c * Ethiopic Extended-A::                       Ethiopic Extended-A.
+@c * Ethiopic Supplement::                       Ethiopic Supplement.
+* General Punctuation::                       General Punctuation.
+* Geometric Shapes::                          Geometric Shapes.
+* Geometric Shapes Extended::                 Geometric Shapes Extended.
+@c * Georgian::                                  Georgian.
+@c * Georgian Supplement::                       Georgian Supplement.
+@c * Glagolitic::                                Glagolitic.
+@c * Gothic::                                    Gothic.
+@c * Grantha::                                   Grantha.
+@c * Greek and Coptic::                          Greek and Coptic.
+@c * Greek Extended::                            Greek Extended.
+@c * Gujarati::                                  Gujarati.
+@c * Gurmukhi::                                  Gurmukhi.
+@c * Halfwidth and Fullwidth Forms::             Halfwidth and Fullwidth Forms.
+@c * Hangul Compatibility Jamo::                 Hangul Compatibility Jamo.
+@c * Hangul Jamo::                               Hangul Jamo.
+@c * Hangul Jamo Extended-A::                    Hangul Jamo Extended-A.
+@c * Hangul Jamo Extended-B::                    Hangul Jamo Extended-B.
+@c * Hangul Syllables::                          Hangul Syllables.
+@c * Hanunoo::                                   Hanunoo.
+@c * Hebrew::                                    Hebrew.
+@c * Hiragana::                                  Hiragana.
+@c * Ideographic Description Characters::        Ideographic Description Characters.
+@c * Imperial Aramaic::                          Imperial Aramaic.
+@c * Inscriptional Parthian::                    Inscriptional Parthian.
+@c * Inscriptional Pahlavi::                     Inscriptional Pahlavi.
+* IPA Extensions::                            IPA Extensions.
+@c * Javanese::                                  Javanese.
+@c * Kaithi::                                    Kaithi.
+@c * Kana Supplement::                           Kana Supplement.
+@c * Kangxi Radicals::                           Kangxi Radicals.
+@c * Kannada::                                   Kannada.
+@c * Katakana::                                  Katakana.
+@c * Katakana Phonetic Extensions::              Katakana Phonetic Extensions.
+@c * Kanbun::                                    Kanbun.
+@c * Kayah Li::                                  Kayah Li.
+@c * Kharoshthi::                                Kharoshthi.
+@c * Khmer::                                     Khmer.
+@c * Khmer Symbols::                             Khmer Symbols.
+@c * Khojki::                                    Khojki.
+@c * Khudawadi::                                 Khudawadi.
+@c * Lao::                                       Lao.
+@c * Latin Extended Additional::                 Latin Extended Additional.
+* Latin Extended-A::                          Latin Extended-A.
+* Latin Extended-B::                          Latin Extended-B.
+* Latin Extended-C::                          Latin Extended-C.
+@c * Latin Extended-D::                          Latin Extended-D.
+@c * Latin Extended-E::                          Latin Extended-E.
+* Latin-1 Supplement::                        Latin-1 Supplement.
+@c * Lepcha::                                    Lepcha.
+@c * Letterlike Symbols::                        Letterlike Symbols.
+@c * Limbu::                                     Limbu.
+@c * Linear A::                                  Linear A.
+@c * Linear B Ideograms::                        Linear B Ideograms.
+@c * Linear B Syllabary::                        Linear B Syllabary.
+@c * Lisu::                                      Lisu.
+@c * Lycian::                                    Lycian.
+@c * Lydian::                                    Lydian.
+@c * Mahajani::                                  Mahajani.
+* Mahjong Tiles::                             Mahjong Tiles.
+@c * Malayalam::                                 Malayalam.
+@c * Mandaic::                                   Mandaic.
+@c * Manichaean::                                Manichaean.
+@c * Mathematical Alphanumeric Symbols::         Mathematical Alphanumeric Symbols.
+* Mathematical Operators::                    Mathematical Operators.
+@c * Meetei Mayek::                              Meetei Mayek.
+@c * Meetei Mayek Extensions::                   Meetei Mayek Extensions.
+@c * Mende Kikakui::                             Mende Kikakui.
+@c * Meroitic Cursive::                          Meroitic Cursive.
+@c * Meroitic Hieroglyphs::                      Meroitic Hieroglyphs.
+@c * Miao::                                      Miao.
+* Miscellaneous Mathematical Symbols-A::      Miscellaneous Mathematical Symbols-A.
+* Miscellaneous Mathematical Symbols-B::      Miscellaneous Mathematical Symbols-B.
+@c * Miscellaneous Symbols::                     Miscellaneous Symbols.
+* Miscellaneous Symbols and Arrows::          Miscellaneous Symbols and Arrows.
+@c * Miscellaneous Symbols and Pictographs::     Miscellaneous Symbols and Pictographs.
+@c * Miscellaneous Technical::                   Miscellaneous Technical.
+@c * Modi::                                      Modi.
+@c * Modifier Tone Letters::                     Modifier Tone Letters.
+@c * Mongolian::                                 Mongolian.
+@c * Mro::                                       Mro.
+@c * Musical Symbols::                           Musical Symbols.
+@c * Myanmar::                                   Myanmar.
+@c * Myanmar Extended-A::                        Myanmar Extended-A.
+@c * Myanmar Extended-B::                        Myanmar Extended-B.
+@c * Nabataean::                                 Nabataean.
+@c * New Tai Lue::                               New Tai Lue.
+@c * NKo::                                       NKo.
+* Number Forms::                              Number Forms.
+@c * Ogham::                                     Ogham.
+@c * Ol Chiki::                                  Ol Chiki.
+@c * Old North Arabian::                         Old North Arabian.
+@c * Old Italic::                                Old Italic.
+@c * Old Permic::                                Old Permic.
+@c * Old Persian::                               Old Persian.
+@c * Old South Arabian::                         Old South Arabian.
+@c * Old Turkic::                                Old Turkic.
+@c * Optical Character Recognition::             Optical Character Recognition.
+@c * Osmanya::                                   Osmanya.
+@c * Ornamental Dingbats::                       Ornamental Dingbats.
+@c * Oriya::                                     Oriya.
+@c * Palmyrene::                                 Palmyrene.
+@c * Pahawh Hmong::                              Pahawh Hmong.
+@c * Pau Cin Hau::                               Pau Cin Hau.
+@c * Phaistos Disc::                             Phaistos Disc.
+@c * Phags-pa::                                  Phags-pa.
+@c * Phoenician::                                Phoenician.
+@c * Phonetic Extensions::                       Phonetic Extensions.
+@c * Phonetic Extensions Supplement::            Phonetic Extensions Supplement.
+* Playing Cards::                             Playing Cards.
+@c * Psalter Pahlavi::                           Psalter Pahlavi.
+@c * Rejang::                                    Rejang.
+@c * Rumi Numeral Symbols::                      Rumi Numeral Symbols.
+@c * Runic::                                     Runic.
+@c * Samaritan::                                 Samaritan.
+@c * Saurashtra::                                Saurashtra.
+@c * Sharada::                                   Sharada.
+@c * Shavian::                                   Shavian.
+@c * Shorthand Format Controls::                 Shorthand Format Controls.
+@c * Siddham::                                   Siddham.
+@c * Sinhala::                                   Sinhala.
+@c * Sinhala Archaic Numbers::                   Sinhala Archaic Numbers.
+@c * Small Form Variants::                       Small Form Variants.
+@c * Sora Sompeng::                              Sora Sompeng.
+@c * Spacing Modifier Letters::                  Spacing Modifier Letters.
+@c * Specials::                                  Specials.
+@c * Sundanese::                                 Sundanese.
+@c * Sundanese Supplement::                      Sundanese Supplement.
+* Superscripts and Subscripts::               Superscripts and Subscripts.
+* Supplemental Arrows-A::                     Supplemental Arrows-A.
+* Supplemental Arrows-B::                     Supplemental Arrows-B.
+* Supplemental Arrows-C::                     Supplemental Arrows-C.
+* Supplemental Mathematical Operators::       Supplemental Mathematical Operators.
+@c * Syloti Nagri::                              Syloti Nagri.
+@c * Syriac::                                    Syriac.
+* Tags::                                      Tags.
+@c * Tagalog::                                   Tagalog.
+@c * Tagbanwa::                                  Tagbanwa.
+@c * Tamil::                                     Tamil.
+@c * Tai Le::                                    Tai Le.
+@c * Tai Tham::                                  Tai Tham.
+@c * Tai Viet::                                  Tai Viet.
+@c * Tai Xuan Jing Symbols::                     Tai Xuan Jing Symbols.
+@c * Takri::                                     Takri.
+@c * Telugu::                                    Telugu.
+@c * Thaana::                                    Thaana.
+@c * Thai::                                      Thai.
+@c * Tibetan::                                   Tibetan.
+@c * Tifinagh::                                  Tifinagh.
+@c * Tirhuta::                                   Tirhuta.
+@c * Transport and Map Symbols::                 Transport and Map Symbols.
+@c * Unified Canadian Aboriginal Syllabics::     Unified Canadian Aboriginal Syllabics.
+@c * Unified Canadian Aboriginal Syllabics Extended:: Unified Canadian Aboriginal Syllabics Extended.
+@c * Ugaritic::                                  Ugaritic.
+@c * Vai::                                       Vai.
+@c * Variation Selectors::                       Variation Selectors.
+@c * Variation Selectors Supplement::            Variation Selectors Supplement.
+@c * Vertical Forms::                            Vertical Forms.
+@c * Vedic Extensions::                          Vedic Extensions.
+@c * Warang Citi::                               Warang Citi.
+@c * Yi Radicals::                               Yi Radicals.
+@c * Yi Syllables::                              Yi Syllables.
+@c * Yijing Hexagram Symbols::                   Yijing Hexagram Symbols.
+@end menu
+
+
+
+@node Arrows
+@subsection Arrows
+
+970
+
+
+
+@node Basic Latin
+@subsection Basic Latin
+
+125
+
+
+
+@node Block Elements
+@subsection Block Elements
+
+1648
+
+
+
+@node Box Drawing
+@subsection Box Drawing
+
+1514
+
+
+
+@node Braille Patterns
+@subsection Braille Patterns
+
+1927
+
+
+
+@node Domino Tiles
+@subsection Domino Tiles
+
+3079
+
+
+
+@node Enclosed Alphanumeric Supplement
+@subsection Enclosed Alphanumeric Supplement
+
+1476
+
+
+
+@node Enclosed Alphanumerics
+@subsection Enclosed Alphanumerics
+
+3133
+
+
+
+@node General Punctuation
+@subsection General Punctuation
+
+730
+
+
+
+@node Geometric Shapes
+@subsection Geometric Shapes
+
+1687
+
+
+
+@node Geometric Shapes Extended
+@subsection Geometric Shapes Extended
+
+3194
+
+
+
+@node IPA Extensions
+@subsection IPA Extensions
+
+568
+
+
+
+@node Latin Extended-A
+@subsection Latin Extended-A
+
+236
+
+
+
+@node Latin Extended-B
+@subsection Latin Extended-B
+
+364
+
+
+
+@node Latin Extended-C
+@subsection Latin Extended-C
+
+2834
+
+
+
+@node Latin-1 Supplement
+@subsection Latin-1 Supplement
+
+136
+
+
+
+@node Mahjong Tiles
+@subsection Mahjong Tiles
+
+3056
+
+
+
+@node Mathematical Operators
+@subsection Mathematical Operators
+
+1118
+
+
+
+@node Miscellaneous Mathematical Symbols-A
+@subsection Miscellaneous Mathematical Symbols-A
+
+1824
+
+
+
+@node Miscellaneous Mathematical Symbols-B
+@subsection Miscellaneous Mathematical Symbols-B
+
+2119
+
+
+
+@node Miscellaneous Symbols and Arrows
+@subsection Miscellaneous Symbols and Arrows
+
+2594
+
+
+
+@node Number Forms
+@subsection Number Forms
+
+889
+
+
+
+@node Playing Cards
+@subsection Playing Cards
+
+3090
+
+
+
+@node Superscripts and Subscripts
+@subsection Superscripts and Subscripts
+
+840
+
+
+
+@node Supplemental Arrows-A
+@subsection Supplemental Arrows-A
+
+1900
+
+
+
+@node Supplemental Arrows-B
+@subsection Supplemental Arrows-B
+
+1973
+
+
+
+@node Supplemental Arrows-C
+@subsection Supplemental Arrows-C
+
+3284
+
+
+
+@node Supplemental Mathematical Operators
+@subsection Supplemental Mathematical Operators
+
+2286
+
+
+
+@node Tags
+@subsection Tags
+
+The ``Tags'' block of Unicode has been deprecated. Characters
+in this block is therefore not mapped in the compose table.
 
 
 
