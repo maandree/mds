@@ -6557,7 +6557,60 @@ two digits.
 @node Mahjong Tiles
 @subsection Mahjong Tiles
 
-3056
+Unnumbered mahjong tiles are composed
+with @kbd{<shift dead compose> "m" "t"}
+followed by one additional key:
+@table @kbd
+@item <
+West tile
+@item v
+South tile
+@item >
+East tile
+@item ^
+North tile
+@item r
+Red dragon tile
+@item g
+Green dragon tile
+@item w
+White dragon tile
+@item m
+Plum (mei) tile
+@item l
+Orchid (lan) tile
+@item z
+Bamboo (zhu) tile
+@item j
+Chrysanthemum (ju) tile
+@item 1
+Spring tile
+@item 2
+Summer tile
+@item 3
+Fall tile
+@item 4
+Winter tile
+@item *
+Joker tile
+@item /
+The back of a mahjong tile
+@end table
+
+The numbered tiles are composed with
+@kbd{<shift dead compose> "m" "t"} followed
+by with additional keys: one for the suit,
+and one for the value. The value is is
+encoded with either @kbd{"1"} to @kbd{"9"}.
+The suits is encoded
+@table @kbd
+@item W
+Characters (wan)
+@item T
+Bamboos (tiao)
+@item B
+Circles (bing)
+@end table
 
 
 
