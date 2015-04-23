@@ -6579,7 +6579,65 @@ the compose key.
 @node Playing Cards
 @subsection Playing Cards
 
-3090
+@kbd{<dead compose> "p" "c"} composes the character
+presenting the back of a playing card.
+
+Jokers and thumps are composed using the playing
+card back and two additional characters.
+
+@table @asis
+@item joker, red
+@kbd{<dead compose> <playing card back> "j" "r"}
+@item joker, white
+@kbd{<dead compose> <playing card back> "j" "w"}
+@item joker, black
+@kbd{<dead compose> <playing card back> "j" "b"}
+@end table
+
+The red joker can be composed with the sequence
+@kbd{<dead compose> <dead compose> "p" "c" "j" "r"},
+becuase @kbd{<playing card back>} can be composed with
+the sequence @kbd{<dead compose> "p" "c"}.
+
+The trumps are number 1 through 21, and are composed
+with @kbd{<dead compose> <playing card back> "1" <space>}
+through @kbd{<dead compose> <playing card back> "2" "1"}.
+Additionally, the fool card is composed with
+through @kbd{<dead compose> <playing card back> "0" <space>}.
+
+The Playing Cards block in Unicode also contains
+ace, 2--10, jack, knight, queen och king for the
+suits spades/swords, hearts/cups, diamonds/pentacles
+and clubs/wands. These are composed with the
+@kbd{<dead compose>} followed by, in any order,
+the suit and value. The values are encoded
+@table @asis
+@item Ace
+@kbd{"A"}, @kbd{"a"} or @kbd{"1"}
+@item 2--9
+@kbd{"2"} through @kbd{"9"}
+@item 10
+@kbd{"0"}
+@item Jack
+@kbd{"J"} or @kbd{"j"}
+@item Knight
+@kbd{"C"} or @kbd{"c"}
+@item Queen
+@kbd{"Q"} or @kbd{"q"}
+@item King
+@kbd{"K"} or @kbd{"k"}
+@end table
+and the suits are encoded
+@table @asis
+@item Spades or Swords
+Black or white spades symbol
+@item Hearts or Cups
+Black or white hearts symbol
+@item Diamonds or Pentacles
+Black or white diamonds symbol
+@item Clubs or Wands
+Black or white clubs symbol
+@end table
 
 
 
@@ -6621,7 +6679,7 @@ the compose key.
 @node Tags
 @subsection Tags
 
-The ``Tags'' block of Unicode has been deprecated. Characters
+The ``Tags'' block in Unicode has been deprecated. Characters
 in this block is therefore not mapped in the compose table.
 
 
