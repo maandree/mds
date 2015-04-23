@@ -6579,7 +6579,7 @@ the compose key.
 @node Playing Cards
 @subsection Playing Cards
 
-@kbd{<dead compose> "p" "c"} composes the character
+@kbd{<shift dead compose> "p" "c"} composes the character
 presenting the back of a playing card.
 
 Jokers and thumps are composed using the playing
@@ -6595,9 +6595,9 @@ card back and two additional characters.
 @end table
 
 The red joker can be composed with the sequence
-@kbd{<dead compose> <dead compose> "p" "c" "j" "r"},
+@kbd{<dead compose> <shift dead compose> "p" "c" "j" "r"},
 becuase @kbd{<playing card back>} can be composed with
-the sequence @kbd{<dead compose> "p" "c"}.
+the sequence @kbd{<shift dead compose> "p" "c"}.
 
 The trumps are number 1 through 21, and are composed
 with @kbd{<dead compose> <playing card back> "1" <space>}
