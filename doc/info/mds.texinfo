@@ -6410,8 +6410,7 @@ the compose key.
 @c * Unified Canadian Aboriginal Syllabics Extended:: Unified Canadian Aboriginal Syllabics Extended.
 @c * Ugaritic::                                  Ugaritic.
 @c * Vai::                                       Vai.
-@c * Variation Selectors::                       Variation Selectors.
-@c * Variation Selectors Supplement::            Variation Selectors Supplement.
+* Variation Selectors::                       Variation Selectors and Variation Selectors Supplement.
 @c * Vertical Forms::                            Vertical Forms.
 @c * Vedic Extensions::                          Vedic Extensions.
 @c * Warang Citi::                               Warang Citi.
@@ -6754,6 +6753,21 @@ Black or white clubs symbol
 
 The ``Tags'' block in Unicode has been deprecated. Characters
 in this block is therefore not mapped in the compose table.
+
+
+
+@node Variation Selectors
+@subsection Variation Selectors
+@c TODO Variation Selectors, Variation Selectors Supplement
+
+There are 256 variation selectors, numbered 1 through 256.
+These can be composed with the sequence
+@kbd{<shift dead compose> "v" "s"} followed by exactly three
+digits. These digits should form the index of the variation
+selector. Indices lower than 100, require leading @kbd{"0"}:s.
+Alternatively, variation selectors with an index lower than 100,
+can be composed with a trailing @kbd{<space>} instead of leading
+@kbd{"0"}:s.
 
 
 

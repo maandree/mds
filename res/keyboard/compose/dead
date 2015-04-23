@@ -2971,7 +2971,7 @@ composite("∅" "°" "⦲")
 # TODO CJK Compatibility Ideographs
 # TODO Alphabetic Presentation Forms
 # TODO Arabic Presentation Forms-A
-# TODO Variation Selectors
+# Variation Selectors
 # TODO Vertical Forms
 # TODO Combining Half Marks
 # TODO CJK Compatibility Forms
@@ -3438,5 +3438,5 @@ end for
 
 # Tags: These are deprecated
 
-# TODO Variation Selectors Supplement
+# Variation Selectors Supplement
 
