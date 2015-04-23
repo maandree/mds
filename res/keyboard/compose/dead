@@ -3062,9 +3062,9 @@ composite("∅" "°" "⦲")
 <shift dead compose> "m" "t" "g" : "\u1F005"
 <shift dead compose> "m" "t" "w" : "\u1F006"
 for "1" to "9" as \1
-  <shift dead compose> "m" "t" "w" "\1" : "\add(\u1F007 \sub(\1 "1"))"
-  <shift dead compose> "m" "t" "t" "\1" : "\add(\u1F010 \sub(\1 "1"))"
-  <shift dead compose> "m" "t" "b" "\1" : "\add(\u1F019 \sub(\1 "1"))"
+  <shift dead compose> "m" "t" "W" "\1" : "\add(\u1F007 \sub(\1 "1"))"
+  <shift dead compose> "m" "t" "T" "\1" : "\add(\u1F010 \sub(\1 "1"))"
+  <shift dead compose> "m" "t" "B" "\1" : "\add(\u1F019 \sub(\1 "1"))"
 end for
 <shift dead compose> "m" "t" "m" : "\u1F022"
 <shift dead compose> "m" "t" "l" : "\u1F023"
