@@ -6460,7 +6460,27 @@ the compose key.
 @node Domino Tiles
 @subsection Domino Tiles
 
-3079
+There are two types of domino tile glyphs:
+horizontal and vertical. Each tile has two
+halfs with 0 to 6 dots. Additonally there
+is one horizontal tile, and one vertical tile,
+with the back facing the user.
+
+Horizontal tiles are composed with
+@kbd{<shift dead compose> "d" "t" "-"} followed
+by the number of dots on the left side and the
+number of dots on the right side. Horizontal tile
+with the back facing the user is composed with
+either @kbd{"-"} or @kbd{<space>} instead of the
+two digits.
+
+Vertical tiles are composed with
+@kbd{<shift dead compose> "d" "t" "|"} followed
+by the number of dots on the top and the
+number of dots on the bottom. Vertical tile
+with the back facing the user is composed with
+either @kbd{"|"} or @kbd{<space>} instead of the
+two digits.
 
 
 
