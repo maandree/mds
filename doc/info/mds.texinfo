@@ -6445,7 +6445,86 @@ the compose key.
 @node Box Drawing
 @subsection Box Drawing
 
-1514
+Most of the box drawing glyphs can be composed by
+typing @kbd{<dead compose>} followed by two
+glyphs that should be combined to form the desired
+glyphs. If the two glyphs are identical the glyph
+becomes heavy. More general, common parts of the
+glyphs become heavy.
+
+Glyphs that contain a heavy part be transformed
+so that the heavy parts become double stroked.
+Glyphs that do not contain heavy parts be transformed
+so the entire glyphs becomes double stroked.
+This is done by typing @kbd{<dead compose>} followed
+by, in any order, @kbd{"+"} and the glyph to modify.
+Note that this is not possible for all glyphs, as not
+all glyphs have a double stroked variant, but all
+double stroked glyphs can be composed this way.
+
+The horizontal and the vertical light glyphs, as well
+as the combination of the two, can be made double stroked
+by typing @kbd{<dead compose>} followed by, in any order,
+@kbd{"="} and the glyph.
+
+The light corners can be made rounded by by typing
+@kbd{<dead compose>} followed by, in any order,
+@kbd{"o"} and the glyph or @kbd{"O"} and the glyph.
+
+The sequences @kbd{<dead compose> "-" "|"} and
+@kbd{<dead compose> "|" "-"} can be used to create
+a light horizontal line crossed with a light vertical
+line.
+
+Basic box drawing glyphs are created with sequences
+starting either with @kbd{<shift dead compose> "b"}
+or @kbd{<shift dead compose> "B"}. The former creates
+light glyphs, and the latter creates heavy glyphs.
+Note that glyphs with diagonal lines do not have an
+heavy variants. The base sequences are followed by
+a sequence describing the glyphs to compose.
+@table @kbd
+@item "-"
+Horizontal line.
+@item "|"
+Vertical line.
+@item "+"
+Horizontal line combined with vertical line.
+@item "/"
+Diagonal upper right to lower left.
+@item "\"
+Diagonal upper left to lower right.
+@item "X"
+Diagonal cross.
+@item "<"
+Left part of a horizontal line.
+@item "^"
+Upper part of a vertical line.
+@item ">"
+Right part of a horizontal line.
+@item "v"
+Lower part of a vertical line.
+@end table
+Simple arrows can be used instead of @kbd{"<"}, @kbd{"^"},
+@kbd{">"} and @kbd{"v"}.
+
+@kbd{"-"}, @kbd{"|"} can be prefixed with a key
+to modify the lines.
+@table @kbd
+@item "="
+Double stroke. This modifier is also available for @kbd{"+"}.
+@item "."
+Triple dash.
+@item ":"
+Quadruple dash.
+@end table
+
+Double dashed horizonal line is composed with
+@kbd{<shift dead compose> "b" "." "."} for the
+light variant and @kbd{<shift dead compose> "B" "." "."}
+for the heavy. variant. @kbd{"." ":"}, or a broken
+pipe, instead of @kbd{"." "."} can be used to create
+a douebl dashed vertical line.
 
 
 
