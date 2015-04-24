@@ -6685,7 +6685,7 @@ Spring tile
 @item 2
 Summer tile
 @item 3
-Fall tile
+Autumn tile
 @item 4
 Winter tile
 @item *
