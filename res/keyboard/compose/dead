@@ -1645,7 +1645,7 @@ end for
 <shift dead compose> "B" [">" "→"] : "╺"
 <shift dead compose> "B" ["v" "," "↓"] : "╻"
 
-# Block Elements:
+# Block Elements: (TODO compose quarters:  ▘▝▀▖▌▞▛▗▚▐▜▄▙▟█)
 <shift dead compose> "B" <dead compose> : <dead letter █>
 dead_ascii("█")
 <dead letter █> "|" : <dead letter ▀>
