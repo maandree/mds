@@ -6555,6 +6555,7 @@ will be overlays with its mirror pattern.
 
 @node Domino Tiles
 @subsection Domino Tiles
+@c TODO compose tiles together
 
 There are two types of domino tile glyphs:
 horizontal and vertical. Each tile has two
