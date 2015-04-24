@@ -6452,7 +6452,25 @@ the compose key.
 @node Braille Patterns
 @subsection Braille Patterns
 
-1927
+The sequence @kbd{<shift dead compose> "b" <space>}
+can be used to create a blank braille pattern.
+
+A single-dot braille pattern can be composed with
+@kbd{<shift dead compose> "b"} followed by a digit
+key between @kbd{"1"} and @kbd{"8"}, representing
+the index of the dot.
+
+A dual-dot braille pattern can be composed with
+@kbd{<shift dead compose> "B"} followed by two digit
+keys between @kbd{"1"} and @kbd{"8"}, representing
+the indices of the dots.
+
+More complex braille patterns are composed by
+overlaying two braille patterns. This is done
+by typing @kbd{<dead compose>} followed by the
+two braille patterns to overlay. If the two
+braille patterns are identical, the braille pattern
+will be overlays with its mirror pattern.
 
 
 
