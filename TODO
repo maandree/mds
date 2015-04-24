@@ -66,3 +66,5 @@ If getpgrp() == tcgetpgrp(STDOUT_FILENO), a graphical program
 should be able to commandeer a window (in particular a terminal
 emulator) and return it when exiting.
 
+How do we best avoid that hung clients freeze the display.
+
