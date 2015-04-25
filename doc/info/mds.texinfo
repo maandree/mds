@@ -29,7 +29,8 @@
 @end direntry
 
 
-@c TODO indicies
+@defindex op
+
 
 
 @ifclear HARDCOPY
@@ -106,6 +107,10 @@ Texts. A copy of the license is included in the section entitled
 * Discussion::                      Discussion on display server-architecture.
 * GNU General Public License::      Copying and sharing @command{mds}.
 * GNU Free Documentation License::  Copying and sharing this manual.
+* Program index::                   Index of servers, clients and utilities.
+* Variable index::                  Index of environment variables.
+* Option index::                    Index of command line options.
+* Concept index::                   Index of concepts.
 @end menu
 @c TODO @detailmenu
 
@@ -9097,6 +9102,22 @@ backgrund.
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
 @include fdl.texinfo
+
+@node Program index
+@appendix Program index
+@printindex pg
+
+@node Variable index
+@appendix Variable index
+@printindex vr
+
+@node Option index
+@appendix Option index
+@printindex op
+
+@node Concept index
+@appendix Concept index
+@printindex cp
 
 @bye
 
