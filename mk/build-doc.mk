@@ -30,10 +30,10 @@ obj/logo.ps: doc/logo.svg
 	rsvg-convert --format=ps $< > $@
 
 
-bin/%.info: doc/info/%.texinfo doc/info/*.texinfo
+bin/%.info bin/%.info-1 bin/%.info-2: doc/info/%.texinfo doc/info/*.texinfo
 	@mkdir -p bin
 	$(MAKEINFO) $(TEXIFLAGS) $<
-	mv $*.info $@
+	mv $*.info $*.info-* bin
 
 bin/%.pdf: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.pdf
 	@mkdir -p obj/pdf bin

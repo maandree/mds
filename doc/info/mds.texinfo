@@ -104,8 +104,10 @@ Texts. A copy of the license is included in the section entitled
 * Specifications::                  Specifications.
 * New Concepts::                    Discussion of new display server concepts.
 * Discussion::                      Discussion on display server-architecture.
+* GNU General Public License::      Copying and sharing @command{mds}.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
+@c TODO @detailmenu
 
 
 
@@ -9087,6 +9089,10 @@ requires that be listen for updates to the
 backgrund.
 
 
+
+@node GNU General Public License
+@appendix GNU General Public License
+@include gpl.texinfo
 
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
