@@ -6879,6 +6879,7 @@ can be composed with a trailing @kbd{<space>} instead of leading
 * Loud Keys::                                 Keyboard tiggered sound cues.
 * Mouse Keys::                                Controlling the mouse with the keyboard.
 @end menu
+@c TODO vector grapics compatible magnifier
 
 
 
@@ -9135,6 +9136,7 @@ TODO protocol: workspace
 TODO protocol: ping
 
 TODO notifications (balloons, bubbles)
+TODO virtual resultion (the screen is larger than the output)
 
 TODO taskbar features:
   progress bars (any number) with colours
