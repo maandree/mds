@@ -8410,6 +8410,7 @@ output servers, and even windowing servers.
 * Server Architecture::                       Discussion on fundamental design choices.
 * Fixing X.org Issues::                       Can we avoid the problems X.org has?
 * Why Not Wayland::                           Why Wayland Won't Cut It.
+* Why Not Mir::                               Why Mir Won't Cut It.
 * Desktop Environments::                      What are desktop environments' relationship to mds?
 @end menu
 
@@ -8919,6 +8920,27 @@ network protocol --- and there is no official
 network protocol. When this is all done, a
 compositor proxy must be written that can
 communicate with it.
+
+
+
+@node Why Not Mir
+@section Why Not Mir
+
+The major problem with Mir, and why we need
+@command{mds} instead, is that contributions
+to Mir are subject Canonical's
+contributions-limiting agreement (CLA).
+
+Mir is very limited too. But is is however
+easier to extend. Ignoring the CLA, Mir
+is better Wayland, but for similar reasons
+it is still not good enough.
+
+Mir is however licensed under the GNU
+General Public License version 3 and GNU
+Lesser General Public License version 3.
+Much better than the MIT license, and
+hopefully we can steal some stuff.
 
 
 
