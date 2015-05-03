@@ -6759,7 +6759,7 @@ Circles (bing)
 @kbd{<shift dead compose> "p" "c"} composes the character
 presenting the back of a playing card.
 
-Jokers and thumps are composed using the playing
+Jokers and trumps are composed using the playing
 card back and two additional characters.
 
 @table @asis
@@ -8409,6 +8409,7 @@ output servers, and even windowing servers.
 @menu
 * Server Architecture::                       Discussion on fundamental design choices.
 * Fixing X.org Issues::                       Can we avoid the problems X.org has?
+* Why Not Wayland::                           Why Wayland Won't Cut It.
 * Desktop Environments::                      What are desktop environments' relationship to mds?
 @end menu
 
@@ -8877,6 +8878,47 @@ system, can suffer from this. It is however easy
 for mds servers to implement pervasive threading,
 that is, letting each request spin up a new thread
 in the server.
+
+
+
+@node Why Not Wayland
+@section Why Not Wayland
+
+Development of @command{mds} started out of
+concern that Wayland would not meet our needs,
+and the knowledge that X does not. We are now
+however aware that Wayland meets our needs even
+less than X.@footnote{Not even counting that
+the documentation for Wayland is way more lacking
+that X's documentation.}
+
+Wayland only has protocols for drawing onto a
+buffer and input devices, and some very limited
+output protocols. Wayland is inherently inflexible.
+If anyone was to add additional functionally must
+do so in the compositor --- the window manager ---
+and publish to protocol. It is then up to all
+other compostors (window managers) to implement
+the protocol.
+
+It should be noted that Wayland does not even
+have an official protocol for applying gamma
+corrects. Some compositors (window managers)
+choose to implement it by using @command{colord}.
+
+Additionally, screenshooting, screen recording
+and global hotkeys must be implemented in the
+compositor (window manager). Why? Because of
+security. In Wayland, security always trumps
+useability and usefulness.
+
+Another huge limitation of Wayland is that it
+does not have any network protocol. For it to
+be network, the compositor must implement a
+network protocol --- and there is no official
+network protocol. When this is all done, a
+compositor proxy must be written that can
+communicate with it.
 
 
 
