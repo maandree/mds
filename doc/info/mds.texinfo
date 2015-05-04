@@ -8515,7 +8515,11 @@ Description: The display server is implemented
 as one binary.
 
 @noindent
-Implementations: X11, Mir, Wayland, Surface Flinger,
+Implementations: X11, Mir, Wayland@footnote{Wayland
+is not actually monolithic, it is just a protocol.
+But Wayland is written with a monolithic mindset,
+and it is preferred that the display server
+implementation is monolithic.}, Surface Flinger,
 Quartz Compositor, Desktop Window Manager.
 
 @noindent
