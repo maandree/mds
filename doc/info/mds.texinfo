@@ -8900,7 +8900,7 @@ that X's documentation.}
 Wayland only has protocols for drawing onto a
 buffer and input devices, and some very limited
 output protocols. Wayland is inherently inflexible.
-If anyone was to add additional functionally must
+If anyone wants to add additional functionally must
 do so in the compositor --- the window manager ---
 and publish to protocol. It is then up to all
 other compostors (window managers) to implement
