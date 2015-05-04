@@ -8868,10 +8868,10 @@ send a signal, for instance SIGUSR1, to upgrade the
 whole server, however this is not favourable, and
 X.org does not do this. The reference implemention
 of the mds protocol lets you safely upgrade any part
-of it unline by sending SIGUSR1 to the server that
+of it online by sending SIGUSR1 to the server that
 should be upgraded. On catastrophic failure in this
-process 0a server would restart and lose volatile
-data, but the server shoul be upgraded and it would
+process the server would restart and lose volatile
+data, but the server should be upgraded and it would
 ask all running clients for resend information the
 server lost.
 
