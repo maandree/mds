@@ -30,7 +30,7 @@ obj/logo.ps: doc/logo.svg
 	rsvg-convert --format=ps $< > $@
 
 
-bin/%.info bin/%.info-1 bin/%.info-2: doc/info/%.texinfo doc/info/*.texinfo
+bin/%.info $(foreach P,$(INFOPARTS),bin/%.info-$(P)): doc/info/%.texinfo doc/info/*.texinfo
 	@mkdir -p bin
 	$(MAKEINFO) $(TEXIFLAGS) $<
 	mv $*.info $*.info-* bin
