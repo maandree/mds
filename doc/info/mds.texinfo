@@ -2072,6 +2072,7 @@ simple, reference implementation of a, status icon tray.
 * Clipboard Protocols::             Clipboard protocols.
 * Status Icon Protocols::           Status icon protocols.
 * Colour Protocols::                Colour protocols.
+* Screensaver Protocols::           Screensaver protocols.
 * Miscellaneous Protocols::         Miscellaneous protocols.
 @end menu
 
@@ -3744,6 +3745,194 @@ or @command{Command: get-gamma}.
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
 @command{mds-coopgamma} and @command{mds-cursorgamma}.
+@end table
+
+
+
+@node Screensaver Protocols
+@section Screensaver Protocols
+
+@menu
+* configure-screensaver::           Configure screensaver settings.
+* start-screensaver::               Start the screensaver.
+* screensaver-start-test::          Test whether the screensaver may start.
+@end menu
+
+
+
+@node configure-screensaver
+@subsection configure-screensaver
+
+@table @asis
+@item Identifying header:
+@code{Command: configure-screensaver}
+
+@item Action:
+Reconfigure screensaver settings, or tell the screensaver
+server that the screensaver may not start whilst a program
+is active.
+
+@item Optional header: @code{Screensaver}
+The command, in POSIX shell syntax, for the command to run
+to start the screensaver. The screensaver server will be
+inactive as long as the spawn command has not exited.
+To disable screensaving, the value for this header should
+be @command{true}. This command always starts without
+fail, and does nothing. Which means that the a screensaver
+will not start, and the panic action cannot start is it
+would if the values as set to @command{false}. The screensaver
+server may choose recognise the command @command{true} as
+meaning that does not need to start a screensaver. It is
+also possible to disable screensaving via the
+@code{Activate delay} header.
+
+@item Optional header: @code{Activate delay}
+The number of seconds the display should be inactive before
+the screensaver should start. Floating points are allowed.
+The value @code{0} is discouraged, but has the same meaning
+as @code{disable}, which means that the screensaver should
+never start.
+
+@item Optional header: @code{Lock delay}
+The number of seconds to wait after the screensaver starts
+before authentication via login passphrase is required to
+deactivate the screensaver. Floating points are allowed.
+If properly formatted, the environment variable
+@env{MDS_SCREENSAVER_LOCK} is set to have this value.
+If the value is @code{disable}, the environment variable
+@env{MDS_SCREENSAVER_LOCK} will be cleared, which should
+be interpreted by the screensaver as that it should not
+start the lock mechanism.
+
+@item Optional header: @code{Panic on error}
+The command, in POSIX shell syntax, to run if the
+screensaver exits without another value than 0.
+If you do no want anything to happen, choose either
+of the values @command{true} or @command{false}.
+This is intended as a security measure, in case the
+screensaver fails to start the lock mechanism.
+
+@item Optional header: @code{DPMS}
+TODO
+
+@item Optional header: @code{Inhibit}
+@table @code
+@item yes
+The screensaver may not start whilst the client is
+connected to the server.
+@item no
+Undo the action set by @code{Inhibit: yes} and the same
+client.
+@end table
+
+@item Conditionally required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header in
+response to a @code{Command: assign-id} header.
+Required if @code{Inhibit} is included in the headers.
+
+@item Purpose:
+Allow the user to change screensaver settings.
+
+@item Purpose:
+Allow programs to stop the screensaver from starting.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-screensaver}
+@end table
+
+
+
+@node start-screensaver
+@subsection start-screensaver
+
+@table @asis
+@item Identifying header:
+@code{Command: start-screensaver}
+
+@item Action:
+Start the screensaver, either timed or forced.
+
+@item Instructions:
+The screensaver server should broadcast this
+command when the display has been active for
+long enough for the screensaver to start.
+It should then intercept the message, including
+messages with this command that is not send
+from the screensaver server itself, with
+priority @math{-2^{63}}. The screensaver should
+be started when this message is intercepted by
+the screensaver server. All servers that need
+to perform actions before the switch takes place
+must have a priority higher than @math{-2^{63}},
+preferably 0. Server that can perform their
+actions asynchronously should intercept the message
+without modifying capabilities.
+
+@item Purpose:
+Allow users to force the screensaver to start.
+
+@item Purpose:
+Allow the screensaver daemon to notify servers
+when the screensaver starts.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-screensaver}
+@end table
+
+
+
+@node screensaver-start-test
+@subsection screensaver-start-test
+
+@table @asis
+@item Identifying header:
+@code{Command: screensaver-start-test}
+
+@item Action:
+Ask servers when they last were active.
+
+@item Required header: @code{Last active}
+The message broadcaster should set the value of
+this header to 0. Any server intercepting this
+message should set value to the last time
+(monotonic time, preferably raw) the server
+observed actions that means that the display
+is active, such as usage of the keyboard or rat.
+The servers should however not modify the value
+if the value they would set it to is lower than
+the already set value. Floating points are allowed.
+
+@item Instructions:
+The screensaver server should broadcast this
+message when it thinks it can start the screensaver.
+It should intercept this message with priority
+@math{-2^{63}}. When intercepted it should read
+the @code{Last active} header to determine the
+next time the screensaver is allowed to start,
+which means that it should add the activate delay
+to this value. If the calculate time is in the
+past, the screensaver server should broadcast
+the @command{start-screensaver} message to start
+the screensaver.
+
+@item Purpose:
+Allow the screensaver to as servers like
+the input device servers whether it is
+the for the screensaver to start, instead
+of needing to listening on all input devices.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-screensaver}, @command{mds-kkbd}
+@command{mds-kbd}, @command{mds-rat}
 @end table
 
 
@@ -9220,7 +9409,6 @@ TODO protocol: cursor
 TODO protocol: colour
 TODO protocol: state
 TODO protocol: focus;; multifocus
-TODO protocol: screensaver;; dpms
 TODO protocol: compositor
 TODO protocol: crtc
 TODO protocol: presentation
