@@ -3932,7 +3932,7 @@ Optional.
 
 @item Reference implementation:
 @command{mds-screensaver}, @command{mds-kkbd}
-@command{mds-kbd}, @command{mds-rat}
+@command{mds-kbd} and @command{mds-rat}
 @end table
 
 
