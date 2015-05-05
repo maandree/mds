@@ -9462,7 +9462,7 @@ TODO protocol: embed: embedding windows inside other windows such as a status ic
 TODO protocol: arcade: a game takes over control over outputs for increased performance
 TODO protocol: startup: a mechanism allowing a desktop environment to track application startup
 TODO protocol: drag;; drag and drop should be usable for saving files.
-TODO protocol: keytrans
+TODO protocol: keytrans: changing keyboard layout
 TODO protocol: rat
 TODO protocol: cursor
 TODO protocol: colour
