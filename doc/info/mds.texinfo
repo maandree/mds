@@ -2469,6 +2469,7 @@ Required.
 * keyboard-enumeration::            Response to @code{Command: enumerate-keyboards}.
 * set-keyboard-leds::               Activate and deactivate LED:s on a keyboard.
 * get-keyboard-leds::               List exisiting LED:s on a keyboard and their state.
+* set-keyboard-rate::               Set the repeat rate and repeat delay on a keyboard.
 * keycode-map::                     Remap keyboard keycodes and query current mapping.
 * new-keyboard::                    Announce the existance of a new keyboard.
 * old-keyboard::                    Announce the removal of an old keyboard.
@@ -2855,6 +2856,65 @@ when they try to get the active LED:s
 
 @item Reference implementation:
 @command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@end table
+
+
+
+@node set-keyboard-rate
+@subsection set-keyboard-rate
+
+@table @asis
+@item Identifying header:
+@command{Command: set-keyboard-rate}
+
+@item Action:
+Set the repeat rate and repeat delay on a keyboard.
+
+@item Optional header: @code{Rate}
+A floating point value of the repeat rate, measured
+in cycles per second (hertz). Zero means no repeat.
+
+@item Optional header: @code{Delay}
+An unsigned 16-bit integer of the number of milliseconds
+to wait before the first time a key is repeated. Zero
+means that the delay is matched with the rate, that is
+the reciprocal of the rate.
+
+@item Optional header: @code{Emulate}
+@table @code
+@item disallow
+Always use the keyboard's built in repeat feature.
+@item allow
+Use the keyboard's built in repeat feature when
+possible, otherwise emulate the feature. But if
+the selected settings are close enough to what
+the keyboard supports, use the closed settings
+the keyboard supports.
+@item if needed
+Use the keyboard's built in repeat feature when
+possible, otherwise emulate the feature.
+@item force
+Never use the keyboard's built in repeat feature,
+always emulate the feature.
+@end table
+
+@item Optional header: @code{Keyboard}
+A string that identifies the keyboard that should be
+affected. If omitted all keyboard are affected.
+
+@item Instructions:
+If neither of @code{Rate}, @code{Delay} and @code{Emulate}
+headers are used. The server should reapply the settings.
+
+@item Purpose:
+Enable the user to configure the repeat rate and repeat
+delay on keyboards.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@command{mds-kkbd} and @command{mds-kbd}
 @end table
 
 
@@ -9402,7 +9462,6 @@ TODO protocol: embed: embedding windows inside other windows such as a status ic
 TODO protocol: arcade: a game takes over control over outputs for increased performance
 TODO protocol: startup: a mechanism allowing a desktop environment to track application startup
 TODO protocol: drag;; drag and drop should be usable for saving files.
-TODO protocol: kkbdrate
 TODO protocol: keytrans
 TODO protocol: rat
 TODO protocol: cursor
