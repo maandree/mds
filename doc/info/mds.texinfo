@@ -8935,16 +8935,15 @@ The major problem with Mir, and why we need
 to Mir are subject Canonical's
 contributions-limiting agreement (CLA).
 
-Mir is very limited too. But is is however
-easier to extend. Ignoring the CLA, Mir
-is better Wayland, but for similar reasons
-it is still not good enough.
+Mir, like Wayland, is very limited. Mir is however
+easier to extend. Ignoring the CLA, Mir is better
+Wayland, but for similar reasons it is still not
+good enough.
 
-Mir is however licensed under the GNU
-General Public License version 3 and GNU
-Lesser General Public License version 3.
-Much better than the MIT license, and
-hopefully we can steal some stuff.
+Mir is however licensed under the GNU General
+Public License version 3 and GNU Lesser General
+Public License version 3. Much better than the
+MIT license, and hopefully we can steal some stuff.
 
 
 
