@@ -2470,6 +2470,7 @@ Required.
 * set-keyboard-leds::               Activate and deactivate LED:s on a keyboard.
 * get-keyboard-leds::               List exisiting LED:s on a keyboard and their state.
 * set-keyboard-rate::               Set the repeat rate and repeat delay on a keyboard.
+* get-keyboard-rate::               Get the repeat rate and repeat delay on a keyboard.
 * keycode-map::                     Remap keyboard keycodes and query current mapping.
 * new-keyboard::                    Announce the existance of a new keyboard.
 * old-keyboard::                    Announce the removal of an old keyboard.
@@ -2831,7 +2832,7 @@ should be affected.
 The server implementing support for
 @code{Command: get-keyboard-leds} for the keyboard
 indicated by @code{Keyboard} should send a message
-back to the client indicated by rge @code{Client ID}
+back to the client indicated by the @code{Client ID}
 header (using the @code{To} header) with the headers:
 @table @code
 @item Active
@@ -2912,6 +2913,72 @@ delay on keyboards.
 
 @item Compulsivity:
 Optional.
+
+@item Reference implementation:
+@command{mds-kkbd} and @command{mds-kbd}
+@end table
+
+
+
+@node get-keyboard-rate
+@subsection get-keyboard-rate
+
+@table @asis
+@item Identifying header:
+@command{Command: get-keyboard-rate}
+
+@item Action:
+Get the repeat rate and repeat delay on a keyboard.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
+
+@item Required header: @code{Keyboard}
+A string that identifies the keyboard that
+should be affected.
+
+@item Response:
+The server implementing support for
+@code{Command: get-keyboard-rate} for the keyboard
+indicated by @code{Keyboard} should send a message
+back to the client indicated by the @code{Client ID}
+header (using the @code{To} header) with the headers:
+@table @code
+@item Rate
+The current repeat rate. Same syntax as in
+@code{Command: set-keyboard-rate}.
+Set to @code{unknown} if the server does not
+know what the value is.
+@item Delay
+The current repeat delay. Same syntax as in
+@code{Command: set-keyboard-rate}.
+Set to @code{unknown} if the server does not
+know what the value is.
+@item Emulated
+@table @code
+@item yes
+The server implements the key repeat in software.
+@item no
+The server has set the rate on the keyboard, and
+lets the keyboard be responsible for the repeat.
+This value should also be used if the server
+does not support @code{Command: set-keyboard-rate}
+for the enquired keyboard, but is the server that
+should be responsible for it.
+@end table
+@end table
+
+@item Purpose:
+Enable the user to get the current repeat
+rate and repeat delay on the keyboard.
+
+@item Compulsivity:
+Optional. Recommended if implement support for
+@code{Command: set-keyboard-rate}. If you do not
+support this protocol servers and clients and stall
+when they try to get the current repeat rate and
+repeat delay on the keyboard.
 
 @item Reference implementation:
 @command{mds-kkbd} and @command{mds-kbd}
