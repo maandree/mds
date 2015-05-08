@@ -68,3 +68,8 @@ emulator) and return it when exiting.
 
 How do we best avoid that hung clients freeze the display.
 
+mds-hwgamma and mds-swgamma should be able to limit the
+gamma ramps' convergence to help ensure that the screen is
+always readable (optional feature). Soft limits are set
+in argv, hard limits are set via #define:s at compile-time.
+
