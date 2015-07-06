@@ -5464,7 +5464,7 @@ itself in a fork of itself when initialised. This can be
 used to let the server clean up fatal stuff after itself
 if it crashes. When the child exits, no matter how it
 exits, the parent will call @code{fork_cleanup} and then
-die it the same manner as the child.
+die in the same manner as the child.
 
 @item @code{danger_is_deadly} [@code{unsigned : 1}]
 Setting this to non-zero without setting a signal action
