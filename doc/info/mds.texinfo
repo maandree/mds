@@ -556,6 +556,9 @@ unavailable when running under @command{valgrind}.
 @node Filesystem
 @section Filesystem
 
+@cpindex{Interprocess communication, filesystem}
+@cpindex{Filesystem}
+@cpindex{Kernel}
 The @command{mds} kernel creates two directories
 for the @command{mds} servers to use: one for
 runtime data and one for temporary data.
@@ -575,6 +578,10 @@ For example if the display server index is zero,
 temporary data may be stored in
 @file{/tmp/.@{system-directory@}.mds/0.data}
 
+@cpindex{Re-executing servers}
+@cpindex{Updating, online}
+@cpindex{Online updating}
+@cpindex{Version update}
 As defined by @code{SHM_PATH_PATTERN} in
 @file{<libmdsserver/config.h>}, when a server
 re-executes itself it will marshal its state to
