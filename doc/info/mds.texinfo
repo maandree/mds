@@ -30,6 +30,7 @@
 
 
 @defindex op
+@defindex sg
 
 
 
@@ -111,6 +112,7 @@ Texts. A copy of the license is included in the section entitled
 * Variable index::                  Index of environment variables.
 * Option index::                    Index of command line options.
 * Concept index::                   Index of concepts.
+* Signal index::                    Index of signals.
 * Function index::                  Index of functions.
 * Data type index::                 Index of data types.
 @end menu
@@ -356,7 +358,15 @@ same priority the order in which they will
 receive the message, of those recipients,
 is arbitrary.
 
-An interesting property of this machanism
+@pgindex{@command{mds-vt}}
+@cpindex{Virtual terminal, switching}
+@cpindex{Switching virtual terminal}
+@cpindex{Dual-connection, message passing}
+@cpindex{Message passing, dual-connection}
+@cpindex{Communication, dual-connection}
+@cpindex{Interprocess communication, dual-connection}
+@cpindex{Reflexive connection, message passing}
+An interesting property of this mechanism
 is demonstrated in the @command{mds-vt}
 server. Unlike most servers @command{mds-vt}
 maintains two concurrent connections to
@@ -389,26 +399,37 @@ and wait for a reply from all of them.
 @node Application Design
 @chapter Application Design
 
+@cpindex{Application design}
+@cpindex{Client design}
+@cpindex{Guildlines, applications}
+@cpindex{Toolkit guildlines}
 When creating graphical @command{mds} applications,
 there are some guildlines you should follow.
 
 @itemize @bullet
 @item
-@b{Do not create client side decoration}. Some
+@cpindex{Client-side decoration}
+@cpindex{Server-side decoration}
+@cpindex{Decoration, guildlines}
+@b{Do not create client-side decoration}. Some
 users do not want decorations or wants minimal
-decorations. Windows should look similar, server
-side decoration helps ensure this. Your client side
+decorations. Windows should look similar, server-side
+decoration helps ensure this. Your client-side
 decorations may not meet the requirements the users
-have. For example, your client side decoration may
+have. For example, your client-side decoration may
 only support minimise, maximise and close, whilst the
 user may also want, as provided by her decoration
 server, stick, shade and always on top. And it should
 be sufficient to configure your decorations once
 rather once for every toolkit. Additionally, because
-of oversight from developers, client side decoration
+of oversight from developers, client-side decoration
 tends to work poorly with tiling window managers.
 
 @item
+@cpindex{Memorisation of size and position}
+@cpindex{Position, memorisation}
+@cpindex{Size, memorisation}
+@pgindex{@command{mds-posmem}}
 @b{Do not remember size and position}. Some users
 do not want their programs to remember their size
 and position. There is also a risk that your
@@ -439,6 +460,11 @@ time they were closed.
 @node Environment Variables
 @section Environment Variables
 
+@cpindex{Environment variables}
+@vrindex{@env{DISPLAY}}
+@vrindex{@env{MDS_DISPLAY}}
+@cpindex{Display server identification}
+@cpindex{Identification, display server}
 A crucial task of any display server is letting child
 processes know which display server they should
 connect to. @command{X.org} does this by setting the
@@ -448,6 +474,10 @@ is empty if the display is one the local machine.
 In this tradition @command{mds} does the same thing
 with the environment variable @env{MDS_DISPLAY}.
 
+@cpindex{Environment variables}
+@vrindex{@env{MDS_PGROUP}}
+@cpindex{Display server process group}
+@cpindex{Process group, display server}
 @command{mds} also creates a new process group and
 export the new process group ID to the environment
 variable @command{MDS_PGROUP}. This process group
@@ -459,6 +489,13 @@ servers collectively.
 @node Signals
 @section Signals
 
+@cpindex{Signals}
+@cpindex{Re-executing servers}
+@cpindex{Updating, online}
+@cpindex{Online updating}
+@cpindex{Version update}
+@sgindex{@command{SIGUSR1}}
+@sgindex{@command{SIGUPDATE}}
 @command{mds} servers can re-execute into an
 updated version of their binary. This can be
 used to update display server online after
@@ -470,12 +507,23 @@ If the operating system defines a signal named
 @command{SIGUPDATE}, this signal is used
 instead of @command{SIGUSR1}.
 
+@cpindex{Signals}
+@cpindex{Memory release, automatic}
+@cpindex{Memory release, forced}
+@cpindex{Automated memory release}
+@cpindex{Forcing memory release}
+@sgindex{@command{SIGDANGER}}
+@sgindex{@command{SIGRTMIN + 1}}
 If you need servers to free up allocated
 memory that they do not use, send the signal
 @command{SIGDANGER}, or if not defined
 @command{SIGRTMIN + 1}. Unimportant servers
 may choose to die on @command{SIGDANGER}.
 
+@sgindex{@command{SIGINFO}}
+@sgindex{@command{SIGRTMIN + 2}}
+@cpindex{State dump}
+@cpindex{Statistics dump}
 Server may also choose to support the signal
 @command{SIGINFO}, or if not defined
 @command{SIGRTMIN + 2}. It is not expected
@@ -485,6 +533,8 @@ is send by a user to the server, if she wants
 the server to dump information about the
 server's state or statistics to the TTY.
 
+@sgindex{@command{SIGRTMIN}}
+@cpindex{No-operating signal}
 All servers configured to be interrupted
 when the signal @command{SIGRTMIN} is received.
 No further action is taked. This may be used
@@ -493,6 +543,8 @@ being interrupted. It can also be used by
 the server to interrupt itself from another
 thread.
 
+@pgindex{@command{valgrind}}
+@sgindex{@command{SIGRTMAX}}
 @command{valgrind} uses @command{SIGRTMAX} for
 its own internal stuff. Therefore servers must
 not use @command{SIGRTMAX} as it is hence
@@ -9541,6 +9593,10 @@ backgrund.
 @node Concept index
 @appendix Concept index
 @printindex cp
+
+@node Signal index
+@appendix Signal index
+@printindex sg
 
 @node Function index
 @appendix Function index
