@@ -494,49 +494,49 @@ servers collectively.
 @cpindex{Updating, online}
 @cpindex{Online updating}
 @cpindex{Version update}
-@sgindex{@command{SIGUSR1}}
-@sgindex{@command{SIGUPDATE}}
+@sgindex{@code{SIGUSR1}}
+@sgindex{@code{SIGUPDATE}}
 @command{mds} servers can re-execute into an
 updated version of their binary. This can be
 used to update display server online after
 a new version has been installed. To do this
-send the signal @command{SIGUSR1} to the server
+send the signal @code{SIGUSR1} to the server
 you want update. If a server does not support
 online updating it will ignore this signal.
 If the operating system defines a signal named
-@command{SIGUPDATE}, this signal is used
-instead of @command{SIGUSR1}.
+@code{SIGUPDATE}, this signal is used
+instead of @code{SIGUSR1}.
 
 @cpindex{Signals}
 @cpindex{Memory release, automatic}
 @cpindex{Memory release, forced}
 @cpindex{Automated memory release}
 @cpindex{Forcing memory release}
-@sgindex{@command{SIGDANGER}}
-@sgindex{@command{SIGRTMIN + 1}}
+@sgindex{@code{SIGDANGER}}
+@sgindex{@code{SIGRTMIN + 1}}
 If you need servers to free up allocated
 memory that they do not use, send the signal
-@command{SIGDANGER}, or if not defined
-@command{SIGRTMIN + 1}. Unimportant servers
-may choose to die on @command{SIGDANGER}.
+@code{SIGDANGER}, or if not defined
+@code{SIGRTMIN + 1}. Unimportant servers
+may choose to die on @code{SIGDANGER}.
 
-@sgindex{@command{SIGINFO}}
-@sgindex{@command{SIGRTMIN + 2}}
+@sgindex{@code{SIGINFO}}
+@sgindex{@code{SIGRTMIN + 2}}
 @cpindex{State dump}
 @cpindex{Statistics dump}
 Server may also choose to support the signal
-@command{SIGINFO}, or if not defined
-@command{SIGRTMIN + 2}. It is not expected
+@code{SIGINFO}, or if not defined
+@code{SIGRTMIN + 2}. It is not expected
 that server do support this signal, but
-thay must not die when received. @command{SIGINFO}
+thay must not die when received. @code{SIGINFO}
 is send by a user to the server, if she wants
 the server to dump information about the
 server's state or statistics to the TTY.
 
-@sgindex{@command{SIGRTMIN}}
+@sgindex{@code{SIGRTMIN}}
 @cpindex{No-operating signal}
 All servers configured to be interrupted
-when the signal @command{SIGRTMIN} is received.
+when the signal @code{SIGRTMIN} is received.
 No further action is taked. This may be used
 by the user to test that the program supports
 being interrupted. It can also be used by
@@ -544,10 +544,10 @@ the server to interrupt itself from another
 thread.
 
 @pgindex{@command{valgrind}}
-@sgindex{@command{SIGRTMAX}}
-@command{valgrind} uses @command{SIGRTMAX} for
+@sgindex{@code{SIGRTMAX}}
+@command{valgrind} uses @code{SIGRTMAX} for
 its own internal stuff. Therefore servers must
-not use @command{SIGRTMAX} as it is hence
+not use @code{SIGRTMAX} as it is hence
 unavailable when running under @command{valgrind}.
 
 
