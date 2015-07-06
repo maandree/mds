@@ -111,6 +111,8 @@ Texts. A copy of the license is included in the section entitled
 * Variable index::                  Index of environment variables.
 * Option index::                    Index of command line options.
 * Concept index::                   Index of concepts.
+* Function index::                  Index of functions.
+* Data type index::                 Index of data types.
 @end menu
 @c TODO @detailmenu
 
@@ -127,6 +129,7 @@ Rather than one, possibly modular, process --- a monolithic
 process --- @code{mds} is comprised of many small servers,
 each exchangable and responsible for one thing.
 
+@cpindex{Goals of @command{mds}}
 @command{mds}'s goal is neither security, performance nor
 a perfect graphical experience. @command{mds} is all
 about flexibility and freedom 0@footnote{The freedom to run
@@ -193,6 +196,10 @@ of crashing.
 @node Layers
 @section Layers
 
+@cpindex{Layers, architecture}
+@cpindex{Architectural layers}
+@cpindex{Kernel}
+@cpindex{Master server}
 The @command{mds} display server in architectured in
 three layers. The first layer is called the kernel.
 The kernel is responsible for acquiring a display
@@ -209,14 +216,21 @@ the domain socket for communication with the display
 server, it is not responsible for using it, that
 mission falls to the master server.
 
+@cpindex{Master server}
+@cpindex{Message passing, coordination}
+@cpindex{Communication, coordination}
+@cpindex{Interprocess communication, coordination}
 The second layer is the master server. The master
 server has two responsibilities: coordinating
 message passing between other servers and clients
-@footnote{In @command{mds} their is no functional
+@footnote{In @command{mds} there is no functional
 distinction between servers and clients, the
 distinction is purely semantic.} and starting
 other servers.
 
+@cpindex{Starting of servers}
+@cpindex{Servers, starting}
+@pgindex{@file{mdsinitrc}}
 The third layer is the other servers and clients.
 protocolwise there is no specification on how
 they are started. But in the reference
@@ -238,6 +252,10 @@ of the display server.
 @node Interprocess Communication
 @section Interprocess Communication
 
+@cpindex{Message passing, mechanism}
+@cpindex{Communication, mechanism}
+@cpindex{Interprocess communication, mechanism}
+@cpindex{Master server}
 Intrinsic to @command{mds} is a powerful
 interprocess communication mechanism. Servers
 and clients connect to the display server by
@@ -257,16 +275,27 @@ Multicast a message.
 Join or leave a multicast group.
 @end itemize
 
+@cpindex{Multicast groups}
+@cpindex{Client ID assignment}
+@cpindex{ID assignment}
+@cpindex{Assignment of ID}
+@cpindex{Disconnection}
+@cpindex{Master server}
 Upon assignment of an ID the master server
 will automatically place the client in a
 multicast group for that specific client.
 This automatically multicast group assignment
 is done by the master server simply so you
 as a debugger do not forget to do so. When
-a client is disconnected it will and out a
+a client is disconnected it will send out a
 message to a specific multicast group that
 the client, refered to by it's ID, have closed.
 
+@cpindex{Message passing, message structure}
+@cpindex{Communication, message structure}
+@cpindex{Interprocess communication, message structure}
+@cpindex{Message structure, message passing}
+@cpindex{Master server}
 A message in the @command{mds} protocol is
 comprised of two parts: headers and a payload.
 When a client joins a multicast group it is
@@ -278,6 +307,13 @@ could be used for logging, possibly spying and
 networking.}. Thus a message is automatically
 multicasted to groups indicated by its headers.
 
+@cpindex{Interceptions, message passing}
+@cpindex{Message passing, message modification}
+@cpindex{Communication, message modification}
+@cpindex{Interprocess communication, message modification}
+@cpindex{Message modification, message passing}
+@cpindex{Master server}
+@cpindex{Multicast groups}
 The multicast groups and receiving of message
 is called interceptions. The interesting
 property of interceptions is that they may
@@ -298,6 +334,10 @@ the message to make it empty. A consumed
 message will not be send to any further
 clients or servers in the interception list.
 
+@cpindex{Interception priority, message passing}
+@cpindex{Priority, interception, message passing}
+@cpindex{Message consumption, message passing}
+@cpindex{Consumption, interception, message passing}
 To make this mechanism sensible, a server or
 client can set a priority when it registers
 for interception (does not need to be
@@ -310,7 +350,7 @@ recipients is determined by priority the
 servers registed with. The message first sent
 to the recipients with highest priority and
 last to the recipients with lowest priority,
-and orderd by the priority between those
+and ordered by the priority between those
 priorities. Of two or more servers have the
 same priority the order in which they will
 receive the message, of those recipients,
@@ -9501,6 +9541,14 @@ backgrund.
 @node Concept index
 @appendix Concept index
 @printindex cp
+
+@node Function index
+@appendix Function index
+@printindex fn
+
+@node Data type index
+@appendix Data type index
+@printindex tp
 
 @bye
 
