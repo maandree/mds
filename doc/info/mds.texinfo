@@ -512,6 +512,7 @@ instead of @code{SIGUSR1}.
 @cpindex{Memory release, forced}
 @cpindex{Automated memory release}
 @cpindex{Forcing memory release}
+@cpindex{Releasing memory}
 @sgindex{@code{SIGDANGER}}
 @sgindex{@code{SIGRTMIN + 1}}
 If you need servers to free up allocated
@@ -534,7 +535,7 @@ the server to dump information about the
 server's state or statistics to the TTY.
 
 @sgindex{@code{SIGRTMIN}}
-@cpindex{No-operating signal}
+@cpindex{No-operation signal}
 All servers configured to be interrupted
 when the signal @code{SIGRTMIN} is received.
 No further action is taked. This may be used
