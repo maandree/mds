@@ -3203,7 +3203,7 @@ Remove entry when the client closes.
 @item until-death #
 Remove entry when the client closes,
 or @code{#} seconds have elapsed.
-@item forever:
+@item forever
 Never remove it. (This is the default.)
 @end table
 The server will always remove the entry when either:
