@@ -253,6 +253,8 @@ static int server_initialised_fork_for_safety(void)
 int __attribute__((weak)) server_initialised(void)
 {
   pid_t r;
+  int saved_errno;
+  
   if (on_init_fork && (r = fork()))
     {
       fail_if (r == (pid_t)-1);
@@ -260,7 +262,23 @@ int __attribute__((weak)) server_initialised(void)
     }
   
   if (on_init_sh != NULL)
-    system(on_init_sh);
+    if (system(on_init_sh) == -1)
+      {
+	saved_errno = errno;
+	if (system(NULL))
+	  {
+	    errno = 0;
+	    eprint("no shell is available.");
+	    return -1;
+	  }
+	else
+	  {
+	    errno = saved_errno;
+	    xperror(*argv);
+	    eprint("while running shell at completed initialisation.");
+	    return -1;
+	  }
+      }
   
   if (server_characteristics.fork_for_safety)
     return server_initialised_fork_for_safety();
