@@ -1120,6 +1120,7 @@ by the signal @code{SIGTERM}.
 @pgindex @command{mds-reg}
 @cpindex List protocols
 @cpindex Protocols, listing
+@cpindex Protocol registry
 @opindex @option{--list}
 @opindex @option{--wait}
 @command{mds-reg} is a utility that can be used to list
