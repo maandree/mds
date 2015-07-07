@@ -8,6 +8,8 @@ Missing servers:
 	crtc		seat		dri		drag
 	cursorshadow	kill		focus		colour
 	state		screensaver
+	transform: like xkeystone and xrandr --transform,
+		   should transform the rat cursor too
 
 Extra servers:
 
