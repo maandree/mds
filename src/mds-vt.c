@@ -160,7 +160,7 @@ static int write_vt_file(void)
   *intbuf = display_vt;
   *(struct stat*)(buf + sizeof(int) / sizeof(char)) = old_vt_stat;
   
-  fail_if (open(vtfile_path, O_WRONLY | O_CREAT), fd < 0);
+  fail_if (open(vtfile_path, O_WRONLY | O_CREAT, 0644), fd < 0);
   fail_if (full_write(fd, buf, sizeof(buf)));
   return 0;
  fail:

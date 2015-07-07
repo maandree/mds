@@ -128,7 +128,7 @@ int main(int argc_, char** argv_)
     {
       xsnprintf(pathname, "%s/%u.pid", MDS_RUNTIME_ROOT_DIRECTORY, display);
       
-      fd = open(pathname, O_CREAT | O_EXCL);
+      fd = open(pathname, O_CREAT | O_EXCL, 0644);
       if (fd == -1)
 	{
 	  /* Reuse display index if no longer used. */
