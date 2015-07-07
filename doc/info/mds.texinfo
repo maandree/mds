@@ -131,7 +131,7 @@ Rather than one, possibly modular, process --- a monolithic
 process --- @code{mds} is comprised of many small servers,
 each exchangable and responsible for one thing.
 
-@cpindex{Goals of @command{mds}}
+@cindex Goals of @command{mds}
 @command{mds}'s goal is neither security, performance nor
 a perfect graphical experience. @command{mds} is all
 about flexibility and freedom 0@footnote{The freedom to run
@@ -198,10 +198,10 @@ of crashing.
 @node Layers
 @section Layers
 
-@cpindex{Layers, architecture}
-@cpindex{Architectural layers}
-@cpindex{Kernel}
-@cpindex{Master server}
+@cpindex Layers, architecture
+@cpindex Architectural layers
+@cpindex Kernel
+@cpindex Master server
 The @command{mds} display server in architectured in
 three layers. The first layer is called the kernel.
 The kernel is responsible for acquiring a display
@@ -218,10 +218,10 @@ the domain socket for communication with the display
 server, it is not responsible for using it, that
 mission falls to the master server.
 
-@cpindex{Master server}
-@cpindex{Message passing, coordination}
-@cpindex{Communication, coordination}
-@cpindex{Interprocess communication, coordination}
+@cpindex Master server
+@cpindex Message passing, coordination
+@cpindex Communication, coordination
+@cpindex Interprocess communication, coordination
 The second layer is the master server. The master
 server has two responsibilities: coordinating
 message passing between other servers and clients
@@ -230,9 +230,9 @@ distinction between servers and clients, the
 distinction is purely semantic.} and starting
 other servers.
 
-@cpindex{Starting of servers}
-@cpindex{Servers, starting}
-@pgindex{@file{mdsinitrc}}
+@cpindex Starting of servers
+@cpindex Servers, starting
+@pgindex @file{mdsinitrc}
 The third layer is the other servers and clients.
 protocolwise there is no specification on how
 they are started. But in the reference
@@ -254,10 +254,10 @@ of the display server.
 @node Interprocess Communication
 @section Interprocess Communication
 
-@cpindex{Message passing, mechanism}
-@cpindex{Communication, mechanism}
-@cpindex{Interprocess communication, mechanism}
-@cpindex{Master server}
+@cpindex Message passing, mechanism
+@cpindex Communication, mechanism
+@cpindex Interprocess communication, mechanism
+@cpindex Master server
 Intrinsic to @command{mds} is a powerful
 interprocess communication mechanism. Servers
 and clients connect to the display server by
@@ -277,12 +277,12 @@ Multicast a message.
 Join or leave a multicast group.
 @end itemize
 
-@cpindex{Multicast groups}
-@cpindex{Client ID assignment}
-@cpindex{ID assignment}
-@cpindex{Assignment of ID}
-@cpindex{Disconnection}
-@cpindex{Master server}
+@cpindex Multicast groups
+@cpindex Client ID assignment
+@cpindex ID assignment
+@cpindex Assignment of ID
+@cpindex Disconnection
+@cpindex Master server
 Upon assignment of an ID the master server
 will automatically place the client in a
 multicast group for that specific client.
@@ -293,11 +293,11 @@ a client is disconnected it will send out a
 message to a specific multicast group that
 the client, refered to by it's ID, have closed.
 
-@cpindex{Message passing, message structure}
-@cpindex{Communication, message structure}
-@cpindex{Interprocess communication, message structure}
-@cpindex{Message structure, message passing}
-@cpindex{Master server}
+@cpindex Message passing, message structure
+@cpindex Communication, message structure
+@cpindex Interprocess communication, message structure
+@cpindex Message structure, message passing
+@cpindex Master server
 A message in the @command{mds} protocol is
 comprised of two parts: headers and a payload.
 When a client joins a multicast group it is
@@ -309,13 +309,13 @@ could be used for logging, possibly spying and
 networking.}. Thus a message is automatically
 multicasted to groups indicated by its headers.
 
-@cpindex{Interceptions, message passing}
-@cpindex{Message passing, message modification}
-@cpindex{Communication, message modification}
-@cpindex{Interprocess communication, message modification}
-@cpindex{Message modification, message passing}
-@cpindex{Master server}
-@cpindex{Multicast groups}
+@cpindex Interceptions, message passing
+@cpindex Message passing, message modification
+@cpindex Communication, message modification
+@cpindex Interprocess communication, message modification
+@cpindex Message modification, message passing
+@cpindex Master server
+@cpindex Multicast groups
 The multicast groups and receiving of message
 is called interceptions. The interesting
 property of interceptions is that they may
@@ -336,10 +336,10 @@ the message to make it empty. A consumed
 message will not be send to any further
 clients or servers in the interception list.
 
-@cpindex{Interception priority, message passing}
-@cpindex{Priority, interception, message passing}
-@cpindex{Message consumption, message passing}
-@cpindex{Consumption, interception, message passing}
+@cpindex Interception priority, message passing
+@cpindex Priority, interception, message passing
+@cpindex Message consumption, message passing
+@cpindex Consumption, interception, message passing
 To make this mechanism sensible, a server or
 client can set a priority when it registers
 for interception (does not need to be
@@ -358,14 +358,14 @@ same priority the order in which they will
 receive the message, of those recipients,
 is arbitrary.
 
-@pgindex{@command{mds-vt}}
-@cpindex{Virtual terminal, switching}
-@cpindex{Switching virtual terminal}
-@cpindex{Dual-connection, message passing}
-@cpindex{Message passing, dual-connection}
-@cpindex{Communication, dual-connection}
-@cpindex{Interprocess communication, dual-connection}
-@cpindex{Reflexive connection, message passing}
+@pgindex @command{mds-vt}
+@cpindex Virtual terminal, switching
+@cpindex Switching virtual terminal
+@cpindex Dual-connection, message passing
+@cpindex Message passing, dual-connection
+@cpindex Communication, dual-connection
+@cpindex Interprocess communication, dual-connection
+@cpindex Reflexive connection, message passing
 An interesting property of this mechanism
 is demonstrated in the @command{mds-vt}
 server. Unlike most servers @command{mds-vt}
@@ -399,18 +399,18 @@ and wait for a reply from all of them.
 @node Application Design
 @chapter Application Design
 
-@cpindex{Application design}
-@cpindex{Client design}
-@cpindex{Guildlines, applications}
-@cpindex{Toolkit guildlines}
+@cpindex Application design
+@cpindex Client design
+@cpindex Guildlines, applications
+@cpindex Toolkit guildlines
 When creating graphical @command{mds} applications,
 there are some guildlines you should follow.
 
 @itemize @bullet
 @item
-@cpindex{Client-side decoration}
-@cpindex{Server-side decoration}
-@cpindex{Decoration, guildlines}
+@cpindex Client-side decoration
+@cpindex Server-side decoration
+@cpindex Decoration, guildlines
 @b{Do not create client-side decoration}. Some
 users do not want decorations or wants minimal
 decorations. Windows should look similar, server-side
@@ -426,10 +426,10 @@ of oversight from developers, client-side decoration
 tends to work poorly with tiling window managers.
 
 @item
-@cpindex{Memorisation of size and position}
-@cpindex{Position, memorisation}
-@cpindex{Size, memorisation}
-@pgindex{@command{mds-posmem}}
+@cpindex Memorisation of size and position
+@cpindex Position, memorisation
+@cpindex Size, memorisation
+@pgindex @command{mds-posmem}
 @b{Do not remember size and position}. Some users
 do not want their programs to remember their size
 and position. There is also a risk that your
@@ -460,11 +460,11 @@ time they were closed.
 @node Environment Variables
 @section Environment Variables
 
-@cpindex{Environment variables}
-@vrindex{@env{DISPLAY}}
-@vrindex{@env{MDS_DISPLAY}}
-@cpindex{Display server identification}
-@cpindex{Identification, display server}
+@cpindex Environment variables
+@vrindex @env{DISPLAY}
+@vrindex @env{MDS_DISPLAY}
+@cpindex Display server identification
+@cpindex Identification, display server
 A crucial task of any display server is letting child
 processes know which display server they should
 connect to. @command{X.org} does this by setting the
@@ -474,10 +474,10 @@ is empty if the display is one the local machine.
 In this tradition @command{mds} does the same thing
 with the environment variable @env{MDS_DISPLAY}.
 
-@cpindex{Environment variables}
-@vrindex{@env{MDS_PGROUP}}
-@cpindex{Display server process group}
-@cpindex{Process group, display server}
+@cpindex Environment variables
+@vrindex @env{MDS_PGROUP}
+@cpindex Display server process group
+@cpindex Process group, display server
 @command{mds} also creates a new process group and
 export the new process group ID to the environment
 variable @command{MDS_PGROUP}. This process group
@@ -489,13 +489,13 @@ servers collectively.
 @node Signals
 @section Signals
 
-@cpindex{Signals}
-@cpindex{Re-executing servers}
-@cpindex{Updating, online}
-@cpindex{Online updating}
-@cpindex{Version update}
-@sgindex{@code{SIGUSR1}}
-@sgindex{@code{SIGUPDATE}}
+@cpindex Signals
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 @command{mds} servers can re-execute into an
 updated version of their binary. This can be
 used to update display server online after
@@ -507,24 +507,24 @@ If the operating system defines a signal named
 @code{SIGUPDATE}, this signal is used
 instead of @code{SIGUSR1}.
 
-@cpindex{Signals}
-@cpindex{Memory release, automatic}
-@cpindex{Memory release, forced}
-@cpindex{Automated memory release}
-@cpindex{Forcing memory release}
-@cpindex{Releasing memory}
-@sgindex{@code{SIGDANGER}}
-@sgindex{@code{SIGRTMIN + 1}}
+@cpindex Signals
+@cpindex Memory release, automatic
+@cpindex Memory release, forced
+@cpindex Automated memory release
+@cpindex Forcing memory release
+@cpindex Releasing memory
+@sgindex @code{SIGDANGER}
+@sgindex @code{SIGRTMIN + 1}
 If you need servers to free up allocated
 memory that they do not use, send the signal
 @code{SIGDANGER}, or if not defined
 @code{SIGRTMIN + 1}. Unimportant servers
 may choose to die on @code{SIGDANGER}.
 
-@sgindex{@code{SIGINFO}}
-@sgindex{@code{SIGRTMIN + 2}}
-@cpindex{State dump}
-@cpindex{Statistics dump}
+@sgindex @code{SIGINFO}
+@sgindex @code{SIGRTMIN + 2}
+@cpindex State dump
+@cpindex Statistics dump
 Server may also choose to support the signal
 @code{SIGINFO}, or if not defined
 @code{SIGRTMIN + 2}. It is not expected
@@ -534,8 +534,8 @@ is send by a user to the server, if she wants
 the server to dump information about the
 server's state or statistics to the TTY.
 
-@sgindex{@code{SIGRTMIN}}
-@cpindex{No-operation signal}
+@sgindex @code{SIGRTMIN}
+@cpindex No-operation signal
 All servers configured to be interrupted
 when the signal @code{SIGRTMIN} is received.
 No further action is taked. This may be used
@@ -544,8 +544,8 @@ being interrupted. It can also be used by
 the server to interrupt itself from another
 thread.
 
-@pgindex{@command{valgrind}}
-@sgindex{@code{SIGRTMAX}}
+@pgindex @command{valgrind}
+@sgindex @code{SIGRTMAX}
 @command{valgrind} uses @code{SIGRTMAX} for
 its own internal stuff. Therefore servers must
 not use @code{SIGRTMAX} as it is hence
@@ -556,9 +556,9 @@ unavailable when running under @command{valgrind}.
 @node Filesystem
 @section Filesystem
 
-@cpindex{Interprocess communication, filesystem}
-@cpindex{Filesystem}
-@cpindex{Kernel}
+@cpindex Interprocess communication, filesystem
+@cpindex Filesystem
+@cpindex Kernel
 The @command{mds} kernel creates two directories
 for the @command{mds} servers to use: one for
 runtime data and one for temporary data.
@@ -578,10 +578,10 @@ For example if the display server index is zero,
 temporary data may be stored in
 @file{/tmp/.@{system-directory@}.mds/0.data}
 
-@cpindex{Re-executing servers}
-@cpindex{Updating, online}
-@cpindex{Online updating}
-@cpindex{Version update}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
 As defined by @code{SHM_PATH_PATTERN} in
 @file{<libmdsserver/config.h>}, when a server
 re-executes itself it will marshal its state to
@@ -1059,6 +1059,9 @@ any other character, or multiple LF:s.
 @node mds-respawn
 @section @command{mds-respawn}
 
+@pgindex @command{mds-respawn}
+@cpindex Respawning servers, automatic
+@cpindex Crash resilience
 @command{mds-respawn} is a utility intended to be used
 in @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}. It will spawn
 a selected set of servers. If a server it spawns exits
@@ -1068,10 +1071,13 @@ line:
 
 @table @option
 @item --alarm=SECONDS
+@opindex @option{--alarm}
 Schedule @command{mds-respawn} to die in @var{SECONDS}
 seconds. At most 1 minute.
 
 @item --interval=SECONDS
+@opindex @option{--interval}
+@sgindex @code{SIGUSR2}
 Spawned servers that die twice with @var{SECONDS}
 seconds should stop respawning until the signal
 @code{SIGUSR2} is send to @command{mds-respawn}.
@@ -1082,12 +1088,17 @@ Commands for servers to spawn are specified within
 curly braces. Each of the braces must be alone its
 its own argument. For example:
 
+@opindex @option{--initial-spawn}
 @example
 mds-respawn --interval=5       \
   @{ mds-foo --initial-spawn @}  \
   @{ mds-bar --initial-spawn @}  &
 @end example
 
+@cpindex Server supervision
+@cpindex Supervision of servers
+@opindex @option{--initial-spawn}
+@opindex @option{--respawn}
 will spawn and supervise the servers @command{mds-foo}
 and @command{mds-bar}. Both spawned with the
 argument @option{--initial-spawn}. When a server is
@@ -1096,6 +1107,7 @@ in its argument list will be replaced by
 @option{--respawn} to let the server know it is being
 respawned.
 
+@sgindex @code{SIGTERM}
 A server is considered to exit with a failure status
 unless it exits with the return value 0 or is terminated
 by the signal @code{SIGTERM}.
@@ -1105,6 +1117,11 @@ by the signal @code{SIGTERM}.
 @node mds-reg
 @section @command{mds-reg}
 
+@pgindex @command{mds-reg}
+@cpindex List protocols
+@cpindex Protocols, listing
+@opindex @option{--list}
+@opindex @option{--wait}
 @command{mds-reg} is a utility that can be used to list
 available protocols provided by running servers. It can
 also wait for a set of protocols to become available. To
@@ -1121,38 +1138,48 @@ protocols.
 @node mds-clip
 @section @command{mds-clip}
 
+@pgindex @command{mds-clip}
+@cpindex Clipboard
 @command{mds-clip} is a utility that can be used to
 review the clipboards on the display and manipulate them.
 @command{mds-clip} recognises the following options:
 
 @table @option
 @item --push
+@opindex @option{--push}
 Push non-option arguments from the command line into
 the clipboard.
 
 @item --expire=SECONDS
+@opindex @option{--expire}
+@opindex @option{--push}
 Can be used with @option{--push}. The clip will not
 removed after @var{SECONDS} seconds.
 
 @item --pop
+@opindex @option{--pop}
 Pop items from the clipboard whose indices are listed
 in the command line as non-option arguments. The first
 index is 1.
 
 @item --clear
+@opindex @option{--clear}
 Pop all items in the clipboard.
 
 @item --list
+@opindex @option{--list}
 List items in the clipboard whose indices are listed
 in the command line as non-option arguments. The first
 index is 1. If no indicies are specified, all clips
 will be listed.
 
 @item --size
+@opindex @option{--size}
 Print the size of the clipboard, the number of clips
 in the clipboard.
 
 @item --capacity
+@opindex @option{--capacity}
 Print the capacity of the clipboard, the number of
 clips the clipboard can hold. If both @option{--size}
 and @option{--capacity} is used, the size will be
@@ -1160,15 +1187,21 @@ printed on the first line and the capacity will be
 printed on the second line.
 
 @item --resize=CAPACITY
+@opindex @option{--resize}
 Change the capaciy of the clipboard to @var{CAPACITY}
 clips.
 
 @item --stdin
+@opindex @option{--stdin}
+@opindex @option{--push}
 Can be used with @option{--push}. If used, the clip
 that should be placed on the top of the clipboard
 stack should be read from stdin.
 
 @item --delimiter=DELIMITER
+@opindex @option{--delimiter}
+@opindex @option{--list}
+@opindex @option{--stdin}
 Can be used with @option{--stdin} or @option{--list}.
 If used with @option{--stdin}, an line containing
 only @var{DELIMITER} will delimit two values that
@@ -1178,14 +1211,17 @@ will delimit two values in the output. The default
 delimiter for @option{--list} is an empty line.
 
 @item -1
+@opindex @option{-1}
 Use the primary clipboard, that is, the text copy
 clipboard. This is the default clipboard.
 
 @item -2
+@opindex @option{-2}
 Use the secondary clipboard, that is, the text
 selection clipboard.
 
 @item -3
+@opindex @option{-3}
 Use the tertiary clipboard, that is, the non-text
 copy clipboard.
 @end table
@@ -1195,6 +1231,8 @@ copy clipboard.
 @node mds-screenshot
 @section @command{mds-screenshot}
 
+@pgindex @command{mds-screenshot}
+@cpindex Screenshooting
 @command{mds-screenshot} is a simple utility, and
 reference implementation thereof, that can take a
 screeenshot of either the display, a monitor, or a
@@ -1205,46 +1243,58 @@ following options:
 
 @table @option
 @item --monitor
+@opindex @option{--monitor}
 Take screenshot of the monitor. The rat will
 be used to select monitor.
 
 @item --monitor=WINDOW_ID
+@opindex @option{--monitor}
 Take screenshot of the monitor whose root window's
 window ID is @var{WINDOW_ID} or has another window
 in it whose window ID is @var{WINDOW_ID}.
 
 @item --embed
+@opindex @option{--embed}
 Take a screenshot of an embedded window.
 The rat will be used to select window.
 
 @item --embed=WINDOW_ID
+@opindex @option{--monitor}
 Take a screenshot of an embedded window whose
 window ID is @var{WINDOW_ID}.
 
 @item --window
+@opindex @option{--window}
 Take a screenshot a window.
 The rat will be used to select window.
 
 @item --window=WINDOW_ID
+@opindex @option{--window}
 Take a screenshot of a window whose
 window ID is @var{WINDOW_ID}.
 
 @item --decoration
+@opindex @option{--decoration}
 Include the window's decoration, if used together
 with @option{--window}. Ignored if used without
 @option{--window}.
 
 @item --cursor
+@opindex @option{--cursor}
 Include the rat cursor in the screenshot.
 
 @item --gamma
+@opindex @option{--gamma}
 Include the effects of gamma ramps in the screenshot.
 
 @item --low-gamma=LOW_PRIORITY
+@opindex @option{--low-gamma}
 Include the effects of gamma ramps with a priority
 above @var{LOW_PRIORITY} in the screenshot.
 
 @item --high-gamma=HIGH_PRIORITY
+@opindex @option{--high-gamma}
+@opindex @option{--low-gamma}
 Include the effects of gamma ramps with a priority
 below @var{HIGH_PRIORITY} in the screenshot. If used
 together with @option{--low-gamma=LOW_PRIORITY},
@@ -1255,10 +1305,16 @@ will be used.
 Optionally, you can add a non-option argument that
 specifies the pathname of the saved file.
 
+@opindex @option{--window}
+@opindex @option{--monitor}
+@opindex @option{--embed}
 If neither @option{--monitor}, @option{--embed} or
 @option{--window} is used, a screenshot will be
 taked of the display. That is, all monitors.
 
+@opindex @option{--gamma}
+@opindex @option{--low-gamma}
+@opindex @option{--high-gamma}
 In case of mirrored outputs, one of the potential
 outputs will be selected arbitrarily if
 @option{--gamma}, @option{--low-gamma} or
@@ -1271,6 +1327,9 @@ outputs.
 @node mds-slay
 @section @command{mds-slay}
 
+@pgindex @command{mds-slay}
+@cpindex Process killing
+@cpindex Killing processes
 @command{mds-slay} a utility that can be used to
 kill a process by it window or identify the window
 ID of a window. @command{mds-slay} recognises the
@@ -1278,34 +1337,42 @@ following options:
 
 @table @option
 @item --embed
+@opindex @option{--embed}
 Kill an embedded window.
 The rat will be used to select window.
 
 @item --embed=WINDOW_ID
+@opindex @option{--embed}
 Kill an embedded window whose
 window ID is @var{WINDOW_ID}.
 
 @item --window
+@opindex @option{--window}
 Kill a window.
 The rat will be used to select window.
 
 @item --window=WINDOW_ID
+@opindex @option{--window}
 Kill a window whose
 window ID is @var{WINDOW_ID}.
 
 @item --signal=SIGNAL
+@opindex @option{--signal}
 Send the signal @var{SIGNAL} to the
 process owning the selected window.
 
 @item --no-signal
+@opindex @option{--no-signal}
 Do not send a signal; only identify the
 window.
 
 @item --keep-cursor
+@opindex @option{--keep-cursor}
 Do not change the cursor to a kill cursor.
 
 @item --print
-The the ID of the selected window.
+@opindex @option{--print}
+Print the ID of the selected window.
 @end table
 
 
@@ -1313,6 +1380,10 @@ The the ID of the selected window.
 @node mds-chvt
 @section @command{mds-chvt}
 
+@pgindex @command{mds-chvt}
+@pgindex @command{chvt}
+@cpindex Virtual terminal, switching
+@cpindex Switching virtual terminal
 @command{mds-chvt} is a utility similar to the command
 @command{chvt} from the @command{kbd} project. However,
 @command{mds-chvt} has setuid and therefore does not
@@ -1323,6 +1394,7 @@ recognises the following options:
 
 @table @option
 @item --switch=VT
+@opindex @option{--switch}
 Switch to the virtual terminal with the index @var{VT}.
 @end table
 
@@ -1330,6 +1402,12 @@ Switch to the virtual terminal with the index @var{VT}.
 
 @node mds-kbdc
 @section @command{mds-kbdc}
+
+@pgindex @command{mds-kbdc}
+@cpindex Keyboard layouts, compile
+@cpindex Compile keyboard layouts
+@cpindex Compose tables, compile
+@cpindex Compile compose tables
 @command{mds-kbdc} is the program used to compile
 keyboard layouts and compose tables.
 
@@ -1340,7 +1418,10 @@ TODO how to use mds-kbdc
 @node External Utilities
 @section External Utilities
 
-Servers let you use the option @command{--on-init-fork}
+@cpindex Background processes
+@opindex @option{--on-init-fork}
+@pgindex @file{mdsinitrc}
+Servers let you use the option @option{--on-init-fork}
 to put the process in the background when it has been
 initialised. This can used to spawn that depend on each
 other in linear order. For example, if @command{mds-bar}
@@ -1353,6 +1434,11 @@ mds-foo --on-init-fork
 mds-bar &
 @end example
 
+@opindex @option{--on-init-fork}
+@opindex @option{--on-init-sh}
+@pgindex @command{mds-respawn}
+@pgindex @command{cmdipc}
+@pgindex @command{ipcmd}
 This will start @command{mds-bar} when @command{mds-foo}
 has been initialised. However if one of them crashes,
 that server will not respawn; to fix this @command{mds-respawn}
@@ -1375,11 +1461,15 @@ cmdipc -Srk $S             # Remove the semaphore.
 mds-respawn @{ mds-bar @} &  # Spawn `mds-bar`.
 @end example
 
+@pgindex @command{mds-reg}
 This is however seldom necessary as @command{mds-reg} can
 often be used instead, with more abstraction as you would
 only need to specify what servers need to wait for, not
 what they provide.
 
+@pgindex @command{setpgrp}
+@cpindex Display server process group
+@cpindex Process group, display server
 Another useful command (and package) is @command{setpgrp}.
 @command{mds} puts itself an all its children in a new
 process group. However you may want to put processes that
@@ -1392,6 +1482,10 @@ to starta process in a new process group.
 @node Servers
 @chapter Servers
 
+@pgindex @command{mds}
+@pgindex @command{mds-server}
+@cpindex Kernel
+@cpindex Master server
 An @command{mds} display server instance is comprised of
 multiple small servers that each implements a small part
 of the display server's functionallity. This chapter will
