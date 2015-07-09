@@ -2238,6 +2238,9 @@ content using framebuffers.
 @node mds-mds
 @section @command{mds-mds}
 
+@pgindex @command{mds-mds}
+@cpindex Monitor emulation
+@cpindex Emulation, monitor
 @command{mds-mds} is a server that displays
 content using another @command{mds} window.
 It creates a window that emulates a monitor.
@@ -2247,6 +2250,11 @@ It creates a window that emulates a monitor.
 @node mds-meta
 @section @command{mds-meta}
 
+@pgindex @command{mds-meta}
+@cpindex Metadisplay server
+@vrindex @env{MDS_DISPLAY}
+@cpindex Server sharing
+@cpindex Sharing, servers
 @command{mds-meta} is a metadisplay server.
 It creates or joins a named metadisplay server,
 and creates an alternative value for
@@ -2274,11 +2282,16 @@ is send to the appropriate server. @command{mds-meta}
 manages interception in the same way as
 @command{mds-server} and @command{mds-remote}.
 
+@pgindex @file{mdsmetainitrc}
 If @command{mds-meta} creates a new metadisplay,
 rather than joining an existing metadisplay, it
 will spawn @file{~/.mdsmetainitrc} to let you
 start the shared servers.
 
+@pgindex @command{mds-host}
+@pgindex @command{mds-clipboard}
+@pgindex @command{mds-remot}
+@cpindex Networking
 An interesting property of @command{mds-meta} is
 that it can be used to share servers across display
 servers on multiple computers. For example, if you
@@ -2295,6 +2308,9 @@ distributed, so it is not perfect.
 @node mds-seat
 @section @command{mds-seat}
 
+@pgindex @command{mds-seat}
+@cpindex Sandboxing, seats
+@cpindex Seats
 @command{mds-seat} is a server that enables
 seat-sandboxing. It can be used to place
 two users on the same machine without them
@@ -2311,6 +2327,9 @@ appropriate seat receives them.
 @node mds-nest
 @section @command{mds-nest}
 
+@pgindex @command{mds-nest}
+@cpindex Display server, nesting
+@cpindex Nested display server
 @command{mds-nest} is a server that creates
 a new @command{mds} instance inside another
 @command{mds} instance. A display server
@@ -2321,6 +2340,9 @@ inside another display server.
 @node mds-host
 @section @command{mds-host}
 
+@pgindex @command{mds-host}
+@pgindex @command{mds-remote}
+@cpindex Networking
 @command{mds-host} is a server that enables
 servers like @command{mds-remote} running
 on remote machines to connect to the local
@@ -2331,6 +2353,8 @@ machine and its display server.
 @node mds-remote
 @section @command{mds-remote}
 
+@pgindex @command{mds-remote}
+@cpindex Networking
 @command{mds-remote} is a server that enables
 you to connect extend a remote @command{mds}
 with your local machine. This can be used to
@@ -2343,6 +2367,9 @@ devices.
 @node mds-xmds
 @section @command{mds-xmds}
 
+@pgindex @command{mds-xmds}
+@cpindex Compatibility layer, X.org
+@cpindex X.org compatibility layer
 @command{mds-xmds} is a server that translates
 X.org calls to @command{mds} calls. It can be used
 to run X.org-only programs inside @command{mds}.
@@ -2351,6 +2378,9 @@ to run X.org-only programs inside @command{mds}.
 @node mds-wmds
 @section @command{mds-wmds}
 
+@pgindex @command{mds-wmds}
+@cpindex Compatibility layer, Wayland
+@cpindex Wayland compatibility layer
 @command{mds-wmds} is a server that translates
 Wayland calls to @command{mds} calls. It can be used
 to run Wayland-only programs inside @command{mds}.
@@ -2359,6 +2389,9 @@ to run Wayland-only programs inside @command{mds}.
 @node mds-mmds
 @section @command{mds-mmds}
 
+@pgindex @command{mds-mmds}
+@cpindex Compatibility layer, Mir
+@cpindex Mir compatibility layer
 @command{mds-mmds} is a server that translates
 Mir calls to @command{mds} calls. It can be used
 to run Mir-only programs inside @command{mds}.
@@ -2368,6 +2401,9 @@ to run Mir-only programs inside @command{mds}.
 @node mds-mdsx
 @section @command{mds-mdsx}
 
+@pgindex @command{mds-mdsx}
+@cpindex Reverse compatibility layer, X.org
+@cpindex X.org reverse compatibility layer
 @command{mds-mdsx} is a server that translates
 @command{mds} calls to X.org calls. It can be used
 to enable @command{mds} specific programs to run
@@ -2378,6 +2414,9 @@ inside the X.org display servers.
 @node mds-mdsw
 @section @command{mds-mdsw}
 
+@pgindex @command{mds-mdsw}
+@cpindex Reverse compatibility layer, Wayland
+@cpindex Wayland reverse compatibility layer
 @command{mds-mdsw} is a server that translates
 @command{mds} calls to Wayland calls. It can be used
 to enable @command{mds} specific programs to run
@@ -2388,6 +2427,9 @@ inside the Wayland display servers.
 @node mds-mdsm
 @section @command{mds-mdsm}
 
+@pgindex @command{mds-mdsm}
+@cpindex Reverse compatibility layer, Mir
+@cpindex Mir reverse compatibility layer
 @command{mds-mdsm} is a server that translates
 @command{mds} calls to Mir calls. It can be used
 to enable @command{mds} specific programs to run
@@ -2398,6 +2440,10 @@ inside the display server Mir.
 @node mds-posmem
 @section @command{mds-posmem}
 
+@cpindex Memorisation of size and position
+@cpindex Position, memorisation
+@cpindex Size, memorisation
+@pgindex @command{mds-posmem}
 @command{mds-posmem} is a server that remembers where
 window's were positioned and their size, and moves
 and resizes them accordingly when they are created.
@@ -2407,6 +2453,9 @@ and resizes them accordingly when they are created.
 @node mds-decorator
 @section @command{mds-decorator}
 
+@pgindex @command{mds-decorator}
+@cpindex Client-side decoration
+@cpindex Decoration
 @command{mds-decorator} is a server that provides a
 simple, reference implementation of a, window decorator.
 This window decorator should implement snappy and sticky
@@ -2418,6 +2467,9 @@ different windows that have been stacked togather.)
 @node mds-tile
 @section @command{mds-tile}
 
+@pgindex @command{mds-tile}
+@cpindex Tiling window manager
+@cpindex Window manager, tiling
 @command{mds-tile} is a server that provides a
 simple, reference implementation of a, tiling window manager.
 
@@ -2426,6 +2478,9 @@ simple, reference implementation of a, tiling window manager.
 @node mds-stack
 @section @command{mds-stack}
 
+@pgindex @command{mds-stack}
+@cpindex Stacking window manager
+@cpindex Window manager, stacking
 @command{mds-stack} is a server that provides a
 simple, reference implementation of a, stack window manager.
 
@@ -2434,6 +2489,8 @@ simple, reference implementation of a, stack window manager.
 @node mds-desktop
 @section @command{mds-desktop}
 
+@pgindex @command{mds-desktop}
+@cpindex Desktop
 @command{mds-desktop} is a server that provides a
 simple, reference implementation of a, desktop.
 
@@ -2442,6 +2499,8 @@ simple, reference implementation of a, desktop.
 @node mds-workspace
 @section @command{mds-workspace}
 
+@pgindex @command{mds-workspace}
+@cpindex Workspaces
 @command{mds-workspace} is a server that provides
 simple, reference implementation of, workspaces.
 
@@ -2450,6 +2509,10 @@ simple, reference implementation of, workspaces.
 @node mds-tray
 @section @command{mds-tray}
 
+@pgindex @command{mds-tray}
+@cpindex Status icon tray
+@cpindex System tray
+@cpindex Tray, status icons
 @command{mds-tray} is a server that provides a
 simple, reference implementation of a, status icon tray.
 
