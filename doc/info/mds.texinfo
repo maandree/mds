@@ -1745,6 +1745,7 @@ modifiers, letters, other symbols, dead keys and compose.
 @pgindex @command{mds-keystick}
 @cpindex Sticky keys
 @cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 @command{mds-keystick} is a server that can be used
 to enable sticky keys. See @ref{Sticky Keys} for more
 information.
@@ -1757,6 +1758,7 @@ information.
 @pgindex @command{mds-keybounce}
 @cpindex Bounce keys
 @cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 @command{mds-keybounce} is a server that can be used
 to enable bounce keys. See @ref{Bounce Keys} for more
 information.
@@ -1769,6 +1771,7 @@ information.
 @pgindex @command{mds-slowkey}
 @cpindex Slow keys
 @cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 @command{mds-slowkey} is a server that can be used
 to enable slow keys. See @ref{Slow Keys} for more
 information.
@@ -1781,6 +1784,7 @@ information.
 @pgindex @command{mds-keycue}
 @cpindex Loud keys
 @cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 @command{mds-keycue} is a server that can be used
 to enable loud keys. See @ref{Loud Keys} for more
 information.
@@ -2026,10 +2030,15 @@ to slowly.
 @node mds-coopgamma
 @section @command{mds-coopgamma}
 
+@pgindex @command{mds-coopgamma}
+@cpindex Gamma correction, cooperative
+@cpindex Gamma correction, chain
+@cpindex Gamma correction, filters
+@cpindex Cooperative gamma correction
 @command{mds-coopgamma} is a server that
 can be used to enable multiple clients to
 manipulate the gamma ramps without stepping
-on eachothers toes. It does this by letting
+on each others toes. It does this by letting
 clients tell which priority their corrections
 has and use this data to chain together there
 modifications. For example if one program
@@ -2051,6 +2060,11 @@ the client to restart.
 @node mds-dcvs
 @section @command{mds-dcvs}
 
+@pgindex @command{mds-dcvs}
+@cpindex Defective colour vision, simulation
+@cpindex Simulateion of defective colour vision
+@cpindex Colour blindness, simulation
+@cpindex Simulateion of colour blindnes
 @command{mds-dcvs} is a server than can be
 used to simulate defective colour vision.
 That is, it can for example turn the display
@@ -2065,11 +2079,16 @@ defective colour vision.
 @node mds-colour
 @section @command{mds-colour}
 
+@pgindex @command{mds-colour}
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
 @command{mds-colour} is a server that implements
 colour names, such as system colours and generic
 names, for example `red', whose exact colour can
 be configured by the user. A terminal written for
-@command{mds} whould look up colours such as `red'
+@command{mds} would look up colours such as `red'
 and `light red' and get the colours the terminal
 should use by default. Nothing is to be assumed
 for such colours, not even that `light red' is in
@@ -2079,6 +2098,8 @@ wants to see when a colour is supposed to be `red'.
 @command{mds-colour} will notify clients when a
 colour has been reconfigured, added or removed.
 
+@cpindex Colour dithering
+@cpindex Dithering of colours
 @command{mds-colour} is also responsible for
 informing clients on which two colours clients
 should use and how to dither them (by percent, not
@@ -2087,6 +2108,7 @@ can be used, or if only 24-colour can used but
 gradients between for example sRGB(255, 255, 255)
 and sRGB(254, 254, 254) is to be drawn.
 
+@cpindex Gamma correction, dithering
 @command{mds-colour} is gamma ramp-aware. For
 example, if for the red channel, 0 is mapped to
 0, 1 is mapped to 3, 2 is mapped 2 and 3 is mapped
@@ -2100,6 +2122,8 @@ should generate 1, but 1 and 3 has been swapped.
 @node mds-retro-crt
 @section @command{mds-retro-crt}
 
+@pgindex @command{mds-retro-crt}
+@pgindex @command{cool-retro-crt}
 @command{mds-retro-crt} is a server that applies
 filters used in the terminal emulator
 @command{cool-retro-term} to the whole display.
@@ -2109,6 +2133,9 @@ filters used in the terminal emulator
 @node mds-state
 @section @command{mds-state}
 
+@pgindex @command{mds-state}
+@cpindex State, windows
+@cpindex Windows states
 @command{mds-state} is the server that keeps tracks
 of the windows' state.
 
@@ -2117,6 +2144,9 @@ of the windows' state.
 @node mds-focus
 @section @command{mds-focus}
 
+@pgindex @command{mds-focus}
+@cpindex Window focus
+@cpindex Focus of windows and components
 @command{mds-focus} is the server focuses windows
 and windows' components.
 
@@ -2125,6 +2155,10 @@ and windows' components.
 @node mds-kill
 @section @command{mds-kill}
 
+@pgindex @command{mds-kill}
+@cpindex Signals, sending
+@cpindex Process identification
+@cpindex Identification of processes
 @command{mds-kill} is a server that can be used to
 send signals to processes by identifying them by
 their windows. This server can also be used to
@@ -2135,6 +2169,10 @@ simply identify the process that owns a window.
 @node mds-screensaver
 @section @command{mds-screensaver}
 
+@pgindex @command{mds-screensaver}
+@cpindex Screensaver
+@cpindex Monitor deactivation
+@cpindex Deactive monitors
 @command{mds-screensaver} is a server that can be
 used to start a screensaver or deactive monitors when
 the input devices has not be used for a period of
@@ -2148,6 +2186,11 @@ monitors.
 @node mds-compositor
 @section @command{mds-compositor}
 
+@pgindex @command{mds-compositor}
+@pgindex @command{mds-dri}
+@pgindex @command{mds-fb}
+@cpindex Compositor
+@cpindex Presentation
 @command{mds-compositor} is the server that composes
 the output. It takes output of all windows and arranges
 it to one image per monitor and sends it to the presentation
@@ -2158,6 +2201,9 @@ servers, such as @command{mds-dri} and @command{mds-fb}.
 @node mds-crtc
 @section @command{mds-crtc}
 
+@pgindex @command{mds-crtc}
+@cpindex CRTC
+@cpindex Cathode ray tube controller
 @command{mds-crtc} is the server that identifies
 CRTC:s and provide access to them.
 
@@ -2166,6 +2212,11 @@ CRTC:s and provide access to them.
 @node mds-dri
 @section @command{mds-dri}
 
+@pgindex @command{mds-dri}
+@cpindex Direct Rendering Infrastructure
+@cpindex Presentation
+@cpindex Display of content
+@cpindex Content, display
 @command{mds-dri} is a server that displays
 content using the Direct Rendering Infrastructure.
 
@@ -2174,7 +2225,12 @@ content using the Direct Rendering Infrastructure.
 @node mds-fb
 @section @command{mds-fb}
 
-@command{mds-fd} is a server that displays
+@pgindex @command{mds-fb}
+@cpindex Framebuffer
+@cpindex Presentation
+@cpindex Display of content
+@cpindex Content, display
+@command{mds-fb} is a server that displays
 content using framebuffers.
 
 
