@@ -5666,6 +5666,7 @@ in the display server message passing system.
 @node mds-base.o
 @chapter @file{mds-base.o}
 
+@cpindex @file{mds-base}
 @file{mds-base.c} and @file{mds-base.h} as an object
 filepair whose purpose is similar to libmdsserver.
 @file{mds-base} is compiled into all @command{mds}
@@ -5682,6 +5683,8 @@ be implement depending on specified conditions:
 
 @table @asis
 @item @code{trap_signals} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{trap_signals}
+@cpindex Signals
 Set up signal traps for all especially handled signals.
 Returns zero on and only on success.
 @end table
@@ -5691,6 +5694,9 @@ replace if they do not suit your needs:
 
 @table @asis
 @item @code{parse_cmdline} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{parse_cmdline}
+@cpindex Parse command line
+@cpindex Command line, parse
 Parses command line arguments.
 Returns zero on and only on success.
 
@@ -5698,50 +5704,75 @@ This function will parse the following options:
 
 @table @option
 @item --initial-spawn
+@opindex @option{--initial-spawn}
 It is the first time the server is spawn by its
 spawner process.
 
 @item --respawn
+@opindex @option{--respawn}
 The server was respawned.
 
 @item --re-exec
+@opindex @option{--re-exec}
 The server is re-executing.
 
 @item --alarm=SECONDS
+@opindex @option{--alarm}
 Kill the process after @var{SECONDS} seconds.
 At most one minute.
 
 @item --on-init-fork
+@opindex @option{--on-init-fork}
 Fork the process to detach it from its parent when
 the server has been initialised.
 
 @item --on-init-sh=COMMAND
+@opindex @option{--on-init-sh}
 When the server has been initialised, run the
 command @var{COMMAND}.
 
 @item --immortal
+@opindex @option{--immortal}
 The server should do its best not to die. For example
 do not die if @code{SIGDANGER} is received even if that
 is the server's default action.
 @end table
 
 @item @code{connect_to_display} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{connect_to_display}
+@cpindex Connecting to the display
 Connects to the display.
 Returns zero on and only on success.
 
 @item @code{server_initialised} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{server_initialised}
+@cpindex Initialisation
 This function should be called when the server has
 been properly initialised but before initialisation
 of anything that is removed at forking is initialised.
 Returns zero on and only on success.
 
 @item @code{signal_all} [(@code{int signo}) @arrow{} @code{void}]
+@fnindex @code{signal_all}
+@cpindex Signals, multi-threading
+@cpindex Multi-threading, signals
+@cpindex Treading, signals
 This function should be implemented by the actual server
 implementation if the server is multi-threaded. It sends
 the singal @code{signo} to all threads except the current
 thread.
 
 @item @code{received_danger} [(@code{int signo}) @arrow{} @code{void}]
+@fnindex @code{received_danger}
+@sgindex @code{SIGDANGER}
+@vrindex @code{server_characteristics.danger_is_deadly}
+@vrindex @code{danger_is_deadly}
+@cpindex Memory release, automatic
+@cpindex Memory release, forced
+@cpindex Automated memory release
+@cpindex Forcing memory release
+@cpindex Releasing memory
+@vrindex @code{danger}
 This function is called when a signal that signals the
 system is running out of memory has been received. The exact
 received signal is specified by the parameter @code{signo}.
@@ -5752,6 +5783,15 @@ If @code{server_characteristics.danger_is_deadly} is set,
 this function will never be called.
 
 @item @code{received_reexec} [(@code{int signo}) @arrow{} @code{void}]
+@fnindex @code{received_reexec}
+@vrindex @code{reexecing}
+@vrindex @code{terminating}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 This function is called when a signal that signals the
 server to re-execute has been received. The exact
 received signal is specified by the parameter @code{signo}.
@@ -5759,6 +5799,11 @@ When this function is invoked, it should set the variables
 @code{reexecing} and @code{terminating} to a non-zero value.
 
 @item @code{received_terminate} [(@code{int signo}) @arrow{} @code{void}]
+@fnindex @code{received_terminate}
+@vrindex @code{terminating}
+@cpindex Terminating
+@sgindex @code{SIGTERM}
+@sgindex @code{SIGINT}
 This function is called when a signal that signals the
 server to terminate has been received. The exact received
 signal is specified by the parameter @code{signo}. When
@@ -5766,12 +5811,20 @@ this function is invoked, it should set the variable
 @code{terminating} to a non-zero value.
 
 @item @code{received_info} [(@code{int signo}) @arrow{} @code{void}]
+@fnindex @code{received_info}
+@sgindex @code{SIGINFO}
+@cpindex State dump
+@cpindex Statistics dump
 This function is called when a signal that signals the
 server to dump state information and statistics has been
 received. The exact received signal is specified by the
 parameter @code{signo}.
 
 @item @code{fork_cleanup} [(@code{int status}) @arrow{} @code{void}]
+@fnindex @code{fork_cleanup}
+@vrindex @code{server_characteristics.fork_for_safety}
+@vrindex @code{fork_for_safety}
+@cpindex Initialisation
 This function should be implemented by the actual server
 implementation if the server has set
 @code{server_characteristics.fork_for_safety} to be a
@@ -5787,20 +5840,38 @@ to define and implement a set of functions:
 
 @table @asis
 @item @code{preinitialise_server} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{preinitialise_server}
+@fnindex @code{initialise_server}
+@fnindex @code{unmarshal_server}
+@cpindex Initialisation
 This function will be invoked before @code{initialise_server}
 (if not re-executing) or before @code{unmarshal_server}
 (if not re-executing). Returns zero on and only on success.
 
 @item @code{initialise_server} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{initialise_server}
+@cpindex Initialisation
 This function should initialise the server. It not invoked
 after a re-execution. Returns zero on and only on success.
 
 @item @code{postinitialise_server} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{postinitialise_server}
+@fnindex @code{initialise_server}
+@fnindex @code{unmarshal_server}
+@cpindex Initialisation
 This function will be invoked after @code{initialise_server}
 (if not re-executing) or after @code{unmarshal_server} (if
 re-executing). Returns zero on and only on success.
 
 @item @code{marshal_server_size} [(@code{void}) @arrow{} @code{size_t}, pure]
+@fnindex @code{marshal_server_size}
+@fnindex @code{marshal_server}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Calculate and returns the number of bytes that will be stored
 by @code{marshal_server}. On failure the server should call
 @code{abort} or exit with failure status by other means.
@@ -5809,14 +5880,29 @@ However it should not be possible for this function to fail.
 define with and conforming to @code{__attribute__((pure))}.}.
 
 @item @code{marshal_server} [(@code{char* state_buf}) @arrow{} @code{int}]
+@fnindex @code{marshal_server}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Marshal server implementation specific data into the buffer
 @code{state_buf}. Returns zero on and only on success.
 
 @item @code{unmarshal_server} [(@code{char* state_buf}) @arrow{} @code{int}]
+@fnindex @code{unmarshal_server}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Unmarshal server implementation specific data from the
 buffer @code{state_buf} and update the servers state
 accordingly. Returns zero on and only on success.
 
+@fnindex @code{reexec_failure_recover}
 On critical failure the program should call @code{abort}
 or exit with failure status by other means. That is, do not
 let @code{reexec_failure_recover} run successfully, if it
@@ -5824,11 +5910,20 @@ unrecoverable error has occurred or one severe enough that
 it is better to simply respawn.
 
 @item @code{reexec_failure_recover} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{reexec_failure_recover}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Attempt to recover from a re-execution failure that has been
 detected after the server successfully updated it execution
 image. Returns zero on and only on success.
 
 @item @code{master_loop} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{master_loop}
+@cpindex Initialisation
 Perform the server's mission. Returns zero on and only on success.
 @end table
 
@@ -5836,53 +5931,96 @@ Perform the server's mission. Returns zero on and only on success.
 
 @table @asis
 @item @code{argc} [@code{int}]
+@vrindex @code{argc}
+@cpindex Command line
 Number of elements in @code{argv}.
 
 @item @code{argv} [@code{char**}]
+@vrindex @code{argv}
+@cpindex Command line
 Command line arguments.
 
 @item @code{is_respawn} [@code{int}]
+@vrindex @code{is_respawn}
+@cpindex Initialisation
+@vrindex @code{is_reexec}
 Whether the server has been respawn rather than this
 being the initial spawn. This will be at least as true
 as @code{is_reexec}.
 
 @item @code{is_reexec} [@code{int}]
+@vrindex @code{is_reexec}
+@cpindex Initialisation
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Whether the server is continuing from a self-reexecution.
 
 @item @code{is_immortal} [@code{int}]
+@vrindex @code{is_immortal}
+@opindex @option{--immortal}
 Whether the server should do its best to resist event
 triggered death.
 
 @item @code{on_init_fork} [@code{int}]
+@vrindex @code{on_init_fork}
+@cpindex Initialisation
 Whether to fork the process when the server has been
 properly initialised.
 
 @item @code{on_init_sh} [@code{char*}]
+@vrindex @code{on_init_sh}
+@cpindex Initialisation
 Command the run (@code{NULL} for none) when the server
 has been properly initialised.
 
 @item @code{master_thread} [@code{pthread_t}]
+@vrindex @code{master_thread}
+@cpindex Threading
+@cpindex Multi-threading
 The thread that runs the master loop.
 
 @item @code{terminating} [@code{volatile sig_atomic_t}]
+@vrindex @code{terminating}
+@cpindex Terminating
 Whether the server has been signaled to terminate.
 
 @item @code{reexecing} [@code{volatile sig_atomic_t}]
+@vrindex @code{reexecing}
+@cpindex Initialisation
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
 Whether the server has been signaled to re-execute.
 
 @item @code{danger} [@code{volatile sig_atomic_t}]
+@vrindex @code{danger}
+@sgindex @code{SIGDANGER}
+@cpindex Memory release, automatic
+@cpindex Memory release, forced
+@cpindex Automated memory release
+@cpindex Forcing memory release
+@cpindex Releasing memory
 Whether the server has been signaled to free unneeded memory.
 
 @item @code{socket_fd} [@code{int}]
+@vrindex @code{socket_fd}
+@cpindex Connecting to the display
 The file descriptor of the socket that is connected
 to the server.
 @end table
 
+@cpindex Server characteristics
 @file{mds-base} expects the server implementation to define
 a variable that specifies how @file{mds-base} should behave:
 
 @table @asis
 @item @code{server_characteristics} [@code{server_characteristics_t}]
+@vrindex @code{server_characteristics}
 This variable should declared by the actual server
 implementation. It must be configured before @code{main}
 is invoked. That is, it should be configured by a
@@ -5891,6 +6029,8 @@ it is configured by a constructor; that is normally
 how you want to configured it.
 @end table
 
+@tpindex @code{server_characteristics_t}
+@tpindex @code{struct server_characteristics}
 @code{server_characteristics_t} @{also known as
 @code{struct server_characteristics}@} is a packed
 @footnote{That is, define with @code{__attribute__((packed))}.}
@@ -5898,23 +6038,38 @@ with the following fields:
 
 @table @asis
 @item @code{require_privileges} [@code{unsigned : 1}]
+@vrindex @code{require_privileges}
+@cpindex Previleges
+@cpindex Security, previleges
 Setting this to zero will cause the server to drop
 privileges as a security precaution.
 
 @item @code{require_display} [@code{unsigned : 1}]
+@vrindex @code{require_display}
+@cpindex Connecting to the display
 Setting this to non-zero will cause the server to connect
 to the display.
 
 @item @code{require_respawn_info} [@code{unsigned : 1}]
+@vrindex @code{require_respawn_info}
+@opindex @option{--initial-spawn}
+@opindex @option{--respawn}
+@cpindex Initialisation
 Setting this to non-zero will cause the server to refuse
 to start unless either @option{--initial-spawn} or
 @option{--respawn} is used.
 
 @item @code{sanity_check_argc} [@code{unsigned : 1}]
+@vrindex @code{sanity_check_argc}
+@cpindex Command line, security
+@cpindex Security, command line
 Setting this to non-zero will cause the server to refuse to
 start if there are too many command line arguments.
 
 @item @code{fork_for_safety} [@code{unsigned : 1}]
+@vrindex @code{fork_for_safety}
+@cpindex Initialisation
+@fnindex @code{fork_cleanup}
 Setting this to non-zero will cause the server to place
 itself in a fork of itself when initialised. This can be
 used to let the server clean up fatal stuff after itself
@@ -5923,6 +6078,15 @@ exits, the parent will call @code{fork_cleanup} and then
 die in the same manner as the child.
 
 @item @code{danger_is_deadly} [@code{unsigned : 1}]
+@vrindex @code{danger_is_deadly}
+@sgindex @code{SIGDANGER}
+@vrindex @code{fork_for_safety}
+@fnindex @code{server_initialised}
+@cpindex Memory release, automatic
+@cpindex Memory release, forced
+@cpindex Automated memory release
+@cpindex Forcing memory release
+@cpindex Releasing memory
 Setting this to non-zero without setting a signal action
 for @code{SIGDANGER} will cause the server to die if
 @code{SIGDANGER} is received. It is safe to set both
@@ -5933,6 +6097,7 @@ process will be set to @code{SIG_IGN} independently of
 the value of @code{danger_is_deadly} if
 @code{fork_for_safety} is set to non-zero.
 
+@opindex @option{--immortal}
 This setting will be treated as set to zero if
 @option{--immortal} is used.
 @end table
@@ -5942,6 +6107,7 @@ This setting will be treated as set to zero if
 @node Keyboard Codes
 @chapter Keyboard Codes
 
+@cpindex Scancodes
 Keyboard servers receive scancodes from keyboard
 drivers. A scancode can either be comprised of
 one byte or three bytes. In each byte, the most
@@ -5955,6 +6121,7 @@ A scancode is comprised of three bytes if the lower
 7-bits of the first byte is are all cleared, and the
 highest bit in the two following bytes are set.
 
+@cpindex Keycodes
 Ignoring the most significant bit in all bytes, the
 keycode is the value of the byte if the scancode
 is a single byte scancode. If the scancode is comprised
@@ -7665,6 +7832,10 @@ can be composed with a trailing @kbd{<space>} instead of leading
 @node Sticky Keys
 @section Sticky Keys
 
+@pgindex @command{mds-keystick}
+@cpindex Sticky keys
+@cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 Sticky keys is an accessibility feature that lets the
 user process modifier keys instead of holding them down.
 Sticky keys is implemented by the @command{mds-keystick}
@@ -7692,6 +7863,8 @@ so means that you do not have to configure
 @command{mds-keystick} to know the original @kbd{caps lock}
 is a modifier but the original @kbd{control} is not.
 
+@cpindex Mode lock key
+@cpindex Keys, mode lock
 For greater accessibility you can, in @command{mds-keytrans},
 replace a key with the @kbd{mode lock}-key. If this is done,
 pressing a sequence of modifiers and then the
@@ -7708,6 +7881,10 @@ stickly keys are artificially held down and thus included.
 @node Bounce Keys
 @section Bounce Keys
 
+@pgindex @command{mds-keybounce}
+@cpindex Bounce keys
+@cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 Bounce keys is an accessibility feature that filters out
 rapidly repeated key strokes. Bounce keys is implemented
 by the @command{mds-keybounce} server.
@@ -7717,6 +7894,10 @@ by the @command{mds-keybounce} server.
 @node Slow Keys
 @section Slow Keys
 
+@pgindex @command{mds-slowkey}
+@cpindex Slow keys
+@cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 Slow keys is an accessibility feature that filters out
 brief key strokes. Slow keys is implemented by the
 @command{mds-slowkey} server.
@@ -7726,6 +7907,10 @@ brief key strokes. Slow keys is implemented by the
 @node Loud Keys
 @section Loud Keys
 
+@pgindex @command{mds-keycue}
+@cpindex Loud keys
+@cpindex Keyboard, accessibility
+@cpindex Accessibility, keyboard
 Loud keys is an accessibility feature that can emulate
 key clicking sounds when a key is pressed or generate
 tones when certain keys are pressed. For example if
@@ -7739,6 +7924,10 @@ implemented by the @command{mds-keycue} server.
 @node Mouse Keys
 @section Mouse Keys
 
+@pgindex @command{mds-kbd2rat}
+@cpindex Keyboard to rat bindings
+@cpindex Rat keys
+@cpindex Mouse keys
 Rat keys (also known as mouse keys) is an accessibility
 and usability feature that lets the user use the keyboard
 as a pointing device. This feature is implemented by the
