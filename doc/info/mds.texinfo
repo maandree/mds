@@ -1121,6 +1121,7 @@ by the signal @code{SIGTERM}.
 @cpindex List protocols
 @cpindex Protocols, listing
 @cpindex Protocol registry
+@cpindex Registry of protocols
 @opindex @option{--list}
 @opindex @option{--wait}
 @command{mds-reg} is a utility that can be used to list
@@ -1559,6 +1560,11 @@ actually a server.
 @node mds-echo
 @section @command{mds-echo}
 
+@pgindex @command{mds-echo}
+@cpindex Ping
+@cpindex Debugging
+@cpindex Heartbeat
+@cpindex Network heartbeat
 @command{mds-echo} is a server that echos message that
 contain the header--value pair @command{Command: echo}.
 This server can be used for debugging and testing as
@@ -1569,6 +1575,11 @@ well as to enable network heartbeats.
 @node mds-registry
 @section @command{mds-registry}
 
+@pgindex @command{mds-registry}
+@cpindex List protocols
+@cpindex Protocols, listing
+@cpindex Protocol registry
+@cpindex Registry of protocols
 @command{mds-registry} is a server that keeps a registry
 of all protocols that are supported they the sum of all
 active servers. It can also be used by other servers to
@@ -1579,6 +1590,15 @@ wait until a protocol has become available.
 @node mds-vt
 @section @command{mds-vt}
 
+@pgindex @command{mds-vt}
+@cpindex Virtual terminal, switching
+@cpindex Virtual terminal, mode switching
+@cpindex Switching virtual terminal
+@cpindex Switching virtual terminal mode
+@cpindex TTY
+@cpindex Graphical mode
+@cpindex Text mode
+@cpindex Mode, virtual terminal, switching
 @command{mds-vt} is the server that acquires a virtual
 terminal for the display, manages virtual terminal
 switches and enables other servers to get access to
@@ -1587,6 +1607,9 @@ virtual terminal the display is located on. It also
 enables other servers to switch the virtual terminals
 mode to graphical mode or text mode.
 
+@vrindex @env{XDG_VTNR}
+@pgindex @command{mds-vt}
+@pgindex @file{mdsinitrc}
 By default @command{mds-vt} will select the next
 available virtual terminal for the display server.
 You can override this behaviour by exporting a value
@@ -1597,10 +1620,12 @@ index.}. To select the virtual terminal the display
 was started from you can use the following code in
 your @file{~/.mdsinitrc}:
 
+@pgindex @command{fgconsole}
 @example
 export XDG_VTNR="$(fgconsole)"
 @end example
 
+@pgindex @command{kbd}
 @command{fgconsole} is a part of the @command{kbd}
 package.
 
@@ -1609,6 +1634,8 @@ package.
 @node mds-clipboard
 @section @command{mds-clipboard}
 
+@pgindex @command{mds-clipboard}
+@cpindex Clipboard
 @command{mds} has three clipboards, one for copied
 text, one for selected text, and one for non-textual
 data. Each of these clipboards are stacks, just
@@ -1622,6 +1649,8 @@ time or when its originator closes.
 @node mds-drag
 @section @command{mds-drag}
 
+@pgindex @command{mds-drag}
+@cpindex Drag-and-drop
 @command{mds-drag} is the server that implements
 drag-and-drop support.
 
@@ -1630,6 +1659,13 @@ drag-and-drop support.
 @node mds-kkbd
 @section @command{mds-kkbd}
 
+@pgindex @command{mds-kkbd}
+@cpindex Keyboard
+@cpindex Keyboard, kernel-based
+@cpindex Scancodes
+@cpindex Keycodes
+@cpindex Keycodes, remapping
+@cpindex Keyboard, remapping
 @command{mds-kkbd} implements access to the kernel-based
 keyboard. It does not however implement delay and rate
 configurations for the kernel-based keyboard as that
@@ -1637,7 +1673,7 @@ requires root privileges. The kernel-based keyboard is
 a keyboard that can be accessed by reconfiguring
 stdin in a TTY using @code{ioctl} and then read from
 stdin. @command{mds-kkbd} does not implement any keyboard
-layout, rather it broadcasts scancodes and keycode.
+layout, rather it broadcasts scancodes and keycodes.
 However it can remap keycodes, but not scancodes.
 
 
@@ -1645,6 +1681,12 @@ However it can remap keycodes, but not scancodes.
 @node mds-kkbdrate
 @section @command{mds-kkbdrate}
 
+@pgindex @command{mds-kkbdrate}
+@pgindex @command{mds-kkbd}
+@cpindex Keyboard
+@cpindex Keyboard, kernel-based
+@cpindex Keyboard repeat rate
+@cpindex Keyboard repeat delay
 @command{mds-kkbdrate} is a complemental server to
 @command{mds-kkbd}, it implements rate and delay
 control for the kernel-based keyboard.
@@ -1654,6 +1696,14 @@ control for the kernel-based keyboard.
 @node mds-kbd
 @section @command{mds-kbd}
 
+@pgindex @command{mds-kbd}
+@cpindex Keyboard
+@cpindex Keyboard repeat rate
+@cpindex Keyboard repeat delay
+@cpindex Scancodes
+@cpindex Keycodes
+@cpindex Keycodes, remapping
+@cpindex Keyboard, remapping
 @command{mds-kbd} is an alternative to
 @command{mds-kkbd} and @command{mds-kkbdrate}.
 In contrast to @command{mds-kkbd}, @command{mds-kbd}
@@ -1669,6 +1719,18 @@ individually.
 @node mds-keytrans
 @section @command{mds-keytrans}
 
+@pgindex @command{mds-keytrans}
+@pgindex @command{mds-kbd}
+@pgindex @command{mds-kkbd}
+@cpindex Keyboard layout
+@cpindex Layout, keyboard
+@cpindex Dead keys
+@cpindex Compose key
+@cpindex Modifier keys
+@cpindex Keys, mapping, layout
+@cpindex Keys, dead
+@cpindex Keys, compose
+@cpindex Keys, modifiers
 @command{mds-keytrans} is the server than translates
 keycodes from @command{mds-kkbd} and @command{mds-kbd},
 and third-party alternatives, to characters and other
@@ -1680,6 +1742,9 @@ modifiers, letters, other symbols, dead keys and compose.
 @node mds-keystick
 @section @command{mds-keystick}
 
+@pgindex @command{mds-keystick}
+@cpindex Sticky keys
+@cpindex Keyboard, accessibility
 @command{mds-keystick} is a server that can be used
 to enable sticky keys. See @ref{Sticky Keys} for more
 information.
@@ -1689,6 +1754,9 @@ information.
 @node mds-keybounce
 @section @command{mds-keybounce}
 
+@pgindex @command{mds-keybounce}
+@cpindex Bounce keys
+@cpindex Keyboard, accessibility
 @command{mds-keybounce} is a server that can be used
 to enable bounce keys. See @ref{Bounce Keys} for more
 information.
@@ -1698,6 +1766,9 @@ information.
 @node mds-slowkey
 @section @command{mds-slowkey}
 
+@pgindex @command{mds-slowkey}
+@cpindex Slow keys
+@cpindex Keyboard, accessibility
 @command{mds-slowkey} is a server that can be used
 to enable slow keys. See @ref{Slow Keys} for more
 information.
@@ -1707,28 +1778,42 @@ information.
 @node mds-keycue
 @section @command{mds-keycue}
 
+@pgindex @command{mds-keycue}
+@cpindex Loud keys
+@cpindex Keyboard, accessibility
 @command{mds-keycue} is a server that can be used
 to enable loud keys. See @ref{Loud Keys} for more
 information.
 
 
 
-
 @node mds-kbdbind
 @section @command{mds-kbdbind}
 
+@pgindex @command{mds-kbdbind}
+@pgindex @command{xbindkeys}
+@pgindex @command{dmenu}
+@cpindex Keyboard bindings
+@cpindex Bindings, keyboard
+@cpindex Layout, keyboard, switching
+@cpindex Keyboard layout, switching
+@cpindex Switching keyboard layout
 @command{mds-kbdbind} is a server similar to
 @command{xbindkeys}. It can be used to run commands
 upon selected key combinations, for example starting
-@code{dmenu} or change keyboard layout.
+@command{dmenu} or change keyboard layout.
 @command{mds-kbdbind} can distinguish keyboards
-from eachother.
+from each other.
 
 
 
 @node mds-multikey
 @section @command{mds-multikey}
 
+@pgindex @command{mds-multikey}
+@pgindex @command{mds-kbdbind}
+@cpindex Keyboard bindings
+@cpindex Bindings, keyboard
 @command{mds-multikey} is a server that can
 bind a key, key combination, or sequence their
 of to a sequence of keys or key combinations.
@@ -1748,6 +1833,10 @@ them; or `<super>x, 5' to press `x' five times.
 @node mds-rat
 @section @command{mds-rat}
 
+@pgindex @command{mds-rat}
+@cpindex Rat device
+@cpindex Mouse device
+@cpindex Pointing device
 @command{mds-rat} is a server that implements
 support of rat (also known as mouse) devices.
 
@@ -1756,6 +1845,13 @@ support of rat (also known as mouse) devices.
 @node mds-ratbarrier
 @section @command{mds-ratbarrier}
 
+@pgindex @command{mds-ratbarrier}
+@cpindex Cursor barriers
+@cpindex Rat pointer barriers
+@cpindex Mouse pointer barriers
+@cpindex Pointer barriers
+@cpindex Screen edges, barriers
+@cpindex Barriers, rat
 @command{mds-ratbarrier} is a server that
 lets you set up barriers for the rat pointer,
 for example at the screen edges.
@@ -1771,6 +1867,12 @@ pointer fully and it cannot pass through at all.
 @node mds-ratbind
 @section @command{mds-ratbind}
 
+@pgindex @command{mds-ratbind}
+@cpindex Bindings, rat
+@cpindex Rat bindings
+@cpindex Mouse bindings
+@cpindex Pointer bindings
+@cpindex Hotcorners
 @command{mds-ratbind} is a server similar to
 @command{mds-kbdbind}. However, @command{mds-ratbind}
 respons to rat and rat cursor actions rather
@@ -1782,6 +1884,12 @@ used to implement hotcorners.
 @node mds-gestures
 @section @command{mds-gestures}
 
+@pgindex @command{mds-gestures}
+@cpindex Bindings, gestures
+@cpindex Gestures bindings
+@cpindex Rat gestures bindings
+@cpindex Mouse gestures bindings
+@cpindex Pointer gestures bindings
 @command{mds-gestures} is a server similar to
 @command{mds-ratbind}. However it is specialised
 to respond to gestures.
@@ -1791,12 +1899,16 @@ to respond to gestures.
 @node mds-kbd2rat
 @section @command{mds-kbd2rat}
 
+@pgindex @command{mds-kbd2rat}
+@cpindex Keyboard to rat bindings
+@cpindex Rat keys
+@cpindex Mouse keys
 If you do not have a rat or rather use your keyboard,
 the server @command{mds-kbd2rat} can be used to
 bind keyboard actions to simulate rat actions.
 This server is a specialisation of @code{mds-kbdbind},
 rather than spawning generic commands it broadcasts
-messages without the display server to move the
+messages within the display server to move the
 rat cursor and click on rat buttons. @code{mds-kbdbind}
 could be used to do this, but @command{mds-kbd2rat}
 will not spawn a new process for each action.
@@ -1807,6 +1919,11 @@ For more information see @ref{Mouse Keys}.
 @node mds-hwcursor
 @section @command{mds-hwcursor}
 
+@pgindex @command{mds-hwcursor}
+@cpindex Cursor, hardware
+@cpindex Rat cursor, hardware
+@cpindex Mouse cursor, hardware
+@cpindex Hardware cursor
 @command{mds-hwcursor} is a server that draws
 the rat cursor to the monitor on a plane
 separate from all other content on the display.
@@ -1818,6 +1935,11 @@ cursor.
 @node mds-swcursor
 @section @command{mds-swcursor}
 
+@pgindex @command{mds-swcursor}
+@cpindex Cursor, software
+@cpindex Rat cursor, software
+@cpindex Mouse cursor, software
+@cpindex Software cursor
 @command{mds-swcursor} is a server that draws
 the rat cursor to the monitor on the same plane
 as all other content on the display. In less
@@ -1828,6 +1950,11 @@ esoteric terms, it implements a software cursor.
 @node mds-cursorshadow
 @section @command{mds-cursorshadow}
 
+@pgindex @command{mds-cursorshadow}
+@cpindex Cursor shadow
+@cpindex Rat cursor shadow
+@cpindex Mouse cursor shadow
+@cpindex Shadow, cursor
 @command{mds-cursorshadow} is a server that
 can be used to decorate the rat cursor with
 a configurable shadow.
@@ -1837,6 +1964,14 @@ a configurable shadow.
 @node mds-cursorgamma
 @section @command{mds-cursorgamma}
 
+@pgindex @command{mds-cursorgamma}
+@pgindex @command{mds-hwcursor}
+@cpindex Gamma correction, hardware cursor
+@cpindex Cursor, hardware, gamma correction
+@cpindex Rat cursor, hardware, gamma correction
+@cpindex Mouse cursor, hardware, gamma correction
+@cpindex Hardware cursor, gamma correction
+@cpindex Graphics drivers
 @command{mds-cursorgamma} is a server you can
 use if you use @command{mds-hwcursor} to, if
 not done by the graphics driver, correct the
@@ -1853,6 +1988,9 @@ will have its gamma corrected.
 @node mds-hwgamma
 @section @command{mds-hwgamma}
 
+@pgindex @command{mds-hwgamma}
+@cpindex Gamma correction, hardware
+@cpindex Hardware gamma correction
 To enable gamma correction, use the server
 @command{mds-hwgamma}. It implements hardware
 gamma ramps, that is, gamma ramps assisted
@@ -1863,6 +2001,10 @@ by hardware acceleration.
 @node mds-swgamma
 @section @command{mds-swgamma}
 
+@pgindex @command{mds-swgamma}
+@cpindex Gamma correction, software
+@cpindex Software gamma correction
+@cpindex Graphics drivers
 If your graphics driver does not support
 @command{mds-hwgamma}, you can instead use
 @command{mds-swgamma}. It implements software
