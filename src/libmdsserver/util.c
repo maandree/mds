@@ -106,6 +106,10 @@ int prepare_reexec(void)
   fail_if (len < 0);
   /* ‘readlink() does not append a null byte to buf.’ */
   self_exe[len] = '\0';
+  /* Handle possible race condition: file was removed. */
+  if (access(self_exe, F_OK) < 0)
+    if (!strcmp(self_exe + (len - 10), " (deleted)"))
+      self_exe[len - 10] = '\0';
   return 0;
  fail:
   return -1;
