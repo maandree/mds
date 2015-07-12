@@ -5136,13 +5136,27 @@ write servers more concisely.
 
 @table @asis
 @item @code{parse_client_id} [(@code{const char* str}) @arrow{} @code{uint64_t}]
+@fnindex @code{parse_client_id}
+@cpindex Client ID, parsing
+@cpindex Parsing client ID
 Convert a client ID string into a client ID integer.
 
 @item @code{getenv_nonempty} [(@code{const char* var}) @arrow{} @code{char*}]
+@fnindex @code{getenv_nonempty}
+@cpindex Environment variables, reading
+@cpindex Reading environment variables
+@cpindex Fetching environment variables
 Read an environment variable, return @code{NULL} if
 the variable's value is an empty string.
 
 @item @code{prepare_reexec} [(@code{void}) @arrow{} @code{int}]
+@fnindex @code{prepare_reexec}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Prepare the server so that it can re-execute into
 a newer version of the executed file.
 
@@ -5165,6 +5179,13 @@ so it cannot be replaced.
 Returns zero on success and @code{-1} on error.
 
 @item @code{reexec_server} [(@code{int argc, char** argv, int reexeced}) @arrow{} @code{void}]
+@fnindex @code{reexec_server}
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Re-execute the server. If @code{prepare_reexec}
 failed or has not been called, @code{argv[0]}
 will be used as a fallback. This functions
@@ -5182,6 +5203,10 @@ Whether the server has previously been re-executed
 This function only returns on failure.
 
 @item @code{xsigaction} [(@code{int signo, void (*function)(int signo)}) @arrow{} @code{int}]
+@fnindex @code{xsigaction}
+@fnindex @code{sigaction}
+@fnindex @code{signal}
+@cpindex Signals
 @code{sigaction} with the same parameters as @code{signal}.
 This function should only be used for common @command{mds}
 signals and signals that does not require any special settings.
@@ -5190,12 +5215,19 @@ on the signal, such as blocking other signals. Returns zero
 on success and @code{-1} on error.
 
 @item @code{send_message} [(@code{int socket, const char* message, size_t length}) @arrow{} @code{size_t}]
+@fnindex @code{send_message}
+@cpindex Communication over sockets
+@cpindex Socket communication
 Send the message @code{messsage}, of length @code{length}
 over the socket that is access with the file descriptor
 @code{socket}. Returns the number of bytes that have been
 sent, even on error.
 
 @item @code{strict_atoi} [(@code{const char* str, int* value, int min, int max}) @arrow{} @code{int}]
+@fnindex @code{strict_atoi}
+@fnindex @code{atoi}
+@cpindex Integer parsing
+@cpindex Error management
 A version of @code{atoi} that is strict about the syntax
 and bounds. Parses the string @code{str} into an @code{int}
 and stores it in @code{*value}. If the string is not a
@@ -5204,11 +5236,15 @@ and stores it in @code{*value}. If the string is not a
 returned.
 
 @item @code{full_write} [(@code{int fd, const char* buffer, size_t length}) @arrow{} @code{int}]
+@fnindex @code{full_write}
+@cpindex File writing
 Send the buffer @code{buffer}, with the length @code{length},
 into the file whose file descriptor is @code{fd} and ignores
 interruptions. Returns zero on success and @code{-1} on error.
 
 @item @code{full_read} [(@code{int fd, size_t* length}) @arrow{} @code{char*}]
+@fnindex @code{full_read}
+@cpindex File reading
 Read the file whose file descriptor is @code{fd} completely
 and ignore interruptions. If @code{length} if not @code{NULL},
 the length of the read file is stored in @code{*length}.
@@ -5216,6 +5252,8 @@ On success, the read content is retured, on error @code{NULL}
 is returned.
 
 @item @code{startswith_n} [(@code{const char*, const char*, size_t, size_t}) @arrow{} @code{int}]
+@fnindex @code{startswith_n}
+@cpindex String comparison
 Check whether a string begins with a specific string,
 where neither of the strings are necessarily NUL-terminated.
 The parameters are:
@@ -5235,12 +5273,19 @@ Returns 1 if @code{haystack} beings with @code{needle},
 otherwise zero is returned.
 
 @item @code{uninterruptable_waitpid} [(@code{pid_t pid, int* restrict status, int options}) @arrow{} @code{pid_t}]
+@fnindex @code{uninterruptable_waitpid}
+@fnindex @code{waitpid}
+@cpindex Process management
 Wrapper around @code{waitpid} that never returns on an
 interruption unless it is interrupted one hundred times
 within the same clock second. The parameters and return
 value are exactly those of @code{waitpid}.
 
 @item @code{verify_utf8}[(@code{const char* string, int allow_modified_nul}) @arrow{} @code{int}]
+@fnindex @code{verify_utf8}
+@cpindex Security, encoding, UTF-8
+@cpindex UTF-8, security
+@cpindex Encoding, UTF-8, security
 Checks whether a NUL-terminated string's encoding
 matches UTF-8. This function will reject the string
 if it does not use the shorted possible
@@ -5258,32 +5303,64 @@ properly formatted, and @code{-1} otherwise.
 @node Data Structures
 @section Data Structures
 
-libmdsserver provides a small set of datastructures
+@cpindex Data structures
+@cpindex Marshalling
+@cpindex Serialisation
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
+libmdsserver provides a small set of data structures
 that are used by the @command{mds} servers. All of
 these are written with marshal-functionallity.
 
 @table @asis
 @item @code{client_list_t} @{also known as @code{struct client_list}@}
+@tpindex @code{client_list_t}
+@tpindex @code{struct client_list}
+@cpindex Client ID, lists
+@cpindex Lists of client ID:s
 In the header file @file{<libmdsserver/client-list.h>},
 libmdsserver defines a dynamic list for storing
 client ID:s.
 
 @item @code{linked_list_t} @{also known as @code{struct linked_list}@}
+@tpindex @code{linked_list_t}
+@tpindex @code{struct linked_list}
+@cpindex Lists, linked
+@cpindex Linked lists
 In the header file @file{<libmdsserver/linked-list.h>},
 libmdsserver defines a linear array sentinel doubly
 linked list.
 
 @item @code{hash_table_t} @{also known as @code{struct hash_table}@}
+@tpindex @code{hash_table_t}
+@tpindex @code{struct hash_table}
+@cpindex Tables, hash
+@cpindex Maps, hash
+@cpindex Dictionary, hash
+@cpindex Hash table
 In the header file @file{<libmdsserver/hash-table.h>},
 libmdsserver defines a hash table.
 
 @item @code{fd_table_t} @{also known as @code{struct fd_table}@}
+@tpindex @code{fd_table_t}
+@tpindex @code{struct fd_table}
+@cpindex Tables, file descriptor
+@cpindex Maps, file descriptor
+@cpindex Dictionary, file descriptor
+@cpindex File descriptor table
 In the header file @file{<libmdsserver/fd-table.h>},
 libmdsserver defines a lookup table for small
 positive integer keys, intended as an alternative
 to hash tables for file descriptors as keys.
 
 @item @code{mds_message_t} @{also known as @code{struct mds_message}@}
+@tpindex @code{mds_message_t}
+@tpindex @code{struct mds_message}
+@cpindex Message passing, data structure
 In the header file @file{<libmdsserver/mds-message.h>},
 libmdsserver defines a data structure for message
 between the server or client and the master server,
@@ -5298,6 +5375,12 @@ as an example.
 
 @table @asis
 @item @code{X_destroy} [(@code{X_t* restrict this}) @arrow{} @code{void}]
+@fnindex @code{client_list_destroy}
+@fnindex @code{linked_list_destroy}
+@fnindex @code{hash_table_destroy}
+@fnindex @code{fd_table_destroy}
+@fnindex @code{mds_message_destroy}
+@cpindex Memory management
 Releases all resouces in @code{*this},
 @code{this} itself is however not @code{free}:d.
 
@@ -5305,22 +5388,67 @@ However, @code{hash_table_destory} and
 @code{fd_table_destory} have another signature.
 
 @item @code{X_clone} [(@code{const X_t* restrict this, X_t* restrict out}) @arrow{} @code{int}]
+@fnindex @code{client_list_clone}
+@fnindex @code{linked_list_clone}
+@fnindex @code{hash_table_clone}
+@fnindex @code{fd_table_clone}
+@fnindex @code{mds_message_clone}
+@cpindex Memory management
 Create a deep duplicate of @code{*this} and store
 it in @code{*out}.
 
 @item @code{X_marshal_size} [(@code{const X_t* restrict this}) @arrow{} @code{size_t}]
+@fnindex @code{client_list_marshal_size}
+@fnindex @code{linked_list_marshal_size}
+@fnindex @code{hash_table_marshal_size}
+@fnindex @code{fd_table_marshal_size}
+@fnindex @code{mds_message_marshal_size}
+@cpindex Marshalling
+@cpindex Serialisation
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Calculates the exact allocate size needed for
 the parameter @code{data} in the function
 @code{X_marshal} if called with the same
 @code{this} parameter.
 
 @item @code{X_marshal} [(@code{const X_t* restrict this, char* restrict data}) @arrow{} @code{void}]
+@fnindex @code{client_list_marshal}
+@fnindex @code{linked_list_marshal}
+@fnindex @code{hash_table_marshal}
+@fnindex @code{fd_table_marshal}
+@fnindex @code{mds_message_marshal}
+@cpindex Marshalling
+@cpindex Serialisation
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Marshal the state of @code{*this} into
 @code{data}. The number of bytes that
 will be stored (contiguously) in @code{data}
 can be calculated with @code{X_marshal_size}.
 
 @item @code{X_unmarshal} [(@code{X_t* restrict this, char* restrict data)}) @arrow{} @code{int}]
+@fnindex @code{client_list_unmarshal}
+@fnindex @code{linked_list_unmarshal}
+@fnindex @code{hash_table_unmarshal}
+@fnindex @code{fd_table_unmarshal}
+@fnindex @code{mds_message_unmarshal}
+@cpindex Marshalling
+@cpindex Serialisation
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 Unmarshal a @code{X_t} from
 @code{data} into @code{*this}. Returns
 zero on success and @code{-1} on error.
