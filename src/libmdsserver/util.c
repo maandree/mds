@@ -94,9 +94,6 @@ char* getenv_nonempty(const char* var)
  *     `/proc/self/exe` once it has been removed,
  *     so it cannot be replaced.
  * 
- * The function will should be called immediately, it
- * will store the content of `/proc/self/exe`.
- * 
  * @return  Zero on success, -1 on error
  */
 int prepare_reexec(void)

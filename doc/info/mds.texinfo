@@ -5162,9 +5162,7 @@ The kernel appends ` (deleted)' to
 so it cannot be replaced.
 @end enumerate
 
-The function will should be called immediately, it
-will store the content of @file{/proc/self/exe}.
-Return zero on success and @code{-1} on error.
+Returns zero on success and @code{-1} on error.
 
 @item @code{reexec_server} [(@code{int argc, char** argv, int reexeced}) @arrow{} @code{void}]
 Re-execute the server. If @code{prepare_reexec}
