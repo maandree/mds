@@ -4644,6 +4644,9 @@ system.
 
 @table @asis
 @item @code{xasprintf} [(@code{char* buffer, ...}) @arrow{} @code{int}]
+@fnindex @code{xasprintf}
+@cpindex Functions, printing
+@cpindex Printing fuction
 This is a wrapper for @code{asprintf} that has two
 important properties, the buffer is guaranteed to
 be @code{NULL} on failure, and it will return zero
@@ -4653,6 +4656,9 @@ its first argument rather than the address of that
 variable.
 
 @item @code{xsnprintf} [(@code{char buffer[], ...}) @arrow{} @code{int}]
+@fnindex @code{xsnprintf}
+@cpindex Functions, printing
+@cpindex Printing fuction
 This is a wrapper for @code{snprintf} that allows you
 to forget about the buffer size. When you know how long
 a string can be, you should use @code{sprintf}. But when
@@ -4664,6 +4670,10 @@ this to find out how large the buffer is so it can call
 @code{snprintf} with that size.
 
 @item @code{eprint} [(@code{const char* format}) @arrow{} @code{int}]
+@fnindex @code{eprint}
+@cpindex Functions, printing, errors
+@cpindex Printing fuction, errors
+@cpindex Error printing function
 A wrapper for @code{fprintf} that prints a string prefixed
 with the value of @code{*argv} to @code{stderr}.
 This wrapper also as a line feed to the end of the text.
@@ -4671,11 +4681,22 @@ Because @code{eprintf} naïvely wraps @code{fprintf}, all
 `%':s in the string must be duplicated.
 
 @item @code{eprintf} [(@code{const char* format, ...}) @arrow{} @code{int}]
+@fnindex @code{eprintf}
+@cpindex Functions, printing, errors
+@cpindex Printing fuction, errors
+@cpindex Error printing function
 @code{eprint} extends @code{eprint} with variadic arguments
 that can be used to insert values into the format string
 just like you can do in @code{fprintf}.
 
 @item @code{iprint} [(@code{const char* format}) @arrow{} @code{int}]
+@fnindex @code{iprint}
+@cpindex Functions, printing, state
+@cpindex Printing fuction, state
+@cpindex State printing function
+@sgindex @code{SIGINFO}
+@cpindex State dump
+@cpindex Statistics dump
 A wrapper for @code{fprintf} that prints a string prefixed
 with the value of @code{*argv}, as well a label telling the
 user that the output is part of a state and statistics dump,
@@ -4684,70 +4705,154 @@ end of the text. Because @code{eprintf} naïvely wraps
 @code{fprintf}, all `%':s in the string must be duplicated.
 
 @item @code{iprintf} [(@code{const char* format, ...}) @arrow{} @code{int}]
+@fnindex @code{iprintf}
+@cpindex Functions, printing, state
+@cpindex Printing fuction, state
+@cpindex State printing function
+@sgindex @code{SIGINFO}
+@cpindex State dump
+@cpindex Statistics dump
 @code{eprint} extends @code{iprint} with variadic arguments
 that can be used to insert values into the format string
 just like you can do in @code{fprintf}.
 
 @item @code{with_mutex} [(@code{pthread_mutex_t mutex, instructions})]
+@fnindex @code{with_mutex}
+@cpindex Threading, synchronisation
+@cpindex Multi-threading, synchronisation
+@cpindex Synchronisation, threading
+@cpindex Mutex
 Wraps @code{instructions} with @code{errno = pthread_mutex_lock(mutex);}
 and @code{errno = pthread_mutex_unlock(mutex);}, so a set of
 instructions can be invoked inside mutex protection.
 
 @item @code{with_mutex_if} [(@code{pthread_mutex_t mutex, condition, instructions})]
+@fnindex @code{with_mutex_if}
+@cpindex Threading, synchronisation
+@cpindex Multi-threading, synchronisation
+@cpindex Synchronisation, threading
+@cpindex Mutex
 An alternative to @code{with_mutex} where @code{instructions}
 is wrapped around @code{if (condition)} which in turn is
 wrapped inside the mutex protection.
 
 @item @code{max} [(@code{a, b})]
+@fnindex @code{max}
+@cpindex Value comparision macro
 Returns the higher value of @code{a} and @code{b}.
 
 @item @code{min} [(@code{a, b})]
+@fnindex @code{min}
+@cpindex Value comparision macro
 Returns the lower value of @code{a} and @code{b}.
 
 @item @code{buf_cast} [(@code{char* buffer, type, size_t index})]
+@fnindex @code{buf_cast}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 Casts @code{buffer} to a @code{type} buffer and
 subscripts to the @code{index}:th element. You
 can either use this function as a getter or a
 setter.
 
 @item @code{buf_set} [(@code{char* buffer, type, size_t index, type variable}) @arrow{} @code{type}]
+@fnindex @code{buf_set}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 Wrapper for @code{buf_cast} that sets the addressed
 element to the value of @code{variable}.
 
 @item @code{buf_get} [(@code{const char* buffer, type, size_t index, type variable}) @arrow{} @code{type}]
+@fnindex @code{buf_get}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 Wrapper for @code{buf_cast} that sets the value of
 @code{variable} to the value of the addressed element.
 
 @item @code{buf_next} [(@code{char* buffer, type, size_t count}) @arrow{} @code{char*}]
+@fnindex @code{buf_next}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 Increases the pointer @code{buffer} by the size of
 @code{type} @code{count} types.
 
 @item @code{buf_prev} [(@code{char* buffer, type, size_t count}) @arrow{} @code{char*}]
+@fnindex @code{buf_prev}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 Decreases the pointer @code{buffer} by the size of
 @code{type} @code{count} types.
 
 @item @code{buf_set_next} [(@code{char* buffer, type, type variable}) @arrow{} @code{type}]
+@fnindex @code{buf_set_next}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 @example
 buf_set(buffer, type, 0, variable),
 buf_next(buffer, type, 1);
 @end example
 
 @item @code{buf_get_next} [(@code{char* buffer, type, type variable}) @arrow{} @code{type}]
+@fnindex @code{buf_get_next}
+@cpindex Re-executing servers, macros
+@cpindex Updating, online, macros
+@cpindex Online updating, macros
+@cpindex Version update, macros
+@cpindex Serialisation macros
+@cpindex Marshalling macros
+@sgindex @code{SIGUPDATE}
 @example
 buf_get(buffer, type, 0, variable),
 buf_next(buffer, type, 1);
 @end example
 
 @item @code{strequals} [(@code{const char* a, const char* b}) @arrow{} @code{int}]
+@fnindex @code{strequals}
+@cpindex String comparison
 Evaluates whether the strings @code{a} and @code{b}
 are equals, neither may be @code{NULL}.
 
 @item @code{startswith} [(@code{const char* haystack, const char* needle}) @arrow{} @code{int}]
+@fnindex @code{startswith}
+@cpindex String comparison
 Evaluates whether the string @code{haystack}
 starts with the string @code{needle}, neither
 may be @code{NULL}.
 
 @item @code{drop_privileges} [(void) @arrow{} @code{int}]
+@fnindex @code{drop_privileges}
+@cpindex Previleges
+@cpindex Security, previleges
 Sets the effective user to the real user and the
 effective group to the real group. This is used
 by most servers and ensure that they are not
@@ -4755,42 +4860,60 @@ running with unnecessary privileges. Returns zero
 on and only on success.
 
 @item @code{monotone} [(@code{struct timespec* time_slot}) @arrow{} @code{int}]
+@fnindex @code{monotone}
+@cpindex Time, monotonic
+@cpindex Monotonic time
 Stores the time of an unspecified monotonic clock
 into @code{time_slot}. Returns zero on and only on
 success.
 
 @item @code{close_files} [(@code{condition}) @arrow{} @code{void}]
+@fnindex @code{close_files}
+@cpindex File descriptions, close all
+@cpindex Close all file descriptions
 Closes all file descriptors named by a variable
 @code{fd} for which @code{condition} evalutes
 to non-zero.
 
 @item @code{xfree} [(@code{void** array, size_t elements}) @arrow{} @code{void}]
+@fnindex @code{xfree}
+@cpindex Memory management
 Calls @code{free} on the first @code{elements}
 elements in @code{array}, and than calls
 @code{free} on @code{array}. This macro
 requires @code{size_t i} is declared.
 
 @item @code{xmalloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{xmalloc}
+@cpindex Memory management
 Allocates a @code{type*} with @code{elements}
 elements and stores the allocated pointer to
 @code{var}. Returns zero on and only on success.
 
 @item @code{xbmalloc} [(@code{type* var, size_t bytes}) @arrow{} @code{int}]
+@fnindex @code{xbmalloc}
+@cpindex Memory management
 Allocates @code{bytes} bytes and stores the allocated
 pointer to @code{var}. Returns zero on and only on success.
 
 @item @code{xcalloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{xcalloc}
+@cpindex Memory management
 Allocates a zero-initialised @code{type*} with
 @code{elements} elements and stores the allocated
 pointer to @code{var}. Returns zero on and only
 on success.
 
 @item @code{xbcalloc} [(@code{type* var, size_t bytes}) @arrow{} @code{int}]
+@fnindex @code{xbcalloc}
+@cpindex Memory management
 Allocates and zero-initialises @code{bytes} bytes
 and stores the allocated pointer to @code{var}.
 Returns zero on and only on success.
 
 @item @code{xrealloc} [(@code{type* var, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{xrealloc}
+@cpindex Memory management
 Reallocates @code{var} and updates the variable
 @code{var} accordingly. @code{var} will be
 allocated to have @code{elements} elements
@@ -4804,6 +4927,8 @@ into another variable in case this macro
 fails.
 
 @item @code{xxrealloc} [(@code{type* old, type* var, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{xxrealloc}
+@cpindex Memory management
 Variant of @code{xrealloc} that will
 return with @code{old} set to @code{NULL}
 on success, and @code{old} set to @code{var}
@@ -4811,6 +4936,8 @@ on error. Like @code{xrealloc}, @code{xxrealloc}
 returns zero on and only on success.
 
 @item @code{yrealloc} [(@code{type* tmp, type* var, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{yrealloc}
+@cpindex Memory management
 Variant of @code{xrealloc} that will
 store @code{var} to @code{tmp} before
 reallocating @code{var} and then restore
@@ -4819,6 +4946,8 @@ Like @code{xrealloc}, @code{yrealloc}
 returns zero on and only on success.
 
 @item @code{growalloc} [(@code{type* old, type* var, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{growalloc}
+@cpindex Memory management
 When using this macro @code{var} should
 be a @code{type*} pointer allocated for
 @code{elements} elements of the type
@@ -4831,6 +4960,8 @@ specify it in as the @code{old} parameter.
 Returns zero on and only on success.
 
 @item @code{xstrdup} [(@code{char* var, const char* original}) @arrow{} @code{int}]
+@fnindex @code{xstrdup}
+@cpindex Memory management
 Wrapper for @code{strdup} that
 returns zero on and only on success.
 @code{original} is duplicate and the
@@ -4840,6 +4971,8 @@ duplicate is stored in the variable
 @code{NULL} and zero is returned.
 
 @item @code{xmemdup} [(@code{void* var, const void* original, size_t elements, type}) @arrow{} @code{int}]
+@fnindex @code{xmemdup}
+@cpindex Memory management
 Allocates a pointer of the type @code{type*}
 with room for @code{elements} elements and
 stores the pointer to @code{var}. If successful,
@@ -4849,6 +4982,8 @@ copied to @code{var}, and zero is returned.
 On failure, a non-zero value is returned.
 
 @item @code{xperror} [(@code{const char* str}) @arrow{} @code{void}]
+@fnindex @code{xperror}
+@cpindex Error management
 Invokes @code{perror(str)} if and only if
 @code{errno} is non-zero and then sets
 @code{errno} to zero. @code{str} should
@@ -4856,17 +4991,26 @@ unless you have a specific reason be
 @code{*argv}.
 
 @item @code{fail_if} [(@code{condition}) @arrow{} @code{void}]
+@fnindex @code{fail_if}
+@cpindex Error management
 If @code{condition} is satisfied, a jump
 is made to the label @code{fail}.
 Additionally the location of failure will
 be printed to standard error.
 
 @item @code{exit_if} [(@code{condition, instructions}) @arrow{} @code{void}]
+@fnindex @code{exit_if}
+@cpindex Error management
+@cpindex Terminating
 If @code{condition} is satisfied,
 @code{instructions} is invoked and
 @code{1} is @code{return}:ed.
 @end table
 
+@cpindex Signals
+@sgindex @code{SIGDANGER}
+@sgindex @code{SIGUPDATE}
+@sgindex @code{SIGINFO}
 Additionally, @file{<libmdsserver/macros.h>}
 defines any missing signal name: currently
 @code{SIGDANGER}, @code{SIGINFO} and
@@ -4875,72 +5019,108 @@ defines any missing signal name: currently
 of @code{atoi} for portability and
 convenience:
 
+@cpindex Integer parsing macros
 @table @code
 @item atoz
+@fnindex @code{atoz}
+@tpindex @code{size_t}
 Parse a human readable @code{const char*}
 10-radix integer to a @code{size_t}.
 
 @item atosz
+@fnindex @code{atosz}
+@tpindex @code{ssize_t}
 Parse a human readable @code{const char*}
 10-radix integer to a @code{ssize_t}.
 
 @item atoh
+@fnindex @code{atoh}
+@tpindex @code{short int}
+@tpindex @code{signed short int}
 Parse a human readable @code{const char*}
 10-radix integer to a @code{short int}.
 
 @item atouh
+@fnindex @code{atouh}
+@tpindex @code{unsigned short int}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{unsigned short int}.
 
 @item atou
+@fnindex @code{atou}
+@tpindex @code{unsigned int}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{unsigned int}.
 
 @item atoul
+@fnindex @code{atoul}
+@tpindex @code{unsigned long int}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{unsigned long int}.
 
 @item atoull
+@fnindex @code{atoull}
+@tpindex @code{unsigned long long int}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{unsigned long long int}.
 
 @item ato8
+@fnindex @code{ato8}
+@tpindex @code{int8_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{int8_t}.
 
 @item atou8
+@fnindex @code{atou8}
+@tpindex @code{uint8_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{uint8_t}.
 
 @item ato16
+@fnindex @code{ato16}
+@tpindex @code{int16_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{int16_t}.
 
 @item atou16
+@fnindex @code{atou16}
+@tpindex @code{uint16_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{uint16_t}.
 
 @item ato32
+@fnindex @code{ato32}
+@tpindex @code{int32_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{int32_t}.
 
 @item atou32
+@fnindex @code{atou32}
+@tpindex @code{uint32_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{uint32_t}.
 
 @item ato64
+@fnindex @code{ato64}
+@tpindex @code{int64_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{int64_t}.
 
 @item atou64
+@fnindex @code{atou64}
+@tpindex @code{uint64_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{uint64_t}.
 
 @item atoj
+@fnindex @code{atoj}
+@tpindex @code{intmax_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{intmax_t}.
 
 @item atouj
+@fnindex @code{atouj}
+@tpindex @code{uintmax_t}
 Parse a human readable @code{const char*}
 10-radix integer to an @code{uintmax_t}.
 @end table
