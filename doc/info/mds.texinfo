@@ -5474,6 +5474,11 @@ However, @code{hash_table_unmarshal} and
 @node Client List
 @subsection Client List
 
+@tpindex @code{client_list_t}
+@tpindex @code{struct client_list}
+@cpindex Client ID, lists
+@cpindex Lists of client ID:s
+@fnindex @code{client_list_create}
 To create a client list, allocate a
 @code{client_list_t*} or otherwise obtain
 a @code{client_list_t*}, and call
@@ -5495,17 +5500,19 @@ functions for manipulating its content:
 
 @table @asis
 @item @code{client_list_add} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{int}]
+@fnindex @code{client_list_add}
 This function will add the element @code{client}
 to the list @code{*this}, and return zero on
 and only on success.
 
 @item @code{client_list_remove} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{void}]
+@fnindex @code{client_list_remove}
 This function will remove exactly one occurrence,
 provided that there is at least on occurrence,
 of the element @code{client} for the list @code{*this}.
 @end table
 
-The retrieve the number elements stored in
+To retrieve the number elements stored in
 a list, reads its variable @code{size_t size}.
 The variable @code{uint64_t* clients} is
 used to retrieve stored elements.
@@ -5524,6 +5531,10 @@ void print_elements(client_list_t* this)
 @node Linked List
 @subsection Linked List
 
+@tpindex @code{linked_list_t}
+@tpindex @code{struct linked_list}
+@cpindex Lists, linked
+@cpindex Linked lists
 @code{linked_list_t} is a linear array sentinel
 doubly linked list. This means that is implemented
 using arrays rather than node references. More
@@ -5550,6 +5561,8 @@ The linked list has a sentinel node that joins
 boths ends of the list. The index of this node
 is stored in the variable @code{edge}.
 
+@cpindex Memory management
+@fnindex @code{linked_list_pack}
 Because the list is implemented using arrays, if the
 number of elements in it shinks considerably, it will
 not be able to automatically free unused space. Instead
@@ -5566,6 +5579,7 @@ that the nodes' indices are continuous. This method has
 linear time complexity and linear memory complexity.
 @end table
 
+@fnindex @code{linked_list_create}
 To create a linked list list, allocate a
 @code{linked_list_t*} or otherwise obtain
 a @code{linked_list_t*}, and call
@@ -5587,26 +5601,31 @@ items to and from a linked list:
 
 @table @asis
 @item @code{linked_list_insert_after} [(@code{this, size_t value, ssize_t predecessor}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_insert_after}
 Create a new node with the value @code{value} and add it
 to the list @code{*this} after the node @code{predecessor}.
 On success, the new node is returned, on failure
 @code{LINKED_LIST_UNUSED} is returned.
 
 @item @code{linked_list_insert_before} [(@code{this, size_t value, ssize_t successor}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_insert_before}
 Create a new node with the value @code{value} and add it
 to the list @code{*this} before the node @code{successor}.
 On success, the new node is returned, on failure
 @code{LINKED_LIST_UNUSED} is returned.
 
 @item @code{linked_list_remove_after} [(@code{this, ssize_t predecessor}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_remove_after}
 Remove and return the node in the list @code{*this}
 directly after the node @code{predecessor}.
 
 @item @code{linked_list_remove_before} [(@code{this, ssize_t successor}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_remove_before}
 Remove and return the node in the list @code{*this}
 directly before the node @code{predecessor}.
 
 @item @code{linked_list_remove} [(@code{this, ssize_t node}) @arrow{} @code{void}]
+@fnindex @code{linked_list_remove}
 Remove the node @code{node} from the list @code{*this}.
 @end table
 
@@ -5630,22 +5649,26 @@ edges of a linked list:
 
 @table @asis
 @item @code{linked_list_insert_beginning} [(@code{linked_list_t* this, size_t value}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_insert_beginning}
 Create a new node with the value @code{value} in
 insert it to the beginning of the list @code{*this}.
 On success, the new node is returned, on failure
 @code{LINKED_LIST_UNUSED} is returned.
 
 @item @code{linked_list_insert_end} [(@code{linked_list_t* this, size_t value}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_insert_end}
 Create a new node with the value @code{value} in
 insert it to the end of the list @code{*this}.
 On success, the new node is returned, on failure
 @code{LINKED_LIST_UNUSED} is returned.
 
 @item @code{linked_list_remove_beginning} [(@code{linked_list_t* this}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_remove_beginning}
 Remove and return the first node in the
 list @code{*this}.
 
 @item @code{linked_list_remove_end} [(@code{linked_list_t* this}) @arrow{} @code{ssize_t}]
+@fnindex @code{linked_list_remove_end}
 Remove and return the node node in the
 list @code{*this}.
 @end table
@@ -5657,6 +5680,7 @@ linked list:
 
 @table @asis
 @item @code{foreach_linked_list_node} [(@code{linked_list_t this, ssize_t node})]
+@fnindex @code{foreach_linked_list_node}
 Wrapper for `for` keyword that iterates over each
 element in the list @code{this}, and store the
 current node to the variable named by the parameter
@@ -5679,6 +5703,7 @@ There is also a function intended for debugging:
 
 @table @asis
 @item @code{linked_list_dump} [(@code{linked_list_t* restrict this, FILE* restrict output}) @arrow{} @code{void}]
+@fnindex @code{linked_list_dump}
 The all internal data of the list @code{*this}
 into the stream @code{output}.
 @end table
@@ -5688,6 +5713,18 @@ into the stream @code{output}.
 @node Tables
 @subsection Tables
 
+@tpindex @code{fd_table_t}
+@tpindex @code{struct fd_table}
+@cpindex Tables, file descriptor
+@cpindex Maps, file descriptor
+@cpindex Dictionary, file descriptor
+@cpindex File descriptor table
+@tpindex @code{hash_table_t}
+@tpindex @code{struct hash_table}
+@cpindex Tables, hash
+@cpindex Maps, hash
+@cpindex Dictionary, hash
+@cpindex Hash table
 libmdsserver defines two similar data structures:
 @code{fd_table_t} and @code{hash_table_t}. Whenever
 a function exists for both data structures we will
@@ -5702,12 +5739,16 @@ modifier.
 
 @table @asis
 @item @code{X_table_create} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{hash_table_create}
+@fnindex @code{fd_table_create}
 Initialises @code{*this} so it can be used as a
 table. Returns zero on and only on success.
 
 These functions are defined as macros.
 
 @item @code{X_table_create_tuned} [(@code{this, size_t initial_capacity}) @arrow{} @code{int}]
+@fnindex @code{hash_table_create_tuned}
+@fnindex @code{fd_table_create_tuned}
 Initialises @code{*this} so it can be used as a
 table, and makes its initial capacity at least
 @code{initial_capacity}. Returns zero on and only
@@ -5715,7 +5756,8 @@ on success.
 
 @code{hash_table_create_tuned} is defined as a macro.
 
-@item @code{hash_table_create_tuned} [(@code{this, size_t initial_capacity, float load_factor}) @arrow{} @code{int}]
+@item @code{hash_table_create_fine_tuned} [(@code{this, size_t initial_capacity, float load_factor}) @arrow{} @code{int}]
+@fnindex @code{hash_table_create_fine_tuned}
 Initialises @code{*this} so it can be used as a
 table, and makes its initial capacity at least
 @code{initial_capacity} and its load factor
@@ -5723,6 +5765,8 @@ table, and makes its initial capacity at least
 on success.
 
 @item @code{X_table_destroy} [(@code{this, free_func* key_freer, free_func* value_freer}) @arrow{} @code{void}]
+@fnindex @code{hash_table_destroy}
+@fnindex @code{fd_table_destroy}
 Release all resources in the table @code{*this},
 but do not @code{free} @code{this} itself.
 Should be called even if construction fails.
@@ -5732,10 +5776,14 @@ If @code{values_freer} is not @code{NULL}, this
 function will be called for each value.
 
 @item @code{X_table_contains_value} [(@code{const this, size_t value}) @arrow{} @code{int}]
+@fnindex @code{hash_table_contains_value}
+@fnindex @code{fd_table_contains_value}
 Check whether the value @code{value} is stored
 in the table @code{*this}.
 
 @item @code{X_table_contains_key} [(@code{const this, key}) @arrow{} @code{int}]
+@fnindex @code{hash_table_contains_key}
+@fnindex @code{fd_table_contains_key}
 Check whether the key @code{code} is used in the
 table @code{*this}.
 
@@ -5744,16 +5792,21 @@ The data type for the parameter @code{key} is
 for @code{fd_table}.
 
 @item @code{X_table_get} [(@code{const this, key}) @arrow{} @code{size_t}]
+@fnindex @code{hash_table_get}
+@fnindex @code{fd_table_get}
 Look up a value by its key @code{key} in the
 table @code{*this}. Zero will be returned if
 the key was not used.
 
 @item @code{hash_table_get_entry} [(@code{const this, size_t key}) @arrow{} @code{hash_entry_t*}]
+@fnindex @code{hash_table_get_entry}
 Look up an entry by its key @code{key} in the
 table @code{*this}. @code{NULL} will be returned
 if the key was not used.
 
 @item @code{X_table_put} [(@code{this, key, size_t value}) @arrow{} @code{size_t}]
+@fnindex @code{hash_table_put}
+@fnindex @code{fd_table_put}
 Map the value @code{value} to the key @code{key}
 in the talbe @code{*this}. If a value was already
 mapped to the key, that value will be returned,
@@ -5766,6 +5819,8 @@ The data type for the parameter @code{key} is
 for @code{fd_table}.
 
 @item @code{X_table_remove} [(@code{this, key}) @arrow{} @code{size_t}]
+@fnindex @code{hash_table_remove}
+@fnindex @code{fd_table_remove}
 Unmaps the key @code{key} for the table @code{*this}.
 If a value was mapped to the key, that value will
 be returned, otherwise zero will be returned.
@@ -5775,9 +5830,13 @@ The data type for the parameter @code{key} is
 for @code{fd_table}.
 
 @item @code{X_table_clear} [(@code{this}) @arrow{} @code{void}]
+@fnindex @code{hash_table_clear}
+@fnindex @code{fd_table_clear}
 Unmaps all keys in the table @code{*this}.
 
 @item @code{X_table_unmarshal} [(@code{this, char* restrict data, remap_func* remapper}) @arrow{} @code{int}]
+@fnindex @code{hash_table_unmarshal}
+@fnindex @code{fd_table_unmarshal}
 As described in @ref{Data Structures} but with one
 additional parameter: @code{remapper}. If this
 parameter is not @code{NULL} this function is used
@@ -5791,6 +5850,7 @@ as wrapper macro for the @code{for} keyword:
 
 @table @asis
 @item @code{foreach_hash_table_entry} [(@code{hash_table_t this, size_t i, hash_entry_t* entry})]
+@fnindex @code{foreach_hash_table_entry}
 Iterates over entry element in the hash table
 @code{*this}. On each iteration, the entry will
 be stored to the variable @code{entry} and the
@@ -5811,6 +5871,9 @@ Note the the data type for the parameter @code{this}
 is not a popinter.
 @end table
 
+@vrindex @code{value_comparator}
+@vrindex @code{hash_table_t.value_comparator}
+@vrindex @code{fd_table_t.value_comparator}
 The structures @code{hash_table_t} and @code{fd_table_t}
 contain the variable @code{value_comparator} which by
 default is @code{NULL}. If this variable is set to @code{NULL},
@@ -5825,15 +5888,21 @@ arguments. The data type for @code{value_comparator} is
 
 @table @asis
 @item @code{key_comparator} [@code{compare_func*}]
+@vrindex @code{ket_comparator}
+@vrindex @code{hash_table_t.ket_comparator}
 Identical to @code{value_comparator}, except it is used for
 keys rather the values.
 
 @item @code{hasher} [@code{hash_func*}]
+@vrindex @code{hasher}
+@vrindex @code{hash_table_t.hasher}
 By default, the hash value for key is identical to the key
 itself. However, if this variable is not @code{NULL}, it
 will be used to calculate the hash value for keys.
 @end table
 
+@tpindex @code{hash_entry_t}
+@tpindex @code{struct hash_entry}
 There is a secondary data structure defined for hash tables:
 @code{hash_entry_t} @{also known as @code{struct hash_entry}@}.
 It is the data structure used for entries in a hash table.
@@ -5856,21 +5925,25 @@ defines four @code{typedef}:s for function signatures:
 
 @table @asis
 @item @code{compare_func} [(@code{size_t a, size_t b}) @arrow{} @code{int}]
+@tpindex @code{compare_func}
 A function that performs a comparison of two objects.
 Should return non-zero if and only if @code{a} and
 @code{b} are to be considered equal in the given
 context.
 
 @item @code{hash_func} [(@code{size_t value}) @arrow{} @code{size_t}]
+@tpindex @code{hash_func}
 A function that hashes an object or a value.
 Should return the hash value for @code{value}.
 
 @item @code{free_func} [(@code{size_t obj}) @arrow{} @code{void}]
+@tpindex @code{free_func}
 A function that, to the extent that is appropriate,
 releases the object @code{obj}'s resources and
 @code{free}:s it.
 
 @item @code{remap_func} [(@code{size_t obj}) @arrow{} @code{size_t}]
+@tpindex @code{remap_func}
 A function that translates a object into a new object.
 The function should return new object that should replace
 the object @code{obj}.
@@ -5882,9 +5955,12 @@ It defines to useful functions:
 
 @table @asis
 @item @code{string_hash} [(@code{const char* str}) @arrow{} @code{size_t}]
+@fnindex @code{string_hash}
 Calculate and returns the hash value of the string @code{str}.
 
 @item @code{string_comparator} [(@code{char* str_a, char* str_b}) @arrow{} @code{int}]
+@fnindex @code{string_comparator}
+@cpindex String comparison
 Returns non-zero if either both @code{str_a} and @code{str_b}
 are @code{NULL} or neither are @code{NULL} but are identical
 strings by content upto their first NUL characters (or by address).
