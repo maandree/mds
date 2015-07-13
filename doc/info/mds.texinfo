@@ -4,9 +4,23 @@
 @setfilename mds.info
 @settitle mds
 
+@c @set AFIVEPAPER
+@c @set SMALLBOOK
+@c This document does not look too good on A5-paper
+@c This document looks best on A4-paper, but smallbook format is acceptable
+
+@ifset AFIVEPAPER
+@afivepaper
+@end ifset
+@ifclear AFIVEPAPER
+@ifset SMALLBOOK
+@smallbook
+@end ifset
+@ifclear SMALLBOOK
 @afourpaper
-@c This document does not support @afivepaper
-@c This document does not support @smallbook
+@set AFOURPAPER
+@end ifclear
+@end ifclear
 
 @documentencoding UTF-8
 @documentlanguage en
@@ -981,11 +995,15 @@ Command: keyboard-enumeration\n
 @node Portability
 @section Portability
 
+@cpindex Portability
 For optimal portability, there are some restrictions
 on protocols.
 
 @itemize @bullet{}
 @item
+@cpindex Integers, minimum value restriction
+@cpindex Minimum value restriction on integers
+@cpindex Restrictions on minimum value for integers
 Because C allows unsigned integers to be encoded as
 either sign and magnitude, one's complement or two's
 complement@footnote{GCC only allows two's complement},
@@ -1005,6 +1023,10 @@ size integers or otherwise make sure that the value
 can be properly stored and used.
 
 @item
+@tpindex @code{uint64_t}
+@cpindex Integers, unsigned, restriction
+@cpindex Unsigned integer, restriction
+@cpindex Restrictions on unsigned integers
 Integer 64-bits that are not especially encoded
 must not be unsigned if the bit-size is fixed.
 This is because some programming languages
@@ -1013,12 +1035,15 @@ are signed; a large enough unsigned 64-bit
 integer would overflow.
 
 @item
+@cpindex Endianness, portability
 Native endianness when a endianness is choosen.
 Do not assume big endianness, but the same
 endianness that appear on the same machine when
 using C.
 
 @item
+@cpindex UTF-8, portability
+@cpindex Strings, portibility
 All strings musts be encoded in UTF-8 without
 any NUL-character unless express permission
 is given. NUL-character may be encoded either
@@ -1033,6 +1058,8 @@ and is hence disallowed by newer specifications
 of UTF-8.
 
 @item
+@cpindex New line, portability
+@cpindex Strings, portibility
 The new line-character is always LF (@code{'\n'},
 10, line feed) and never a combination of LF and
 any other character, or multiple LF:s.
@@ -1451,6 +1478,7 @@ and commands, @command{cmdipc} and @command{ipcmd} can be
 used for this purpose. We will use @command{cmdipc} in an
 example:
 
+@ifset AFOURPAPER
 @example
 S=$(cmdipc -Scx set 1 | cut -d ' ' -f 2)
 # Create a System V semaphore with the value 1.
@@ -1462,6 +1490,22 @@ cmdipc -Sk $S z            # Wait for the semaphore's value to become 0.
 cmdipc -Srk $S             # Remove the semaphore.
 mds-respawn @{ mds-bar @} &  # Spawn `mds-bar`.
 @end example
+@end ifset
+@ifclear AFOURPAPER
+@example
+S=$(cmdipc -Scx set 1 | cut -d ' ' -f 2)
+# Create a System V semaphore with the value 1.
+
+mds-respawn @{ mds-foo --on-init-sh="cmdipc -Sk $S p" @} &
+# Spawn `mds-foo` and decrease the semaphore with
+# 1 when initialised.
+
+cmdipc -Sk $S z            # Wait for the semaphore's
+                           # value to become 0.
+cmdipc -Srk $S             # Remove the semaphore.
+mds-respawn @{ mds-bar @} &  # Spawn `mds-bar`.
+@end example
+@end ifclear
 
 @pgindex @command{mds-reg}
 This is however seldom necessary as @command{mds-reg} can
@@ -3674,6 +3718,7 @@ The entry will also be removed, unless
 @code{Time to live: forever} is used, if the server
 crashes or is re-executed.
 
+@sgindex @code{SIGARLM}
 It is up to the implementation to choose when the
 removal actually takes place. For example, the reference
 implementation will pop entries that have timed out when
@@ -3949,6 +3994,7 @@ Alpha channel should be included but ignored if
 @code{Has alpha: no}, in such as it is best to set
 it to full.
 
+@ifset AFOURPAPER
 Example image with @code{Bytes: 2},
 @code{Has alpha: no} and @code{Size: 3}:
 @example
@@ -3971,6 +4017,28 @@ FF FF 02 01 0 0 0 0 FF FF 0 0 04 03 0 0 FF FF 0 0 0 0 06 05
 FF FF 08 07 0 0 0 0 FF FF 0 0 0A 09 0 0 FF FF 0 0 0 0 0C 0B
 FF FF 0E 0D 0 0 0 0 FF FF 0 0 10 0F 0 0 FF FF 0 0 0 0 12 11
 @end example
+@end ifset
+@ifclear AFOURPAPER
+Example image with @code{Bytes: 2},
+@code{Has alpha: no} and @code{Size: 2}:
+@example
+sRGB(x0102, 0, 0), sRGB(0, x0304, 0)
+sRGB(x0708, 0, 0), sRGB(0, x090A, 0)
+@end example
+
+Encoding of example image in hexadecimal representation:
+@example
+FFFF 0102 0000 0000 FFFF 0000 0304 0000
+FFFF 0708 0000 0000 FFFF 0000 090A 0000
+@end example
+
+Note that on a big-endian system this would be:
+@footnote{x86_64 computers are big-endian.}
+@example
+FF FF 02 01 0 0 0 0 FF FF 0 0 04 03 0 0
+FF FF 08 07 0 0 0 0 FF FF 0 0 0A 09 0 0
+@end example
+@end ifclear
 
 It is up to the networking servers to translate
 the encoding between machines.@footnote{The host
@@ -5517,6 +5585,7 @@ a list, reads its variable @code{size_t size}.
 The variable @code{uint64_t* clients} is
 used to retrieve stored elements.
 
+@ifset AFOURPAPER
 @example
 void print_elements(client_list_t* this)
 @{
@@ -5525,6 +5594,18 @@ void print_elements(client_list_t* this)
     printf("Element #%zu: %" PRIu64 "\n", i, this->elements[i]);
 @}
 @end example
+@end ifset
+@ifclear AFOURPAPER
+@example
+void print_elements(client_list_t* this)
+@{
+  size_t i;
+  for (i = 0; i < this->size; i++)
+    printf("Element #%zu: %" PRIu64 "\n",
+           i, this->elements[i]);
+@}
+@end example
+@end ifclear
 
 
 
@@ -5857,6 +5938,7 @@ be stored to the variable @code{entry} and the
 bucket index will be stored to the variable
 @code{i}.
 
+@ifset AFOURPAPER
 @example
 void print_hash_table(hash_table_t* table)
 @{
@@ -5866,6 +5948,19 @@ void print_hash_table(hash_table_t* table)
     printf("%zu --> %zu\n", entry->key, entry->value);
 @}
 @end example
+@end ifset
+@ifclear AFOURPAPER
+@example
+void print_hash_table(hash_table_t* table)
+@{
+  hash_entry_t* entry;
+  size_t i;
+  foreach_hash_table_entry (*table, i, entry)
+    printf("%zu --> %zu\n", entry->key,
+                            entry->value);
+@}
+@end example
+@end ifclear
 
 Note the the data type for the parameter @code{this}
 is not a popinter.
@@ -6109,6 +6204,7 @@ The server is re-executing.
 
 @item --alarm=SECONDS
 @opindex @option{--alarm}
+@sgindex @code{SIGALRM}
 Kill the process after @var{SECONDS} seconds.
 At most one minute.
 
@@ -6813,6 +6909,7 @@ character other than space.}. Therefore the
 letter is prefixed with the word `letter'.
 For example:
 
+@ifset AFOURPAPER
 @example
 <keycode 16> : <letter q>     # The Q-key has keycode 16 (on QWERTY)
 <letter q> : "q"              # The Q-key should produce a `q'
@@ -6820,6 +6917,21 @@ For example:
 <caps q> : "Q"                # or when caps is used
 <shift caps letter q> : "q"   # but not when both are used
 @end example
+@end ifset
+@ifclear AFOURPAPER
+@example
+# The Q-key has keycode 16 (on QWERTY)
+<keycode 16> : <letter q>
+# The Q-key should produce a `q'
+<letter q> : "q"
+# but `Q' when shift is used
+<shift letter q> : "Q"
+# or when caps is used
+<caps q> : "Q"
+# but not when both are used
+<shift caps letter q> : "q"
+@end example
+@end ifclear
 
 Special characters like simple double quotes,
 backspace and, in @code{<>}-notation, greater than
@@ -6975,6 +7087,7 @@ compiler required that the @option{--force} flag
 is used and that the unordered subsequences uses
 double brackets:
 
+@ifset AFOURPAPER
 @example
 <dead compose> ("1" "2" "3" "4" "5") : "120"
 <dead compose> (("1" "2" "3" "4" "5" "6")) : "720"
@@ -6982,6 +7095,14 @@ double brackets:
 <dead compose> (("1" "2" "3" "4" "5" "6" "7" "8")) : "40320"
 <dead compose> (("1" "2" "3" "4" "5" "6" "7" "8" "9")) : "362880"
 @end example
+@end ifset
+@ifclear AFOURPAPER
+@example
+<dead compose> ("1" "2" "3" "4" "5") : "120"
+<dead compose> (("1" "2" "3" "4" "5" "6")) : "720"
+<dead compose> (("1" "2" "3" "4" "5" "6" "7")) : "5040"
+@end example
+@end ifclear
 
 
 
@@ -7191,10 +7312,19 @@ built-in functions named `add/2' and `sub/2'.
 
 Alternation can be used to invoke a macro:
 
+@ifset AFOURPAPER
 @example
 letter(["a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"])
 letter(["n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"])
 @end example
+@end ifset
+@ifclear AFOURPAPER
+@example
+letter(["a" "b" "c" "d" "e" "f" "g" "h" "i" "j"])
+letter(["k" "l" "m" "n" "o" "p" "q" "r" "s" "t"])
+letter(["u" "v" "w" "x" "y" "z"])
+@end example
+@end ifclear
 
 You may use `.' in an alternation, in that case
 macro is called once with the argument, causing it
@@ -7206,6 +7336,9 @@ example want to call the macro `letter/1' for
 all letters betweeh and including `a' and `z'
 we can just write
 
+@ifclear AFOURPAPER
+@page
+@end ifclear
 @example
 for "a" to "z" as \1
   letter(\1)
@@ -8491,6 +8624,9 @@ transition from @code{X-release} to @code{X}. Clients should
 not set the cursor to either of them, it is up to the server
 to do this based on events from the rat device.
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @table @code
 @item default
 This is the default cursor. It is used as a fallback if no
@@ -8554,6 +8690,9 @@ small menu.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item text
 This cursor should be used when the rat pointers is above
 an horizontal text that can be selected and possibly edited.
@@ -8656,6 +8795,9 @@ of animated ring.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item pointer
 This cursor indicates that the object beneath it
 is clickable. Typically a link in a web browser.
@@ -8764,6 +8906,9 @@ This cursor is usually rendered as
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item move
 This cursor indicates that the dragged object
 will be moved upon release, or otherwise
@@ -8828,6 +8973,9 @@ links next to it, or an arced arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear AFOURPAPER
+@page
+@end ifclear
 @item no-drop
 This cursor indicates that the dragged object
 cannot be release where the rat pointer is
@@ -8889,6 +9037,9 @@ a diagonal line through it.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item not-allowed
 This cursor is used to indicate that moving
 the rat will also move the object beneath
@@ -8915,7 +9066,9 @@ vertical and horizontal twin-headed arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear AFIVEPAPER
 @page
+@end ifclear
 @item up-arrow
 This cursor is typically used to identify an
 insertion point.
@@ -8990,6 +9143,9 @@ horizontally towards it.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear AFOURPAPER
+@page
+@end ifclear
 @item row-resize
 This cursor is used to indicate the the cursor is within a region
 that allows it rat to be used to resize a column.
@@ -9091,7 +9247,9 @@ west pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear AFIVEPAPER
 @page
+@end ifclear
 @item e-resize
 If this cursor is missing, @code{e-select}
 should be used as the first fallback,
@@ -9115,6 +9273,9 @@ wall at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item e-select
 If this cursor is missing, @code{e-resize}
 should be used as the first fallback,
@@ -9137,6 +9298,9 @@ east pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset SMALLBOOK
+@page
+@end ifset
 @item n-resize
 If this cursor is missing, @code{n-select}
 should be used as the first fallback,
@@ -9169,7 +9333,9 @@ wall at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear SMALLBOOK
 @page
+@end ifclear
 @item n-select
 If this cursor is missing, @code{n-resize}
 should be used as the first fallback,
@@ -9199,6 +9365,9 @@ north pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear AFOURPAPER
+@page
+@end ifclear
 @item s-resize
 If this cursor is missing, @code{s-select}
 should be used as the first fallback,
@@ -9231,7 +9400,9 @@ wall at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear SMALLBOOK
 @page
+@end ifclear
 @item s-select
 If this cursor is missing, @code{s-resize}
 should be used as the first fallback,
@@ -9261,6 +9432,9 @@ south pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item nw-resize
 If this cursor is missing, @code{nw-select}
 should be used as the first fallback,
@@ -9293,7 +9467,9 @@ with a corner at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear SMALLBOOK
 @page
+@end ifclear
 @item nw-select
 If this cursor is missing, @code{nw-resize}
 should be used as the first fallback,
@@ -9322,6 +9498,9 @@ north-west pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item se-resize
 If this cursor is missing, @code{se-select}
 should be used as the first fallback,
@@ -9354,7 +9533,9 @@ with a corner at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear SMALLBOOK
 @page
+@end ifclear
 @item se-select
 If this cursor is missing, @code{se-resize}
 should be used as the first fallback,
@@ -9383,6 +9564,9 @@ south-east pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item ne-resize
 If this cursor is missing, @code{ne-select}
 should be used as the first fallback,
@@ -9415,7 +9599,9 @@ with a corner at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear SMALLBOOK
 @page
+@end ifclear
 @item ne-select
 If this cursor is missing, @code{ne-resize}
 should be used as the first fallback,
@@ -9444,6 +9630,9 @@ north-east pointing arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item sw-resize
 If this cursor is missing, @code{sw-select}
 should be used as the first fallback,
@@ -9476,7 +9665,9 @@ with a corner at the arrow head.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear SMALLBOOK
 @page
+@end ifclear
 @item sw-select
 If this cursor is missing, @code{sw-resize}
 should be used as the first fallback,
@@ -9544,7 +9735,9 @@ east and west pointing twin-arrow.
 @end example
 @vskip 0pt plus 2filll
 
+@ifclear AFIVEPAPER
 @page
+@end ifclear
 @item ns-resize
 If this cursor is missing, @code{ns-select}
 should be used as the first fallback, and
@@ -9626,6 +9819,9 @@ optionally with a corner at the arrow heads.
 @end example
 @vskip 0pt plus 2filll
 
+@ifset AFIVEPAPER
+@page
+@end ifset
 @item nesw-resize
 If this cursor is missing, @code{all-resize}
 should be used as the first fallback.
