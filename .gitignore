@@ -13,5 +13,9 @@ obj/
 *.out
 *.so
 *.o
+*.info
+*.pdf
+*.dvi
+*.ps
 /src/libmdsserver/config.h
 
