@@ -8552,6 +8552,7 @@ small menu.
             ####
             ####
 @end example
+@vskip 0pt plus 2filll
 
 @item text
 This cursor should be used when the rat pointers is above
@@ -8576,7 +8577,9 @@ This cursor is usually a vertical I-beam.
       ##
 ##############
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item vertical-text
 This cursor should be used when the rat pointers is above
 an vertical text that can be selected and possibly edited.
@@ -8594,6 +8597,7 @@ This cursor is usually a horizontal I-beam.
 ##                            ##
 ##                            ##
 @end example
+@vskip 0pt plus 2filll
 
 @item progress
 This cursor indicates that the interface can
@@ -8621,7 +8625,9 @@ of @command{default} and @command{wait}.
             ####
             ####
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item wait
 This cursor indicates that the interface cannot
 be used because it is working or is blocked by
@@ -8648,8 +8654,8 @@ of animated ring.
       ####################
       ####################
 @end example
+@vskip 0pt plus 2filll
 
-@page
 @item pointer
 This cursor indicates that the object beneath it
 is clickable. Typically a link in a web browser.
@@ -8677,7 +8683,9 @@ left-handed) pointing with the index-finger.
           ####################
             ################
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item help
 This cursor indicates that the interface is in
 context help mode. This is usually activated by
@@ -8704,8 +8712,8 @@ with a question mark next to it.
             ####
             ####
 @end example
+@vskip 0pt plus 2filll
 
-@page
 @item drag
 This cursor indicates that an object is
 being dragged.
@@ -8724,7 +8732,9 @@ or closed left hand if left-handed.
       ####################
         ################
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item copy
 This cursor indicates that the dragged object
 will be copied or listed upon release.
@@ -8752,8 +8762,8 @@ This cursor is usually rendered as
       ####################
         ################
 @end example
+@vskip 0pt plus 2filll
 
-@page
 @item move
 This cursor indicates that the dragged object
 will be moved upon release, or otherwise
@@ -8784,7 +8794,9 @@ or north west if left-handed.
       ####################
         ################
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item alias
 This cursor indicates that the dragged object
 will be aliased upon release, or otherwise
@@ -8814,8 +8826,8 @@ links next to it, or an arced arrow.
       ####################
         ################
 @end example
+@vskip 0pt plus 2filll
 
-@page
 @item no-drop
 This cursor indicates that the dragged object
 cannot be release where the rat pointer is
@@ -8847,7 +8859,9 @@ combination of @code{drag} and @code{not-allowed}.
       ####################
         ################
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item not-allowed
 This cursor indicates that the region beneath
 the rat pointer is invalid for the current
@@ -8873,8 +8887,8 @@ a diagonal line through it.
         ####        ####
             ########
 @end example
+@vskip 0pt plus 2filll
 
-@page
 @item not-allowed
 This cursor is used to indicate that moving
 the rat will also move the object beneath
@@ -8899,7 +8913,9 @@ vertical and horizontal twin-headed arrow.
             ######
               ##
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item up-arrow
 This cursor is typically used to identify an
 insertion point.
@@ -8918,6 +8934,7 @@ It is often rendered an upwards pointing arrow.
     ######
     ######
 @end example
+@vskip 0pt plus 2filll
 
 @item cell
 This cursor is often used in spread-sheet applications
@@ -8939,7 +8956,9 @@ It is typically rendered as a thick plus-sign.
           ######
           ######
 @end example
+@vskip 0pt plus 2filll
 
+@page
 @item col-resize
 This cursor is used to indicate the the cursor is within a region
 that allows it rat to be used to resize a column.
@@ -8969,6 +8988,7 @@ horizontally towards it.
               ##
               ##
 @end example
+@vskip 0pt plus 2filll
 
 @item row-resize
 This cursor is used to indicate the the cursor is within a region
@@ -8999,6 +9019,7 @@ vertically towards it.
               ##
               ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item crosshair
@@ -9023,6 +9044,7 @@ This cursor typically a thin crosshair.
               ##
               ##
 @end example
+@vskip 0pt plus 2filll
 
 @item w-resize
 If this cursor is missing, @code{w-select}
@@ -9045,6 +9067,7 @@ wall at the arrow head.
 ##      ##
 ##        ##
 @end example
+@vskip 0pt plus 2filll
 
 @item w-select
 If this cursor is missing, @code{w-resize}
@@ -9066,6 +9089,7 @@ west pointing arrow.
     ##
       ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item e-resize
@@ -9089,6 +9113,7 @@ wall at the arrow head.
                       ##      ##
                     ##        ##
 @end example
+@vskip 0pt plus 2filll
 
 @item e-select
 If this cursor is missing, @code{e-resize}
@@ -9110,6 +9135,7 @@ east pointing arrow.
                       ##
                     ##
 @end example
+@vskip 0pt plus 2filll
 
 @item n-resize
 If this cursor is missing, @code{n-select}
@@ -9141,6 +9167,7 @@ wall at the arrow head.
       ##
       ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item n-select
@@ -9170,6 +9197,7 @@ north pointing arrow.
       ##
       ##
 @end example
+@vskip 0pt plus 2filll
 
 @item s-resize
 If this cursor is missing, @code{s-select}
@@ -9201,6 +9229,7 @@ wall at the arrow head.
 
 ##############
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item s-select
@@ -9230,6 +9259,7 @@ south pointing arrow.
     ######
       ##
 @end example
+@vskip 0pt plus 2filll
 
 @item nw-resize
 If this cursor is missing, @code{nw-select}
@@ -9261,6 +9291,7 @@ with a corner at the arrow head.
                             ##
                               ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item nw-select
@@ -9289,6 +9320,7 @@ north-west pointing arrow.
                       ##
                         ##
 @end example
+@vskip 0pt plus 2filll
 
 @item se-resize
 If this cursor is missing, @code{se-select}
@@ -9320,6 +9352,7 @@ with a corner at the arrow head.
                               ##
               ##################
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item se-select
@@ -9348,6 +9381,7 @@ south-east pointing arrow.
                       ####
               ############
 @end example
+@vskip 0pt plus 2filll
 
 @item ne-resize
 If this cursor is missing, @code{ne-select}
@@ -9379,6 +9413,7 @@ with a corner at the arrow head.
   ##
 ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item ne-select
@@ -9407,6 +9442,7 @@ north-east pointing arrow.
   ##
 ##
 @end example
+@vskip 0pt plus 2filll
 
 @item sw-resize
 If this cursor is missing, @code{sw-select}
@@ -9438,6 +9474,7 @@ with a corner at the arrow head.
 ##
 ##################
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item sw-select
@@ -9466,6 +9503,7 @@ south-west pointing arrow.
 ####
 ############
 @end example
+@vskip 0pt plus 2filll
 
 @item ew-resize
 If this cursor is missing, @code{ew-select}
@@ -9485,6 +9523,7 @@ optionally with a wall at the arrow heads.
 ##      ##            ##      ##
 ##        ##        ##        ##
 @end example
+@vskip 0pt plus 2filll
 
 @item ew-select
 If this cursor is missing, @code{ew-resize}
@@ -9503,6 +9542,7 @@ east and west pointing twin-arrow.
     ##            ##
       ##        ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item ns-resize
@@ -9532,6 +9572,7 @@ optionally with a wall at the arrow heads.
 
 ##############
 @end example
+@vskip 0pt plus 2filll
 
 @item ns-select
 If this cursor is missing, @code{ns-resize}
@@ -9555,6 +9596,7 @@ north and south pointing twin-arrow.
     ######
       ##
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item nwse-resize
@@ -9582,6 +9624,7 @@ optionally with a corner at the arrow heads.
                               ##
               ##################
 @end example
+@vskip 0pt plus 2filll
 
 @item nesw-resize
 If this cursor is missing, @code{all-resize}
@@ -9608,6 +9651,7 @@ optionally with a corner at the arrow heads.
 ##
 ##################
 @end example
+@vskip 0pt plus 2filll
 
 @page
 @item all-resize
