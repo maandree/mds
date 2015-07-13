@@ -5973,6 +5973,9 @@ These functions are defined as pure and @code{static inline}.
 @node Message Structure
 @subsection Message Structure
 
+@tpindex @code{mds_message_t}
+@tpindex @code{struct mds_message}
+@cpindex Message passing, data structure
 Apart from internal data @code{mds_message_t} contains four
 variables:
 
@@ -6005,23 +6008,27 @@ are @code{mds_message_t*} with the @code{restrict} modifier.
 
 @table @asis
 @item @code{mds_message_initialise} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{mds_message_initialise}
 Initialises @code{*this} so that it can be used by
 @code{mds_message_read}. Returns zero on and only on
 success. On failure you should destroy @code{*this}
 using @code{mds_message_destroy}.
 
 @item @code{mds_message_zero_initialise} [(@code{this}) @arrow{} @code{void}]
+@fnindex @code{mds_message_zero_initialise}
 This function is similar to @code{mds_message_initialise},
 however it cannot fail and thus have no return value.
 The difference it is action is that it will not allocate
 an internal buffer.
 
 @item @code{mds_message_extend_headers} [(@code{this, size_t extent}) @arrow{} @code{int}]
+@fnindex @code{mds_message_extend_headers}
 Ensures that @code{extent} additional headers can
 be stored in the @code{*this}. Returns zero on
 and only on success.
 
 @item @code{mds_message_read} [(@code{this, int fd}) @arrow{} @code{int}]
+@fnindex @code{mds_message_read}
 Reads the next message from the socket file descriptor
 @code{fd} and stores it in @code{*this}. Returns zero
 on success and non-zero on error or interruption. @code{*this}
@@ -6032,11 +6039,13 @@ that the message is malformated, which is a state that
 cannot be recovered from.
 
 @item @code{mds_message_compose_size} [(@code{const this}) @arrow{} @code{size_t}]
+@fnindex @code{mds_message_compose_size}
 This function is to @code{mds_message_compose} as
 @code{mds_message_marshal_size} is to
 @code{mds_message_marshal}.
 
 @item @code{mds_message_compose} [(@code{const this, char* restrict data}) @arrow{} @code{void}]
+@fnindex @code{mds_message_compose}
 This function is similar to @code{mds_message_marshal}.
 The only difference is that it will not store internal
 data and instead create a message that can be broadcasted
@@ -8517,7 +8526,7 @@ usually a north-east or north-north-east pointing arrow.
 @end example
 
 @page
-@item text
+@item context-menu
 This cursor indicates the same state as @command{default}
 with he addition that the object beneath it can be
 right-clicked (left-clicked if left-handed) to open a
@@ -9631,6 +9640,11 @@ at the arrow heads.
 @node Nesting Applications
 @section Nesting Applications
 
+@cpindex Nesting applications
+@cpindex Applications, nesting
+@cpindex Embedding applications
+@cpindex Applications, embedding
+@vrindex @env{MDS_EMBED}
 Applications that want to embed another other
 application within it, should create a socket
 and start the other application with the
@@ -9656,6 +9670,14 @@ it starts any other program.
 @node The Real Display Server
 @section The Real Display Server
 
+@cpindex Real display server
+@cpindex Actual display server
+@cpindex Preferred display server
+@cpindex Display server, real
+@cpindex Display server, actual
+@cpindex Display server, preferred
+@cpindex Compatibility layers
+@vrindex @env{PREFERRED_DISPLAY}
 The environment variable @env{PREFERRED_DISPLAY},
 should be set with the value @code{mds},
 if and only if @command{mds} is started
@@ -9677,14 +9699,23 @@ Be sure to keep the list ordered by preference.
 
 @table @code
 @item mir
+@pgindex @command{mds-mmds}
+@cpindex Compatibility layer, Mir
+@cpindex Mir compatibility layer
 Should be added if you are running a
 @command{mir}-to-@command{mds} server,
 like @command{mds-mmds}.
 @item wayland
+@pgindex @command{mds-wmds}
+@cpindex Compatibility layer, Wayland
+@cpindex Wayland compatibility layer
 Should be added if you are running a
 @command{wayland}-to-@command{mds} server,
 like @command{mds-wmds}.
 @item x11
+@pgindex @command{mds-xmds}
+@cpindex Compatibility layer, X.org
+@cpindex X.org compatibility layer
 Should be added if you are running an
 @command{X}-to-@command{mds} server,
 like @command{mds-xmds}.
@@ -9704,6 +9735,10 @@ like @command{mds-xmds}.
 @node Metadisplay Server
 @section Metadisplay Server
 
+@cpindex Metadisplay server
+@pgindex @code{mds-meta}
+@cpindex Display server, meta
+@cpindex Multi-display systems
 A metadisplay server is a server that is connected
 to one or more display server's simultaneously.
 Additionally, it is acting as a display server on
@@ -9722,6 +9757,9 @@ display server. Not only will this let the user
 run any server this way. It also makes it possible
 to run them across any number of computers.
 
+@pgindex @code{@command{mds-host}}
+@pgindex @command{mds-remote}
+@pgindex Networking
 If a hosting server, like @command{mds-host}, runs
 inside a metadisplay, any number of computers can
 connect to the metadisplay using a server like
