@@ -38,18 +38,18 @@ bin/%.info $(foreach P,$(INFOPARTS),bin/%.info-$(P)): doc/info/%.texinfo doc/inf
 bin/%.pdf: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.pdf
 	@! test -d obj/pdf || rm -rf obj/pdf
 	@mkdir -p obj/pdf bin
-	cd obj/pdf && yes X | texi2pdf $(TEXIFLAGS) ../../$<
+	cd obj/pdf && texi2pdf $(TEXIFLAGS) ../../$< < /dev/null
 	mv obj/pdf/$*.pdf $@
 
 bin/%.dvi: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.eps
 	@! test -d obj/dvi || rm -rf obj/dvi
 	@mkdir -p obj/dvi bin
-	cd obj/dvi && yes X | $(TEXI2DVI) $(TEXIFLAGS) ../../$<
+	cd obj/dvi && $(TEXI2DVI) $(TEXIFLAGS) ../../$< < /dev/null
 	mv obj/dvi/$*.dvi $@
 
 bin/%.ps: doc/info/%.texinfo doc/info/*.texinfo # obj/logo.eps
 	@! test -d obj/ps || rm -rf obj/ps
 	@mkdir -p obj/ps bin
-	cd obj/ps && yes X | texi2pdf $(TEXIFLAGS) --ps ../../$<
+	cd obj/ps && texi2pdf $(TEXIFLAGS) --ps ../../$< < /dev/null
 	mv obj/ps/$*.ps $@
 
