@@ -10117,6 +10117,8 @@ output servers, and even windowing servers.
 @node Server Architecture
 @section Server Architecture
 
+@cpindex Server architecture
+@cpindex Architecture, servers
 This chapter aims to enumerate advantages and
 disadvantages with micro-display servers,
 traditional monolithic display servers and
@@ -10138,6 +10140,9 @@ any insight.
 @node The Microserver Architecture
 @subsection The Microserver Architecture
 
+@cpindex Microserver architecture
+@cpindex Architecture, microserver
+@cpindex Microdisplay servers
 Description: The display server is implement with
 multiple binaries that speak with each other using
 a well defined protocol.
@@ -10150,17 +10155,22 @@ Advantages:
 
 @itemize @bullet{}
 @item
+@cpindex Code quality
+@cpindex Quality of code
 Knowing the names of the servers you use and
 their purpose makes it very easy to find where
 you want to do patching in the source code.
 
 @item
+@cpindex Code quality
+@cpindex Quality of code
 Spaghetti code to a larger extent is virtually
 impossible; the microserver architecture guarantees
 a certain quality of the code architecture for
 the display server.
 
 @item
+@cpindex Flexibility
 If the message passing used in the display server
 allows for message modification and retrieval
 ordering, extending, modifying and using the display
@@ -10169,6 +10179,7 @@ and will often not require any modifications to
 the existing servers.
 
 @item
+@cpindex Flexibility
 Replacing the display server is easier for a
 micro-display server than it is for a monolithic
 display server, because the servers could be
@@ -10177,6 +10188,8 @@ under two distinct protocol during the transitional
 period.
 
 @item
+@cpindex Code quality
+@cpindex Quality of code
 Not as many subprotocols needs to be defined.
 For example, recording the output of the display
 does not require a special protocol, one only
@@ -10184,10 +10197,12 @@ needs to write a server that listens on messages
 passed between servers.
 
 @item
+@cpindex Stability
 If a server crashes it does not crash the entire
 session. Crashes can most often be repaired.
 
 @item
+@cpindex Flexibility
 Because servers can easily be omitted and replaced
 when starting the display server, it becomes much
 easier to mount the display server on top of an
@@ -10200,6 +10215,7 @@ written to running on top of Wayland; of course
 with some functionallity of @code{mds} missing.
 
 @item
+@cpindex Security
 It is trivial to only have setuid on for the
 part of the display server where it is required.
 @end itemize
@@ -10209,15 +10225,30 @@ part of the display server where it is required.
 @node The Monolithic Server Architecture
 @subsection The Monolithic Server Architecture
 
+@cpindex Monolithic server architecture
+@cpindex Architecture, monolithic server
+@cpindex Monolithic display servers
 Description: The display server is implemented
 as one binary.
 
 @noindent
-Implementations: X11, Mir, Wayland@footnote{Wayland
-is not actually monolithic, it is just a protocol.
-But Wayland is written with a monolithic mindset,
-and it is preferred that the display server
-implementation is monolithic.}, Surface Flinger,
+@cpindex X11
+@cpindex X.org
+@cpindex Mir
+@cpindex Wayland
+@cpindex Weston
+@cpindex Surface Flinger
+@cpindex Quartz Compositor
+@cpindex Desktop Window Manager
+@cpindex Mac OS X, Quartz Compositor
+@cpindex OS X, Quartz Compositor
+@cpindex Windows, Desktop Window Manager
+Implementations: X11@footnote{X11 is a protocol, I beleave
+all X11 servers are monolithic, atleast the major ones are},
+Mir, Wayland@footnote{Wayland is not actually monolithic,
+it is just a protocol. But Wayland is written with a
+monolithic mindset, and it is preferred that the display
+server implementation is monolithic.}, Surface Flinger,
 Quartz Compositor, Desktop Window Manager.
 
 @noindent
@@ -10225,6 +10256,10 @@ Advantages:
 
 @itemize @bullet{}
 @item
+@cpindex Confidentiality
+@cpindex Privacy
+@cpindex Security
+@cpindex Flexibility
 The monolithic architecture makes it trivial
 to isolate information for clients to achieve
 confidentiality. Prioritising confidentiality
@@ -10232,11 +10267,13 @@ however leads to problems implementing features
 such as screenshooting and global hotkeys.
 
 @item
+@cpindex Performance
 Monolithic server does not need to pass messages
 between modules, but can rather perform normal
 function calls and achieve greater performance.
 
 @item
+@cpindex Size
 Monolithic display servers can have a smaller memory
 footprint than its full-fledged counterparts.
 @end itemize
@@ -10246,6 +10283,15 @@ footprint than its full-fledged counterparts.
 @node The Hybrid Server Architecture
 @subsection The Hybrid Server Architecture
 
+@cpindex Hybrid server architecture
+@cpindex Architecture, hybrid server
+@cpindex Hybrid display servers
+@cpindex Milliserver architecture
+@cpindex Architecture, milliserver
+@cpindex Millidisplay servers
+@cpindex Macroserver architecture
+@cpindex Architecture, macroserver
+@cpindex Macrodisplay servers
 Description: The display server is implmeneted
 with the microserver architecture except some
 components are built into the master server for
@@ -10275,6 +10321,10 @@ Can achieve most of the microserver architecture's
 advantages, but not always to the same extent.
 
 @item
+@cpindex Confidentiality
+@cpindex Privacy
+@cpindex Security
+@cpindex Flexibility
 By integrating some servers into the master server,
 the hybrid architecture can isolate information for
 clients to achieve confidentiality. Prioritising
@@ -10282,6 +10332,7 @@ confidentiality however leads to problems implementing
 features such as screenshooting and global hotkeys.
 
 @item
+@cpindex Performance
 Large and high frequency messages does not need to
 be passed around to other servers if they are integrated
 into the master server. This lets hybrid display server
@@ -10299,6 +10350,12 @@ and an implementation thereof.
 @node The Megalithic Server Architecture
 @subsection The Megalithic Server Architecture
 
+@cpindex Megalithic server architecture
+@cpindex Architecture, megalithic server
+@cpindex Megalithic display servers
+@cpindex Megaserver architecture
+@cpindex Architecture, megaserver
+@cpindex Megadisplay servers
 Description: A monolithic display server where
 applications are loaded or compiled into the display
 server itself.
@@ -10314,6 +10371,7 @@ Advantages:
 
 @itemize @bullet{}
 @item
+@cpindex Performance
 No interprocess communication is required, apart from
 letting the display server know to load modules if it
 does not compile in its programs. This lets megalithic
@@ -10326,25 +10384,34 @@ Disadvantages:
 
 @itemize @bullet{}
 @item
+@cpindex Code quality
+@cpindex Quality of code
 Imposes restrictions on which languages applications can use.
 
 @item
+@cpindex Flexibility
 Imposes restrictions on how applications can behave.
 
 @item
+@cpindex Flexibility
+@cpindex Code quality
+@cpindex Quality of code
 Cannot be networked without exposing an alternative
 display server protocol.
 
 @item
+@cpindex Stability
 The display becomes more crash prune; if an application
 crashes it is likely to crash the entire display.
 
 @item
+@cpindex Security
 Applications will run with the same privileges as the display
 server, which is root on most operating systems.
 @end itemize
 
 @noindent
+@cpindex Gaming
 Megalithic display servers could be interesting for high
 performing gaming consoles.
 
@@ -10353,6 +10420,9 @@ performing gaming consoles.
 @node The Modular Server Architecture
 @subsection The Modular Server Architecture
 
+@cpindex Modular server architecture
+@cpindex Architecture, modular server
+@cpindex Modular display servers
 Description: A monolithic display server where server-like
 programs can be loaded as modules into the display server
 but applicates are connected with interprocess communication.
@@ -10367,6 +10437,7 @@ Advantages:
 
 @itemize @bullet{}
 @item
+@cpindex Flexibility
 Can achieve that flexibility of micro-display servers,
 but not when networked, with the same memory footprint
 as monolithic display servers.
@@ -10375,6 +10446,7 @@ as monolithic display servers.
 Has the same advantages as monolithic kernels.
 
 @item
+@cpindex Performance
 Applications that require absolute performance can
 be loaded as modules and achieve the same performance
 as megalithic kernels, however with the same caveats.
@@ -10391,6 +10463,9 @@ server display.
 @node The Modular Microserver Architecture
 @subsection The Modular Microserver Architecture
 
+@cpindex Modular microserver architecture
+@cpindex Architecture, modular microserver
+@cpindex Modular microdisplay servers
 Description: A modular display server with a module
 that enables clients to act as modules that communicates
 via interprocess communication rather than being loaded
@@ -10425,6 +10500,9 @@ transformed version.
 @node The Exoserver Architecture
 @subsection The Exoserver Architecture
 
+@cpindex Exoserver architecture
+@cpindex Architecture, exoserver
+@cpindex Exodisplay servers
 Description: An exo-display server is a tiny display
 server that attempts to let applications access the
 underlaying system directly and implements basic
@@ -10439,10 +10517,12 @@ Advantages:
 
 @itemize @bullet{}
 @item
+@cpindex Performance
 Can achieve the same performance as megalithic
 display servers.
 
 @item
+@cpindex Stability
 Can achieve the same robustness as micro-display
 servers.
 @end itemize
@@ -10452,6 +10532,9 @@ Disadvantages:
 
 @itemize @bullet{}
 @item
+@cpindex Flexibility
+@cpindex Code quality
+@cpindex Quality of code
 Cannot be networked without exposing an alternative
 display server protocol.
 @end itemize
@@ -10467,7 +10550,7 @@ performing gaming consoles.
 
 X.org is been critiqued for several shortcoming, some
 of which have caused people to start on new display
-servers replace X.org. This chapter will list some
+servers to replace X.org. This chapter will list some
 issues and discuss how they can be avoided in mds.
 
 @menu
@@ -10587,6 +10670,7 @@ in the server.
 @node Why Not Wayland
 @section Why Not Wayland
 
+@cpindex Wayland
 Development of @command{mds} started out of
 concern that Wayland would not meet our needs,
 and the knowledge that X does not. We are now
@@ -10595,6 +10679,7 @@ less than X.@footnote{Not even counting that
 the documentation for Wayland is way more lacking
 that X's documentation.}
 
+@cpindex Flexibility
 Wayland only has protocols for drawing onto a
 buffer and input devices, and some very limited
 output protocols. Wayland is inherently inflexible.
@@ -10628,11 +10713,13 @@ communicate with it.
 @node Why Not Mir
 @section Why Not Mir
 
+@cpindex Mir
 The major problem with Mir, and why we need
 @command{mds} instead, is that contributions
 to Mir are subject Canonical's
 contributions-limiting agreement (CLA).
 
+@cpindex Flexibility
 Mir, like Wayland, is very limited. Mir is however
 easier to extend. Ignoring the CLA, Mir is better
 Wayland, but for similar reasons it is still not
