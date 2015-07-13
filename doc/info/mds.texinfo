@@ -10564,6 +10564,10 @@ issues and discuss how they can be avoided in mds.
 @node Automatic Cleanup
 @subsection Automatic Cleanup
 
+@cpindex Automatic cleanup
+@cpindex Cleanup, automatic
+@cpindex Resolution change
+@cpindex Games
 A common critique of X.org is that the monitor resolution
 is not restored if a game change the resolution and for
 some reason, for instance a software crash, does not switch
@@ -10577,31 +10581,35 @@ an X.org server to switch back if the connection between
 the program and server is lost. This is easily fixed by
 adding a lifespan parameter as found in @ref{set-gamma}.
 
+@cpindex Gamma correction
 A similar critique of X.org is that gamma ramps are not
 restored when an application exits. Either the ones
 complaining about this do not understand why gamma ramps
 exists, namely so you can calibrate the monitor's output
 in respect to the colours, and just think it is a way
 to make the video in games brighter. Or they think we
-should have daemons running ideally to have gamma
-adjustments. Or, more likely and more validly, its is
-poorly phrased and they actually want a way for
-applications, like games, to inform the display server
-to undo its modifications to the gamma ramps when the
-program exits. This is already supported by the mds
-protocol.
+should have daemons running idly to have gamma adjustments.
+Or, more likely and more validly, its is poorly phrased
+and they actually want a way for applications, like games,
+to inform the display server to undo its modifications to
+the gamma ramps when the program exits. This is already
+supported by the mds protocol.
 
 
 
 @node Input Problems
 @subsection Input Problems
 
+@cpindex Grab, input
+@cpindex Keyboard, grab
+@cpindex Mouse, grab
+@cpindex Input grabbing
 X11 allows programs to exclusively grab keyboard
 and mouse input. When a program that does this
 misbehaves or become unresponsive, you cannot do
 anything but manage it from another computer or
 restart the computer. In mds exclusively grabbing
-is achieved buy setting the client priority for
+is achieved by setting the client priority for
 the related message to the highest priority.
 @footnote{If multiple clients do this, it is
 arbitrary who gets the message first and can stop
@@ -10642,20 +10650,30 @@ use the latin alphabet.
 @node Other Issues
 @subsection Other Issues
 
+@cpindex Re-executing servers
+@cpindex Updating, online
+@cpindex Online updating
+@cpindex Version update
+@sgindex @code{SIGUSR1}
+@sgindex @code{SIGUPDATE}
 X11 display servers do not let you upgrade or
 otherwise replace graphics drivers online. Or other
 parts of it. X11 display servers could allow you to
-send a signal, for instance SIGUSR1, to upgrade the
-whole server, however this is not favourable, and
+send a signal, for instance @code{SIGUSR1}, to upgrade
+the whole server, however this is not favourable, and
 X.org does not do this. The reference implemention
 of the mds protocol lets you safely upgrade any part
-of it online by sending SIGUSR1 to the server that
-should be upgraded. On catastrophic failure in this
-process the server would restart and lose volatile
+of it online by sending @code{SIGUSR1} to the server
+that should be upgraded. On catastrophic failure in
+this process the server would restart and lose volatile
 data, but the server should be upgraded and it would
 ask all running clients for resend information the
 server lost.
 
+@cpindex Threading
+@cpindex Multi-threading
+@cpindex Pervasively parallel processing
+@cpindex Pervasive threading
 Another issue with X.org is that it is not
 multithreaded, which can cased intensive programs
 to freeze your desktop. mds is inherently pervasively
