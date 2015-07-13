@@ -3718,14 +3718,14 @@ The entry will also be removed, unless
 @code{Time to live: forever} is used, if the server
 crashes or is re-executed.
 
-@sgindex @code{SIGARLM}
+@sgindex @code{SIGALRM}
 It is up to the implementation to choose when the
 removal actually takes place. For example, the reference
 implementation will pop entries that have timed out when
 a new entry is added, the reading on the clipstack is
 requested or the server is reexecuted, but another
 implement may choose to pop entires asynchronously using
-another thread or an alarm an pop when @code{SIGARLM} is
+another thread or an alarm an pop when @code{SIGALRM} is
 received.
 
 Available and optional if the @code{Action: add} is
