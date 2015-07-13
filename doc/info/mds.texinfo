@@ -6752,7 +6752,11 @@ Right @kbd{super} key
 @node Keyboard Layouts
 @chapter Keyboard Layouts
 
-Keyboard layouts as compiled from one or more files.
+@cpindex Keyboard layouts, files
+@cpindex Keyboard layouts, compile
+@cpindex Compiling keyboard layouts
+@fnindex @command{mds-kbdc}
+Keyboard layouts are compiled from one or more files.
 When compiling a layout from multiple files, it is
 important that the files are specified in the correct
 order. The general rule is that the layout file,
@@ -6783,9 +6787,11 @@ and not in the layouts.
 @node Keyboard Layout Syntax
 @section Keyboard Layout Syntax
 
+@cpindex Keyboard layout, files, syntax
+@cpindex Syntax of keyboard layout file
 Similar to the C programming language, keyboard layout
 files are parsed from the top down. This means that any
-function or macro can only be used from lines beload
+function or macro can only be used from lines below
 the definition of said callable. However, the order of
 the mapping statements themself, in respect to each
 other, does not matter. Additionally, the layout files
@@ -6877,6 +6883,8 @@ If we want to add a mapping to @kbd{ultra} from
 @code{-altgr} means that @kbd{altgr} should
 not be reported as held down.
 
+@cpindex Lock keys
+@cpindex Keys, lock
 As can be seen in these examples it is not
 possible to distinguish between modifiers
 and keys. It is up to the keyboard layout
@@ -6937,6 +6945,12 @@ Special characters like simple double quotes,
 backspace and, in @code{<>}-notation, greater than
 sign must be escaped with a prepending backslash.
 
+@cpindex Dead keys
+@cpindex Compose key
+@cpindex Modifier keys
+@cpindex Keys, dead
+@cpindex Keys, compose
+@cpindex Keys, modifiers
 Many keyboard layouts also have dead keys.
 Dead keys are keys that affect the next key-press.
 For example, `´' followed by `e' may product `é'.
@@ -6951,6 +6965,8 @@ keycode 125, as a dead keys write
 <keycode 125> : <dead compose>
 @end example
 
+@cpindex Duplicate keys
+@cpindex Keys, duplicates
 Some may appear on multiple locations on the keyboard,
 for example, there may be a left and a right shift key,
 and a normal return key and one on the keypad:
@@ -6962,6 +6978,8 @@ and a normal return key and one on the keypad:
 <keycode 96> : <keypad return>
 @end example
 
+@cpindex Arrow keys
+@cpindex Keys, arrows
 Because @code{<left>} and @code{<right>} are
 valid keys --- they are arrow keys --- it is
 importatn to place them directly before the
@@ -6976,6 +6994,13 @@ goes first.
 @node Sequence Mapping
 @subsection Sequence Mapping
 
+@cpindex Dead keys
+@cpindex Compose key
+@cpindex Keys, dead
+@cpindex Keys, compose
+@cpindex Compose tables
+@cpindex Key sequences
+@cpindex Sequence, keys
 Compose tables use mapping statements to map
 key sequences. For example the compose key
 followed by two `s':es makes an `ß':
@@ -6998,7 +7023,7 @@ a sequence:
 <super tab> : <tab> <tab> <tab> <tab>
 @end example
 
-En alternative to @kbd{compose} as a dead key,
+An alternative to @kbd{compose} as a dead key,
 is @kbd{compose} as a modifier. If you use this,
 the compose table need to be written for just
 that. There two ways do this this. Either you
@@ -7034,6 +7059,11 @@ you can write
 <dead compose> ("S" "|") : "$"
 @end example
 
+@cpindex Key subsequences, unordered
+@cpindex Subsequence, unordered, keys
+@cpindex Unordered subsequence, keys
+@cpindex Alternation, keys
+@cpindex Key alternations
 @code{( )} denotes an unordered subsequence.
 You can also use @code{[ ]} for alternation.
 For example, instead of
@@ -7109,6 +7139,8 @@ double brackets:
 @node Keyboard Layout Identification
 @subsection Keyboard Layout Identification
 
+@cpindex Keyboard layout identification
+@cpindex Identification of keyboard layouts
 Whilst it is possible to write a comment
 that states what keyboard layout a file
 implements, there is a standardise way
@@ -7132,6 +7164,12 @@ information
 end information
 @end example
 
+@cpindex Keyboard layout country
+@cpindex Keyboard layout language
+@cpindex Keyboard layout variant
+@cpindex Country, keyboard layout
+@cpindex Language, keyboard layout
+@cpindex Variant, keyboard layout
 If the layout is used multiple countries,
 or even for multiple lanuages, @code{country}
 and @code{language} may be specified on
@@ -7181,6 +7219,9 @@ end information
 @node Layout Assumptions
 @subsection Layout Assumptions
 
+@cpindex Keyboard layout, file inclusion
+@cpindex File inclusion, keyboard layout
+@cpindex Inclusion of file, keyboard layout
 When writing generic compose tables it can be helpful
 to let the compiler assume that a certain set of keys
 will be provided by the layout file and not making
@@ -7219,6 +7260,9 @@ end assumption
 @node Include Statement
 @subsection Include Statement
 
+@cpindex Keyboard layout, file inclusion
+@cpindex File inclusion, keyboard layout
+@cpindex Inclusion of file, keyboard layout
 Writing layout files from scratch is probably something
 you want to avoid. For instance you would we need to
 create mappings for `A' to `Z' and `0' to `9' (assuming
@@ -7243,6 +7287,8 @@ include "../common/base"
 @node Layout Macros and Functions
 @subsection Layout Macros and Functions
 
+@cpindex Keyboard layout, macros
+@cpindex Macros, keyboard layout
 There is a lot of repetitive work in layouts, for instance
 all letters need mapping for any combination of use of
 @kbd{shift} and @kbd{compose}. To reduce this, you can
@@ -7310,6 +7356,8 @@ letter("ö" "Ö")
 @code{\add( )} and @code{\sub( )} are calls to two
 built-in functions named `add/2' and `sub/2'.
 
+@cpindex Alternation, keys
+@cpindex Key alternations
 Alternation can be used to invoke a macro:
 
 @ifset AFOURPAPER
@@ -7326,6 +7374,8 @@ letter(["u" "v" "w" "x" "y" "z"])
 @end example
 @end ifclear
 
+@cpindex Alternation, keys
+@cpindex Key alternations
 You may use `.' in an alternation, in that case
 macro is called once with the argument, causing it
 to invoke for example `letter/0' instead of
@@ -7400,6 +7450,9 @@ to or greater than 2 to the power of 31 not
 allowed and can either cause compile-time
 error or erroneous compiled files.
 
+
+@cpindex Keyboard layout, macros
+@cpindex Macros, keyboard layout
 Functions are similar to function macros,
 the difference is that a function is called
 inline and is prefixed with slash, and rather
@@ -7502,6 +7555,10 @@ restricted to the 31:th power of 2.
 @node Escaping
 @subsection Escaping
 
+@cpindex Keyboard layout, Escaping special character
+@cpindex Keyboard layout, special character, escaping
+@cpindex Escaping special character, keyboard layout
+@cpindex Special character, escaping, keyboard layout
 Similar to most, if not all, programming language, a
 backslash inside quotes can be used to parse the next
 character with special meaning. For instance, `\"' is
@@ -7555,12 +7612,17 @@ power of 2 also invoke undefined behaviour.
 @node Builtin Functions
 @section Builtin Functions
 
+@cpindex Keyboard layout, functions, builtin
+@cpindex Keyboard layout, builtin functions
+@cpindex Functions, builtin, keyboard layout
+@cpindex Builtin functions, keyboard layout
 To help you write meaningful functions in your keyboard
 layout files, the compiler defines an almost minimal set
 of basic functions:
 
 @table @code
 @item add/2
+@fnindex @code{add/2}
 The code points in \1 plus the code points of the
 corresponding characters in \2. If \1 and \2 are
 not of the same length, the returned string will
@@ -7568,50 +7630,65 @@ be of the length of the longer of the parameters,
 and modulo is used to map to the corresponing
 character.
 @item sub/2
+@fnindex @code{sub/2}
 Like `add/2' but subtraction.
 @item mul/2
+@fnindex @code{mul/2}
 Like `add/2' but multiplication.
 @item div/2
+@fnindex @code{div/2}
 Like `add/2' but division.
 @item mod/2
+@fnindex @code{mod/2}
 Like `add/2' but modulo.
 @item rsh/2
+@fnindex @code{rsh/2}
 Like `add/2' but rightward bitwise shift.
 If a character in \2 is has a code point
 greater than 30, undefined behaviour is
 invoked.
 @item lsh/2
+@fnindex @code{lsh/2}
 Like `add/2' but leftward bitwise shift.
 If a character in \2 is has a code point
 greater than 30, undefined behaviour is
 invoked.
 @item or/2
+@fnindex @code{or/2}
 Like `add/2' but bitwise OR.
 @item and/2
+@fnindex @code{and/2}
 Like `add/2' but bitwise AND.
 @item xor/2
+@fnindex @code{xor/2}
 Like `add/2' but bitwise XOR.
 @item not/1
+@fnindex @code{not/1}
 For each character in \1, evaluate to
 zero if the character is not zero, and
 one if the character is zero.
 @item equals/2
+@fnindex @code{equals/2}
 For each character, evalute to one if
 the characters in \1 and \2 are equal
 and zero otherwise.
 @item greater/2
+@fnindex @code{greater/2}
 Like `equals/2' but \1 greater than \2
 rather than \1 equals \2.
 @item less/2
+@fnindex @code{less/2}
 Like `equals/2' but \1 less than \2
 rather than \1 equals \2.
 @item set/3
+@fnindex @code{set/3}
 Set the element with index \2, in the
 array with variable index \1, to \3,
 and return \3.
 For example @code{\set(1 0 4)} sets the
 first element in \1 to 4.
 @item get/2
+@fnindex @code{get/2}
 Return the element with index \2 in the
 array with variable index \1.
 For example after @code{\set(1 0 4)} or
