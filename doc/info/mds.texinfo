@@ -145,7 +145,7 @@ Rather than one, possibly modular, process --- a monolithic
 process --- @code{mds} is comprised of many small servers,
 each exchangable and responsible for one thing.
 
-@cindex Goals of @command{mds}
+@cpindex Goals of @command{mds}
 @command{mds}'s goal is neither security, performance nor
 a perfect graphical experience. @command{mds} is all
 about flexibility and freedom 0@footnote{The freedom to run
@@ -1841,6 +1841,7 @@ information.
 @pgindex @command{mds-kbdbind}
 @pgindex @command{xbindkeys}
 @pgindex @command{dmenu}
+@cpindex Hotkeys
 @cpindex Keyboard bindings
 @cpindex Bindings, keyboard
 @cpindex Layout, keyboard, switching
@@ -10238,10 +10239,11 @@ as one binary.
 @cpindex Wayland
 @cpindex Weston
 @cpindex Surface Flinger
+@cpindex Andriod/Linux, Surface Flinger
 @cpindex Quartz Compositor
-@cpindex Desktop Window Manager
 @cpindex Mac OS X, Quartz Compositor
 @cpindex OS X, Quartz Compositor
+@cpindex Desktop Window Manager
 @cpindex Windows, Desktop Window Manager
 Implementations: X11@footnote{X11 is a protocol, I beleave
 all X11 servers are monolithic, atleast the major ones are},
@@ -10753,6 +10755,9 @@ MIT license, and hopefully we can steal some stuff.
 @node Desktop Environments
 @section Desktop Environments
 
+@cpindex Goals of @command{mds}
+@cpindex Desktop environments
+@cpindex Environment, desktop
 A design goal of @command{mds} is to bring unity
 to the graphical environment. Something desktop
 environments traditionally have been impairing.
@@ -10800,12 +10805,12 @@ A bunch of random graphical tools
 This is absolute madness, a waste of time
 and creates fragmentation.
 
-There is no problem of a desktop environment
+There is no problem for a desktop environment
 development team to implement all this for
 their desktop environment for @command{mds}.
 However doing so is discourage for the mentioned
 reasons as well as because doing so means that
-the use needs to know what not too launch,
+the user needs to know what not to launch,
 that is, what the desktop environment will start.
 
 @menu
@@ -10820,6 +10825,12 @@ that is, what the desktop environment will start.
 @node Window Management
 @subsection Window Management
 
+@cpindex Window management
+@cpindex Widdow layout managers
+@cpindex Hotkeys
+@cpindex Keyboard bindings
+@cpindex Bindings, keyboard
+@pgindex @command{mds-keybind}
 For @command{mds}, a desktop environment should
 not have its own window layout manager. A better
 solution is to have a few well written window
@@ -10832,25 +10843,28 @@ messaging system for such commands, and
 @command{mds-keybind} or similar server should
 be configured with all hotkeys.
 
+@cpindex Window decorators
+@cpindex Decorators, windows
 There are a few classes of window decorator.
 A desktop environment still do not need its
 own. They can however create themes for existing
 decorators. What we need here is a small set
 of window decorators that are very customisable.
 
+@cpindex Workspaces
+@cpindex Pagers
 Workspaces in X is poorly done. Window managers
 implement it, and pagers are window manager
 dependent@footnote{Well, there is Extended Window
-Manager Hints (EWMH), but for it is very
-restrictly.}. Yet there are very few properties
-they can have:
+Manager Hints (EWMH), but it is very restricted.}.
+Yet there are very few properties they can have:
 @itemize @bullet{}
 @item
 Do workspaces span outputs, screens or the display?
 @item
 Are workspaces dependent on outputs, screens or displays?
 @item
-Are workspaces have a geometrical position?
+Do workspaces have a geometrical position?
 @item
 Are new workspaces created when needed?
 @end itemize
@@ -10859,6 +10873,9 @@ these can be configured. And the desktop environments
 can create their own pagers if they see fit, but
 all pagers work everywhere.
 
+@cpindex Compositors
+@cpindex Fancy effects
+@cpindex Effects, fancy
 Traditionally desktop environments wrote their own
 compositor for flash or otherwise fancy effects, or
 write a quirks to a common one so the common on could
@@ -10873,6 +10890,10 @@ want to have, such be no problem.
 @node Application Management
 @subsection Application Management
 
+@cpindex Application management
+@cpindex Taskbars
+@cpindex Extended Window Manager Hints
+@cpindex EWMH (Extended Window Manager Hints)
 Many X desktop environments provide taskbars, where
 all windows are listed. However because of Extended
 Window Manager Hints (EWMH), and the ability to
@@ -10889,10 +10910,13 @@ be about to restrict listed windows to viewed
 workspaces.
 @end itemize
 
+@cpindex Status icon tray
+@cpindex System tray
+@cpindex Tray, status icons
 Traditionally, status icon trays have been
 implemented with window embed method. And apart
 from there being two competing standard, this
-is be pretty sane. But ther have been some
+is pretty sane. But ther have been some
 restrictions @command{mds} does not suffer:
 @itemize @bullet{}
 @item
@@ -10908,6 +10932,10 @@ application menus. This functionally is already
 de facto standardised, and there is no reason to
 change anything.
 
+@cpindex Startup of applications, automatic
+@cpindex Automatic startup of application
+@cpindex Application, startup, automatic
+@pgindex @file{mdsinitrc}
 Some desktop environments provide a method to for
 automatically starting applications during the
 startup of a desktop environment. This is
@@ -10919,6 +10947,12 @@ edit @file{~/.mdsinitrc}.
 @node Input Management
 @subsection Input Management
 
+@cpindex Input management
+@cpindex Window management
+@cpindex Hotkeys
+@cpindex Keyboard bindings
+@cpindex Bindings, keyboard
+@pgindex @command{mds-keybind}
 Many desktop environments and window managers
 for X implement global keyboard bindings.
 This is not how you should do this. The servers
@@ -10927,6 +10961,18 @@ should recognise commands passed via
 Configurations of the keyboard bindings should
 be done in a server like @command{mds-keybind}.
 
+@pgindex @command{mds-ratbind}
+@cpindex Rat bindings
+@cpindex Mouse bindings
+@cpindex Pointer bindings
+@cpindex Hotcorners
+@pgindex @command{mds-ratbarrier}
+@cpindex Cursor barriers
+@cpindex Rat pointer barriers
+@cpindex Mouse pointer barriers
+@cpindex Pointer barriers
+@cpindex Screen edges, barriers
+@cpindex Barriers, rat
 Similarily some desktop environments implement
 rat bindings@footnote{Notably hot corners.} and
 rat barriers. This too should be done via servers
@@ -10938,6 +10984,11 @@ like like @command{mds-ratbind} and like
 @node The Desktop
 @subsection The Desktop
 
+@cpindex Desktop
+@cpindex File manager
+@cpindex Background
+@cpindex Root window
+@cpindex Window, root
 Desktop environments provide their own desktop
 because they want it to fit the rest of the
 environment. For example, it can use components
@@ -10949,6 +11000,8 @@ also implemented on top of the root windows.
 background and let the root window be used for
 implementing the background.
 
+@cpindex Desktop widgets
+@cpindex Widgets, desktop
 Additionally, some desktop environments provide
 desktop widgets. These can either be drawn on
 the root window, the desktop window or as
