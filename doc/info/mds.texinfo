@@ -927,6 +927,16 @@ included in the header.
 @node Interception
 @section Interception
 
+@cpindex Interceptions, message passing
+@cpindex Message passing, message modification
+@cpindex Communication, message modification
+@cpindex Interprocess communication, message modification
+@cpindex Message modification, message passing
+@cpindex Interceptions, eavesdropping
+@cpindex Message passing, eavesdropping
+@cpindex Communication, eavesdropping
+@cpindex Interprocess communication, eavesdropping
+@cpindex Eavesdropping, message passing
 As discussed in @ref{Interprocess Communication},
 interception in the primary feature of
 @command{mds}'s message passing system.
@@ -938,7 +948,7 @@ never anticipated. As an example of its
 power, @command{mds} does not provide any
 protocol for taking screenshots or recording
 a session. Instead, a screenshot application
-signs up for messages pass between the
+signs up for messages passed between the
 compositor and presentation servers, and
 simply requests that the compositor resends
 the screen, a feature intended for the
@@ -1113,6 +1123,8 @@ Modify: no\n
 \n
 @end example
 
+@cpindex Message consumption, message passing
+@cpindex Consumption, interception, message passing
 There is also a third option:
 to consume to the message. This
 stops any further clients from
@@ -1132,6 +1144,8 @@ header--value pair @code{Length: 0},
 it is however redundant and
 discouraged.
 
+@cpindex Interception priority, message passing
+@cpindex Priority, interception, message passing
 This mechanism of being able to
 modify message does not make much
 sense unless you can control in
@@ -11540,7 +11554,6 @@ TODO application menu features:
 TODO In `Rat Cursors` use anchors and references to hyperlink names.
 
 TODO Indices:
-  Protocol → Interception
   Protocols
   Default Keyboard Layouts
   Specifications → Rat Cursors
