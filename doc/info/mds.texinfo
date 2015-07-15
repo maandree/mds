@@ -11498,5 +11498,12 @@ TODO application menu features:
   different ways to start an program, for example,
     browers may include a safe-browsing mode.
 
-In `Rat Cursors` use anchors and references to hyperlink names.
+TODO In `Rat Cursors` use anchors and references to hyperlink names.
+
+TODO Indices:
+  Protocol → Message Passing
+  Protocol → Interception
+  Protocols
+  Default Keyboard Layouts
+  Specifications → Rat Cursors
 
