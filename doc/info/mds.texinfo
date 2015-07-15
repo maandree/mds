@@ -342,7 +342,10 @@ of crashing.
 @cpindex Layers, architecture
 @cpindex Architectural layers
 @cpindex Kernel
+@cpindex Display server kernel
+@pgindex @command{mds}
 @cpindex Master server
+@pgindex @command{mds-server}
 The @command{mds} display server in architectured in
 three layers. The first layer is called the kernel.
 The kernel is responsible for acquiring a display
@@ -363,6 +366,7 @@ mission falls to the master server.
 @cpindex Message passing, coordination
 @cpindex Communication, coordination
 @cpindex Interprocess communication, coordination
+@pgindex @command{mds-server}
 The second layer is the master server. The master
 server has two responsibilities: coordinating
 message passing between other servers and clients
@@ -399,6 +403,7 @@ of the display server.
 @cpindex Communication, mechanism
 @cpindex Interprocess communication, mechanism
 @cpindex Master server
+@pgindex @command{mds-server}
 Intrinsic to @command{mds} is a powerful
 interprocess communication mechanism. Servers
 and clients connect to the display server by
@@ -424,6 +429,7 @@ Join or leave a multicast group.
 @cpindex Assignment of ID
 @cpindex Disconnection
 @cpindex Master server
+@pgindex @command{mds-server}
 Upon assignment of an ID the master server
 will automatically place the client in a
 multicast group for that specific client.
@@ -439,6 +445,7 @@ the client, refered to by it's ID, have closed.
 @cpindex Interprocess communication, message structure
 @cpindex Message structure, message passing
 @cpindex Master server
+@pgindex @command{mds-server}
 A message in the @command{mds} protocol is
 comprised of two parts: headers and a payload.
 When a client joins a multicast group it is
@@ -456,6 +463,7 @@ multicasted to groups indicated by its headers.
 @cpindex Interprocess communication, message modification
 @cpindex Message modification, message passing
 @cpindex Master server
+@pgindex @command{mds-server}
 @cpindex Multicast groups
 The multicast groups and receiving of message
 is called interceptions. The interesting
@@ -700,6 +708,8 @@ unavailable when running under @command{valgrind}.
 @cpindex Interprocess communication, filesystem
 @cpindex Filesystem
 @cpindex Kernel
+@cpindex Display server kernel
+@pgindex @command{mds}
 The @command{mds} kernel creates two directories
 for the @command{mds} servers to use: one for
 runtime data and one for temporary data.
@@ -756,6 +766,12 @@ its servers and clients.
 @node Message Passing
 @section Message Passing
 
+@cpindex Message passing, display
+@cpindex Communication, display
+@cpindex Interprocess communication, display
+@cpindex Kernel
+@cpindex Display server kernel
+@pgindex @command{mds}
 Message passing over domain sockets is the
 underlaying technique for communicating with
 the display server. To communicate with the
@@ -764,6 +780,10 @@ must connect to the domain socket created by
 the display server kernel as named in
 @ref{Filesystem}.
 
+@cpindex Connecting to the display
+@cpindex Client ID assignment
+@cpindex ID assignment
+@cpindex Assignment of ID
 Clients should request a unique ID when it
 connects to the display server.@footnote{There
 is seldom a reason for servers to do this.}
@@ -777,6 +797,9 @@ Message ID: 0\n
 @end group
 @end example
 
+@cpindex Message ID
+@cpindex Message corruption
+@cpindex Corrupt messages
 where @code{\n} is an LF-line break.
 The value on the @code{Message ID} line
 does not need to be 0, but servers and
@@ -787,13 +810,17 @@ must contain this @code{Message ID} header,
 otherwise the message is considered corrupt
 and is ignored.
 
+@cpindex Message structure
+@cpindex Message passing, message structure
+@cpindex Communication, message structure
+@cpindex Interprocess communication, message structure
 The empty line signifies the end of the
 header list, and in this case the end of
 the message. But a message may contain
 payload beneath this empty line. To
 include a payload, add the header
 @code{Length} that says how many bytes
-the payload is comprised of.
+the payload is comprised.
 
 A header must contain a header name and
 header value without any trailing or
@@ -801,6 +828,11 @@ leading spaces, and `: ' (colon, one
 regular blank space) exactly delimits
 the name and the value.
 
+@cpindex Master server
+@pgindex @command{mds-server}
+@cpindex Client ID assignment
+@cpindex ID assignment
+@cpindex Assignment of ID
 When the master server receives this
 @code{Command: assign-id} message it
 will assign the client a unique ID
@@ -827,6 +859,7 @@ In response to: 0\n
 @end group
 @end example
 
+@cpindex Message ID
 Notice that the master server never
 includes @code{Message ID} in message
 originating from it.
@@ -837,12 +870,13 @@ a colon (`:'). Both of these integers
 are unsigned 32-bit integers. This is
 done this way because unsigned 64-bit
 integers are forbidden because it is
-not supportable natively be some
+not supported natively be some
 programming languages.
 
 Before a client has gotten a unique client
 ID assigned to it, it will be `0:0'.
 
+@cpindex Disconnection
 If a client gets disconnected from the
 master server, the master server will
 sends out a signal header message.
@@ -868,6 +902,10 @@ Client closed: 0:0\n
 @end group
 @end example
 
+@cpindex Addressing message
+@cpindex Message passing, addressing
+@cpindex Communication, addressing
+@cpindex Interprocess communication, addressing
 Once a client has an unique client ID
 assigned to it, it should always include
 the header @code{Client ID} in its
@@ -1688,6 +1726,7 @@ to starta process in a new process group.
 @pgindex @command{mds}
 @pgindex @command{mds-server}
 @cpindex Kernel
+@cpindex Display server kernel
 @cpindex Master server
 An @command{mds} display server instance is comprised of
 multiple small servers that each implements a small part
@@ -11501,7 +11540,6 @@ TODO application menu features:
 TODO In `Rat Cursors` use anchors and references to hyperlink names.
 
 TODO Indices:
-  Protocol → Message Passing
   Protocol → Interception
   Protocols
   Default Keyboard Layouts
