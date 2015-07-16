@@ -264,65 +264,73 @@ libraries and concepts.
 @node Overview
 @chapter Overview
 
-@command{mds}@footnote{mds stands for micro-display server.}
-is a display server protocol and an implementation of said
-protocol. What makes @command{mds} stand out is its core
-design choice: it is desigend just like a microkernel.
-Rather than one, possibly modular, process --- a monolithic
-process --- @code{mds} is comprised of many small servers,
-each exchangable and responsible for one thing.
+@command{mds}@footnote{mds stands for micro-display
+server.} is a display server protocol and an
+implementation of said protocol. What makes
+@command{mds} stand out is its core design choice:
+it is desigend just like a microkernel. Rather than
+one, possibly modular, process --- a monolithic
+process --- @code{mds} is comprised of many small
+servers, each exchangable and responsible for one
+thing.
 
 @cpindex Goals of @command{mds}
-@command{mds}'s goal is neither security, performance nor
-a perfect graphical experience. @command{mds} is all
-about flexibility and freedom 0@footnote{The freedom to run
-the program as you wish, for any purpose.}.
+@command{mds}'s goal is neither security, performance
+nor a perfect graphical experience. @command{mds} is
+all about flexibility and freedom 0@footnote{The
+freedom to run the program as you wish, for any
+purpose.}.
 
-The reason for having a display server architectured as a
-microkernel is so that components can be added, removed,
-updated and replaced online. Additionally, the message passing
-between the servers makes it easy to design a system that
-lets you make clients that can listen on messages between
-the servers and perhaps modify them. This enables you to
-do so much more with your display server. Moreover, if
-a single part of the system crashes it does not bring down
-the whole system, and the crashed server can be respawned
-with minor side effects. @command{mds} is architectured
-in three layers: a microkernel, a master server and a
-collection of servers. And clients are actually located
-on the same layer as the servers, because there is no
-actual difference, the only thing that separates a server
-from a client is for what purpose you run it. @command{mds}'s
-kernel is a minimal program that do initialisation of the
-display, such as giving it an index and create runtime
-files and directories for servers and other programs
-to use. Then the kernel creates a domain socket for the
-master server and spawns the master server and respawns
-it if it crashes. Because of this, if the master server
-crashes it will not lose its socket when it is respawned.
-The master server then, on its initial spawn, starts
-the all servers and other programs that the user have
-choosen and then starts accepting connections to it and
-coordinates messages between servers and clients. Further,
-separating all components into separate processes enables
-us to only give the servers the privileges they actually
-need, rather than having one program with root privileges
-that takes care of everything even things that do not do
-require any privileges.
+The reason for having a display server architectured
+as a microkernel is so that components can be added,
+removed, updated and replaced online. Additionally,
+the message passing between the servers makes it easy
+to design a system that lets you make clients that
+can listen on messages between the servers and
+perhaps modify them. This enables you to do so much
+more with your display server. Moreover, if a single
+part of the system crashes it does not bring down the
+whole system, and the crashed server can be respawned
+with minor side effects. @command{mds} is
+architectured in three layers: a microkernel, a
+master server and a collection of servers. And
+clients are actually located on the same layer as the
+servers, because there is no actual difference, the
+only thing that separates a server from a client is
+for what purpose you run it. @command{mds}'s kernel
+is a minimal program that do initialisation of the
+display, such as giving it an index and create
+runtime files and directories for servers and other
+programs to use. Then the kernel creates a domain
+socket for the master server and spawns the master
+server and respawns it if it crashes. Because of
+this, if the master server crashes it will not lose
+its socket when it is respawned. The master server
+then, on its initial spawn, starts the all servers
+and other programs that the user have choosen and
+then starts accepting connections to it and
+coordinates messages between servers and clients.
+Further, separating all components into separate
+processes enables us to only give the servers the
+privileges they actually need, rather than having
+one program with root privileges that takes care of
+everything even things that do not do require any
+privileges.
 
-All @command{mds}'s servers, that is all running parts of
-@command{mds} except the kernel, are designed so that they
-can re-execute themself so that they can be updated online
-without any side effects. Servers serialises their state,
-saves it to RAM (in a directory created by the kernel),
-re-execute themself and loads their serialised state. The
-kernel cannot do this because when it has spawned the
-master server it has no reason to re-execute, its only mission
-is to respawn the master server it if would happen to crash.
-It would technically be possible to enable the kernel to
-re-execute but it is not worth it as there is no reason to
-re-execute, and doing so puts the display server at risk
-of crashing.
+All @command{mds}'s servers, that is all running
+parts of @command{mds} except the kernel, are
+designed so that they can re-execute themself so that
+they can be updated online without any side effects.
+Servers serialises their state, saves it to RAM (in a
+directory created by the kernel), re-execute themself
+and loads their serialised state. The kernel cannot
+do this because when it has spawned the master server
+it has no reason to re-execute, its only mission is
+to respawn the master server it if would happen to
+crash. It would technically be possible to enable the
+kernel to re-execute but it is not worth it as there
+is no reason to re-execute, and doing so puts the
+display server at risk of crashing.
 
 
 
@@ -349,18 +357,18 @@ of crashing.
 The @command{mds} display server in architectured in
 three layers. The first layer is called the kernel.
 The kernel is responsible for acquiring a display
-server index@footnote{As with any display server,
-the system can have multiple instances of
-@command{mds} running at the same time.}, set up
-environment variables to indicate which display
-server and display server instance is being used,
-create a domain socket for the display server and
-start the master server and restart it if it crashes,
-and then clean up the system when the display server
-closes. The kernel only responsible for creating
-the domain socket for communication with the display
-server, it is not responsible for using it, that
-mission falls to the master server.
+server index@footnote{As with any display server, the
+system can have multiple instances of @command{mds}
+running at the same time.}, set up environment
+variables to indicate which display server and
+display server instance is being used, create a
+domain socket for the display server and start the
+master server and restart it if it crashes, and then
+clean up the system when the display server closes.
+The kernel only responsible for creating the domain
+socket for communication with the display server, it
+is not responsible for using it, that mission falls
+to the master server.
 
 @cpindex Master server
 @cpindex Message passing, coordination
@@ -372,22 +380,22 @@ server has two responsibilities: coordinating
 message passing between other servers and clients
 @footnote{In @command{mds} there is no functional
 distinction between servers and clients, the
-distinction is purely semantic.} and starting
-other servers.
+distinction is purely semantic.} and starting other
+servers.
 
 @cpindex Starting of servers
 @cpindex Servers, starting
 @pgindex @file{mdsinitrc}
 The third layer is the other servers and clients.
-protocolwise there is no specification on how
-they are started. But in the reference
-implementation of the master server, this is
-done by starting a shell script with the
-pathname @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}
-and the user is responsible for providing the
-logic in that shell script.@footnote{Moonstruck
-users are allowed to implement this in C
-or any other language of their choosing.}
+protocolwise there is no specification on how they
+are started. But in the reference implementation of
+the master server, this is done by starting a shell
+script with the pathname
+@file{$@{XDG_CONFIG_HOME@}/mdsinitrc} and the user
+is responsible for providing the logic in that shell
+script.@footnote{Moonstruck users are allowed to
+implement this in C or any other language of their
+choosing.}
 @c Which is better: cray-cray users, lunatic users,
 @c moonstruck users, insane users, ballers, madmen,
 @c loony tunes, systemd-lovers?
@@ -404,21 +412,18 @@ of the display server.
 @cpindex Interprocess communication, mechanism
 @cpindex Master server
 @pgindex @command{mds-server}
-Intrinsic to @command{mds} is a powerful
-interprocess communication mechanism. Servers
-and clients connect to the display server by
-connecting to a domain socket served by the
-master server. A server or client that has
-connected to the display server can do three
-things:
+Intrinsic to @command{mds} is a powerful interprocess
+communication mechanism. Servers and clients connect
+to the display server by connecting to a domain
+socket served by the master server. A server or
+client that has connected to the display server can
+do three things:
 
 @itemize
 @item
 Request assignment of a unique ID@.
-
 @item
 Multicast a message.
-
 @item
 Join or leave a multicast group.
 @end itemize
@@ -430,15 +435,14 @@ Join or leave a multicast group.
 @cpindex Disconnection
 @cpindex Master server
 @pgindex @command{mds-server}
-Upon assignment of an ID the master server
-will automatically place the client in a
-multicast group for that specific client.
-This automatically multicast group assignment
-is done by the master server simply so you
-as a debugger do not forget to do so. When
-a client is disconnected it will send out a
-message to a specific multicast group that
-the client, refered to by it's ID, have closed.
+Upon assignment of an ID the master server will
+automatically place the client in a multicast group
+for that specific client. This automatically
+multicast group assignment is done by the master
+server simply so you as a debugger do not forget to
+do so. When a client is disconnected it will send
+out a message to a specific multicast group that the
+client, refered to by it's ID, have closed.
 
 @cpindex Message passing, message structure
 @cpindex Communication, message structure
@@ -446,16 +450,16 @@ the client, refered to by it's ID, have closed.
 @cpindex Message structure, message passing
 @cpindex Master server
 @pgindex @command{mds-server}
-A message in the @command{mds} protocol is
-comprised of two parts: headers and a payload.
-When a client joins a multicast group it is
-actually saying that it is interested in
-receiving broadcasts containing a specific header
-or a specific header--value pair, or that it
-is interesting in all messages@footnote{This
-could be used for logging, possibly spying and
-networking.}. Thus a message is automatically
-multicasted to groups indicated by its headers.
+A message in the @command{mds} protocol is comprised
+of two parts: headers and a payload. When a client
+joins a multicast group it is actually saying that
+it is interested in receiving broadcasts containing
+a specific header or a specific header--value pair,
+or that it is interesting in all messages
+@footnote{This could be used for logging, possibly
+spying and networking.}. Thus a message is
+automatically multicasted to groups indicated by its
+headers.
 
 @cpindex Interceptions, message passing
 @cpindex Message passing, message modification
@@ -465,47 +469,41 @@ multicasted to groups indicated by its headers.
 @cpindex Master server
 @pgindex @command{mds-server}
 @cpindex Multicast groups
-The multicast groups and receiving of message
-is called interceptions. The interesting
-property of interceptions is that they may
-be modifying. When a server registers for
-message interception it can say that it wants
-to be able to modify messages. If this is done
-and the server receives a message for which it
-has said it want to be able to modify it,
-the master server will wait for that server
-to respond before it send the message to
-the next server in the interception list.
-The server can choose to do three things
-with a message that it has opted in for
-modification of: leave the message as-is,
-modify the message, or consume the message.
-A message consumption is done by modify
-the message to make it empty. A consumed
-message will not be send to any further
-clients or servers in the interception list.
+The multicast groups and receiving of message is
+called interceptions. The interesting property of
+interceptions is that they may be modifying. When a
+server registers for message interception it can say
+that it wants to be able to modify messages. If this
+is done and the server receives a message for which
+it has said it want to be able to modify it, the
+master server will wait for that server to respond
+before it send the message to the next server in the
+interception list. The server can choose to do three
+things with a message that it has opted in for
+modification of: leave the message as-is, modify the
+message, or consume the message. A message
+consumption is done by modify the message to make it
+empty. A consumed message will not be send to any
+further clients or servers in the interception list.
 
 @cpindex Interception priority, message passing
 @cpindex Priority, interception, message passing
 @cpindex Message consumption, message passing
 @cpindex Consumption, interception, message passing
-To make this mechanism sensible, a server or
-client can set a priority when it registers
-for interception (does not need to be
-modifying.) When a message is broadcasted it
-will be received by all servers in the
-interception except the original sender,
-unless it gets consumes. The order in which
-the master server sends the message to the
-recipients is determined by priority the
-servers registed with. The message first sent
-to the recipients with highest priority and
-last to the recipients with lowest priority,
-and ordered by the priority between those
-priorities. Of two or more servers have the
-same priority the order in which they will
-receive the message, of those recipients,
-is arbitrary.
+To make this mechanism sensible, a server or client
+can set a priority when it registers for interception
+(does not need to be modifying.) When a message is
+broadcasted it will be received by all servers in the
+interception except the original sender, unless it
+gets consumes. The order in which the master server
+sends the message to the recipients is determined by
+priority the servers registed with. The message first
+sent to the recipients with highest priority and last
+to the recipients with lowest priority, and ordered
+by the priority between those priorities. Of two or
+more servers have the same priority the order in
+which they will receive the message, of those
+recipients, is arbitrary.
 
 @pgindex @command{mds-vt}
 @cpindex Virtual terminal, switching
@@ -515,33 +513,29 @@ is arbitrary.
 @cpindex Communication, dual-connection
 @cpindex Interprocess communication, dual-connection
 @cpindex Reflexive connection, message passing
-An interesting property of this mechanism
-is demonstrated in the @command{mds-vt}
-server. Unlike most servers @command{mds-vt}
-maintains two concurrent connections to
-the display. Once @command{mds-vt} receives
-a signal from the OS kernel requesting to
-switch virtual terminal, @command{mds-vt}
-will from one of its connections send
-out a message and wait for it to be
-received in its other connection and the
-let the OS kernel switch virtual terminal.
-The secondary connection to the display
-has registered interception with lower
-priority of the message than the primary
-connection broadcasts. This message will
-be received by other servers that will
-let the message continue to the next
-server in the interception list once that
-server is ready for the OS kernel to switch
-virtual terminal. All of these servers have
-registered modifying interception of the
-message but none of them will actually modify
-or consume the message; it is only used a
-mechanism for letting @command{mds-vt} know
-when all servers are ready for the switch
-without having to know how many they are
-and wait for a reply from all of them.
+An interesting property of this mechanism is
+demonstrated in the @command{mds-vt} server. Unlike
+most servers @command{mds-vt} maintains two
+concurrent connections to the display. Once
+@command{mds-vt} receives a signal from the OS
+kernel requesting to switch virtual terminal,
+@command{mds-vt} will from one of its connections
+send out a message and wait for it to be received
+in its other connection and the let the OS kernel
+switch virtual terminal. The secondary connection to
+the display has registered interception with lower
+priority of the message than the primary connection
+broadcasts. This message will be received by other
+servers that will let the message continue to the
+next server in the interception list once that server
+is ready for the OS kernel to switch virtual
+terminal. All of these servers have registered
+modifying interception of the message but none of
+them will actually modify or consume the message; it
+is only used a mechanism for letting @command{mds-vt}
+know when all servers are ready for the switch
+without having to know how many they are and wait
+for a reply from all of them.
 
 
 
@@ -560,18 +554,18 @@ there are some guildlines you should follow.
 @cpindex Client-side decoration
 @cpindex Server-side decoration
 @cpindex Decoration, guildlines
-@b{Do not create client-side decoration}. Some
-users do not want decorations or wants minimal
-decorations. Windows should look similar, server-side
-decoration helps ensure this. Your client-side
-decorations may not meet the requirements the users
-have. For example, your client-side decoration may
-only support minimise, maximise and close, whilst the
-user may also want, as provided by her decoration
-server, stick, shade and always on top. And it should
-be sufficient to configure your decorations once
-rather once for every toolkit. Additionally, because
-of oversight from developers, client-side decoration
+@b{Do not create client-side decoration}. Some users
+do not want decorations or wants minimal decorations.
+Windows should look similar, server-side decoration
+helps ensure this. Your client-side decorations may
+not meet the requirements the users have. For
+example, your client-side decoration may only support
+minimise, maximise and close, whilst the user may
+also want, as provided by her decoration server,
+stick, shade and always on top. And it should be
+sufficient to configure your decorations once rather
+once for every toolkit. Additionally, because of
+oversight from developers, client-side decoration
 tends to work poorly with tiling window managers.
 
 @item
@@ -582,12 +576,11 @@ tends to work poorly with tiling window managers.
 @b{Do not remember size and position}. Some users
 do not want their programs to remember their size
 and position. There is also a risk that your
-mechanism for implementing this does not account
-for the possibility that outputs may have been
-removed, resized or relocated.
-@command{mds-posmem} can be used if the user wants
-programs to start where they were closed the last
-time they were closed.
+mechanism for implementing this does not account for
+the possibility that outputs may have been removed,
+resized or relocated. @command{mds-posmem} can be
+used if the user wants programs to start where they
+were closed the last time they were closed.
 @end itemize
 
 
@@ -645,16 +638,15 @@ servers collectively.
 @cpindex Version update
 @sgindex @code{SIGUSR1}
 @sgindex @code{SIGUPDATE}
-@command{mds} servers can re-execute into an
-updated version of their binary. This can be
-used to update display server online after
-a new version has been installed. To do this
-send the signal @code{SIGUSR1} to the server
-you want update. If a server does not support
-online updating it will ignore this signal.
+@command{mds} servers can re-execute into an updated
+version of their binary. This can be used to update
+display server online after a new version has been
+installed. To do this send the signal @code{SIGUSR1}
+to the server you want update. If a server does not
+support online updating it will ignore this signal.
 If the operating system defines a signal named
-@code{SIGUPDATE}, this signal is used
-instead of @code{SIGUSR1}.
+@code{SIGUPDATE}, this signal is used instead of
+@code{SIGUSR1}.
 
 @cpindex Signals
 @cpindex Memory release, automatic
@@ -664,11 +656,10 @@ instead of @code{SIGUSR1}.
 @cpindex Releasing memory
 @sgindex @code{SIGDANGER}
 @sgindex @code{SIGRTMIN + 1}
-If you need servers to free up allocated
-memory that they do not use, send the signal
-@code{SIGDANGER}, or if not defined
-@code{SIGRTMIN + 1}. Unimportant servers
-may choose to die on @code{SIGDANGER}@.
+If you need servers to free up allocated memory that
+they do not use, send the signal @code{SIGDANGER}, or
+if not defined @code{SIGRTMIN + 1}. Unimportant
+servers may choose to die on @code{SIGDANGER}@.
 
 @sgindex @code{SIGINFO}
 @sgindex @code{SIGRTMIN + 2}
@@ -676,29 +667,27 @@ may choose to die on @code{SIGDANGER}@.
 @cpindex Statistics dump
 Server may also choose to support the signal
 @code{SIGINFO}, or if not defined
-@code{SIGRTMIN + 2}. It is not expected
-that server do support this signal, but
-thay must not die when received. @code{SIGINFO}
-is send by a user to the server, if she wants
-the server to dump information about the
-server's state or statistics to the TTY@.
+@code{SIGRTMIN + 2}. It is not expected that server
+do support this signal, but thay must not die when
+received. @code{SIGINFO} is send by a user to the
+server, if she wants the server to dump information
+about the server's state or statistics to the TTY@.
 
 @sgindex @code{SIGRTMIN}
 @cpindex No-operation signal
-All servers configured to be interrupted
-when the signal @code{SIGRTMIN} is received.
-No further action is taked. This may be used
-by the user to test that the program supports
-being interrupted. It can also be used by
-the server to interrupt itself from another
+All servers configured to be interrupted when the
+signal @code{SIGRTMIN} is received. No further action
+is taked. This may be used by the user to test that
+the program supports being interrupted. It can also
+be used by the server to interrupt itself from another
 thread.
 
 @pgindex @command{valgrind}
 @sgindex @code{SIGRTMAX}
-@command{valgrind} uses @code{SIGRTMAX} for
-its own internal stuff. Therefore servers must
-not use @code{SIGRTMAX} as it is hence
-unavailable when running under @command{valgrind}.
+@command{valgrind} uses @code{SIGRTMAX} for its own
+internal stuff. Therefore servers must not use
+@code{SIGRTMAX} as it is hence unavailable when
+running under @command{valgrind}.
 
 
 
@@ -710,23 +699,23 @@ unavailable when running under @command{valgrind}.
 @cpindex Kernel
 @cpindex Display server kernel
 @pgindex @command{mds}
-The @command{mds} kernel creates two directories
-for the @command{mds} servers to use: one for
-runtime data and one for temporary data.
-These directories are named by
-@code{MDS_RUNTIME_ROOT_DIRECTORY} and
+The @command{mds} kernel creates two directories for
+the @command{mds} servers to use: one for runtime
+data and one for temporary data. These directories
+are named by @code{MDS_RUNTIME_ROOT_DIRECTORY} and
 @code{MDS_STORAGE_ROOT_DIRECTORY}, respectively,
 by the header file @file{<libmdsserver/config.h>}.
 If the systems runtime data directory is @file{/run}
 and transient temporary data directory is @file{/tmp},
-and the package name of @command{mds} is @command{mds},
-these directories will be @file{/run/mds} and
+and the package name of @command{mds} is
+@command{mds}, these directories will be
+@file{/run/mds} and
 @file{/tmp/.@{system-directory@}.mds}, respectively.
 In @file{/tmp/.@{system-directory@}.mds} the kernel
-will create a directory for the display server instance
-named @file{.data} prefixed by the display server index.
-For example if the display server index is zero,
-temporary data may be stored in
+will create a directory for the display server
+instance named @file{.data} prefixed by the display
+server index. For example if the display server index
+is zero, temporary data may be stored in
 @file{/tmp/.@{system-directory@}.mds/0.data}
 
 @cpindex Re-executing servers
@@ -742,24 +731,22 @@ the POSIX shared memory unit named
 functions for the data type @code{intmax_t}.} is
 replaced with the process ID of the server. This
 file will be bound to the pathname
-@file{/dev/shm/.proc-pid-%ji} if POSIX shared
-memory is stored in @file{/dev/shm} by the
-operating system.
+@file{/dev/shm/.proc-pid-%ji} if POSIX shared memory
+is stored in @file{/dev/shm} by the operating system.
 
-In @code{MDS_RUNTIME_ROOT_DIRECTORY} the kernel
-will create two files. @file{.pid} and @file{.socket},
+In @code{MDS_RUNTIME_ROOT_DIRECTORY} the kernel will
+create two files. @file{.pid} and @file{.socket},
 both prefixed with the display server index
-@footnote{@file{0.pid} and @file{0.socket} if
-the display server index is 0.}. The @file{.pid}
-file contains the process ID of the display server
-and is used by the kernel to figure out whether
-an display server index is still in use or just
-not properly cleaned up. Of course it can be used
-by any program to find the process ID of the
-kernel process of a display server instance.
-The @file{.socket} is the domain socket used
-for communication with the display server and
-its servers and clients.
+@footnote{@file{0.pid} and @file{0.socket} if the
+display server index is 0.}. The @file{.pid} file
+contains the process ID of the display server and is
+used by the kernel to figure out whether an display
+server index is still in use or just not properly
+cleaned up. Of course it can be used by any program
+to find the process ID of the kernel process of a
+display server instance. The @file{.socket} is the
+domain socket used for communication with the display
+server and its servers and clients.
 
 
 
@@ -773,12 +760,11 @@ its servers and clients.
 @cpindex Display server kernel
 @pgindex @command{mds}
 Message passing over domain sockets is the
-underlaying technique for communicating with
-the display server. To communicate with the
-display server in the local machine a process
-must connect to the domain socket created by
-the display server kernel as named in
-@ref{Filesystem}.
+underlaying technique for communicating with the
+display server. To communicate with the display
+server in the local machine a process must connect
+to the domain socket created by the display server
+kernel as named in @ref{Filesystem}.
 
 @cpindex Connecting to the display
 @cpindex Client ID assignment
@@ -800,32 +786,27 @@ Message ID: 0\n
 @cpindex Message ID
 @cpindex Message corruption
 @cpindex Corrupt messages
-where @code{\n} is an LF-line break.
-The value on the @code{Message ID} line
-does not need to be 0, but servers and
-clients often start with 0 and count
-upwards. The value is however bound to
-an unsigned 32-bit integer. All message
-must contain this @code{Message ID} header,
-otherwise the message is considered corrupt
-and is ignored.
+where @code{\n} is an LF-line break. The value on the
+@code{Message ID} line does not need to be 0, but
+servers and clients often start with 0 and count
+upwards. The value is however bound to an unsigned
+32-bit integer. All message must contain this
+@code{Message ID} header, otherwise the message is
+considered corrupt and is ignored.
 
 @cpindex Message structure
 @cpindex Message passing, message structure
 @cpindex Communication, message structure
 @cpindex Interprocess communication, message structure
-The empty line signifies the end of the
-header list, and in this case the end of
-the message. But a message may contain
-payload beneath this empty line. To
-include a payload, add the header
-@code{Length} that says how many bytes
-the payload is comprised.
+The empty line signifies the end of the header list,
+and in this case the end of the message. But a
+message may contain payload beneath this empty line.
+To include a payload, add the header @code{Length}
+that says how many bytes the payload is comprised.
 
-A header must contain a header name and
-header value without any trailing or
-leading spaces, and `: ' (colon, one
-regular blank space) exactly delimits
+A header must contain a header name and header value
+without any trailing or leading spaces, and `: '
+(colon, one regular blank space) exactly delimits
 the name and the value.
 
 @cpindex Master server
@@ -834,22 +815,18 @@ the name and the value.
 @cpindex ID assignment
 @cpindex Assignment of ID
 When the master server receives this
-@code{Command: assign-id} message it
-will assign the client a unique ID
-and send it to the client.@footnote{The
-master server is the only server than
-can address the client uniquely before
-it has an ID, so this part can only
-be implement in the master server.}
-If the client already has an ID, it
-will send back that ID to the client.
-This response consists of two headers
-@code{ID assignment} and @code{In
-response to}, containing the client's
-new (or possibly already assigned) ID
-and the value that was in the
-@code{Message ID} header, respectively.
-For example:
+@code{Command: assign-id} message it will assign the
+client a unique ID and send it to the
+client.@footnote{The master server is the only server
+than can address the client uniquely before it has an
+ID, so this part can only be implement in the master
+server.} If the client already has an ID, it will
+send back that ID to the client. This response
+consists of two headers @code{ID assignment} and
+@code{In response to}, containing the client's
+new (or possibly already assigned) ID and the value
+that was in the @code{Message ID} header,
+respectively. For example:
 
 @example
 @group
@@ -860,29 +837,24 @@ In response to: 0\n
 @end example
 
 @cpindex Message ID
-Notice that the master server never
-includes @code{Message ID} in message
-originating from it.
+Notice that the master server never includes
+@code{Message ID} in message originating from it.
 
-As seen in this example, the client ID
-consists of two integers delimited by
-a colon (`:'). Both of these integers
-are unsigned 32-bit integers. This is
-done this way because unsigned 64-bit
-integers are forbidden because it is
-not supported natively be some
-programming languages.
+As seen in this example, the client ID consists of
+two integers delimited by a colon (`:'). Both of
+these integers are unsigned 32-bit integers. This is
+done this way because unsigned 64-bit integers are
+forbidden because it is not supported natively be
+some programming languages.
 
-Before a client has gotten a unique client
-ID assigned to it, it will be `0:0'.
+Before a client has gotten a unique client ID
+assigned to it, it will be `0:0'.
 
 @cpindex Disconnection
-If a client gets disconnected from the
-master server, the master server will
-sends out a signal header message.
-This header will be @code{Client closed}
-and contain ID of the client that closed.
-For example:
+If a client gets disconnected from the master server,
+the master server will sends out a signal header
+message. This header will be @code{Client closed}
+and contain ID of the client that closed. For example:
 
 @example
 @group
@@ -891,9 +863,8 @@ Client closed: 0:1\n
 @end group
 @end example
 
-Be aware that if a server or client
-closes and does not have a unique client
-ID, this message will be:
+Be aware that if a server or client closes and does
+not have a unique client ID, this message will be:
 
 @example
 @group
@@ -906,21 +877,17 @@ Client closed: 0:0\n
 @cpindex Message passing, addressing
 @cpindex Communication, addressing
 @cpindex Interprocess communication, addressing
-Once a client has an unique client ID
-assigned to it, it should always include
-the header @code{Client ID} in its
-messages. The value of @code{Client ID}
-should be the client's ID@. If a server
-wants to address this client, it should
-include the header @code{To} with the
-value set to the recipient's client ID@.
-Be aware that such message may not be
-sent to that recipient uniquely, any
-server or client is free to sign up
-for receive of such message, any messages
-or message contain any other header or
-header--value pair that may also be
-included in the header.
+Once a client has an unique client ID assigned to it,
+it should always include the header @code{Client ID}
+in its messages. The value of @code{Client ID} should
+be the client's ID@. If a server wants to address
+this client, it should include the header @code{To}
+with the value set to the recipient's client ID@.
+Be aware that such message may not be sent to that
+recipient uniquely, any server or client is free to
+sign up for receive of such message, any messages
+or message contain any other header or header--value
+pair that may also be included in the header.
 
 
 
@@ -939,28 +906,24 @@ included in the header.
 @cpindex Eavesdropping, message passing
 As discussed in @ref{Interprocess Communication},
 interception in the primary feature of
-@command{mds}'s message passing system.
-Not only does it enable servers to select
-which message it wants to receive in order
-to provide it's service. It also enables
-clients to do anything, things that was
-never anticipated. As an example of its
-power, @command{mds} does not provide any
-protocol for taking screenshots or recording
-a session. Instead, a screenshot application
-signs up for messages passed between the
-compositor and presentation servers, and
-simply requests that the compositor resends
-the screen, a feature intended for the
-presentation servers. A screen recoding
-application would do the same and just
-hang on and record all message passed
+@command{mds}'s message passing system. Not only does
+it enable servers to select which message it wants to
+receive in order to provide it's service. It also
+enables clients to do anything, things that was never
+anticipated. As an example of its power,
+@command{mds} does not provide any protocol for
+taking screenshots or recording a session. Instead,
+a screenshot application signs up for messages passed
+between the compositor and presentation servers, and
+simply requests that the compositor resends the
+screen, a feature intended for the presentation
+servers. A screen recoding application would do the
+same and just hang on and record all message passed
 between the servers.
 
-If you want your server or client to
-receive all messages passed around in
-the display server, simply sign up for
-all messages:
+If you want your server or client to receive all
+messages passed around in the display server, simply
+sign up for all messages:
 
 @example
 @group
@@ -970,9 +933,9 @@ Message ID: 0\n
 @end group
 @end example
 
-But if you only want messages contain
-the header @code{Command}, include
-that header in the payload of the message:
+But if you only want messages contain the header
+@code{Command}, include that header in the payload
+of the message:
 
 @example
 Command: intercept\n
@@ -982,9 +945,9 @@ Length: 8\n
 Command\n
 @end example
 
-It is allowed to include multiple headers.
-You can also be more strict, and require
-a specific value for a header, for example:
+It is allowed to include multiple headers. You can
+also be more strict, and require a specific value
+for a header, for example:
 
 @example
 Command: intercept\n
@@ -994,13 +957,13 @@ Length: 16\n
 Command: get-vt\n
 @end example
 
-You may mix these two types of requirements
-freely. Your client will receive any message
-that satisfies at least one of the requirements,
-these requirements may be split into multiple
-message or coalesced into one message; but
-you cannot request to include receive a message
-if multiple requirements are satisfied.
+You may mix these two types of requirements freely.
+Your client will receive any message that satisfies
+at least one of the requirements, these requirements
+may be split into multiple message or coalesced into
+one message; but you cannot request to include
+receive a message if multiple requirements are
+satisfied.
 
 Alternatively you can choose to stop receiving
 message that satisfies requirements. For example:
@@ -1023,16 +986,15 @@ Message ID: 1\n
 \n
 @end example
 
-Note that this will stop you from receiving
-messages contain the @code{To} header addressed
-to you until you request to receiving such
-messages again.
+Note that this will stop you from receiving messages
+contain the @code{To} header addressed to you until
+you request to receiving such messages again.
 
-When you sign up for message you may request
-to be able to modify them before that are
-send to the next client in the list of client
-that should receive them. To do this include
-the header--value pair @code{Modifying: yes}:
+When you sign up for message you may request to be
+able to modify them before that are send to the next
+client in the list of client that should receive
+them. To do this include the header--value pair
+@code{Modifying: yes}:
 
 @example
 Command: intercept\n
@@ -1043,16 +1005,14 @@ Length: 30\n
 Command: keyboard-enumeration\n
 @end example
 
-It is up to the client to keep track of
-which message that it may modify. When
-you receive a message that you can modify
-you must respond when you are done with
-the message.
+It is up to the client to keep track of which message
+that it may modify. When you receive a message that
+you can modify you must respond when you are done
+with the message.
 
-For example, if you have signed up
-for @code{Command: keyboard-enumeration}
-with the ability to modify such messages
-and the message
+For example, if you have signed up for
+@code{Command: keyboard-enumeration} with the ability
+to modify such messages and the message
 
 @example
 Command: keyboard-enumeration\n
@@ -1064,8 +1024,7 @@ Length: 7\n
 kernel\n
 @end example
 
-is send from a server, you may receive
-it as
+is send from a server, you may receive it as
 
 @example
 Command: keyboard-enumeration\n
@@ -1078,23 +1037,19 @@ Modify ID: 4\n
 kernel\n
 @end example
 
-Be aware that the @code{Modify ID} may
-be included even if you have not signed
-up to be able to modify the message,
-it is enough that one client before you
-has or it was originally included
-@footnote{You may however not include
-this header when you send out an
+Be aware that the @code{Modify ID} may be included
+even if you have not signed up to be able to modify
+the message, it is enough that one client before you
+has or it was originally included @footnote{You may
+however not include this header when you send out an
 orginal message.}.
 
-If you receive the message as such
-and want to add the line
-@code{on-screen-keyboard-20376} to
-the payload should send out:
-@footnote{The first line containing
-starting with @code{Message ID} is an
-example, it should be whatever is
-appropriate for your client.}
+If you receive the message as such and want to add
+the line @code{on-screen-keyboard-20376} to the
+payload should send out: @footnote{The first line
+containing starting with @code{Message ID} is an
+example, it should be whatever is appropriate for
+your client.}
 
 @example
 Modify ID: 4\n
@@ -1113,8 +1068,8 @@ kernel\n
 on-screen-keyboard-20376\n
 @end example
 
-If you however decide not to modify
-the message send out
+If you however decide not to modify the message send
+out
 
 @example
 Modify ID: 4\n
@@ -1125,12 +1080,10 @@ Modify: no\n
 
 @cpindex Message consumption, message passing
 @cpindex Consumption, interception, message passing
-There is also a third option:
-to consume to the message. This
-stops any further clients from
-receiving the message. This is
-done by modifying the message
-into an empty message:
+There is also a third option: to consume to the
+message. This stops any further clients from
+receiving the message. This is done by modifying
+the message into an empty message:
 
 @example
 Modify ID: 4\n
@@ -1139,34 +1092,25 @@ Modify: yes\n
 \n
 @end example
 
-You may choose to include the
-header--value pair @code{Length: 0},
-it is however redundant and
+You may choose to include the header--value pair
+@code{Length: 0}, it is however redundant and
 discouraged.
 
 @cpindex Interception priority, message passing
 @cpindex Priority, interception, message passing
-This mechanism of being able to
-modify message does not make much
-sense unless you can control in
-the order the clients receive
-messages. This is done with what
-is called priority. The higher
-priority you have, the earlier
-you will receive the message. The
-default priority is zero, and the
-priority is bound to a signed
-64-bit integer. If you want to
-be able to list yourself in
-@code{Command: keyboard-enumeration}
-message, you should sign up
-with a positive priority since
-the final recipient or requested
-the enumeration will receive it
-with priority zero. Therefore
-you should sign up for such message
-with a message like:
-@footnote{4611686018427387904 is
+This mechanism of being able to modify message does
+not make much sense unless you can control in the
+order the clients receive messages. This is done with
+what is called priority. The higher priority you
+have, the earlier you will receive the message. The
+default priority is zero, and the priority is bound
+to a signed 64-bit integer. If you want to be able to
+list yourself in @code{Command: keyboard-enumeration}
+message, you should sign up with a positive priority
+since the final recipient or requested the
+enumeration will receive it with priority zero.
+Therefore you should sign up for such message with a
+message like: @footnote{4611686018427387904 is
 halfway to the maximium value.}
 
 @example
@@ -1200,7 +1144,8 @@ the minimum value of any signed value with a fixed
 bit-size is the negative of its maximum value, that
 is, the minimum value @code{int16_t} is to be assumed
 to be @code{-INT16_MAX} (@math{-32767}) rather than
-@code{INT16_MIN} (@math{-32768} with two's complement.)
+@code{INT16_MIN} (@math{-32768} with two's
+complement.)
 
 @item
 Integers that are not especially encoded must not be
@@ -1216,35 +1161,32 @@ can be properly stored and used.
 @cpindex Integers, unsigned, restriction
 @cpindex Unsigned integer, restriction
 @cpindex Restrictions on unsigned integers
-Integer 64-bits that are not especially encoded
-must not be unsigned if the bit-size is fixed.
-This is because some programming languages
-primitive integers are limited to 64-bits and
-are signed; a large enough unsigned 64-bit
-integer would overflow.
+Integer 64-bits that are not especially encoded must
+not be unsigned if the bit-size is fixed. This is
+ because some programming languages primitive
+integers are limited to 64-bits and are signed; a
+large enough unsigned 64-bit integer would overflow.
 
 @item
 @cpindex Endianness, portability
-Native endianness when a endianness is choosen.
-Do not assume big endianness, but the same
-endianness that appear on the same machine when
-using C@.
+Native endianness when a endianness is choosen. Do
+not assume big endianness, but the same endianness
+that appear on the same machine when using C@.
 
 @item
 @cpindex UTF-8, portability
 @cpindex Strings, portibility
-All strings musts be encoded in UTF-8 without
-any NUL-character unless express permission
-is given. NUL-character may be encoded either
-using a zero byte or using Modified UTF-8, where
-it is encoded using two bytes. Which is used is
-selected in the protocol, however headers and
-their values must not include NUL-characters.
-No character may be encoded with more bytes than
-necessary. Encoding a character in extra long
-form is a security issue, and is prune to bugs,
-and is hence disallowed by newer specifications
-of UTF-8.
+All strings musts be encoded in UTF-8 without any
+NUL-character unless express permission is given.
+NUL-character may be encoded either using a zero byte
+or using Modified UTF-8, where it is encoded using
+two bytes. Which is used is selected in the protocol,
+however headers and their values must not include
+NUL-characters. No character may be encoded with more
+bytes than necessary. Encoding a character in extra
+long form is a security issue, and is prune to bugs,
+and is hence disallowed by newer specifications of
+UTF-8.
 
 @item
 @cpindex New line, portability
@@ -1279,11 +1221,11 @@ any other character, or multiple LF:s.
 @cpindex Respawning servers, automatic
 @cpindex Crash resilience
 @command{mds-respawn} is a utility intended to be used
-in @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}. It will spawn
-a selected set of servers. If a server it spawns exits
-with a bad status, @command{mds-respawn} will respawn it.
-@command{mds-respawn} supports two options in the command
-line:
+in @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}. It will
+spawn a selected set of servers. If a server it
+spawns exits with a bad status, @command{mds-respawn}
+will respawn it. @command{mds-respawn} supports two
+options in the command line:
 
 @table @option
 @item --alarm=SECONDS
@@ -1318,17 +1260,17 @@ mds-respawn --interval=5       \
 @opindex @option{--initial-spawn}
 @opindex @option{--respawn}
 will spawn and supervise the servers @command{mds-foo}
-and @command{mds-bar}. Both spawned with the
-argument @option{--initial-spawn}. When a server is
-respawed by @command{mds-respawn}, @option{--initial-spawn}
-in its argument list will be replaced by
+and @command{mds-bar}. Both spawned with the argument
+@option{--initial-spawn}. When a server is respawed
+by @command{mds-respawn}, @option{--initial-spawn} in
+its argument list will be replaced by
 @option{--respawn} to let the server know it is being
 respawned.
 
 @sgindex @code{SIGTERM}
 A server is considered to exit with a failure status
-unless it exits with the return value 0 or is terminated
-by the signal @code{SIGTERM}@.
+unless it exits with the return value 0 or is
+terminated by the signal @code{SIGTERM}@.
 
 
 
@@ -1342,16 +1284,17 @@ by the signal @code{SIGTERM}@.
 @cpindex Registry of protocols
 @opindex @option{--list}
 @opindex @option{--wait}
-@command{mds-reg} is a utility that can be used to list
-available protocols provided by running servers. It can
-also wait for a set of protocols to become available. To
-list all available protocols run @command{mds-reg --list}.
-And to wait for the protocol @code{foo} run
-@command{mds-reg --wait=foo}. To also wait for the protocol
-@code{bar} run @command{mds-reg --wait=foo,bar} or
-@command{mds-reg --wait=foo --wait=bar}. Both of these
-styles can be mixed if you want to wait for even more
-protocols.
+@command{mds-reg} is a utility that can be used to
+list available protocols provided by running servers.
+It can also wait for a set of protocols to become
+available. To list all available protocols run
+@command{mds-reg --list}. And to wait for the
+protocol @code{foo} run @command{mds-reg --wait=foo}.
+To also wait for the protocol @code{bar} run
+@command{mds-reg --wait=foo,bar} or
+@command{mds-reg --wait=foo --wait=bar}. Both of
+thesestyles can be mixed if you want to wait for
+even more protocols.
 
 
 
@@ -1361,8 +1304,9 @@ protocols.
 @pgindex @command{mds-clip}
 @cpindex Clipboard
 @command{mds-clip} is a utility that can be used to
-review the clipboards on the display and manipulate them.
-@command{mds-clip} recognises the following options:
+review the clipboards on the display and manipulate
+them. @command{mds-clip} recognises the following
+options:
 
 @table @option
 @item --push
@@ -1426,9 +1370,10 @@ Can be used with @option{--stdin} or @option{--list}.
 If used with @option{--stdin}, an line containing
 only @var{DELIMITER} will delimit two values that
 should be placed in the clipboard. If used with
-@option{--list}, a line containing only @var{DELIMITER}
-will delimit two values in the output. The default
-delimiter for @option{--list} is an empty line.
+@option{--list}, a line containing only
+@var{DELIMITER} will delimit two values in the
+output. The default delimiter for @option{--list}
+is an empty line.
 
 @item -1
 @opindex @option{-1}
@@ -1464,34 +1409,34 @@ following options:
 @table @option
 @item --monitor
 @opindex @option{--monitor}
-Take screenshot of the monitor. The rat will
-be used to select monitor.
+Take screenshot of the monitor. The rat will be used
+to select monitor.
 
 @item --monitor=WINDOW_ID
 @opindex @option{--monitor}
 Take screenshot of the monitor whose root window's
-window ID is @var{WINDOW_ID} or has another window
-in it whose window ID is @var{WINDOW_ID}@.
+window ID is @var{WINDOW_ID} or has another window in
+it whose window ID is @var{WINDOW_ID}@.
 
 @item --embed
 @opindex @option{--embed}
-Take a screenshot of an embedded window.
-The rat will be used to select window.
+Take a screenshot of an embedded window. The rat will
+be used to select window.
 
 @item --embed=WINDOW_ID
 @opindex @option{--monitor}
-Take a screenshot of an embedded window whose
-window ID is @var{WINDOW_ID}@.
+Take a screenshot of an embedded window whose window
+ID is @var{WINDOW_ID}@.
 
 @item --window
 @opindex @option{--window}
-Take a screenshot a window.
-The rat will be used to select window.
+Take a screenshot a window. The rat will be used to
+select window.
 
 @item --window=WINDOW_ID
 @opindex @option{--window}
-Take a screenshot of a window whose
-window ID is @var{WINDOW_ID}@.
+Take a screenshot of a window whose window ID is
+@var{WINDOW_ID}@.
 
 @item --decoration
 @opindex @option{--decoration}
@@ -1529,8 +1474,8 @@ specifies the pathname of the saved file.
 @opindex @option{--monitor}
 @opindex @option{--embed}
 If neither @option{--monitor}, @option{--embed} or
-@option{--window} is used, a screenshot will be
-taked of the display. That is, all monitors.
+@option{--window} is used, a screenshot will be taked
+of the display. That is, all monitors.
 
 @opindex @option{--gamma}
 @opindex @option{--low-gamma}
@@ -1558,33 +1503,30 @@ following options:
 @table @option
 @item --embed
 @opindex @option{--embed}
-Kill an embedded window.
-The rat will be used to select window.
+Kill an embedded window. The rat will be used to
+select window.
 
 @item --embed=WINDOW_ID
 @opindex @option{--embed}
-Kill an embedded window whose
-window ID is @var{WINDOW_ID}@.
+Kill an embedded window whose window ID is
+@var{WINDOW_ID}@.
 
 @item --window
 @opindex @option{--window}
-Kill a window.
-The rat will be used to select window.
+Kill a window. The rat will be used to select window.
 
 @item --window=WINDOW_ID
 @opindex @option{--window}
-Kill a window whose
-window ID is @var{WINDOW_ID}@.
+Kill a window whose window ID is @var{WINDOW_ID}@.
 
 @item --signal=SIGNAL
 @opindex @option{--signal}
-Send the signal @var{SIGNAL} to the
-process owning the selected window.
+Send the signal @var{SIGNAL} to the process owning
+the selected window.
 
 @item --no-signal
 @opindex @option{--no-signal}
-Do not send a signal; only identify the
-window.
+Do not send a signal; only identify the window.
 
 @item --keep-cursor
 @opindex @option{--keep-cursor}
@@ -1605,17 +1547,18 @@ Print the ID of the selected window.
 @cpindex Virtual terminal, switching
 @cpindex Switching virtual terminal
 @command{mds-chvt} is a utility similar to the command
-@command{chvt} from the @command{kbd} project. However,
-@command{mds-chvt} has setuid and therefore does not
-require root permissions, but it will only request a
-virtual terminal switch if the display server's virtual
-terminal is in the foreground. @command{mds-chvt}
-recognises the following options:
+@command{chvt} from the @command{kbd} project.
+However, @command{mds-chvt} has setuid and therefore
+does not require root permissions, but it will only
+request a virtual terminal switch if the display
+server's virtual terminal is in the foreground.
+@command{mds-chvt} recognises the following options:
 
 @table @option
 @item --switch=VT
 @opindex @option{--switch}
-Switch to the virtual terminal with the index @var{VT}@.
+Switch to the virtual terminal with the index
+@var{VT}@.
 @end table
 
 
@@ -1643,10 +1586,10 @@ TODO how to use mds-kbdc
 @pgindex @file{mdsinitrc}
 Servers let you use the option @option{--on-init-fork}
 to put the process in the background when it has been
-initialised. This can used to spawn that depend on each
-other in linear order. For example, if @command{mds-bar}
-requires that @command{mds-foo} is initialised before it
-can be initialised, you can in
+initialised. This can used to spawn that depend on
+each other in linear order. For example, if
+@command{mds-bar} requires that @command{mds-foo} is
+initialised before it can be initialised, you can in
 @file{$@{XDG_CONFIG_HOME@}/mdsinitrc} write:
 
 @example
@@ -1661,15 +1604,16 @@ mds-bar &
 @pgindex @command{mds-respawn}
 @pgindex @command{cmdipc}
 @pgindex @command{ipcmd}
-This will start @command{mds-bar} when @command{mds-foo}
-has been initialised. However if one of them crashes,
-that server will not respawn; to fix this @command{mds-respawn}
-can be used, but use of @command{mds-respawn} hinders
-the use of @option{--on-init-fork}. Instead you can use
-@option{--on-init-sh} and global semaphores. The packages,
-and commands, @command{cmdipc} and @command{ipcmd} can be
-used for this purpose. We will use @command{cmdipc} in an
-example:
+This will start @command{mds-bar} when
+@command{mds-foo} has been initialised. However if
+one of them crashes, that server will not respawn; to
+fix this @command{mds-respawn} can be used, but use
+of @command{mds-respawn} hinders the use of
+@option{--on-init-fork}. Instead you can use
+@option{--on-init-sh} and global semaphores. The
+packages, and commands, @command{cmdipc} and
+@command{ipcmd} can be used for this purpose. We will
+use @command{cmdipc} in an example:
 
 @ifset AFOURPAPER
 @example
@@ -1717,20 +1661,21 @@ mds-respawn @{ mds-bar @} &  # Spawn `mds-bar`.
 @end ifclear
 
 @pgindex @command{mds-reg}
-This is however seldom necessary as @command{mds-reg} can
-often be used instead, with more abstraction as you would
-only need to specify what servers need to wait for, not
-what they provide.
+This is however seldom necessary as @command{mds-reg}
+can often be used instead, with more abstraction as
+you would only need to specify what servers need to
+wait for, not what they provide.
 
 @pgindex @command{setpgrp}
 @cpindex Display server process group
 @cpindex Process group, display server
-Another useful command (and package) is @command{setpgrp}.
-@command{mds} puts itself an all its children in a new
-process group. However you may want to put processes that
-are not @command{mds} servers or @command{mds} utilities
-in a separate process group. @command{setpgrp} can be used
-to starta process in a new process group.
+Another useful command (and package) is
+@command{setpgrp}. @command{mds} puts itself an all
+its children in a new process group. However you may
+want to put processes that are not @command{mds}
+servers or @command{mds} utilities in a separate
+process group. @command{setpgrp} can be used to start
+a process in a new process group.
 
 
 
@@ -1742,12 +1687,13 @@ to starta process in a new process group.
 @cpindex Kernel
 @cpindex Display server kernel
 @cpindex Master server
-An @command{mds} display server instance is comprised of
-multiple small servers that each implements a small part
-of the display server's functionallity. This chapter will
-include all servers but the master server, @command{mds-server}
-and the kernel, @command{mds}, the latter of which is not
-actually a server.
+An @command{mds} display server instance is comprised
+of multiple small servers that each implements a
+small part of the display server's functionallity.
+This chapter will include all servers but the master
+server, @command{mds-server} and the kernel,
+@command{mds}, the latter of which is not actually a
+server.
 
 @menu
 * mds-echo::                        The @command{mds-echo} server.
@@ -1819,10 +1765,11 @@ actually a server.
 @cpindex Debugging
 @cpindex Heartbeat
 @cpindex Network heartbeat
-@command{mds-echo} is a server that echos message that
-contain the header--value pair @command{Command: echo}.
-This server can be used for debugging and testing as
-well as to enable network heartbeats.
+@command{mds-echo} is a server that echos message
+that contain the header--value pair
+@command{Command: echo}.
+This server can be used for debugging and testing
+as well as to enable network heartbeats.
 
 
 
@@ -1834,10 +1781,11 @@ well as to enable network heartbeats.
 @cpindex Protocols, listing
 @cpindex Protocol registry
 @cpindex Registry of protocols
-@command{mds-registry} is a server that keeps a registry
-of all protocols that are supported they the sum of all
-active servers. It can also be used by other servers to
-wait until a protocol has become available.
+@command{mds-registry} is a server that keeps a
+registry of all protocols that are supported they the
+sum of all active servers. It can also be used by
+other servers to wait until a protocol has become
+available.
 
 
 
@@ -1892,8 +1840,8 @@ package.
 @cpindex Clipboard
 @command{mds} has three clipboards, one for copied
 text, one for selected text, and one for non-textual
-data. Each of these clipboards are stacks, just
-like in GNU Emacs. @command{mds-clipboard} implements
+data. Each of these clipboards are stacks, just like
+in GNU Emacs. @command{mds-clipboard} implements
 these clipboards and automatic removal of outdated
 clips. Clips can be configured to expire based on
 time or when its originator closes.
@@ -1920,13 +1868,14 @@ drag-and-drop support.
 @cpindex Keycodes
 @cpindex Keycodes, remapping
 @cpindex Keyboard, remapping
-@command{mds-kkbd} implements access to the kernel-based
-keyboard. It does not however implement delay and rate
-configurations for the kernel-based keyboard as that
-requires root privileges. The kernel-based keyboard is
-a keyboard that can be accessed by reconfiguring
-stdin in a TTY using @code{ioctl} and then read from
-stdin. @command{mds-kkbd} does not implement any keyboard
+@command{mds-kkbd} implements access to the
+kernel-based keyboard. It does not however implement
+delay and rate configurations for the kernel-based
+keyboard as that requires root privileges. The
+kernel-based keyboard is a keyboard that can be
+accessed by reconfiguring stdin in a TTY using
+@code{ioctl} and then read from stdin.
+@command{mds-kkbd} does not implement any keyboard
 layout, rather it broadcasts scancodes and keycodes.
 However it can remap keycodes, but not scancodes.
 
