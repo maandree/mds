@@ -2754,6 +2754,12 @@ tray.
 @subsection @code{assign-id}
 @prindex @code{assign-id}
 
+@cpindex Client ID assignment
+@cpindex ID assignment
+@cpindex Assignment of ID
+@cpindex Client ID fetching
+@cpindex ID fetching
+@cpindex Fetching of ID
 @table @asis
 @item Identifying header:
 @code{Command: assign-id}
@@ -2769,6 +2775,7 @@ client.
 Manditory, part of the core infrastructure.
 
 @item Reference implementation:
+@pgindex @command{mds-server}
 @command{mds-server}
 @end table
 
@@ -2778,6 +2785,8 @@ Manditory, part of the core infrastructure.
 @subsection @code{intercept}
 @prindex @code{intercept}
 
+@cpindex Interceptions, message passing
+@cpindex Message modification, message passing
 @table @asis
 @item Identifying header:
 @code{Command: intercept}
@@ -2817,6 +2826,7 @@ messages.
 Manditory, part of the core infrastructure.
 
 @item Reference implementation:
+@pgindex @command{mds-server}
 @command{mds-server}
 @end table
 
@@ -2826,6 +2836,8 @@ Manditory, part of the core infrastructure.
 @subsection @code{register}
 @prindex @code{register}
 
+@cpindex Protocol registry
+@cpindex Registry of protocols
 @table @asis
 @item Identifying header:
 @code{Command: register}
@@ -2855,6 +2867,8 @@ if a protocol becomes unavailable during this wait
 period it will still be counted as available for this
 wait action.
 @item list
+@cpindex List protocols
+@cpindex Protocols, listing
 Send a list of availability commands if the value of
 the header @code{Action} is @code{list}.
 @end table
@@ -2872,6 +2886,7 @@ implement.
 Identify supported display server operations.
 
 @item Purpose:
+@cpindex Initialisation synchronisation
 Initialisation process synchronisation.
 
 @item Compulsivity:
@@ -2880,6 +2895,7 @@ time to time without it, or at initialisation
 depending on the program's implementation.
 
 @item Reference implementation:
+@pgindex @command{mds-registry}
 @command{mds-registry}
 @end table
 
@@ -2889,6 +2905,8 @@ depending on the program's implementation.
 @subsection @code{reregister}
 @prindex @code{reregister}
 
+@cpindex Protocol registry
+@cpindex Registry of protocols
 @table @asis
 @item Identifying header:
 @code{Command: reregister}
@@ -2909,6 +2927,7 @@ not supported of the registry server crashes if you
 do not implement this in your server.
 
 @item Reference implementation:
+@pgindex @command{mds-registry}
 @command{mds-registry}.
 @end table
 
@@ -2918,6 +2937,7 @@ do not implement this in your server.
 @subsection @code{error}
 @prindex @code{error}
 
+@cpindex Error management
 @table @asis
 @item Identifying header:
 @code{Command: error}
@@ -2962,6 +2982,7 @@ Optional.
 
 @node Virtual Terminal Protocols
 @section Virtual Terminal Protocols
+@cpindex Virtual terminal
 
 @menu
 * get-vt::                          Get the index of the virtual terminal the server is display on.
@@ -3013,7 +3034,8 @@ calls on that TTY@.
 Required.
 
 @item Reference implementation:
-@code{mds-vt}
+@pgindex @command{mds-vt}
+@command{mds-vt}
 @end table
 
 
@@ -3030,6 +3052,11 @@ Required.
 Reconfigure the virtual terminal the server is
 display on.
 
+@cpindex Virtual terminal, mode switching
+@cpindex Switching virtual terminal mode
+@cpindex Graphical mode
+@cpindex Text mode
+@cpindex Mode, virtual terminal, switching
 @item Required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment}-header in
 response to a @code{Command: assign-id}-header.
@@ -3049,6 +3076,8 @@ It is up to the server that set the request for
 graphical mode to temporarily switch to text mode
 when switching TTY@.
 
+@cpindex Virtual terminal, exclusive mode
+@cpindex Exclusive mode, virtual terminal
 @item Optional header: @code{Exclusive}
 @table @code
 @item yes
@@ -3073,15 +3102,17 @@ Allow presentation servers to enter and leave
 graphical mode.
 
 @item Purpose:
+@cpindex TTY
 Allow programs to gain access of the TTY associated
-with the VT such that they can use ioctl and similar
-calls on that TTY@.
+with the VT such that they can use @code{ioctl} and
+similar calls on that TTY@.
 
 @item Compulsivity:
 Required.
 
 @item Reference implementation:
-@code{mds-vt}
+@pgindex @command{mds-vt}
+@command{mds-vt}
 @end table
 
 
@@ -3090,6 +3121,8 @@ Required.
 @subsection @code{switching-vt}
 @prindex @code{switching-vt}
 
+@cpindex Virtual terminal, switching
+@cpindex Switching virtual terminal
 @table @asis
 @item Identifying header:
 @code{Command: switching-vt}
@@ -3141,6 +3174,7 @@ terminal become active again.
 Required.
 
 @item Reference implementation:
+@pgindex @command{mds-vt}
 @code{mds-vt}
 @end table
 
@@ -3180,11 +3214,12 @@ Any string that uniquely identifies the keyboard.
 @table @asis
 @item Purpose:
 Enable multi-keyboard aware programs and give at
-least on keyboard per seat in a multi-seat
+least one keyboard per seat in a multi-seat
 environment.
 @item Note:
-mds-kkbd uses @code{kernel} to indicate that it uses
-the kernel and thus lumps together all keyboards.
+@command{mds-kkbd} uses @code{kernel} to indicate that
+it uses the kernel and thus lumps together all
+keyboards.
 @end table
 
 @item Required header: @code{Released}
@@ -3196,10 +3231,10 @@ The value of the header @code{Released} will be
 The value of the header @code{Released} will be
 @code{no} otherwise, that is, held down or pressed.
 @end table
-Note: pause/break is automatically released directly
-after it has been pressed. This is feature built into
-keyboards and servers should not try to circumvent
-this.
+Note: @key{Pause}/@key{Break} is automatically
+released directly after it has been pressed. This is
+feature built into most keyboards and servers should
+not try to circumvent this.
 
 @item Required header: @code{Keycode}
 An unsigned 14-bit integer identifying the key, may
@@ -5848,7 +5883,7 @@ success.
 @item @code{client_list_remove} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{void}]
 @fnindex @code{client_list_remove}
 This function will remove exactly one occurrence,
-provided that there is at least on occurrence, of the
+provided that there is at least one occurrence, of the
 element @code{client} for the list @code{*this}.
 @end table
 
