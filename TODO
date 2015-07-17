@@ -8,9 +8,6 @@ Missing servers:
 	crtc		seat		dri		drag
 	cursorshadow	kill		focus		colour
 	state		screensaver
-	transform: like xkeystone and xrandr --transform,
-		   should transform the rat cursor too
-	cinerama: combines multiple output to one single output
 
 Extra servers:
 
@@ -26,6 +23,14 @@ Extra servers:
 	some server for drawing on the screen
 	some server for delaying video output from programs
           (used if a video is not in sync with its audio, and is ahead)
+	cinerama: combines multiple output to one single output
+	transform: like xkeystone and xrandr --transform,
+		   should transform the rat cursor too
+	kbdautorelease: server that automatically relases selected keys
+	                when pressed, emulating the feature found on the
+			most keyboards for the pause-key. This is
+			primarily intended for keyboards that do not
+			have this feature on the pause-key.
 
 Missing commands:
 
