@@ -1911,11 +1911,10 @@ control for the kernel-based keyboard.
 @command{mds-kkbd} and @command{mds-kkbdrate}.
 In contrast to @command{mds-kkbd}, @command{mds-kbd}
 implements control over individual keybroads rather
-than utilising the kernels keyboard drivers to
-treats all keyboards a one keyboard. This server
-is only useful for multiseat sessions and if you
-otherwise actually want to handle the keyboards
-individually.
+than utilising the kernels keyboard drivers to treats
+all keyboards a one keyboard. This server is only
+useful for multiseat sessions and if you otherwise
+actually want to handle the keyboards individually.
 
 
 
@@ -1935,10 +1934,11 @@ individually.
 @cpindex Keys, compose
 @cpindex Keys, modifiers
 @command{mds-keytrans} is the server than translates
-keycodes from @command{mds-kkbd} and @command{mds-kbd},
-and third-party alternatives, to characters and other
-attributes. It implements the keyboard's layouts including
-modifiers, letters, other symbols, dead keys and compose.
+keycodes from @command{mds-kkbd} and
+@command{mds-kbd}, and third-party alternatives, to
+characters and other attributes. It implements the
+keyboard's layouts including modifiers, letters,
+other symbols, dead keys and compose.
 
 
 
@@ -2022,19 +2022,18 @@ from each other.
 @pgindex @command{mds-kbdbind}
 @cpindex Keyboard bindings
 @cpindex Bindings, keyboard
-@command{mds-multikey} is a server that can
-bind a key, key combination, or sequence their
-of to a sequence of keys or key combinations.
-For example, you could bind `<super>x, y' to
-simulate that a key `Faux1' is pressed, a key
-that does not exist, this key press could be
-picked up by @command{mds-kbdbind} to enable
-@command{mds-kbdbind} to respond to squences
-rather than single keys and single key
-combinations. alternatively you could bind
-`<super>x' to press `x' a selected number of
-times with a short selectable delay between
-them; or `<super>x, 5' to press `x' five times.
+@command{mds-multikey} is a server that can bind a
+key, key combination, or sequence their of to a
+sequence of keys or key combinations. For example,
+you could bind @kbd{<super>x, y} to simulate that a
+key @key{Faux1} is pressed, a key that does not
+exist, this key press could be picked up by
+@command{mds-kbdbind} to enable @command{mds-kbdbind}
+to respond to squences rather than single keys and
+single key combinations. alternatively you could bind
+@kbd{<super>x} to press @key{x} a selected number of
+times with a short selectable delay between them; or
+@kbd{<super>x, 5'} to press @key{x} five times.
 
 
 
@@ -2045,8 +2044,8 @@ them; or `<super>x, 5' to press `x' five times.
 @cpindex Rat device
 @cpindex Mouse device
 @cpindex Pointing device
-@command{mds-rat} is a server that implements
-support of rat (also known as mouse) devices.
+@command{mds-rat} is a server that implements support
+of rat (also known as mouse) devices.
 
 
 
@@ -2060,15 +2059,15 @@ support of rat (also known as mouse) devices.
 @cpindex Pointer barriers
 @cpindex Screen edges, barriers
 @cpindex Barriers, rat
-@command{mds-ratbarrier} is a server that
-lets you set up barriers for the rat pointer,
-for example at the screen edges.
+@command{mds-ratbarrier} is a server that lets you
+set up barriers for the rat pointer, for example at
+the screen edges.
 
-A barrier requires that the rat be moved a
-bit extra move it can move on to the next
-pixel. A barrier can be directional. A barrier
-can also be infinite, which blocks the rat
-pointer fully and it cannot pass through at all.
+A barrier requires that the rat be moved a bit extra
+move it can move on to the next pixel. A barrier can
+be directional. A barrier can also be infinite, which
+blocks the rat pointer fully and it cannot pass
+through at all.
 
 
 
@@ -2083,9 +2082,9 @@ pointer fully and it cannot pass through at all.
 @cpindex Hotcorners
 @command{mds-ratbind} is a server similar to
 @command{mds-kbdbind}. However, @command{mds-ratbind}
-respons to rat and rat cursor actions rather
-than keyboard actions. It can for example be
-used to implement hotcorners.
+respons to rat and rat cursor actions rather than
+keyboard actions. It can for example be used to
+implement hotcorners.
 
 
 
@@ -2099,8 +2098,8 @@ used to implement hotcorners.
 @cpindex Mouse gestures bindings
 @cpindex Pointer gestures bindings
 @command{mds-gestures} is a server similar to
-@command{mds-ratbind}. However it is specialised
-to respond to gestures.
+@command{mds-ratbind}. However it is specialised to
+respond to gestures.
 
 
 
@@ -2112,15 +2111,15 @@ to respond to gestures.
 @cpindex Rat keys
 @cpindex Mouse keys
 If you do not have a rat or rather use your keyboard,
-the server @command{mds-kbd2rat} can be used to
-bind keyboard actions to simulate rat actions.
-This server is a specialisation of @code{mds-kbdbind},
-rather than spawning generic commands it broadcasts
-messages within the display server to move the
-rat cursor and click on rat buttons. @code{mds-kbdbind}
-could be used to do this, but @command{mds-kbd2rat}
-will not spawn a new process for each action.
-For more information see @ref{Mouse Keys}.
+the server @command{mds-kbd2rat} can be used to bind
+keyboard actions to simulate rat actions. This server
+is a specialisation of @code{mds-kbdbind}, rather
+than spawning generic commands it broadcasts messages
+within the display server to move the rat cursor and
+click on rat buttons. @code{mds-kbdbind} could be
+used to do this, but @command{mds-kbd2rat} will not
+spawn a new process for each action. For more
+information see @ref{Mouse Keys}.
 
 
 
@@ -2132,11 +2131,10 @@ For more information see @ref{Mouse Keys}.
 @cpindex Rat cursor, hardware
 @cpindex Mouse cursor, hardware
 @cpindex Hardware cursor
-@command{mds-hwcursor} is a server that draws
-the rat cursor to the monitor on a plane
-separate from all other content on the display.
-In less esoteric terms, it implements a hardware
-cursor.
+@command{mds-hwcursor} is a server that draws the rat
+cursor to the monitor on a plane separate from all
+other content on the display. In less esoteric terms,
+it implements a hardware cursor.
 
 
 
@@ -2148,10 +2146,10 @@ cursor.
 @cpindex Rat cursor, software
 @cpindex Mouse cursor, software
 @cpindex Software cursor
-@command{mds-swcursor} is a server that draws
-the rat cursor to the monitor on the same plane
-as all other content on the display. In less
-esoteric terms, it implements a software cursor.
+@command{mds-swcursor} is a server that draws the rat
+cursor to the monitor on the same plane as all other
+content on the display. In less esoteric terms, it
+implements a software cursor.
 
 
 
@@ -2163,9 +2161,9 @@ esoteric terms, it implements a software cursor.
 @cpindex Rat cursor shadow
 @cpindex Mouse cursor shadow
 @cpindex Shadow, cursor
-@command{mds-cursorshadow} is a server that
-can be used to decorate the rat cursor with
-a configurable shadow.
+@command{mds-cursorshadow} is a server that can be
+used to decorate the rat cursor with a configurable
+shadow.
 
 
 
@@ -2180,16 +2178,15 @@ a configurable shadow.
 @cpindex Mouse cursor, hardware, gamma correction
 @cpindex Hardware cursor, gamma correction
 @cpindex Graphics drivers
-@command{mds-cursorgamma} is a server you can
-use if you use @command{mds-hwcursor} to, if
-not done by the graphics driver, correct the
-gamma correction on the hardware cursor using
-software gamma ramps. This of courses works
-whether you are using hardware or software
-gamma ramps for your monitor's gamma correction.
-If can even be used if you do not use gamma
-correction, in such case, only the cursor
-will have its gamma corrected.
+@command{mds-cursorgamma} is a server you can use if
+you use @command{mds-hwcursor} to, if not done by the
+graphics driver, correct the gamma correction on the
+hardware cursor using software gamma ramps. This of
+courses works whether you are using hardware or
+software gamma ramps for your monitor's gamma
+correction. If can even be used if you do not use
+gamma correction, in such case, only the cursor will
+have its gamma corrected.
 
 
 
@@ -2200,9 +2197,9 @@ will have its gamma corrected.
 @cpindex Gamma correction, hardware
 @cpindex Hardware gamma correction
 To enable gamma correction, use the server
-@command{mds-hwgamma}. It implements hardware
-gamma ramps, that is, gamma ramps assisted
-by hardware acceleration.
+@command{mds-hwgamma}. It implements hardware gamma
+ramps, that is, gamma ramps assisted by hardware
+acceleration.
 
 
 
@@ -2215,19 +2212,17 @@ by hardware acceleration.
 @cpindex Graphics drivers
 If your graphics driver does not support
 @command{mds-hwgamma}, you can instead use
-@command{mds-swgamma}. It implements software
-gamma ramps, that is, it will modify each
-pixel according to the selected gamma
-correction before it is send to the presentation
-sever. To accelerate this process,
-@command{mds-swgamma} can tell programs how
-to modify its colours before sending it; the
-programs can then tell @command{mds-swgamma}
-not to apply its correction. Programs such
-as video players can also use this to tell
-the server not to apply gamma correction as
-that may cause the video to be played back
-to slowly.
+@command{mds-swgamma}. It implements software gamma
+ramps, that is, it will modify each pixel according
+to the selected gamma correction before it is send
+to the presentation sever. To accelerate this process,
+@command{mds-swgamma} can tell programs how to modify
+its colours before sending it; the programs can then
+tell @command{mds-swgamma} not to apply its
+correction. Programs such as video players can also
+use this to tell the server not to apply gamma
+correction as that may cause the video to be played
+back to slowly.
 
 
 
@@ -2240,24 +2235,21 @@ to slowly.
 @cpindex Gamma correction, filters
 @cpindex Cooperative gamma correction
 @command{mds-coopgamma} is a server that
-can be used to enable multiple clients to
-manipulate the gamma ramps without stepping
-on each others toes. It does this by letting
-clients tell which priority their corrections
-has and use this data to chain together there
-modifications. For example if one program
-wants to apply a red filter to the display
-and another program wants to correct the
-monitors' gamma, the red filter program will
-send lookup tables for the gamma with high
-priority and the correction program will
-send its lookup tables with low priority.
-@command{mds-coopgamma} will then apply the
-latter lookup tables on top of the red filter.
-The clients can tell @command{mds-coopgamma}
-whether it should remove their changes when
-they close, or even keep them and wait for
-the client to restart.
+can be used to enable multiple clients to manipulate
+the gamma ramps without stepping on each others toes.
+It does this by letting clients tell which priority
+their corrections has and use this data to chain
+together there modifications. For example if one
+program wants to apply a red filter to the display
+and another program wants to correct the monitors'
+gamma, the red filter program will send lookup tables
+for the gamma with high priority and the correction
+program will send its lookup tables with low priority.
+@command{mds-coopgamma} will then apply the latter
+lookup tables on top of the red filter. The clients
+can tell @command{mds-coopgamma} whether it should
+remove their changes when they close, or even keep
+them and wait for the client to restart.
 
 
 
@@ -2269,13 +2261,12 @@ the client to restart.
 @cpindex Simulateion of defective colour vision
 @cpindex Colour blindness, simulation
 @cpindex Simulateion of colour blindnes
-@command{mds-dcvs} is a server than can be
-used to simulate defective colour vision.
-That is, it can for example turn the display
-greyscale (colour blindness) or add a filter
-the simulates deuteranopia or deuteranomaly.
-This server is intended for testing that
-interfaces are suitable for people with
+@command{mds-dcvs} is a server than can be used to
+simulate defective colour vision. That is, it can for
+example turn the display greyscale (colour blindness)
+or add a filter the simulates deuteranopia or
+deuteranomaly. This server is intended for testing
+that interfaces are suitable for people with
 defective colour vision.
 
 
@@ -2290,8 +2281,8 @@ defective colour vision.
 @cpindex Colours, names
 @command{mds-colour} is a server that implements
 colour names, such as system colours and generic
-names, for example `red', whose exact colour can
-be configured by the user. A terminal written for
+names, for example `red', whose exact colour can be
+configured by the user. A terminal written for
 @command{mds} would look up colours such as `red'
 and `light red' and get the colours the terminal
 should use by default. Nothing is to be assumed
@@ -2314,12 +2305,12 @@ and sRGB(254, 254, 254) is to be drawn.
 
 @cpindex Gamma correction, dithering
 @command{mds-colour} is gamma ramp-aware. For
-example, if for the red channel, 0 is mapped to
-0, 1 is mapped to 3, 2 is mapped 2 and 3 is mapped
-to 1, but 1 and 3 requires dithering, then if
-3 is requested, @command{mds-colour} will tell
-the client to dither 0 and 2 with 50 %, which
-should generate 1, but 1 and 3 has been swapped.
+example, if for the red channel, 0 is mapped to 0, 1
+is mapped to 3, 2 is mapped 2 and 3 is mapped to 1,
+but 1 and 3 requires dithering, then if 3 is
+requested, @command{mds-colour} will tell the client
+to dither 0 and 2 with 50 %, which should generate 1,
+but 1 and 3 has been swapped.
 
 
 
@@ -2365,8 +2356,8 @@ and windows' components.
 @cpindex Identification of processes
 @command{mds-kill} is a server that can be used to
 send signals to processes by identifying them by
-their windows. This server can also be used to
-simply identify the process that owns a window.
+their windows. This server can also be used to simply
+identify the process that owns a window.
 
 
 
@@ -2380,9 +2371,9 @@ simply identify the process that owns a window.
 @command{mds-screensaver} is a server that can be
 used to start a screensaver or deactive monitors when
 the input devices has not be used for a period of
-time provided that no client has disabled this. It
-is capable of deactiving single monitors or start
-a screensaver on single monitors rather than all
+time provided that no client has disabled this. It is
+capable of deactiving single monitors or start a
+screensaver on single monitors rather than all
 monitors.
 
 
@@ -2396,9 +2387,10 @@ monitors.
 @cpindex Compositor
 @cpindex Presentation
 @command{mds-compositor} is the server that composes
-the output. It takes output of all windows and arranges
-it to one image per monitor and sends it to the presentation
-servers, such as @command{mds-dri} and @command{mds-fb}.
+the output. It takes output of all windows and
+arranges it to one image per monitor and sends it to
+the presentation servers, such as @command{mds-dri}
+and @command{mds-fb}.
 
 
 
@@ -2434,8 +2426,8 @@ content using the Direct Rendering Infrastructure.
 @cpindex Presentation
 @cpindex Display of content
 @cpindex Content, display
-@command{mds-fb} is a server that displays
-content using framebuffers.
+@command{mds-fb} is a server that displays content
+using framebuffers.
 
 
 
@@ -2446,8 +2438,8 @@ content using framebuffers.
 @cpindex Monitor emulation
 @cpindex Emulation, monitor
 @command{mds-mds} is a server that displays
-content using another @command{mds} window.
-It creates a window that emulates a monitor.
+content using another @command{mds} window. It
+creates a window that emulates a monitor.
 
 
 
@@ -2462,42 +2454,40 @@ It creates a window that emulates a monitor.
 @command{mds-meta} is a metadisplay server.
 It creates or joins a named metadisplay server,
 and creates an alternative value for
-@env{MDS_DISPLAY}@. Any server connecting to
-this alternative @env{MDS_DISPLAY} connects
-to this metadisplay server. This can be used
-to make servers shared between display server
-instances.
+@env{MDS_DISPLAY}@. Any server connecting to this
+alternative @env{MDS_DISPLAY} connects to this
+metadisplay server. This can be used to make servers
+shared between display server instances.
 
 @command{mds-meta} uses the environment variable
 @env{MDS_METADISPLAY} to acquire the name of the
-metadisplay server instance it should join or
-create. If @env{MDS_METADISPLAY} has not been set
-it is treated as having an empty string for its
-value which is a valid metadisplay server
-instance name.
+metadisplay server instance it should join or create.
+If @env{MDS_METADISPLAY} has not been set it is
+treated as having an empty string for its value which
+is a valid metadisplay server instance name.
 
-@command{mds-meta} works by connecting to the
-running display server instance, the display,
-and create a new display server instance, the
-metadisplay. Messages passed via the metadisplay's
-socket is forward to the display, and messages
-passed to via the display to @command{mds-meta}
-is send to the appropriate server. @command{mds-meta}
-manages interception in the same way as
-@command{mds-server} and @command{mds-remote}.
+@command{mds-meta} works by connecting to the running
+display server instance, the display, and create a
+new display server instance, the metadisplay.
+Messages passed via the metadisplay's socket is
+forward to the display, and messages passed to via
+the display to @command{mds-meta} is send to the
+appropriate server. @command{mds-meta} manages
+interception in the same way as @command{mds-server}
+and @command{mds-remote}.
 
 @pgindex @file{mdsmetainitrc}
 If @command{mds-meta} creates a new metadisplay,
-rather than joining an existing metadisplay, it
-will spawn @file{~/.mdsmetainitrc} to let you
-start the shared servers.
+rather than joining an existing metadisplay, it will
+spawn @file{~/.mdsmetainitrc} to let you start the
+shared servers.
 
 @pgindex @command{mds-host}
 @pgindex @command{mds-clipboard}
 @pgindex @command{mds-remot}
 @cpindex Networking
-An interesting property of @command{mds-meta} is
-that it can be used to share servers across display
+An interesting property of @command{mds-meta} is that
+it can be used to share servers across display
 servers on multiple computers. For example, if you
 start @command{mds-host} and @command{mds-clipboard}
 inside the metadisplay on your central computer,
@@ -2516,15 +2506,14 @@ distributed, so it is not perfect.
 @cpindex Sandboxing, seats
 @cpindex Seats
 @command{mds-seat} is a server that enables
-seat-sandboxing. It can be used to place
-two users on the same machine without them
-interfering with each others monitors and
-input devices. Servers started below
-@command{mds-seat} become shared and servers
-started above @command{mds-seat} become
-seat-private. @command{mds-seat} can filter
-messages from shared servers so only the
-appropriate seat receives them.
+seat-sandboxing. It can be used to place two users
+on the same machine without them interfering with
+each others monitors and input devices. Servers
+started below @command{mds-seat} become shared and
+servers started above @command{mds-seat} become
+seat-private. @command{mds-seat} can filter messages
+from shared servers so only the appropriate seat
+receives them.
 
 
 
@@ -2534,10 +2523,10 @@ appropriate seat receives them.
 @pgindex @command{mds-nest}
 @cpindex Display server, nesting
 @cpindex Nested display server
-@command{mds-nest} is a server that creates
-a new @command{mds} instance inside another
-@command{mds} instance. A display server
-inside another display server.
+@command{mds-nest} is a server that creates a new
+@command{mds} instance inside another @command{mds}
+instance. A display server inside another display
+server.
 
 
 
@@ -2547,10 +2536,10 @@ inside another display server.
 @pgindex @command{mds-host}
 @pgindex @command{mds-remote}
 @cpindex Networking
-@command{mds-host} is a server that enables
-servers like @command{mds-remote} running
-on remote machines to connect to the local
-machine and its display server.
+@command{mds-host} is a server that enables servers
+like @command{mds-remote} running on remote machines
+to connect to the local machine and its display
+server.
 
 
 
@@ -2559,12 +2548,11 @@ machine and its display server.
 
 @pgindex @command{mds-remote}
 @cpindex Networking
-@command{mds-remote} is a server that enables
-you to connect extend a remote @command{mds}
-with your local machine. This can be used to
-make a display server instance span multiple
-computers including its monitors and input
-devices.
+@command{mds-remote} is a server that enables you to
+connect extend a remote @command{mds} with your local
+machine. This can be used to make a display server
+instance span multiple computers including its
+monitors and input devices.
 
 
 
@@ -2574,9 +2562,10 @@ devices.
 @pgindex @command{mds-xmds}
 @cpindex Compatibility layer, X.org
 @cpindex X.org compatibility layer
-@command{mds-xmds} is a server that translates
-X.org calls to @command{mds} calls. It can be used
-to run X.org-only programs inside @command{mds}.
+@command{mds-xmds} is a server that translates X.org
+calls to @command{mds} calls. It can be used to run
+X.org-only programs inside @command{mds}.
+
 
 
 @node mds-wmds
@@ -2590,15 +2579,16 @@ Wayland calls to @command{mds} calls. It can be used
 to run Wayland-only programs inside @command{mds}.
 
 
+
 @node mds-mmds
 @section @command{mds-mmds}
 
 @pgindex @command{mds-mmds}
 @cpindex Compatibility layer, Mir
 @cpindex Mir compatibility layer
-@command{mds-mmds} is a server that translates
-Mir calls to @command{mds} calls. It can be used
-to run Mir-only programs inside @command{mds}.
+@command{mds-mmds} is a server that translates Mir
+calls to @command{mds} calls. It can be used to run
+Mir-only programs inside @command{mds}.
 
 
 
@@ -2609,9 +2599,9 @@ to run Mir-only programs inside @command{mds}.
 @cpindex Reverse compatibility layer, X.org
 @cpindex X.org reverse compatibility layer
 @command{mds-mdsx} is a server that translates
-@command{mds} calls to X.org calls. It can be used
-to enable @command{mds} specific programs to run
-inside the X.org display servers.
+@command{mds} calls to X.org calls. It can be used to
+enable @command{mds} specific programs to run inside
+the X.org display servers.
 
 
 
@@ -2661,10 +2651,11 @@ and resizes them accordingly when they are created.
 @cpindex Client-side decoration
 @cpindex Decoration
 @command{mds-decorator} is a server that provides a
-simple, reference implementation of a, window decorator.
-This window decorator should implement snappy and sticky
-edges and stacking (the title bars is split into tabs with
-different windows that have been stacked togather.)
+simple, reference implementation of a, window
+decorator. This window decorator should implement
+snappy and sticky edges and stacking (the title bars
+is split into tabs with different windows that have
+been stacked togather.)
 
 
 
@@ -2675,7 +2666,8 @@ different windows that have been stacked togather.)
 @cpindex Tiling window manager
 @cpindex Window manager, tiling
 @command{mds-tile} is a server that provides a
-simple, reference implementation of a, tiling window manager.
+simple, reference implementation of a, tiling window
+manager.
 
 
 
@@ -2686,7 +2678,8 @@ simple, reference implementation of a, tiling window manager.
 @cpindex Stacking window manager
 @cpindex Window manager, stacking
 @command{mds-stack} is a server that provides a
-simple, reference implementation of a, stack window manager.
+simple, reference implementation of a, stack window
+manager.
 
 
 
@@ -2718,7 +2711,8 @@ simple, reference implementation of, workspaces.
 @cpindex System tray
 @cpindex Tray, status icons
 @command{mds-tray} is a server that provides a
-simple, reference implementation of a, status icon tray.
+simple, reference implementation of a, status icon
+tray.
 
 
 
@@ -2762,7 +2756,8 @@ simple, reference implementation of a, status icon tray.
 Assign new ID to client, or fetch current ID@.
 
 @item Purpose:
-Assigning ID to clients so server can respond to that client.
+Assigning ID to clients so server can respond to that
+client.
 
 @item Compulsivity:
 Manditory, part of the core infrastructure.
@@ -2784,17 +2779,17 @@ Manditory, part of the core infrastructure.
 Sign up for reception of message.
 
 @item Optional header: @code{Stop}
-Stop reception of messages if the value for
-the header @code{Stop} is @code{yes}.
+Stop reception of messages if the value for the
+header @code{Stop} is @code{yes}.
 
 @item Optional header: @code{Priority}
-Signed 64-bit integer of reception priority
-(reversed of order).
+Signed 64-bit integer of reception priority (reversed
+of order.)
 
 @item Optional header: @code{Modifying}
-Send message asynchronously and await
-modification if the value for the header
-@code{Modifying} is @code{yes}.
+Send message asynchronously and await modification if
+the value for the header @code{Modifying} is
+@code{yes}.
 
 @item Optional header: @code{Length}
 Length of the message.
@@ -2808,7 +2803,8 @@ qualifies if this list is empty.
 Filter received message for clients and servers.
 
 @item Purpose:
-Assigned interception order for modification of messages.
+Assigned interception order for modification of
+messages.
 
 @item Compulsivity:
 Manditory, part of the core infrastructure.
@@ -2827,7 +2823,8 @@ Manditory, part of the core infrastructure.
 @code{Command: register}
 
 @item Action:
-Register availability of a command for which you implement a service.
+Register availability of a command for which you
+implement a service.
 
 @item Required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment} header
@@ -2835,32 +2832,33 @@ in response to a @code{Command: assign-id} header.
 
 @item Conditionally required header: @code{Length}
 Length of the message.
-Required if @code{Action: list} is included in the headers.
+Required if @code{Action: list} is included in the
+headers.
 
 @item Optional header: @code{Action}
 @table @code
 @item remove
-Remove availability from registry if the value
-of the header @code{Action} is @code{remove}.
+Remove availability from registry if the value of the
+header @code{Action} is @code{remove}.
 @item wait
-Wait until listed commands are available if the
-value of the header @code{Action} is @code{wait}.
-However if a protocol becomes unavailable during this
-wait period it will still be counted as available for
-this wait action.
+Wait until listed commands are available if the value
+of the header @code{Action} is @code{wait}. However
+if a protocol becomes unavailable during this wait
+period it will still be counted as available for this
+wait action.
 @item list
-Send a list of availability commands if the value
-of the header @code{Action} is @code{list}.
+Send a list of availability commands if the value of
+the header @code{Action} is @code{list}.
 @end table
 
 @item Conditionally optional header: @code{Time to live}
-The maximum number of seconds to wait.
-Available and optional if @code{Action: wait}
-is included in the headers.
+The maximum number of seconds to wait. Available and
+optional if @code{Action: wait} is included in the
+headers.
 
 @item Message:
-List of values for the header @code{Command}
-that you implement.
+List of values for the header @code{Command} that you
+implement.
 
 @item Purpose:
 Identify supported display server operations.
@@ -2887,8 +2885,9 @@ depending on the program's implementation.
 @code{Command: reregister}
 
 @item Action:
-Request that all servers resends @code{Command: register}
-with either @code{Action: add} or without the @code{Action}
+Request that all servers resends
+@code{Command: register} with either
+@code{Action: add} or without the @code{Action}
 header (does the same thing.)
 
 @item Purpose:
@@ -2896,9 +2895,9 @@ Rebuild registry created with @code{Command: register}
 if the registry server crashes.
 
 @item Compulsivity:
-Highly recommended, programs may think a protocol is not
-supported of the registry server crashes if you do not
-implement this in your server.
+Highly recommended, programs may think a protocol is
+not supported of the registry server crashes if you
+do not implement this in your server.
 
 @item Reference implementation:
 @command{mds-registry}.
@@ -2932,17 +2931,18 @@ positive (not zero).
 
 @item Conditionally optional header: @code{Length}
 The length of the message.
-Available and optional if ``custom'' is used in
-the header @code{Error}.
+Available and optional if ``custom'' is used in the
+header @code{Error}.
 
 @item Message:
-Description of the error, single line, mid-sentence case,
-no punctuation in the end, must not be question but rather
-it must be a statement.
+Description of the error, single line, mid-sentence
+case, no punctuation in the end, must not be question
+but rather it must be a statement.
 
 @item Purpose:
-Enable keyboard layout servers to automatically set active
-locks when the server starts based on currently active LED:s.
+Enable keyboard layout servers to automatically set
+active locks when the server starts based on
+currently active LED:s.
 
 @item Compulsivity:
 Optional.
@@ -2969,30 +2969,34 @@ Optional.
 @code{Command: get-vt}
 
 @item Action:
-Get the index of the virtual terminal the server is display on.
+Get the index of the virtual terminal the server is
+display on.
 
 @item Required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
 
 @item Response:
-The server will response with the header @code{VT index}
-and the index of the virtual terminal the server is
-display on in decimal format. Additionally the server
-will respond with the header @code{Active} with the value
-@code{yes} if the VT is in the foreground or the value
-@code{no} if the VT is in the background.
+The server will response with the header
+@code{VT index} and the index of the virtual terminal
+the server is display on in decimal format.
+Additionally the server will respond with the header
+@code{Active} with the value @code{yes} if the VT is
+in the foreground or the value @code{no} if the VT is
+in the background.
 
 @item Purpose:
-Allow programs to be aware of whether the display is in the
-foreground or the background.
+Allow programs to be aware of whether the display is
+in the foreground or the background.
 
 @item Purpose:
-Allow programs to be aware of which VT the server is running on.
+Allow programs to be aware of which VT the server is
+running on.
 
 @item Purpose:
-Allow programs to gain access of the TTY associated with the
-VT such that they can use ioctl and similar calls on that TTY@.
+Allow programs to gain access of the TTY associated
+with the VT such that they can use ioctl and similar
+calls on that TTY@.
 
 @item Compulsivity:
 Required.
@@ -3011,7 +3015,8 @@ Required.
 @code{configure-vt}
 
 @item Action:
-Reconfigure the virtual terminal the server is display on.
+Reconfigure the virtual terminal the server is
+display on.
 
 @item Required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment} header
@@ -3026,34 +3031,39 @@ Set the TTY graphical mode if the value of the header
 Set the TTY text mode if the value of the header
 @code{Graphical} is @code{no}.
 @end table
-The server implementing this protocol should not set the
-TTY to text mode temporarily when switching TTY@. It is
-up to the server that set the request for graphical mode
-to temporarily switch to text mode when switching TTY@.
+The server implementing this protocol should not set
+the TTY to text mode temporarily when switching TTY@.
+It is up to the server that set the request for
+graphical mode to temporarily switch to text mode
+when switching TTY@.
 
 @item Optional header: @code{Exclusive}
 @table @code
 @item yes
-The server may block other process from opening the TTY
-if the value of the header @code{Exclusive} is @code{yes}.
+The server may block other process from opening the
+TTY if the value of the header @code{Exclusive} is
+@code{yes}.
 @item no
-The server may not block other process from opening the TTY
-if the value of the header @code{Exclusive} is @code{no}.
+The server may not block other process from opening
+the TTY if the value of the header @code{Exclusive}
+is @code{no}.
 @end table
-The server implementing this protocol should keep a counter
-for how many servers have requested non-exclusive mode and
-only switch back to exclusive mode when that counter reaches
-zero
+The server implementing this protocol should keep a
+counter for how many servers have requested
+non-exclusive mode and only switch back to exclusive
+mode when that counter reaches zero
 
 @item Response:
 The server will response with a @code{Command: error}.
 
 @item Purpose:
-Allow presentation servers to enter and leave graphical mode.
+Allow presentation servers to enter and leave
+graphical mode.
 
 @item Purpose:
-Allow programs to gain access of the TTY associated with the
-VT such that they can use ioctl and similar calls on that TTY@.
+Allow programs to gain access of the TTY associated
+with the VT such that they can use ioctl and similar
+calls on that TTY@.
 
 @item Compulsivity:
 Required.
@@ -3072,16 +3082,19 @@ Required.
 @code{Command: switching-vt}
 
 @item Action:
-Notify servers about an ongoing virtual terminal switch.
+Notify servers about an ongoing virtual terminal
+switch.
 
 @item Required header: @code{Status}
 @table @code
 @item deactivating
-The kernel wants to place the display in the background
-if the value of the header @code{Status} is @code{deactivating}.
+The kernel wants to place the display in the
+background if the value of the header @code{Status}
+is @code{deactivating}.
 @item activating
-The kernel wants to place the display in the foreground
-if the value of the header @code{Status} is @code{activating}.
+The kernel wants to place the display in the
+foreground if the value of the header @code{Status}
+is @code{activating}.
 @end table
 
 @item Instructions:
@@ -3091,25 +3104,25 @@ the display's virtual terminal will get signaled by
 the kernel. Upon this signal the server should
 broadcast this command. All servers that need to
 release or acquire resouces should intercept this
-message with the possibility of modifying it. Once
-a server is ready for the VT to switch it should
-let the message pass to the next server by telling
-the master server that it is no modification to do.
-Once all servers are read for the switch the server
-that emitted this message should signal the kernel
-that it may switch VT@. The server should detect
-this by setting up secondary contection to the
-display that intercepts this message. This connection
-should intercept this message with priority @math{-2^{62}},
+message with the possibility of modifying it. Once a
+server is ready for the VT to switch it should let
+the message pass to the next server by telling the
+master server that it is no modification to do. Once
+all servers are read for the switch the server that
+emitted this message should signal the kernel that it
+may switch VT@. The server should detect this by
+setting up secondary contection to the display that
+intercepts this message. This connection should
+intercept this message with priority @math{-2^{62}},
 all servers that need to perform actions before the
 switch takes place must have a priority higher than
 @math{-2^{62}}, preferably 0.
 
 @item Purpose:
-Allow servers to release resources when the user switch
-virtual terminal before the terminal actually changes and
-to reacquire resources when the virtual terminal become
-active again.
+Allow servers to release resources when the user
+switch virtual terminal before the terminal actually
+changes and to reacquire resources when the virtual
+terminal become active again.
 
 @item Compulsivity:
 Required.
@@ -3153,7 +3166,8 @@ Any string that uniquely identifies the keyboard.
 @table @asis
 @item Purpose:
 Enable multi-keyboard aware programs and give at
-least on keyboard per seat in a multi-seat environment.
+least on keyboard per seat in a multi-seat
+environment.
 @item Note:
 mds-kkbd uses @code{kernel} to indicate that it uses
 the kernel and thus lumps together all keyboards.
@@ -3162,25 +3176,28 @@ the kernel and thus lumps together all keyboards.
 @item Required header: @code{Released}
 @table @code
 @item yes
-The value of the header @code{Released} will
-be @code{yes} if the key was released.
+The value of the header @code{Released} will be
+@code{yes} if the key was released.
 @item no
 The value of the header @code{Released} will be
 @code{no} otherwise, that is, held down or pressed.
 @end table
-Note: pause/break is automatically released directly after
-it has been pressed. This is feature built into keyboards
-and servers should not try to circumvent this.
+Note: pause/break is automatically released directly
+after it has been pressed. This is feature built into
+keyboards and servers should not try to circumvent
+this.
 
 @item Required header: @code{Keycode}
-An unsigned 14-bit integer identifying the key, may be remapped.
+An unsigned 14-bit integer identifying the key, may
+be remapped.
 
 @item Optional header: @code{Scancode}
-Either an unsigned 7-bit integer or a single blank space
-separated trio of unsigned 7-bit integers, identifying the key.
-This is the scancode sent from the keyboard and optionally
-unified by the keyboard driver, however with the typed/released
-bit zeroed out. This may not be remapped.
+Either an unsigned 7-bit integer or a single blank
+space separated trio of unsigned 7-bit integers,
+identifying the key. This is the scancode sent from
+the keyboard and optionally unified by the keyboard
+driver, however with the typed/released bit zeroed
+out. This may not be remapped.
 
 @item Optional header: @code{Modifiers}
 Single blank space separated list of active modifiers:
@@ -3219,13 +3236,13 @@ Single blank space separated list of active modifiers:
 @end table
 Any key that has been locked should be prefix with
 @code{+}, if the key has been locked by nullified
-with non-lock modifier it should be prefixed with
-a @code{-}. If no modifier is active or has been
+with non-lock modifier it should be prefixed with a
+@code{-}. If no modifier is active or has been
 nullified, @code{none} should be used.
 
 @item Optional header: @code{Key}
-A textual representation of the key that has been typed or
-released, as mapped by the keyboard layout.
+A textual representation of the key that has been
+typed or released, as mapped by the keyboard layout.
 @table @code
 @item esc
 @key{Escape}
@@ -3278,8 +3295,8 @@ released, as mapped by the keyboard layout.
 @item altgr
 @key{Alternative Graphic} (level 3)
 @item lvl*
-@code{*} may be any @math{2^n + 1} integer
-with @math{1 < n < 20}.
+@code{*} may be any @math{2^n + 1} integer with
+@math{1 < n < 20}.
 @item super
 @key{Super}
 @item hyper
@@ -3311,14 +3328,15 @@ with @math{1 < n < 20}.
 @item letter *
 @code{*} may be any UTF-8 encoded letter.
 @end table
-Keys that lock/unlock a modifer should be suffixed with a
-blank space and a @code{lock}. If the key is a dead key
-(even the @key{Compose} key) should use @code{dead} instead.
-A position, either @code{left}, @code{right}, @code{keypad}
-or an index, followed by a blank space, should prefix any
-key that occurs on multiple position on the keyboard,
-unless it only appears on the keypad once and once not on
-the keypad. Keys without any meaning should be identified
+Keys that lock/unlock a modifer should be suffixed
+with a blank space and a @code{lock}. If the key is a
+dead key (even the @key{Compose} key) should use
+@code{dead} instead. A position, either @code{left},
+@code{right}, @code{keypad} or an index, followed by
+a blank space, should prefix any key that occurs on
+multiple position on the keyboard, unless it only
+appears on the keypad once and once not on the
+keypad. Keys without any meaning should be identified
 as @code{unknown}. Modifiers and dead keys should not
 affect the value.
 
@@ -3326,18 +3344,20 @@ affect the value.
 UTF-8 encoded string that has been written.
 
 @item Purpose:
-Enable the user to use a keyboard, physical or on-screen.
+Enable the user to use a keyboard, physical or
+on-screen.
 
 @item Purpose:
-Enable programs to send keys as part of a
-script or a reply of a recorded session.
+Enable programs to send keys as part of a script or a
+reply of a recorded session.
 
 @item Compulsivity:
-Highly-recommended, a computer is as good
-as useless without a keyboard.
+Highly-recommended, a computer is as good as useless
+without a keyboard.
 
 @item Reference implementation:
-@command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@command{mds-kkbd}, @command{mds-kbd} and
+@command{mds-keytrans}
 @end table
 
 
@@ -3358,10 +3378,11 @@ in response to a @code{Command: assign-id} header.
 
 @item Instructions:
 This message must be consumed by the first server that
-receives it and implements support for it, and then send
-out a @code{Command: keyboard-enumeration} populated with
-the keyboard it provide as named in the @code{Keyboard}
-header for protocols such as @code{Command: key-sent}.
+receives it and implements support for it, and then
+send out a @code{Command: keyboard-enumeration}
+populated with the keyboard it provide as named in
+the @code{Keyboard} header for protocols such as
+@code{Command: key-sent}.
 
 @item Purpose:
 Make it possible for clients to list all available
@@ -3387,14 +3408,14 @@ Optional.
 Response to @code{Command: enumerate-keyboards}.
 
 @item Required header: @code{To}
-The ID received under @code{Client ID} header in
-the @code{Command: enumerate-keyboards} message
-that triggered this message to be broadcasted
+The ID received under @code{Client ID} header in the
+@code{Command: enumerate-keyboards} message that
+triggered this message to be broadcasted
 
 @item Required header: @code{In response to}
-The ID received under the @code{Message ID} header
-in the @code{Command: enumerate-keyboards} message
-that triggered this message to be broadcasted.
+The ID received under the @code{Message ID} header in
+the @code{Command: enumerate-keyboards} message that
+triggered this message to be broadcasted.
 
 @item Required header: @code{Length}
 Length of the message.
@@ -3412,7 +3433,8 @@ Make it possible for clients to list all available
 keyboards so that can be configured individually
 
 @item Compulsivity:
-Required if you implement @command{Command: enumerate-keyboards}.
+Required if you implement
+@command{Command: enumerate-keyboards}.
 
 @item Reference implementation:
 @command{mds-kkbd} and @command{mds-kbd}
@@ -3431,11 +3453,12 @@ Required if you implement @command{Command: enumerate-keyboards}.
 Activate and deactivate LED:s on a keyboard.
 
 @item Required header: @code{Active}
-LED:s that should be turned on. If a LED is listed here
-but not in @code{Mask} that LED should be turned on if
-it is off, and turned off if it is on.
+LED:s that should be turned on. If a LED is listed
+here but not in @code{Mask} that LED should be turned
+on if it is off, and turned off if it is on.
 
-The value is a single blank space separated list of LED:s:
+The value is a single blank space separated list of
+LED:s:
 @table @code
 @item num
 @key{Num lock}
@@ -3458,14 +3481,16 @@ A string that identifies the keyboard that should be
 affected. If omitted all keyboard are affected.
 
 @item Purpose:
-Enable keyboard layout servers to activate and deactive
-LED:s on the keyboard to indicate active locks.
+Enable keyboard layout servers to activate and
+deactive LED:s on the keyboard to indicate active
+locks.
 
 @item Compulsivity:
 Optional.
 
 @item Reference implementation:
-@command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@command{mds-kkbd}, @command{mds-kbd} and
+@command{mds-keytrans}
 @end table
 
 
@@ -3485,8 +3510,8 @@ Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
 
 @item Required header: @code{Keyboard}
-A string that identifies the keyboard that
-should be affected.
+A string that identifies the keyboard that should be
+affected.
 
 @item Response:
 The server implementing support for
@@ -3498,15 +3523,16 @@ header (using the @code{To} header) with the headers:
 @item Active
 List of currently turned on LED:s.
 @item Present
-List of LED:s that the server believes
-to be present on the keyboards.
+List of LED:s that the server believes to be present
+on the keyboards.
 @end table
 Both of these headers followes the rules of the
-@code{Active} header under @code{Command: set-keyboard-leds}.
+@code{Active} header under
+@code{Command: set-keyboard-leds}.
 
 @item Purpose:
-Enable keyboard layout servers to automatically
-set active locks when the server starts based on
+Enable keyboard layout servers to automatically set
+active locks when the server starts based on
 currently active LED:s
 
 @item Compulsivity:
@@ -3516,7 +3542,8 @@ support this protocol servers and clients and stall
 when they try to get the active LED:s
 
 @item Reference implementation:
-@command{mds-kkbd}, @command{mds-kbd} and @command{mds-keytrans}
+@command{mds-kkbd}, @command{mds-kbd} and
+@command{mds-keytrans}
 @end table
 
 
@@ -3536,10 +3563,10 @@ A floating point value of the repeat rate, measured
 in cycles per second (hertz). Zero means no repeat.
 
 @item Optional header: @code{Delay}
-An unsigned 16-bit integer of the number of milliseconds
-to wait before the first time a key is repeated. Zero
-means that the delay is matched with the rate, that is
-the reciprocal of the rate.
+An unsigned 16-bit integer of the number of
+milliseconds to wait before the first time a key is
+repeated. Zero means that the delay is matched with
+the rate, that is the reciprocal of the rate.
 
 @item Optional header: @code{Emulate}
 @table @code
@@ -3547,10 +3574,10 @@ the reciprocal of the rate.
 Always use the keyboard's built in repeat feature.
 @item allow
 Use the keyboard's built in repeat feature when
-possible, otherwise emulate the feature. But if
-the selected settings are close enough to what
-the keyboard supports, use the closed settings
-the keyboard supports.
+possible, otherwise emulate the feature. But if the
+selected settings are close enough to what the
+keyboard supports, use the closed settings the
+keyboard supports.
 @item if needed
 Use the keyboard's built in repeat feature when
 possible, otherwise emulate the feature.
@@ -3564,12 +3591,13 @@ A string that identifies the keyboard that should be
 affected. If omitted all keyboard are affected.
 
 @item Instructions:
-If neither of @code{Rate}, @code{Delay} and @code{Emulate}
-headers are used. The server should reapply the settings.
+If neither of @code{Rate}, @code{Delay} and
+@code{Emulate} headers are used. The server should
+reapply the settings.
 
 @item Purpose:
-Enable the user to configure the repeat rate and repeat
-delay on keyboards.
+Enable the user to configure the repeat rate and
+repeat delay on keyboards.
 
 @item Compulsivity:
 Optional.
@@ -3595,8 +3623,8 @@ Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
 
 @item Required header: @code{Keyboard}
-A string that identifies the keyboard that
-should be affected.
+A string that identifies the keyboard that should be
+affected.
 
 @item Response:
 The server implementing support for
@@ -3608,30 +3636,30 @@ header (using the @code{To} header) with the headers:
 @item Rate
 The current repeat rate. Same syntax as in
 @code{Command: set-keyboard-rate}.
-Set to @code{unknown} if the server does not
-know what the value is.
+Set to @code{unknown} if the server does not know
+what the value is.
 @item Delay
 The current repeat delay. Same syntax as in
 @code{Command: set-keyboard-rate}.
-Set to @code{unknown} if the server does not
-know what the value is.
+Set to @code{unknown} if the server does not know
+what the value is.
 @item Emulated
 @table @code
 @item yes
 The server implements the key repeat in software.
 @item no
-The server has set the rate on the keyboard, and
-lets the keyboard be responsible for the repeat.
-This value should also be used if the server
-does not support @code{Command: set-keyboard-rate}
-for the enquired keyboard, but is the server that
-should be responsible for it.
+The server has set the rate on the keyboard, and lets
+the keyboard be responsible for the repeat. This
+value should also be used if the server does not
+support @code{Command: set-keyboard-rate} for the
+enquired keyboard, but is the server that should be
+responsible for it.
 @end table
 @end table
 
 @item Purpose:
-Enable the user to get the current repeat
-rate and repeat delay on the keyboard.
+Enable the user to get the current repeat rate and
+repeat delay on the keyboard.
 
 @item Compulsivity:
 Optional. Recommended if implement support for
@@ -3668,9 +3696,9 @@ of the header @code{Action} is @code{reset}.
 Query mapping if the value of the header @code{Action}
 is @code{query}.
 @end table
-Each affected server will send a message format
-like that of @code{Action: remap} with current
-mapping that are not identity mappings.
+Each affected server will send a message format like
+that of @code{Action: remap} with current mapping
+that are not identity mappings.
 
 @item Optional header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3679,19 +3707,22 @@ affected. If omitted all keyboard are affected.
 @item Conditionally required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
-Required if @code{Action: query} is included in the headers.
+Required if @code{Action: query} is included in the
+headers.
 
 @item Conditionally optional header: @code{Length}
 The length of the message.
-Available and optional if @code{Action: remap}
-is included in the headers.
+Available and optional if @code{Action: remap} is
+included in the headers.
 
 @item Message:
-Each line contains contains two single space delimited numbers,
-the first number is the keycode as determined by the scancode,
-the second number is keycode that scancode should generate.
-For example, @code{1 1} resets @key{Escape} to be mapped to
-@key{Escape}, and @code{1 59} remaps @key{Escape} to @key{F1}, while
+Each line contains contains two single space
+delimited numbers, the first number is the keycode as
+determined by the scancode, the second number is
+keycode that scancode should generate. For example,
+@code{1 1} resets @key{Escape} to be mapped to
+@key{Escape}, and @code{1 59} remaps @key{Escape} to
+@key{F1}, while
 @example
 @group
 1 59
@@ -3701,10 +3732,12 @@ For example, @code{1 1} resets @key{Escape} to be mapped to
 swaps @key{Escape} and @key{F1}.
 
 @item Purpose:
-Enable the user to swap or replace keys on the keyboard.
+Enable the user to swap or replace keys on the
+keyboard.
 
 @item Purpose:
-Enable the user manually correct an incorrectly mapped keyboard.
+Enable the user manually correct an incorrectly
+mapped keyboard.
 
 @item Compulsivity:
 Optional.
@@ -3729,8 +3762,8 @@ Announce the existance of a new keyboard.
 The length of the message.
 
 @item Message:
-List of strings that identifies the keyboards
-that have been added.
+List of strings that identifies the keyboards that
+have been added.
 
 @item Purpose:
 Enable servers and clients to detect new keyboards.
@@ -3758,11 +3791,12 @@ Announce the removal of an old keyboard.
 The length of the message.
 
 @item Message:
-List of strings that identifies the keyboards
-that have been removed.
+List of strings that identifies the keyboards that
+have been removed.
 
 @item Purpose:
-Enable servers and clients to detect removal of keyboards.
+Enable servers and clients to detect removal of
+keyboards.
 
 @item Compulsivity:
 Recommended.
@@ -3814,19 +3848,20 @@ What to do with the clipboard:
 Write the message to the clipboard if the value of
 the header @code{Action} is @code{add}.
 @item read
-Read the clipboard if the value of
-the header @code{Action} is @code{read}.
+Read the clipboard if the value of the header
+@code{Action} is @code{read}.
 @item clear
-Clear all entries on the selected level on the clipboard
-if the value of the header @code{Action} is @code{read}.
+Clear all entries on the selected level on the
+clipboard if the value of the header @code{Action} is
+@code{read}.
 @item set-size
-Shrink/grow the clipstack if the value of
-the header @code{Action} is @code{set-size}.
+Shrink/grow the clipstack if the value of the header
+@code{Action} is @code{set-size}.
 @item get-size
-Read the size of the clipstack if the value of
-the header @code{Action} is @code{get-size}.
-In the reply, the server will send a message
-containing the headers:
+Read the size of the clipstack if the value of the
+header @code{Action} is @code{get-size}. In the
+reply, the server will send a message containing the
+headers:
 @table @code
 @item Size
 The configured maximum size of the clipstack.
@@ -3837,19 +3872,22 @@ The number of elements currently in the clipstack.
 
 @item Conditionally required header: @code{Length}
 Length of the message.
-Required if @code{Action: add} is included in the headers.
+Required if @code{Action: add} is included in the
+headers.
 
 @item Conditionally required header: @code{Size}
 The maximum number of elements in the clipstack.
-Required if @code{Action: set-size} is included in the headers.
+Required if @code{Action: set-size} is included in
+the headers.
 
 @item Conditionally required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
-Required if @code{Action: read} or @code{Action: read} is
-included in the headers, or if @code{Action: add} is
-included in the headers and if the header @code{Time to live}
-is included and has a value starting with @code{until-death}.
+Required if @code{Action: read} or @code{Action: read}
+is included in the headers, or if @code{Action: add}
+is included in the headers and if the header
+@code{Time to live} is included and has a value
+starting with @code{until-death}.
 
 @item Conditionally optional header: @code{Index}
 The index of the item in the clipstack, starting at 0.
@@ -3857,22 +3895,22 @@ Available and optional if the @code{Action: read} is
 included in the headers.
 
 @item Conditionally optional header: @code{Time to live}
-The number of seconds the entry should be available before
-it is removed by the server, or:
+The number of seconds the entry should be available
+before it is removed by the server, or:
 @table @code
 @item until-death
 Remove entry when the client closes.
 @item until-death #
-Remove entry when the client closes,
-or @code{#} seconds have elapsed.
+Remove entry when the client closes, or @code{#}
+seconds have elapsed.
 @item forever
 Never remove it. (This is the default.)
 @end table
 The server will always remove the entry when either:
 @enumerate 1
 @item
-it is at the bottom of the clipstack and a new
-entry is added to the clipstack, or
+it is at the bottom of the clipstack and a new entry
+is added to the clipstack, or
 @item
 @code{Action: clear} is issued for the clipstack.
 @end enumerate
@@ -3882,13 +3920,13 @@ crashes or is re-executed.
 
 @sgindex @code{SIGALRM}
 It is up to the implementation to choose when the
-removal actually takes place. For example, the reference
-implementation will pop entries that have timed out when
-a new entry is added, the reading on the clipstack is
-requested or the server is reexecuted, but another
-implement may choose to pop entires asynchronously using
-another thread or an alarm an pop when @code{SIGALRM} is
-received.
+removal actually takes place. For example, the
+reference implementation will pop entries that have
+timed out when a new entry is added, the reading on
+the clipstack is requested or the server is
+reexecuted, but another implement may choose to pop
+entires asynchronously using another thread or an
+alarm an pop when @code{SIGALRM} is received.
 
 Available and optional if the @code{Action: add} is
 included in the headers.
@@ -3919,34 +3957,37 @@ Optional.
 
 @item Action:
 The clipboard server sends out some information about
-what it is doing, such as automatically removing entires.
+what it is doing, such as automatically removing
+entires.
 
 @item Included header: @code{Event}
 @table @code
 @item pop
 The value of the header @code{Event} is @code{pop}
-when an item in the clipstack has been removed.
-If the value header--value-pair is used the following
+when an item in the clipstack has been removed. If
+the value header--value-pair is used the following
 headers will also be included in the message:
 @table @code
 @item Level
 The clipboard level that has been affected.
 @item Popped
-The index of the item in the clipstack that has been removed.
+The index of the item in the clipstack that has been
+removed.
 @item Size
 The configured maximum size of the clipstack.
 @item Used
 The number of elements currently in the clipstack.
 @end table
 @item crash
-The value of the header @code{Event} is @code{crash} when
-the clipboard has been reset because of a software crash.
+The value of the header @code{Event} is @code{crash}
+when the clipboard has been reset because of a
+software crash.
 @end table
 
 @item Purpose:
-Enable clients to get notification about changes
-to the clipboard, that cannot trivially derived
-from @command{Command: clipboard}
+Enable clients to get notification about changes to
+the clipboard, that cannot trivially derived from
+@command{Command: clipboard}
 
 @item Compulsivity:
 Optional add-on to the clipboard's functionallity.
@@ -3979,53 +4020,62 @@ Optional add-on to the clipboard's functionallity.
 @item Action:
 Add a status icons to the status icon tray.
 
-The client should keep in mind that there can be any number of
-trays available on the system: zero, one, two or three, …,
-and that it will get a response once from every tray.
+The client should keep in mind that there can be any
+number of trays available on the system: zero, one,
+two or three, …, and that it will get a response once
+from every tray.
 
 @item Required header: @code{Client ID}
 Your ID, provided by the @code{ID assignment} header
 in response to a @code{Command: assign-id} header.
 
 @item Required header: @code{Package}
-The name of the package to which the program announced the icon
-belongs.
+The name of the package to which the program
+announced the icon belongs.
 
 @item Required header: @code{Icon ID}
-An ID of the icon that can be used identify the icon, icon ID:s
-are not unique, but the combination of a package and a icon ID
-should be unque and can be used to ignore already added icons
-and hide icons that the user has been configured to be hidden.
+An ID of the icon that can be used identify the icon,
+icon ID:s are not unique, but the combination of a
+package and a icon ID should be unque and can be used
+to ignore already added icons and hide icons that the
+user has been configured to be hidden.
 
 @item Required header: @code{Title}
-A title describing the icon for the user, used to configured
-when icons should be hidden and shown among other configuration.
+A title describing the icon for the user, used to
+configured when icons should be hidden and shown
+among other configuration.
 
 @item Required header: @code{Icon}
-The name or pathname of an icon to use together with the title.
+The name or pathname of an icon to use together with
+the title.
 
 @item Response:
-Recipients will respond with a message containing the headers:
+Recipients will respond with a message containing the
+headers:
 @table @code
 @item To
-Will contain the value of the @code{Client ID} from the
-message that triggered this response.
+Will contain the value of the @code{Client ID} from
+the message that triggered this response.
 @item In response to
-Will contain the value of the @code{Message ID} from the
-message that triggered this response.
+Will contain the value of the @code{Message ID} from
+the message that triggered this response.
 @item Message ID
-Will contain a value as described in @ref{Message Passing}.
+Will contain a value as described in
+@ref{Message Passing}.
 @item Socket
-Will contain an ID to where the icon should be embeded.
+Will contain an ID to where the icon should be
+embeded.
 @item Will send update
 The value of this header will be @code{yes} if this
-message will be followed by a @code{Command: tray-update}
-message. Otherwise the value will be @code{no}.
+message will be followed by a
+@code{Command: tray-update} message. Otherwise the
+value will be @code{no}.
 @end table
 
 @item Purpose:
-Enable clients to add a small icon that displays the status
-of programs, particularly minimised programs and services.
+Enable clients to add a small icon that displays the
+status of programs, particularly minimised programs
+and services.
 
 @item Compulsivity:
 Optional.
@@ -4046,28 +4096,30 @@ Change the status of a status icon.
 @item Required header: @code{Status}
 @table @code
 @item hide
-Hide the icon if the value of the
-@code{Status} header is @code{hide}.
+Hide the icon if the value of the @code{Status}
+header is @code{hide}.
 @item show
-Show the icon if the value of the
-@code{Status} header is @code{show}.
+Show the icon if the value of the @code{Status}
+header is @code{show}.
 @item active
-The icon is active if the value of
-the @code{Status} header is @code{active}.
+The icon is active if the value of the @code{Status}
+header is @code{active}.
 @item inactive
-The icon is inactive if the value of
-the @code{Status} header is @code{inactive}.
+The icon is inactive if the value of the
+@code{Status} header is @code{inactive}.
 @end table
 
 @item Purpose:
-Enable status trays to automatically hide inactive icons.
+Enable status trays to automatically hide inactive
+icons.
 
 @item Purpose:
 Hide icons without actually removing them.
 
 @item Compulsivity:
 Required if supporting @code{Command: add-tray-icon},
-only @code{Status: hide} and @code{Status show} is required.
+only @code{Status: hide} and @code{Status show} is
+required.
 @end table
 
 
@@ -4087,11 +4139,12 @@ Where the icon is embedded, used to identify the
 affected tray.
 
 @item Conditionally required header: @code{Max colour}
-The maximum colour component value, for example, if using 24-bit
-colour, which component will be 8-bit and the maximum value will
-be 255, this also applies to the alpha component.
-Required if either for the @code{Colour}-, @code{Foreground}-
-or @code{Alpha}-header are used.
+The maximum colour component value, for example, if
+using 24-bit colour, which component will be 8-bit
+and the maximum value will be 255, this also applies
+to the alpha component. Required if either for the
+@code{Colour}-, @code{Foreground}- or
+@code{Alpha}-header are used.
 
 @item Conditionally required header: @code{Size}
 The width and height, in pixels, the icon should have.
@@ -4101,8 +4154,8 @@ otherwise this header is optional.
 @item Conditionally required header: @code{Has alpha}
 @table @code
 @item yes
-The message contains an alpha channel if the
-value of the @code{Has alpha} header is @code{yes}.
+The message contains an alpha channel if the value of
+the @code{Has alpha} header is @code{yes}.
 @item no
 The message does not contain an alpha channel if the
 value of the @code{Has alpha} header is @code{no}.
@@ -4113,13 +4166,13 @@ Required if the @code{Length}-header is used.
 The number of bytes the subpixels used, for example,
 24-bit colours will have this set to 1 because each
 subpixel has 8 bits, 48-bit colours will have this
-set to 2 because each subpixel has 16 bits
-Allowed values are: 1, 2, 4 and 8. These values are
-used used so that CPU:s with any endianness can be
-trivially used as the words sizes are guaranteed to
-be supported in C, and mixed/middle-endiannes gets
-complicated if we go outside this.
-Required if the @code{Length}-header is used.
+set to 2 because each subpixel has 16 bits. Allowed
+values are: 1, 2, 4 and 8. These values are used so
+that CPU:s with any endianness can be trivially used
+as the words sizes are guaranteed to be supported in
+C, and mixed/middle-endiannes gets complicated if we
+go outside this. Required if the @code{Length}-header
+is used.
 
 @item Conditionally optional/required header: @code{Colour}
 Single blank space-separated [0, @code{<Max colour>}]
@@ -4130,7 +4183,8 @@ Required if the @code{Foreground}-header but not
 @code{Length}-header is used.
 
 @item Conditionally optional header: @code{Foreground}
-Single blank space-separated [0, @code{<Max colour>}] sRGB 3-tuple.
+Single blank space-separated [0, @code{<Max colour>}]
+sRGB 3-tuple.
 
 @item Optional header: @code{Alpha}
 The opacity of the tray.
@@ -4144,8 +4198,8 @@ Length of the message.
 The icon tray may blink if the value of the
 @code{Use urgency} header is @code{yes}.
 @item no
-The icon tray may not blink if the value of
-the @code{Use urgency} header is @code{no}.
+The icon tray may not blink if the value of the
+@code{Use urgency} header is @code{no}.
 @end table
 
 @item Message:
@@ -4153,8 +4207,8 @@ Raw binary encoding of the background image, bytes
 are orders: row, pixel, channel (alpha, red, green,
 blue), subpixel value (native CPU encoding). The
 Alpha channel should be included but ignored if
-@code{Has alpha: no}, in such as it is best to set
-it to full.
+@code{Has alpha: no}, in such as it is best to set it
+to full.
 
 @ifset AFOURPAPER_OR_USLETTER
 Example image with @code{Bytes: 2},
@@ -4167,7 +4221,8 @@ sRGB(x0D0E, 0, 0), sRGB(0, x0F10, 0), sRGB(0, 0, x1112)
 @end group
 @end example
 
-Encoding of example image in hexadecimal representation:
+Encoding of example image in hexadecimal
+representation:
 @example
 @group
 FFFF 0102 0000 0000 FFFF 0000 0304 0000 FFFF 0000 0000 0506
@@ -4196,7 +4251,8 @@ sRGB(x0708, 0, 0), sRGB(0, x090A, 0)
 @end group
 @end example
 
-Encoding of example image in hexadecimal representation:
+Encoding of example image in hexadecimal
+representation:
 @example
 @group
 FFFF 0102 0000 0000 FFFF 0000 0304 0000
@@ -4214,14 +4270,15 @@ FF FF 08 07 0 0 0 0 FF FF 0 0 0A 09 0 0
 @end example
 @end ifclear
 
-It is up to the networking servers to translate
-the encoding between machines.@footnote{The host
-translates to big-endian unless they can confirm
-that they have the same endianness.}
+It is up to the networking servers to translate the
+encoding between machines.@footnote{The host
+translates to big-endian unless they can confirm that
+they have the same endianness.}
 
 @item Purpose:
-Enable clients to be aware of the appearance of the tray,
-such as colours, transparency and background image.
+Enable clients to be aware of the appearance of the
+tray, such as colours, transparency and background
+image.
 
 @item Purpose:
 Enable clients to be aware of how the user wants
@@ -4246,7 +4303,8 @@ Announce the existence of a new status icon trays.
 @item Purpose:
 Allow clients to add their status icons to status icon
 trays that have been added to the display after those
-programs have started and attempted to add their icons.
+programs have started and attempted to add their
+icons.
 
 @item Compulsivity:
 Required if supporting @code{Command: add-tray-icon}.
@@ -4297,8 +4355,8 @@ in the message that was received by the server.
 @item Cooperative
 Whether a server like @command{mds-coopgamma} is
 running. That is, if priorities and classes are
-respected. The value with be either @code{yes},
-for cooperative, or @code{no}, for non-cooperative.
+respected. The value with be either @code{yes}, for
+cooperative, or @code{no}, for non-cooperative.
 @item Depth
 The bit-depth of the gamma ramps. Possible values
 are: 8, 16, 32 och 64.
@@ -4328,9 +4386,9 @@ Enable performance optimisation when manipulating
 gamma ramps.
 
 @item Compulsivity:
-Optional. Required if your implement support
-for @command{Command: get-gamma}
-or @command{Command: set-gamma}.
+Optional. Required if your implement support for
+@command{Command: get-gamma} or
+@command{Command: set-gamma}.
 
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
@@ -4358,20 +4416,17 @@ header.
 The output name for the CRTC of interest.
 
 @item Required header: @code{Coalesce}
-Whether the received the full gamma ramp
-filter list, of the value is @code{yes},
-rather than the result of them, of the
-value is @code{no}.
+Whether the received the full gamma ramp filter list,
+of the value is @code{yes}, rather than the result of
+them, of the value is @code{no}.
 
 @item Required header: @code{High priority}
-The upper bound of the priority range of
-the gamma ramps to received. This is a
-signed 64-bit integer.
+The upper bound of the priority range of the gamma
+ramps to received. This is a signed 64-bit integer.
 
 @item Required header: @code{Low priority}
-The lower bound of the priority range of
-the gamma ramps to received. This is a
-signed 64-bit integer.
+The lower bound of the priority range of the gamma
+ramps to received. This is a signed 64-bit integer.
 
 @item Response:
 The server will response with a @code{Command: error}
@@ -4388,25 +4443,24 @@ The number of stops in the green gamma ramp.
 @item Blue size
 The number of stops in the blue gamma ramp.
 @item Tables
-The number of gamma ramp lookup tables that
-is included in the respone's message. This header
-will not necessarily be included if @code{Coalesce: yes}
-was used in the query, rather reference implementations
-will exclude it.
+The number of gamma ramp lookup tables that is
+included in the respone's message. This header will
+not necessarily be included if @code{Coalesce: yes}
+was used in the query, rather reference
+implementations will exclude it.
 @end table
-These headers are included so you can make sure
-the no metadata for gamma ramps have changed,
-which could happen if the user switches between
-hardware and software gamma ramps.
-The response will also contain a @code{Length}
-header and a message formatted in the same manner
-as for @command{Command. set-gamma} messages. That
-is, assuming as an example that the gamma ramp depth
-is 16 bits, @code{Coalesce: yes} was used in the
-query, the red ramp is (1, 2, 3, 4, 5, 6), the green
-ramp is (17, 18, 19, 20, 21, 22, 23) and the blue
-ramp is (33, 34, 35, 36, 37, 38, 39, 40) then the
-message will be (hexadecimal representation):
+These headers are included so you can make sure the
+no metadata for gamma ramps have changed, which could
+happen if the user switches between hardware and
+software gamma ramps. The response will also contain
+a @code{Length} header and a message formatted in the
+same manner as for @command{Command. set-gamma}
+messages. That is, assuming as an example that the
+gamma ramp depth is 16 bits, @code{Coalesce: yes} was
+used in the query, the red ramp is (1, 2, 3, 4, 5,
+6), the green ramp is (17, 18, 19, 20, 21, 22, 23)
+and the blue ramp is (33, 34, 35, 36, 37, 38, 39, 40)
+then the message will be (hexadecimal representation):
 @example
 @group
 0001 0002 0003 0004 0005 0006
@@ -4436,13 +4490,13 @@ binary format as an @code{int64_t} and the class will
 be encoded as a NUL-terminated UTF-8 string
 
 @item Purpose:
-Enable analysis and readings of the current
-gamma ramps.
+Enable analysis and readings of the current gamma
+ramps.
 
 @item Compulsivity:
-Optional. Required if your implement support
-for @command{Command: get-gamma-info}
-or @command{Command: set-gamma}.
+Optional. Required if your implement support for
+@command{Command: get-gamma-info} or
+@command{Command: set-gamma}.
 
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
@@ -4462,33 +4516,32 @@ or @command{Command: set-gamma}.
 Modify gamma ramps.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}
-header in response to a @code{Command: assign-id}
-header.
+Your ID, provided by the @code{ID assignment} header
+in response to a @code{Command: assign-id} header.
 
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
 
 @item Required header: @code{Priority}
-A signed 64-bit integer of the priority for the filter.
-gamma correction should use zero priority. It is
-preferable that search logical adjustment is sent with
-different priorities so other programs can insert filters
-between them.
+A signed 64-bit integer of the priority for the
+filter. gamma correction should use zero priority. It
+is preferable that search logical adjustment is sent
+with different priorities so other programs can
+insert filters between them.
 
 @item Required header: @code{Class}
 A UTF-8 string that identifies the filter. It should
-be formatted as @code{pkg::cmd::role}. @code{pkg} should
-be the package name the package was installed with on
-the system. @code{cmd} should be the basename of the
-command for the program.
+be formatted as @code{pkg::cmd::role}. @code{pkg}
+should be the package name the package was installed
+with on the system. @code{cmd} should be the basename
+of the command for the program.
 
 @item Required header: @code{Lifespan}
 The value may be one of the following:
 @table @code
 @item until-removal
-Remove the filter when @command{Lifespan: remove}
-is sent.
+Remove the filter when @command{Lifespan: remove} is
+sent.
 @item until-death
 Remove the filter when the client dies.
 @item remove
@@ -4497,8 +4550,8 @@ Remove the filter now.
 
 @item Conditionally required header: @code{Length}
 The length of the message.
-Available and required if @code{Lifespan: remove}
-is not included in the message.
+Available and required if @code{Lifespan: remove} is
+not included in the message.
 
 @item Message:
 The gamma ramps in binary encoding. As an example,
@@ -4525,20 +4578,20 @@ Note that on a big-endian system this would be:
 @end group
 @end example
 
-It is up to the networking servers to translate
-the encoding between machines.@footnote{The host
-translates to big-endian unless they can confirm
-that they have the same endianness.}
+It is up to the networking servers to translate the
+encoding between machines.@footnote{The host
+translates to big-endian unless they can confirm that
+they have the same endianness.}
 
-The use of binary rather than text here is chosen
-to increase performance for programs that try the
-change the adjustments fluently. For programs
-similar to @command{xgamma} that sets the ramps
-once this is however unnessary. However it does
-simplify the program code as one would only need
-to write the ramps to the message without creating
-a string with all stops converted and then measure
-the length of that string.
+The use of binary rather than text here is chosen to
+increase performance for programs that try the change
+the adjustments fluently. For programs similar to
+@command{xgamma} that sets the ramps once this is
+however unnessary. However it does simplify the
+program code as one would only need to write the
+ramps to the message without creating a string with
+all stops converted and then measure the length of
+that string.
 
 @item Response:
 The server will response with a @code{Command: error}.
@@ -4550,30 +4603,34 @@ and a server such as @command{mds-coopgamma} to let
 multiple programs adjust the output with their open
 filters that stack up. In a configuration like this,
 @command{mds-coopgamma} will keep track of all filters
-and when a modification is made it sends the grand result
-to @command{mds-hwgamma}, that is, what the filters together
-produce. To do this, @command{mds-coopgamma} listens for
-@command{Command: set-gamma} with priority @math{2^{62}}
-and modifies the message so the payload is filled with the
-result rather than to single filter. This modified message
-is then received by @command{mds-hwgamma} that listens with
-priority zero and applies the gamma ramps.
-@command{mds-hwgamma} will ignore the @code{Priority} and
-the @code{Class} header, but it will respect the @code{Lifespan}
-header, therefore @command{mds-coopgamma} will always modify
-the value of the @code{Lifespan} header to @code{until-removal}.
+and when a modification is made it sends the grand
+result to @command{mds-hwgamma}, that is, what the
+filters together produce. To do this,
+@command{mds-coopgamma} listens for
+@command{Command: set-gamma} with priority
+@math{2^{62}} and modifies the message so the payload
+is filled with the result rather than to single
+filter. This modified message is then received by
+@command{mds-hwgamma} that listens with priority zero
+and applies the gamma ramps. @command{mds-hwgamma}
+will ignore the @code{Priority} and the @code{Class}
+header, but it will respect the @code{Lifespan}
+header, therefore @command{mds-coopgamma} will always
+modify the value of the @code{Lifespan} header to
+@code{until-removal}.
 
 @item Purpose:
-Enable colour output correction such as gamma correction.
+Enable colour output correction such as gamma
+correction.
 
 @item Purpose:
 Enable colour output filters such colour temperature
 adjustments, colour invertion and dimming.
 
 @item Compulsivity:
-Optional. Required if your implement support
-for @command{Command: get-gamma-info}
-or @command{Command: get-gamma}.
+Optional. Required if your implement support for
+@command{Command: get-gamma-info} or
+@command{Command: get-gamma}.
 
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
