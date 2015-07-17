@@ -174,6 +174,7 @@ libraries and concepts.
 
 
 
+
 @defindex op
 @defindex sg
 
@@ -787,11 +788,11 @@ Message ID: 0\n
 @cpindex Message corruption
 @cpindex Corrupt messages
 where @code{\n} is an LF-line break. The value on the
-@code{Message ID} line does not need to be 0, but
+@code{Message ID}-line does not need to be 0, but
 servers and clients often start with 0 and count
 upwards. The value is however bound to an unsigned
 32-bit integer. All message must contain this
-@code{Message ID} header, otherwise the message is
+@code{Message ID}-header, otherwise the message is
 considered corrupt and is ignored.
 
 @cpindex Message structure
@@ -815,17 +816,17 @@ the name and the value.
 @cpindex ID assignment
 @cpindex Assignment of ID
 When the master server receives this
-@code{Command: assign-id} message it will assign the
-client a unique ID and send it to the
-client.@footnote{The master server is the only server
-than can address the client uniquely before it has an
-ID, so this part can only be implement in the master
+@code{Command: assign-id}-message it will assign the
+client a unique ID and send it to the client.
+@footnote{The master server is the only server than
+can address the client uniquely before it has an ID,
+so this part can only be implement in the master
 server.} If the client already has an ID, it will
 send back that ID to the client. This response
 consists of two headers @code{ID assignment} and
 @code{In response to}, containing the client's
 new (or possibly already assigned) ID and the value
-that was in the @code{Message ID} header,
+that was in the @code{Message ID}-header,
 respectively. For example:
 
 @example
@@ -987,7 +988,7 @@ Message ID: 1\n
 @end example
 
 Note that this will stop you from receiving messages
-contain the @code{To} header addressed to you until
+contain the @code{To}-header addressed to you until
 you request to receiving such messages again.
 
 When you sign up for message you may request to be
@@ -1082,8 +1083,8 @@ Modify: no\n
 @cpindex Consumption, interception, message passing
 There is also a third option: to consume to the
 message. This stops any further clients from
-receiving the message. This is done by modifying
-the message into an empty message:
+receiving the message. This is done by modifying the
+message into an empty message:
 
 @example
 Modify ID: 4\n
@@ -2827,8 +2828,8 @@ Register availability of a command for which you
 implement a service.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Conditionally required header: @code{Length}
 Length of the message.
@@ -2887,8 +2888,8 @@ depending on the program's implementation.
 @item Action:
 Request that all servers resends
 @code{Command: register} with either
-@code{Action: add} or without the @code{Action}
-header (does the same thing.)
+@code{Action: add} or without the @code{Action}-header
+(does the same thing.)
 
 @item Purpose:
 Rebuild registry created with @code{Command: register}
@@ -2973,8 +2974,8 @@ Get the index of the virtual terminal the server is
 display on.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Response:
 The server will response with the header
@@ -3019,8 +3020,8 @@ Reconfigure the virtual terminal the server is
 display on.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Optional header: @code{Graphical}
 @table @code
@@ -3373,15 +3374,15 @@ without a keyboard.
 List available keyboards.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Instructions:
 This message must be consumed by the first server that
 receives it and implements support for it, and then
 send out a @code{Command: keyboard-enumeration}
 populated with the keyboard it provide as named in
-the @code{Keyboard} header for protocols such as
+the @code{Keyboard}-header for protocols such as
 @code{Command: key-sent}.
 
 @item Purpose:
@@ -3408,13 +3409,13 @@ Optional.
 Response to @code{Command: enumerate-keyboards}.
 
 @item Required header: @code{To}
-The ID received under @code{Client ID} header in the
-@code{Command: enumerate-keyboards} message that
+The ID received under @code{Client ID}-header in the
+@code{Command: enumerate-keyboards}-message that
 triggered this message to be broadcasted
 
 @item Required header: @code{In response to}
-The ID received under the @code{Message ID} header in
-the @code{Command: enumerate-keyboards} message that
+The ID received under the @code{Message ID}-header in
+the @code{Command: enumerate-keyboards}-message that
 triggered this message to be broadcasted.
 
 @item Required header: @code{Length}
@@ -3506,8 +3507,8 @@ Optional.
 List exisiting LED:s on a keyboard and their state.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3517,8 +3518,9 @@ affected.
 The server implementing support for
 @code{Command: get-keyboard-leds} for the keyboard
 indicated by @code{Keyboard} should send a message
-back to the client indicated by the @code{Client ID}
-header (using the @code{To} header) with the headers:
+back to the client indicated by the
+@code{Client ID}-header (using the @code{To}-header)
+with the headers:
 @table @code
 @item Active
 List of currently turned on LED:s.
@@ -3527,7 +3529,7 @@ List of LED:s that the server believes to be present
 on the keyboards.
 @end table
 Both of these headers followes the rules of the
-@code{Active} header under
+@code{Active}-header under
 @code{Command: set-keyboard-leds}.
 
 @item Purpose:
@@ -3619,8 +3621,8 @@ Optional.
 Get the repeat rate and repeat delay on a keyboard.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3630,8 +3632,9 @@ affected.
 The server implementing support for
 @code{Command: get-keyboard-rate} for the keyboard
 indicated by @code{Keyboard} should send a message
-back to the client indicated by the @code{Client ID}
-header (using the @code{To} header) with the headers:
+back to the client indicated by the
+@code{Client ID}-header (using the @code{To}-header)
+with the headers:
 @table @code
 @item Rate
 The current repeat rate. Same syntax as in
@@ -3705,8 +3708,8 @@ A string that identifies the keyboard that should be
 affected. If omitted all keyboard are affected.
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 Required if @code{Action: query} is included in the
 headers.
 
@@ -3881,8 +3884,8 @@ Required if @code{Action: set-size} is included in
 the headers.
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 Required if @code{Action: read} or @code{Action: read}
 is included in the headers, or if @code{Action: add}
 is included in the headers and if the header
@@ -4026,8 +4029,8 @@ two or three, …, and that it will get a response once
 from every tray.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Package}
 The name of the package to which the program
@@ -4068,7 +4071,7 @@ embeded.
 @item Will send update
 The value of this header will be @code{yes} if this
 message will be followed by a
-@code{Command: tray-update} message. Otherwise the
+@code{Command: tray-update}-message. Otherwise the
 value will be @code{no}.
 @end table
 
@@ -4096,17 +4099,17 @@ Change the status of a status icon.
 @item Required header: @code{Status}
 @table @code
 @item hide
-Hide the icon if the value of the @code{Status}
-header is @code{hide}.
+Hide the icon if the value of the
+@code{Status}-header is @code{hide}.
 @item show
-Show the icon if the value of the @code{Status}
-header is @code{show}.
+Show the icon if the value of the
+@code{Status}-header is @code{show}.
 @item active
-The icon is active if the value of the @code{Status}
-header is @code{active}.
+The icon is active if the value of the
+@code{Status}-header is @code{active}.
 @item inactive
 The icon is inactive if the value of the
-@code{Status} header is @code{inactive}.
+@code{Status}-header is @code{inactive}.
 @end table
 
 @item Purpose:
@@ -4158,7 +4161,7 @@ The message contains an alpha channel if the value of
 the @code{Has alpha} header is @code{yes}.
 @item no
 The message does not contain an alpha channel if the
-value of the @code{Has alpha} header is @code{no}.
+value of the @code{Has alpha}-header is @code{no}.
 @end table
 Required if the @code{Length}-header is used.
 
@@ -4196,10 +4199,10 @@ Length of the message.
 @table @code
 @item yes
 The icon tray may blink if the value of the
-@code{Use urgency} header is @code{yes}.
+@code{Use urgency}-header is @code{yes}.
 @item no
 The icon tray may not blink if the value of the
-@code{Use urgency} header is @code{no}.
+@code{Use urgency}-header is @code{no}.
 @end table
 
 @item Message:
@@ -4334,9 +4337,8 @@ Required if supporting @code{Command: add-tray-icon}.
 Query gamma ramp information.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}
-header in response to a @code{Command: assign-id}
-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
@@ -4408,9 +4410,8 @@ Optional. Required if your implement support for
 Query gamma ramps.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}
-header in response to a @code{Command: assign-id}
-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
@@ -4453,7 +4454,7 @@ These headers are included so you can make sure the
 no metadata for gamma ramps have changed, which could
 happen if the user switches between hardware and
 software gamma ramps. The response will also contain
-a @code{Length} header and a message formatted in the
+a @code{Length}-header and a message formatted in the
 same manner as for @command{Command. set-gamma}
 messages. That is, assuming as an example that the
 gamma ramp depth is 16 bits, @code{Coalesce: yes} was
@@ -4516,8 +4517,8 @@ Optional. Required if your implement support for
 Modify gamma ramps.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
@@ -4613,11 +4614,11 @@ is filled with the result rather than to single
 filter. This modified message is then received by
 @command{mds-hwgamma} that listens with priority zero
 and applies the gamma ramps. @command{mds-hwgamma}
-will ignore the @code{Priority} and the @code{Class}
-header, but it will respect the @code{Lifespan}
-header, therefore @command{mds-coopgamma} will always
-modify the value of the @code{Lifespan} header to
-@code{until-removal}.
+will ignore the @code{Priority} and the
+@code{Class}-header, but it will respect the
+@code{Lifespan}-header, therefore
+@command{mds-coopgamma} will always modify the value
+of the @code{Lifespan}-header to @code{until-removal}.
 
 @item Purpose:
 Enable colour output correction such as gamma
@@ -4675,7 +4676,7 @@ values as set to @command{false}. The screensaver
 server may choose recognise the command
 @command{true} as meaning that does not need to start
 a screensaver. It is also possible to disable
-screensaving via the @code{Activate delay} header.
+screensaving via the @code{Activate delay}-header.
 
 @item Optional header: @code{Activate delay}
 The number of seconds the display should be inactive
@@ -4718,8 +4719,8 @@ same client.
 @end table
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 Required if @code{Inhibit} is included in the headers.
 
 @item Purpose:
@@ -4804,12 +4805,12 @@ The screensaver server should broadcast this message
 when it thinks it can start the screensaver. It
 should intercept this message with priority
 @math{-2^{63}}. When intercepted it should read the
-@code{Last active} header to determine the next time
+@code{Last active}-header to determine the next time
 the screensaver is allowed to start, which means that
 it should add the activate delay to this value. If
 the calculate time is in the past, the screensaver
 server should broadcast the
-@command{start-screensaver} message to start the
+@command{start-screensaver}-message to start the
 screensaver.
 
 @item Purpose:
@@ -4849,8 +4850,8 @@ Optional.
 Echo back a message.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Optional header: @code{Length}
 Length of the message.
@@ -4885,8 +4886,8 @@ Kill and identify processes based on the their
 windows.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment} header
-in response to a @code{Command: assign-id} header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Window ID}
 The ID of the window whose owning process should
@@ -4902,7 +4903,7 @@ however dependent on the operating system.
 
 @item Response:
 The server will respond with a
-@command{Command: error} message.
+@command{Command: error}-message.
 In this message the server all include an ad-hoc
 header: @code{Process ID}@. Its value will be the ID
 of the process that owns the window.
@@ -6343,7 +6344,7 @@ zero-length).
 
 @item @code{payload_size} [@code{size_t}]
 The length of the message's payload. This value will
-be the same as the value of the `Length' header.
+be the same as the value of the @code{Length} header.
 @end table
 
 There are six functions specific to
@@ -9029,10 +9030,10 @@ too.
 This cursor indicates that the interface is idle and
 prepared to accept commands from the user.
 
-This cursor is usually a north-west or
-north-north-west pointing arrow. For left-handed
-themes this cursor is usually a north-east or
-north-north-east pointing arrow.
+This cursor is usually a north-west- or
+north-north-west-pointing arrow. For left-handed
+themes this cursor is usually a north-east- or
+north-north-east-pointing arrow.
 @example
 @group
 ##
@@ -9337,8 +9338,8 @@ If this cursor is missing, @code{drag} should be used
 as the first fallback.
 
 This cursor is usually rendered as @code{drag} with
-an arrow next to it. The arrow is usually point north
-east, or north west if left-handed.
+an arrow next to it. The arrow is usually point
+north-east, or north-west if left-handed.
 @example
 @group
                       ######
@@ -9502,7 +9503,7 @@ and horizontal twin-headed arrow.
 This cursor is typically used to identify an
 insertion point.
 
-It is often rendered an upwards pointing arrow.
+It is often rendered an upwards-pointing arrow.
 @example
 @group
       ##
@@ -9670,8 +9671,8 @@ should be used as the third fallback, and
 @code{col-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a west pointing
-arrow, optionally with a wall at the arrow head.
+This cursor is typically rendered as a west-pointing
+arrow, optionally with a wall at the arrowhead.
 @example
 @group
 ##        ##
@@ -9696,7 +9697,7 @@ should be used as the third fallback, and
 @code{col-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a west pointing
+This cursor is typically rendered as a west-pointing
 arrow.
 @example
 @group
@@ -9727,8 +9728,8 @@ should be used as the third fallback, and
 @code{col-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a east pointing
-arrow, optionally with a wall at the arrow head.
+This cursor is typically rendered as a east-pointing
+arrow, optionally with a wall at the arrowhead.
 @example
 @group
                     ##        ##
@@ -9755,7 +9756,7 @@ should be used as the third fallback, and
 @code{col-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a east pointing
+This cursor is typically rendered as a east-pointing
 arrow.
 @example
 @group
@@ -9786,8 +9787,8 @@ should be used as the third fallback, and
 @code{row-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a north pointing
-arrow, optionally with a wall at the arrow head.
+This cursor is typically rendered as a north-pointing
+arrow, optionally with a wall at the arrowhead.
 @example
 @group
 ##############
@@ -9826,7 +9827,7 @@ should be used as the third fallback, and
 @code{row-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a north pointing
+This cursor is typically rendered as a north-pointing
 arrow.
 @example
 @group
@@ -9862,8 +9863,8 @@ should be used as the third fallback, and
 @code{row-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a south pointing
-arrow, optionally with a wall at the arrow head.
+This cursor is typically rendered as a south-pointing
+arrow, optionally with a wall at the arrowhead.
 @example
 @group
       ##
@@ -9899,7 +9900,7 @@ should be used as the third fallback, and
 @code{row-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a south pointing
+This cursor is typically rendered as a south-pointing
 arrow.
 @example
 @group
@@ -9932,9 +9933,9 @@ fallback, @code{nwse-select} should be used as the
 third fallback, and @code{all-resize}. should be used
 as the fourth fallback.
 
-This cursor is typically rendered as a north-west
-pointing arrow, optionally with a corner at the
-arrow head.
+This cursor is typically rendered as a
+north-west-pointing arrow, optionally with a corner
+at the arrowhead.
 @example
 @group
 ##################
@@ -9970,8 +9971,8 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a north-west
-pointing arrow.
+This cursor is typically rendered as a
+north-west-pointing arrow.
 @example
 @group
 ############
@@ -10002,9 +10003,9 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a south-east
-pointing arrow, optionally with a corner at the arrow
-head.
+This cursor is typically rendered as a
+south-east-pointing arrow, optionally with a corner
+at the arrowhead.
 @example
 @group
 ##
@@ -10040,8 +10041,8 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a south-east
-pointing arrow.
+This cursor is typically rendered as a
+south-east-pointing arrow.
 @example
 @group
 ##
@@ -10072,9 +10073,9 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a north-east
-pointing arrow, optionally with a corner at the arrow
-head.
+This cursor is typically rendered as a
+north-east-pointing arrow, optionally with a corner
+at the arrowhead.
 @example
 @group
               ##################
@@ -10110,8 +10111,8 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a north-east
-pointing arrow.
+This cursor is typically rendered as a
+north-east-pointing arrow.
 @example
 @group
               ############
@@ -10142,9 +10143,9 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a south-west
-pointing arrow, optionally with a corner at the arrow
-head.
+This cursor is typically rendered as a
+south-west-pointing arrow, optionally with a corner
+at the arrowhead.
 @example
 @group
                               ##
@@ -10180,8 +10181,8 @@ should be used as the third fallback, and
 @code{all-resize}. should be used as the fourth
 fallback.
 
-This cursor is typically rendered as a south-west
-pointing arrow.
+This cursor is typically rendered as a
+south-west-pointing arrow.
 @example
 @group
                         ##
@@ -10206,9 +10207,9 @@ If this cursor is missing, @code{ew-select} should be
 used as the first fallback, and @code{col-resize}.
 should be used as the second fallback.
 
-This cursor is typically rendered as a east and west
-pointing twin-arrow, optionally with a wall at the
-arrow heads.
+This cursor is typically rendered as an east- and
+west-pointing twin-arrow, optionally with a wall at
+the arrowheads.
 @example
 @group
 ##        ##        ##        ##
@@ -10232,8 +10233,8 @@ If this cursor is missing, @code{ew-resize} should be
 used as the first fallback, and @code{col-resize}.
 should be used as the second fallback.
 
-This cursor is typically rendered as a east and west
-pointing twin-arrow.
+This cursor is typically rendered as an east- and
+west-pointing twin-arrow.
 @example
 @group
       ##        ##
@@ -10255,9 +10256,9 @@ If this cursor is missing, @code{ns-select} should be
 used as the first fallback, and @code{row-resize}.
 should be used as the second fallback.
 
-This cursor is typically rendered as a north and
-south pointing twin-arrow, optionally with a wall at
-the arrow heads.
+This cursor is typically rendered as a north- and
+south-pointing twin-arrow, optionally with a wall at
+the arrowheads.
 @example
 @group
 ##############
@@ -10285,8 +10286,8 @@ If this cursor is missing, @code{ns-resize} should be
 used as the first fallback, and @code{row-resize}.
 should be used as the second fallback.
 
-This cursor is typically rendered as a north and
-south pointing twin-arrow.
+This cursor is typically rendered as a north- and
+south-pointing twin-arrow.
 @example
 @group
       ##
@@ -10320,9 +10321,9 @@ south pointing twin-arrow.
 If this cursor is missing, @code{all-resize} should
 be used as the first fallback.
 
-This cursor is typically rendered as a north-west and
-south-east pointing twin-arrow, optionally with a
-corner at the arrow heads.
+This cursor is typically rendered as a north-west- and
+south-east-pointing twin-arrow, optionally with a
+corner at the arrowheads.
 @example
 @group
 ##################
@@ -10352,9 +10353,9 @@ corner at the arrow heads.
 If this cursor is missing, @code{all-resize} should
 be used as the first fallback.
 
-This cursor is typically rendered as a north-east and
-south-west pointing twin-arrow, optionally with a
-corner at the arrow heads.
+This cursor is typically rendered as a north-east- and
+south-west-pointing twin-arrow, optionally with a
+corner at the arrowheads.
 @example
 @group
               ##################
@@ -10380,8 +10381,8 @@ corner at the arrow heads.
 @page
 @item all-resize
 This cursor is typically rendered as a cross between
-a north-east and south-west pointing twin-arrow and a
-north-west and south-east pointing twin-arrow,
+a north-east and south-west-pointing twin-arrow and a
+north-west- and south-east-pointing twin-arrow,
 optionally with a corner at the arrow heads.
 @example
 @group
