@@ -252,15 +252,15 @@ libraries and concepts.
 * GNU General Public License::      Copying and sharing @command{mds}.
 * GNU Free Documentation License::  Copying and sharing this manual.
 
-* Program index::                   Index of servers, clients and utilities.
-* Variable index::                  Index of environment variables.
-* Option index::                    Index of command line options.
 * Concept index::                   Index of concepts.
-* Signal index::                    Index of signals.
-* Function index::                  Index of functions.
 * Data type index::                 Index of data types.
-* Unicode block index::             Index of Unicode block.
+* Function index::                  Index of functions.
+* Option index::                    Index of command line options.
+* Program index::                   Index of servers, clients and utilities.
 * Protocol index::                  Index of @command{mds} protocols.
+* Signal index::                    Index of signals.
+* Unicode block index::             Index of Unicode block.
+* Variable index::                  Index of environment variables.
 @end menu
 @c TODO @detailmenu (`C-c C-u m`)
 
@@ -11691,41 +11691,41 @@ requires that be listen for updates to the backgrund.
 @appendix GNU Free Documentation License
 @include fdl.texinfo
 
-@node Program index
-@unnumbered Program index
-@printindex pg
-
-@node Variable index
-@unnumbered Variable index
-@printindex vr
-
-@node Option index
-@unnumbered Option index
-@printindex op
-
 @node Concept index
 @unnumbered Concept index
 @printindex cp
-
-@node Signal index
-@unnumbered Signal index
-@printindex sg
-
-@node Function index
-@unnumbered Function index
-@printindex fn
 
 @node Data type index
 @unnumbered Data type index
 @printindex tp
 
-@node Unicode block index
-@unnumbered Unicode block index
-@printindex ub
+@node Function index
+@unnumbered Function index
+@printindex fn
+
+@node Option index
+@unnumbered Option index
+@printindex op
+
+@node Program index
+@unnumbered Program index
+@printindex pg
 
 @node Protocol index
 @unnumbered Protocol index
 @printindex pr
+
+@node Signal index
+@unnumbered Signal index
+@printindex sg
+
+@node Unicode block index
+@unnumbered Unicode block index
+@printindex ub
+
+@node Variable index
+@unnumbered Variable index
+@printindex vr
 
 
 @bye
