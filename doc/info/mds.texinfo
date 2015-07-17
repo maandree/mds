@@ -178,6 +178,7 @@ libraries and concepts.
 @defindex op
 @defindex sg
 @defindex ub
+@defcodeindex pr
 
 
 
@@ -258,7 +259,8 @@ libraries and concepts.
 * Signal index::                    Index of signals.
 * Function index::                  Index of functions.
 * Data type index::                 Index of data types.
-* Unicode block index::             Index of unicode block.
+* Unicode block index::             Index of Unicode block.
+* Protocol index::                  Index of @command{mds} protocols.
 @end menu
 @c TODO @detailmenu (`C-c C-u m`)
 
@@ -2750,6 +2752,7 @@ tray.
 
 @node assign-id
 @subsection @code{assign-id}
+@prindex @code{assign-id}
 
 @table @asis
 @item Identifying header:
@@ -2773,6 +2776,7 @@ Manditory, part of the core infrastructure.
 
 @node intercept
 @subsection @code{intercept}
+@prindex @code{intercept}
 
 @table @asis
 @item Identifying header:
@@ -2820,6 +2824,7 @@ Manditory, part of the core infrastructure.
 
 @node register
 @subsection @code{register}
+@prindex @code{register}
 
 @table @asis
 @item Identifying header:
@@ -2882,6 +2887,7 @@ depending on the program's implementation.
 
 @node reregister
 @subsection @code{reregister}
+@prindex @code{reregister}
 
 @table @asis
 @item Identifying header:
@@ -2910,6 +2916,7 @@ do not implement this in your server.
 
 @node error
 @subsection @code{error}
+@prindex @code{error}
 
 @table @asis
 @item Identifying header:
@@ -2966,6 +2973,7 @@ Optional.
 
 @node get-vt
 @subsection @code{get-vt}
+@prindex @code{get-vt}
 
 @table @asis
 @item Identifying header:
@@ -3012,6 +3020,7 @@ Required.
 
 @node configure-vt
 @subsection @code{configure-vt}
+@prindex @code{configure-vt}
 
 @table @asis
 @item Identifying header:
@@ -3079,6 +3088,7 @@ Required.
 
 @node switching-vt
 @subsection @code{switching-vt}
+@prindex @code{switching-vt}
 
 @table @asis
 @item Identifying header:
@@ -3156,6 +3166,7 @@ Required.
 
 @node key-sent
 @subsection @code{key-sent}
+@prindex @code{key-sent}
 
 @table @asis
 @item Identifying header:
@@ -3367,6 +3378,7 @@ without a keyboard.
 
 @node enumerate-keyboards
 @subsection @code{enumerate-keyboards}
+@prindex @code{enumerate-keyboards}
 
 @table @asis
 @item Identifying header:
@@ -3402,6 +3414,7 @@ Optional.
 
 @node keyboard-enumeration
 @subsection @code{keyboard-enumeration}
+@prindex @code{keyboard-enumeration}
 
 @table @asis
 @item Identifying header:
@@ -3447,6 +3460,7 @@ Required if you implement
 
 @node set-keyboard-leds
 @subsection @code{set-keyboard-leds}
+@prindex @code{set-keyboard-leds}
 
 @table @asis
 @item Identifying header:
@@ -3500,6 +3514,7 @@ Optional.
 
 @node get-keyboard-leds
 @subsection @code{get-keyboard-leds}
+@prindex @code{get-keyboard-leds}
 
 @table @asis
 @item Identifying header:
@@ -3553,6 +3568,7 @@ when they try to get the active LED:s
 
 @node set-keyboard-rate
 @subsection @code{set-keyboard-rate}
+@prindex @code{set-keyboard-rate}
 
 @table @asis
 @item Identifying header:
@@ -3613,6 +3629,7 @@ Optional.
 
 @node get-keyboard-rate
 @subsection @code{get-keyboard-rate}
+@prindex @code{get-keyboard-rate}
 
 @table @asis
 @item Identifying header:
@@ -3679,6 +3696,7 @@ repeat delay on the keyboard.
 
 @node keycode-map
 @subsection @code{keycode-map}
+@prindex @code{keycode-map}
 
 @table @asis
 @item Identifying header:
@@ -3753,6 +3771,7 @@ Optional.
 
 @node new-keyboard
 @subsection @code{new-keyboard}
+@prindex @code{new-keyboard}
 
 @table @asis
 @item Identifying header:
@@ -3782,6 +3801,7 @@ Recommended.
 
 @node old-keyboard
 @subsection @code{old-keyboard}
+@prindex @code{old-keyboard}
 
 @table @asis
 @item Identifying header:
@@ -3822,6 +3842,7 @@ Recommended.
 
 @node clipboard
 @subsection @code{clipboard}
+@prindex @code{clipboard}
 
 @table @asis
 @item Identifying header:
@@ -3953,6 +3974,7 @@ Optional.
 
 @node clipboard-info
 @subsection @code{clipboard-info}
+@prindex @code{clipboard-info}
 
 @table @asis
 @item Identifying header:
@@ -4015,6 +4037,7 @@ Optional add-on to the clipboard's functionallity.
 
 @node add-tray-icon
 @subsection @code{add-tray-icon}
+@prindex @code{add-tray-icon}
 
 @table @asis
 @item Identifying header:
@@ -4088,6 +4111,7 @@ Optional.
 
 @node update-tray-icon
 @subsection @code{update-tray-icon}
+@prindex @code{update-tray-icon}
 
 @table @asis
 @item Identifying header:
@@ -4129,6 +4153,7 @@ required.
 
 @node tray-update
 @subsection @code{tray-update}
+@prindex @code{tray-update}
 
 @table @asis
 @item Identifying header:
@@ -4295,6 +4320,7 @@ Optional.
 
 @node new-tray
 @subsection @code{new-tray}
+@prindex @code{new-tray}
 
 @table @asis
 @item Identifying header:
@@ -4328,6 +4354,7 @@ Required if supporting @code{Command: add-tray-icon}.
 
 @node get-gamma-info
 @subsection @code{get-gamma-info}
+@prindex @code{get-gamma-icon}
 
 @table @asis
 @item Identifying header:
@@ -4400,6 +4427,7 @@ Optional. Required if your implement support for
 
 @node get-gamma
 @subsection @code{get-gamma}
+@prindex @code{get-gamma}
 
 @table @asis
 @item Identifying header:
@@ -4507,6 +4535,7 @@ Optional. Required if your implement support for
 
 @node set-gamma
 @subsection @code{set-gamma}
+@prindex @code{set-gamma}
 
 @table @asis
 @item Identifying header:
@@ -4651,6 +4680,7 @@ Optional. Required if your implement support for
 
 @node configure-screensaver
 @subsection @code{configure-screensaver}
+@prindex @code{configure-screensaver}
 
 @table @asis
 @item Identifying header:
@@ -4738,6 +4768,7 @@ Optional.
 
 @node start-screensaver
 @subsection @code{start-screensaver}
+@prindex @code{start-screensaver}
 
 @table @asis
 @item Identifying header:
@@ -4779,6 +4810,7 @@ Optional.
 
 @node screensaver-start-test
 @subsection @code{screensaver-start-test}
+@prindex @code{screensaver-start-test}
 
 @table @asis
 @item Identifying header:
@@ -4839,6 +4871,7 @@ Optional.
 
 @node echo
 @subsection @code{echo}
+@prindex @code{echo}
 
 @table @asis
 @item Identifying header:
@@ -4874,6 +4907,7 @@ Recommended for network enabled servers.
 
 @node kill
 @subsection @code{kill}
+@prindex @code{kill}
 
 @table @asis
 @item Identifying header:
@@ -11688,6 +11722,10 @@ requires that be listen for updates to the backgrund.
 @node Unicode block index
 @unnumbered Unicode block index
 @printindex ub
+
+@node Protocol index
+@unnumbered Protocol index
+@printindex pr
 
 
 @bye
