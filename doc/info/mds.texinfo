@@ -4,7 +4,7 @@ Copyright @copyright{} 2014, 2015 Mattias Andrée (@email{maandree@@member.fsf.o
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.3 or
+under the terms of the GNU Free Documentation License, Version@tie{}1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
 Texts. A copy of the license is included in the section entitled
@@ -810,7 +810,7 @@ To include a payload, add the header @code{Length}
 that says how many bytes the payload is comprised.
 
 A header must contain a header name and header value
-without any trailing or leading spaces, and `: '
+without any trailing or leading spaces, and @w{`: '}
 (colon, one regular blank space) exactly delimits
 the name and the value.
 
@@ -846,7 +846,7 @@ Notice that the master server never includes
 @code{Message ID} in message originating from it.
 
 As seen in this example, the client ID consists of
-two integers delimited by a colon (`:'). Both of
+two integers delimited by a colon@tie{}(`:'). Both of
 these integers are unsigned 32-bit integers. This is
 done this way because unsigned 64-bit integers are
 forbidden because it is not supported natively be
@@ -1196,9 +1196,9 @@ UTF-8.
 @item
 @cpindex New line, portability
 @cpindex Strings, portibility
-The new line-character is always LF (@code{'\n'},
-10, line feed) and never a combination of LF and
-any other character, or multiple LF:s.
+The new line-character is always LF@tie{}(@code{'\n'},
+10, line feed) and never a combination of LF and any
+other character, or multiple LF:s.
 @end itemize
 
 
@@ -2851,8 +2851,8 @@ Register availability of a command for which you
 implement a service.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Conditionally required header: @code{Length}
 Length of the message.
@@ -3011,8 +3011,8 @@ Get the index of the virtual terminal the server is
 display on.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Response:
 The server will response with the header
@@ -3064,8 +3064,8 @@ display on.
 @cpindex Text mode
 @cpindex Mode, virtual terminal, switching
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Optional header: @code{Graphical}
 @table @code
@@ -3447,8 +3447,8 @@ without a keyboard.
 List available keyboards.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Instructions:
 @prindex @code{keyboard-enumeration}
@@ -3602,8 +3602,8 @@ Optional.
 List exisiting LED:s on a keyboard and their state.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3728,8 +3728,8 @@ Optional.
 Get the repeat rate and repeat delay on a keyboard.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3823,8 +3823,8 @@ A string that identifies the keyboard that should be
 affected. If omitted all keyboard are affected.
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 Required if @code{Action: query} is included in the
 headers.
 
@@ -4013,8 +4013,8 @@ Required if @code{Action: set-size} is included in
 the headers.
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 Required if @code{Action: read} or @code{Action: read}
 is included in the headers, or if @code{Action: add}
 is included in the headers and if the header
@@ -4169,8 +4169,8 @@ two or three, …, and that it will get a response once
 from every tray.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Package}
 The name of the package to which the program
@@ -4310,7 +4310,7 @@ otherwise this header is optional.
 @table @code
 @item yes
 The message contains an alpha channel if the value of
-the @code{Has alpha} header is @code{yes}.
+the @code{Has alpha}-header is @code{yes}.
 @item no
 The message does not contain an alpha channel if the
 value of the @code{Has alpha}-header is @code{no}.
@@ -4504,8 +4504,8 @@ Required if supporting @code{Command: add-tray-icon}.
 Query gamma ramp information.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header in
-response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
@@ -4634,7 +4634,7 @@ no metadata for gamma ramps have changed, which could
 happen if the user switches between hardware and
 software gamma ramps. The response will also contain
 a @code{Length}-header and a message formatted in the
-same manner as for @code{Command. set-gamma}-messages.
+same manner as for @code{Command: set-gamma}-messages.
 That is, assuming as an example that the gamma ramp
 depth is 16 bits, @code{Coalesce: yes} was used in the
 query, the red ramp is (1, 2, 3, 4, 5, 6), the green
@@ -5397,7 +5397,7 @@ Evaluates whether the string @code{haystack}
 starts with the string @code{needle}, neither
 may be @code{NULL}@.
 
-@item @code{drop_privileges} [(void) @arrow{} @code{int}]
+@item @code{drop_privileges} [(@code{void}) @arrow{} @code{int}]
 @fnindex @code{drop_privileges}
 @cpindex Previleges
 @cpindex Security, previleges
@@ -6230,13 +6230,13 @@ Remove and return the node node in the list
 @end table
 
 Additionally the library defines a macro that wrappes
-the @code{for} keyword to iterate over all nodes
+the @code{for}-keyword to iterate over all nodes
 (except the sentinel node) the a linked list:
 
 @table @asis
 @item @code{foreach_linked_list_node} [(@code{linked_list_t this, ssize_t node})]
 @fnindex @code{foreach_linked_list_node}
-Wrapper for `for` keyword that iterates over each
+Wrapper for @code{for}-keyword that iterates over each
 element in the list @code{this}, and store the
 current node to the variable named by the parameter
 @code{node} for each iterations.
@@ -6400,7 +6400,7 @@ of the input value.
 @end table
 
 @file{<libmdsserver/hash-table.h>} also defines as
-wrapper macro for the @code{for} keyword:
+wrapper macro for the @code{for}-keyword:
 
 @table @asis
 @item @code{foreach_hash_table_entry} [(@code{hash_table_t this, size_t i, hash_entry_t* entry})]
@@ -6538,7 +6538,7 @@ Calculate and returns the hash value of the string
 Returns non-zero if either both @code{str_a} and
 @code{str_b} are @code{NULL} or neither are
 @code{NULL} but are identical strings by content upto
-their first NUL characters (or by address).
+their first NUL characters (or by address.)
 @end table
 
 These functions are defined as pure and
@@ -6559,11 +6559,11 @@ contains four variables:
 @item @code{headers} [@code{char**}]
 The headers in the message, each element in this list
 as an unparsed header, it consists of both the header
-name and its associated value, joined by `: '. A
+name and its associated value, joined by @w{`: '}. A
 header cannot be @code{NULL} (unless its memory
 allocation failed,) but @code{headers} itself is
-@code{NULL} if there are no headers. The `Length'
-header should be included in this list.
+@code{NULL} if there are no headers. The
+@code{Length}-header should be included in this list.
 
 @item @code{header_count} [@code{size_t}]
 The number of headers in the message.
@@ -6574,7 +6574,7 @@ zero-length).
 
 @item @code{payload_size} [@code{size_t}]
 The length of the message's payload. This value will
-be the same as the value of the @code{Length} header.
+be the same as the value of the @code{Length}-header.
 @end table
 
 There are six functions specific to
@@ -7408,7 +7408,7 @@ to distinguish between modifiers and keys. It is up
 to the keyboard layout server and keyboard layout
 compiler to know this. However, it is defined in the
 keyboard layout files whether modifiers keys are lock
-keys or not. To map the keycode 58 to @kbd{caps lock}
+keys or not. To map the keycode 58 to @kbd{caps lock},
 write
 
 @example
@@ -7768,7 +7768,7 @@ compositions cannot be reached from those basic keys.
 If we want to make the compiler assume that
 @key{compose} is available as a dead key, that
 @key{shift}, @key{altgr} and @key{space} are
-available and that the ASCII letter, digits and some
+available and that the ASCII letters, digits and some
 basic special characters are available we can write.
 
 @example
@@ -8004,8 +8004,8 @@ end function
 @end example
 
 A final construct to make layout code less repetitive
-is let-statements. This can be used to assign values
-to variables.
+is @code{let}-statements. This can be used to assign
+values to variables.
 
 The code
 
@@ -10801,10 +10801,10 @@ is requested but missing. Finally, the closest
 existing cursor should be used, and the cursor rotated
 180 degrees of what is requested should be used if
 there is no matching cursor with a rotation distance
-within, but excluding, 90 degrees. @code{*} should be
-in the interval [0; 360[, and a period (`.') should be
-used as a decimal pointer, as it is used in most
-programming languages.
+within, but excluding, 90@tie{}degrees. @code{*}
+should be in the interval [0, 360[, and a
+period@tie{}(`.') should be used as a decimal
+pointer, as it is used in most programming languages.
 
 
 
