@@ -116,7 +116,7 @@ Texts. A copy of the license is included in the section entitled
 
 @dircategory Graphics environment
 @direntry
-* mds: (mds).                        The avant-garde micro-display server.
+* mds: (mds).                   The avant-garde micro-display server.
 @end direntry
 
 @documentdescription
@@ -232,35 +232,35 @@ libraries and concepts.
 
 
 @menu
-* Overview::                        Brief overview of @command{mds}.
-* Architecture::                    Architectural overview of @command{mds}.
-* Application Design::              Guildlines for your applications.
-* Protocol::                        The @command{mds} procotol.
-* Utilities::                       About @command{mds} utilities.
-* Servers::                         About @command{mds} servers.
-* Protocols::                       @command{mds} procotols.
-* libmdsserver::                    Overview of @command{libmdsserver}.
-* mds-base.o::                      Overview of @file{mds-base.o}.
-* Keyboard Codes::                  Scancodes and keycodes.
-* Keyboard Layouts::                Writing and compiling keyboard layouts.
-* Default Keyboard Layouts::        The keyboard layouts installed with @command{mds}.
-* Accessibility::                   Dealing with disabilities.
-* Specifications::                  Specifications.
-* New Concepts::                    Discussion of new display server concepts.
-* Discussion::                      Discussion on display server-architecture.
+* Overview::                                  Brief overview of @command{mds}.
+* Architecture::                              Architectural overview of @command{mds}.
+* Application Design::                        Guildlines for your applications.
+* Protocol::                                  The @command{mds} procotol.
+* Utilities::                                 About @command{mds} utilities.
+* Servers::                                   About @command{mds} servers.
+* Protocols::                                 @command{mds} procotols.
+* libmdsserver::                              Overview of @command{libmdsserver}.
+* mds-base.o::                                Overview of @file{mds-base.o}.
+* Keyboard Codes::                            Scancodes and keycodes.
+* Keyboard Layouts::                          Writing and compiling keyboard layouts.
+* Default Keyboard Layouts::                  The keyboard layouts installed with @command{mds}.
+* Accessibility::                             Dealing with disabilities.
+* Specifications::                            Specifications.
+* New Concepts::                              Discussion of new display server concepts.
+* Discussion::                                Discussion on display server-architecture.
 
-* GNU General Public License::      Copying and sharing @command{mds}.
-* GNU Free Documentation License::  Copying and sharing this manual.
+* GNU General Public License::                Copying and sharing @command{mds}.
+* GNU Free Documentation License::            Copying and sharing this manual.
 
-* Concept index::                   Index of concepts.
-* Data type index::                 Index of data types.
-* Function index::                  Index of functions.
-* Option index::                    Index of command line options.
-* Program index::                   Index of servers, clients and utilities.
-* Protocol index::                  Index of @command{mds} protocols.
-* Signal index::                    Index of signals.
-* Unicode block index::             Index of Unicode block.
-* Variable index::                  Index of environment variables.
+* Concept index::                             Index of concepts.
+* Data type index::                           Index of data types.
+* Function index::                            Index of functions.
+* Option index::                              Index of command line options.
+* Program index::                             Index of servers, clients and utilities.
+* Protocol index::                            Index of @command{mds} protocols.
+* Signal index::                              Index of signals.
+* Unicode block index::                       Index of Unicode block.
+* Variable index::                            Index of environment variables.
 @end menu
 @c TODO @detailmenu (`C-c C-u m`)
 
@@ -343,8 +343,8 @@ display server at risk of crashing.
 @chapter Architecture
 
 @menu
-* Layers::                          The layers of the display server.
-* Interprocess Communication::      How servers and clients communicate.
+* Layers::                                    The layers of the display server.
+* Interprocess Communication::                How servers and clients communicate.
 @end menu
 
 
@@ -594,12 +594,12 @@ were closed the last time they were closed.
 @chapter Protocol
 
 @menu
-* Environment Variables::           Identifying the active display server.
-* Signals::                         Signalling individual servers.
-* Filesystem::                      The display server's footprint on the filesystem.
-* Message Passing::                 Sending messages between servers and clients.
-* Interception::                    Implementing protocols and writing unanticipated clients.
-* Portability::                     Restrictions for portability on protocols.
+* Environment Variables::                     Identifying the active display server.
+* Signals::                                   Signalling individual servers.
+* Filesystem::                                The display server's footprint on the filesystem.
+* Message Passing::                           Sending messages between servers and clients.
+* Interception::                              Implementing protocols and writing unanticipated clients.
+* Portability::                               Restrictions for portability on protocols.
 @end menu
 
 
@@ -1207,14 +1207,14 @@ any other character, or multiple LF:s.
 @chapter Utilities
 
 @menu
-* mds-respawn::                     The server immortality protocol.
-* mds-reg::                         The registry control command.
-* mds-clip::                        The clipboard control command.
-* mds-screenshot::                  The screenshot utility.
-* mds-slay::                        The process killing utility.
-* mds-chvt::                        Utility for switching virtual terminal.
-* mds-kbdc::                        The keyboard layout compiler.
-* External Utilities::              Suggestion on utilities you can utilise.
+* mds-respawn::                               The server immortality protocol.
+* mds-reg::                                   The registry control command.
+* mds-clip::                                  The clipboard control command.
+* mds-screenshot::                            The screenshot utility.
+* mds-slay::                                  The process killing utility.
+* mds-chvt::                                  Utility for switching virtual terminal.
+* mds-kbdc::                                  The keyboard layout compiler.
+* External Utilities::                        Suggestion on utilities you can utilise.
 @end menu
 
 
@@ -1701,63 +1701,63 @@ server, @command{mds-server} and the kernel,
 server.
 
 @menu
-* mds-echo::                        The @command{mds-echo} server.
-* mds-registry::                    The @command{mds-registry} server.
-* mds-vt::                          The @command{mds-vt} server.
-* mds-clipboard::                   The @command{mds-clipboard} server.
-* mds-drag::                        The @command{mds-drag} server.
-* mds-kkbd::                        The @command{mds-kkbd} server.
-* mds-kkbdrate::                    The @command{mds-kkbdrate} server.
-* mds-kbd::                         The @command{mds-kbd} server.
-* mds-keytrans::                    The @command{mds-keytrans} server.
-* mds-keystick::                    The @command{mds-keystick} server.
-* mds-keybounce::                   The @command{mds-keybounce} server.
-* mds-slowkey::                     The @command{mds-slowkey} server.
-* mds-keycue::                      The @command{mds-keycue} server.
-* mds-kbdbind::                     The @command{mds-kbdbind} server.
-* mds-multikey::                    The @command{mds-multikey} server.
-* mds-rat::                         The @command{mds-rat} server.
-* mds-ratbarrier::                  The @command{mds-ratbarrier} server.
-* mds-ratbind::                     The @command{mds-ratbind} server.
-* mds-gestures::                    The @command{mds-gestures} server.
-* mds-kbd2rat::                     The @command{mds-kbd2rat} server.
-* mds-hwcursor::                    The @command{mds-hwcursor} server.
-* mds-swcursor::                    The @command{mds-swcursor} server.
-* mds-cursorshadow::                The @command{mds-cursorshadow} server.
-* mds-cursorgamma::                 The @command{mds-cursorgamma} server.
-* mds-hwgamma::                     The @command{mds-hwgamma} server.
-* mds-swgamma::                     The @command{mds-swgamma} server.
-* mds-coopgamma::                   The @command{mds-coopgamma} server.
-* mds-dcvs::                        The @command{mds-dcvs} server.
-* mds-colour::                      The @command{mds-colour} server.
-* mds-retro-crt::                   The @command{mds-retro-crt} server.
-* mds-state::                       The @command{mds-state} server.
-* mds-focus::                       The @command{mds-focus} server.
-* mds-kill::                        The @command{mds-kill} server.
-* mds-screensaver::                 The @command{mds-screensaver} server.
-* mds-compositor::                  The @command{mds-compositor} server.
-* mds-crtc::                        The @command{mds-crtc} server.
-* mds-dri::                         The @command{mds-dri} server.
-* mds-fb::                          The @command{mds-fb} server.
-* mds-mds::                         The @command{mds-mds} server.
-* mds-meta::                        The @command{mds-meta} server.
-* mds-seat::                        The @command{mds-seat} server.
-* mds-nest::                        The @command{mds-nest} server.
-* mds-host::                        The @command{mds-host} server.
-* mds-remote::                      The @command{mds-remote} server.
-* mds-xmds::                        The @command{mds-xmds} server.
-* mds-wmds::                        The @command{mds-wmds} server.
-* mds-mmds::                        The @command{mds-mmds} server.
-* mds-mdsx::                        The @command{mds-mdsx} server.
-* mds-mdsw::                        The @command{mds-mdsw} server.
-* mds-mdsm::                        The @command{mds-mdsm} server.
-* mds-posmem::                      The @command{mds-posmem} server.
-* mds-decorator::                   The @command{mds-decorator} server.
-* mds-tile::                        The @command{mds-tile} server.
-* mds-stack::                       The @command{mds-stack} server.
-* mds-desktop::                     The @command{mds-desktop} server.
-* mds-workspace::                   The @command{mds-workspace} server.
-* mds-tray::                        The @command{mds-tray} server.
+* mds-echo::                                  The @command{mds-echo} server.
+* mds-registry::                              The @command{mds-registry} server.
+* mds-vt::                                    The @command{mds-vt} server.
+* mds-clipboard::                             The @command{mds-clipboard} server.
+* mds-drag::                                  The @command{mds-drag} server.
+* mds-kkbd::                                  The @command{mds-kkbd} server.
+* mds-kkbdrate::                              The @command{mds-kkbdrate} server.
+* mds-kbd::                                   The @command{mds-kbd} server.
+* mds-keytrans::                              The @command{mds-keytrans} server.
+* mds-keystick::                              The @command{mds-keystick} server.
+* mds-keybounce::                             The @command{mds-keybounce} server.
+* mds-slowkey::                               The @command{mds-slowkey} server.
+* mds-keycue::                                The @command{mds-keycue} server.
+* mds-kbdbind::                               The @command{mds-kbdbind} server.
+* mds-multikey::                              The @command{mds-multikey} server.
+* mds-rat::                                   The @command{mds-rat} server.
+* mds-ratbarrier::                            The @command{mds-ratbarrier} server.
+* mds-ratbind::                               The @command{mds-ratbind} server.
+* mds-gestures::                              The @command{mds-gestures} server.
+* mds-kbd2rat::                               The @command{mds-kbd2rat} server.
+* mds-hwcursor::                              The @command{mds-hwcursor} server.
+* mds-swcursor::                              The @command{mds-swcursor} server.
+* mds-cursorshadow::                          The @command{mds-cursorshadow} server.
+* mds-cursorgamma::                           The @command{mds-cursorgamma} server.
+* mds-hwgamma::                               The @command{mds-hwgamma} server.
+* mds-swgamma::                               The @command{mds-swgamma} server.
+* mds-coopgamma::                             The @command{mds-coopgamma} server.
+* mds-dcvs::                                  The @command{mds-dcvs} server.
+* mds-colour::                                The @command{mds-colour} server.
+* mds-retro-crt::                             The @command{mds-retro-crt} server.
+* mds-state::                                 The @command{mds-state} server.
+* mds-focus::                                 The @command{mds-focus} server.
+* mds-kill::                                  The @command{mds-kill} server.
+* mds-screensaver::                           The @command{mds-screensaver} server.
+* mds-compositor::                            The @command{mds-compositor} server.
+* mds-crtc::                                  The @command{mds-crtc} server.
+* mds-dri::                                   The @command{mds-dri} server.
+* mds-fb::                                    The @command{mds-fb} server.
+* mds-mds::                                   The @command{mds-mds} server.
+* mds-meta::                                  The @command{mds-meta} server.
+* mds-seat::                                  The @command{mds-seat} server.
+* mds-nest::                                  The @command{mds-nest} server.
+* mds-host::                                  The @command{mds-host} server.
+* mds-remote::                                The @command{mds-remote} server.
+* mds-xmds::                                  The @command{mds-xmds} server.
+* mds-wmds::                                  The @command{mds-wmds} server.
+* mds-mmds::                                  The @command{mds-mmds} server.
+* mds-mdsx::                                  The @command{mds-mdsx} server.
+* mds-mdsw::                                  The @command{mds-mdsw} server.
+* mds-mdsm::                                  The @command{mds-mdsm} server.
+* mds-posmem::                                The @command{mds-posmem} server.
+* mds-decorator::                             The @command{mds-decorator} server.
+* mds-tile::                                  The @command{mds-tile} server.
+* mds-stack::                                 The @command{mds-stack} server.
+* mds-desktop::                               The @command{mds-desktop} server.
+* mds-workspace::                             The @command{mds-workspace} server.
+* mds-tray::                                  The @command{mds-tray} server.
 @end menu
 
 
@@ -2729,14 +2729,14 @@ tray.
 @chapter Protocols
 
 @menu
-* Infrastructure Protocols::        Infrastructure protocols.
-* Virtual Terminal Protocols::      Virtual terminal protocols.
-* Keyboard Protocols::              Keyboard protocols.
-* Clipboard Protocols::             Clipboard protocols.
-* Status Icon Protocols::           Status icon protocols.
-* Colour Protocols::                Colour protocols.
-* Screensaver Protocols::           Screensaver protocols.
-* Miscellaneous Protocols::         Miscellaneous protocols.
+* Infrastructure Protocols::                  Infrastructure protocols.
+* Virtual Terminal Protocols::                Virtual terminal protocols.
+* Keyboard Protocols::                        Keyboard protocols.
+* Clipboard Protocols::                       Clipboard protocols.
+* Status Icon Protocols::                     Status icon protocols.
+* Colour Protocols::                          Colour protocols.
+* Screensaver Protocols::                     Screensaver protocols.
+* Miscellaneous Protocols::                   Miscellaneous protocols.
 @end menu
 
 
@@ -2745,11 +2745,11 @@ tray.
 @section Infrastructure Protocols
 
 @menu
-* assign-id::                       Assign new ID to client, or fetch current ID@.
-* intercept::                       Sign up for reception of message.
-* register::                        Register availability of a command for which you implement a service.
-* reregister::                      Request for reregistration for available commands.
-* error::                           Notify a client about a request failure.
+* assign-id::                                 Assign new ID to client, or fetch current ID@.
+* intercept::                                 Sign up for reception of message.
+* register::                                  Register availability of a command for which you implement a service.
+* reregister::                                Request for reregistration for available commands.
+* error::                                     Notify a client about a request failure.
 @end menu
 
 
@@ -2991,9 +2991,9 @@ Optional.
 @cpindex Virtual terminal
 
 @menu
-* get-vt::                          Get the index of the virtual terminal the server is display on.
-* configure-vt::                    Reconfigure the virtual terminal the server is display on.
-* switching-vt::                    Notify servers about an ongoing virtual terminal switch.
+* get-vt::                                    Get the index of the virtual terminal the server is display on.
+* configure-vt::                              Reconfigure the virtual terminal the server is display on.
+* switching-vt::                              Notify servers about an ongoing virtual terminal switch.
 @end menu
 
 
@@ -3033,8 +3033,8 @@ running on.
 
 @item Purpose:
 Allow programs to gain access of the TTY associated
-with the VT such that they can use ioctl and similar
-calls on that TTY@.
+with the VT such that they can use @code{ioctl} and
+similar calls on that TTY@.
 
 @item Compulsivity:
 Required.
@@ -3190,16 +3190,16 @@ Required.
 @section Keyboard Protocols
 
 @menu
-* key-sent::                        Announce a keyboard input event.
-* enumerate-keyboards::             List available keyboards.
-* keyboard-enumeration::            Response to @code{Command: enumerate-keyboards}.
-* set-keyboard-leds::               Activate and deactivate LED:s on a keyboard.
-* get-keyboard-leds::               List exisiting LED:s on a keyboard and their state.
-* set-keyboard-rate::               Set the repeat rate and repeat delay on a keyboard.
-* get-keyboard-rate::               Get the repeat rate and repeat delay on a keyboard.
-* keycode-map::                     Remap keyboard keycodes and query current mapping.
-* new-keyboard::                    Announce the existance of a new keyboard.
-* old-keyboard::                    Announce the removal of an old keyboard.
+* key-sent::                                  Announce a keyboard input event.
+* enumerate-keyboards::                       List available keyboards.
+* keyboard-enumeration::                      Response to @code{Command: enumerate-keyboards}.
+* set-keyboard-leds::                         Activate and deactivate LED:s on a keyboard.
+* get-keyboard-leds::                         List exisiting LED:s on a keyboard and their state.
+* set-keyboard-rate::                         Set the repeat rate and repeat delay on a keyboard.
+* get-keyboard-rate::                         Get the repeat rate and repeat delay on a keyboard.
+* keycode-map::                               Remap keyboard keycodes and query current mapping.
+* new-keyboard::                              Announce the existance of a new keyboard.
+* old-keyboard::                              Announce the removal of an old keyboard.
 @end menu
 
 
@@ -3940,8 +3940,8 @@ Recommended.
 @section Clipboard Protocols
 
 @menu
-* clipboard::                       Read or manipulate a clipboard.
-* clipboard-info::                  Clipboard event announcements.
+* clipboard::                                 Read or manipulate a clipboard.
+* clipboard-info::                            Clipboard event announcements.
 @end menu
 
 
@@ -4140,10 +4140,10 @@ Optional add-on to the clipboard's functionallity.
 @section Status Icon Protocols
 
 @menu
-* add-tray-icon::                   Add a status icons to the status icon tray.
-* update-tray-icon::                Change the status of a status icon.
-* tray-update::                     Send updates about the status tray to the status icon.
-* new-tray::                        Announce the existence of a new status icon trays.
+* add-tray-icon::                             Add a status icons to the status icon tray.
+* update-tray-icon::                          Change the status of a status icon.
+* tray-update::                               Send updates about the status tray to the status icon.
+* new-tray::                                  Announce the existence of a new status icon trays.
 @end menu
 
 
@@ -4484,9 +4484,9 @@ Required if supporting @code{Command: add-tray-icon}.
 @section Colour Protocols
 
 @menu
-* get-gamma-info::                  Query gamma ramp information.
-* get-gamma::                       Query gamma ramps.
-* set-gamma::                       Modify gamma ramps.
+* get-gamma-info::                            Query gamma ramp information.
+* get-gamma::                                 Query gamma ramps.
+* set-gamma::                                 Modify gamma ramps.
 @end menu
 
 
@@ -4842,9 +4842,9 @@ Optional. Required if your implement support for
 @section Screensaver Protocols
 
 @menu
-* configure-screensaver::           Configure screensaver settings.
-* start-screensaver::               Start the screensaver.
-* screensaver-start-test::          Test whether the screensaver may start.
+* configure-screensaver::                     Configure screensaver settings.
+* start-screensaver::                         Start the screensaver.
+* screensaver-start-test::                    Test whether the screensaver may start.
 @end menu
 
 
@@ -5051,8 +5051,8 @@ Optional.
 @section Miscellaneous Protocols
 
 @menu
-* echo::                            Echo back a message.
-* kill::                            The window killing protocol.
+* echo::                                      Echo back a message.
+* kill::                                      The window killing protocol.
 @end menu
 
 
@@ -5164,9 +5164,9 @@ protocol: receiving message and decode it into
 headers and payloads.
 
 @menu
-* Macros::                          Writing macroscopic systems.
-* Auxiliary Functions::             Auxiliary functions for servers.
-* Data Structures::                 Data structures available in libmdsserver.
+* Macros::                                    Writing macroscopic systems.
+* Auxiliary Functions::                       Auxiliary functions for servers.
+* Data Structures::                           Data structures available in libmdsserver.
 @end menu
 
 
@@ -6001,10 +6001,10 @@ However, @code{hash_table_unmarshal} and
 @end table
 
 @menu
-* Client List::                     The @code{client_list_t} data structure.
-* Linked List::                     The @code{linked_list_t} data structure.
-* Tables::                          The @code{fd_table_t} and @code{hash_table_t} data structures.
-* Message Structure::               The @code{mds_message_t} data structure.
+* Client List::                               The @code{client_list_t} data structure.
+* Linked List::                               The @code{linked_list_t} data structure.
+* Tables::                                    The @code{fd_table_t} and @code{hash_table_t} data structures.
+* Message Structure::                         The @code{mds_message_t} data structure.
 @end menu
 
 
@@ -7121,7 +7121,7 @@ the value of the second byte and @math{b} is the value
 of the third byte.
 
 @menu
-* 105-keys Keycodes::               List of keycodes for 105-keys keyboards.
+* 105-keys Keycodes::                         List of keycodes for 105-keys keyboards.
 @end menu
 
 
@@ -9160,8 +9160,8 @@ Cancel actions waiting by @kbd{0} and
 
 @item 0
 Hold down the next selected rat button until that rat
-button is selected again. This is a dead key, that
-is, you do not have to hold it down.
+button is selected again. This is a dead key, that is,
+you do not have to hold it down.
 
 @item 1
 Cursor left down.
@@ -9176,13 +9176,12 @@ Cursor right down.
 Cursor left.
 
 @item 5
-Double click with the next selected
-rat button. This is a dead key, that is,
-you do not have to hold it down.
-If pressed twice, a triple click triggered
-instead, and so on. If this key is prefixed
-by @kbd{0}, the last click will be replaced
-by hold down action.
+Double click with the next selected rat button. This
+is a dead key, that is, you do not have to hold it
+down. If pressed twice, a triple click triggered
+instead, and so on. If this key is prefixed by
+@kbd{0}, the last click will be replaced by hold down
+action.
 
 @item 6
 Cursor right.
@@ -10784,10 +10783,10 @@ optionally with a corner at the arrow heads.
 @cpindex Cell selection
 @cpindex Tables, selection
 In addition, it is advised to @code{nwse-select} and
-@code{nesw-select} that are rendered in the same mannar
-as the other @code{*-select} cursors and analogously to
-@code{nwse-resize} and @code{nesw-resize},
-respectively.
+@code{nesw-select} that are rendered in the same
+mannar as the other @code{*-select} cursors and
+analogously to @code{nwse-resize} and
+@code{nesw-resize}, respectively.
 
 @cpindex Text, rotated
 @cpindex Rotated text
