@@ -1873,6 +1873,9 @@ drag-and-drop support.
 @cpindex Keycodes
 @cpindex Keycodes, remapping
 @cpindex Keyboard, remapping
+@cpindex Remapping keycodes
+@cpindex Keys, swap
+@cpindex Swap keys
 @command{mds-kkbd} implements access to the
 kernel-based keyboard. It does not however implement
 delay and rate configurations for the kernel-based
@@ -2912,12 +2915,14 @@ depending on the program's implementation.
 @code{Command: reregister}
 
 @item Action:
+@prindex @code{register}
 Request that all servers resends
 @code{Command: register} with either @code{Action: add}
 or without the @code{Action}-header (does the same
 thing.)
 
 @item Purpose:
+@prindex @code{register}
 Rebuild registry created with @code{Command: register}
 if the registry server crashes.
 
@@ -2928,7 +2933,7 @@ do not implement this in your server.
 
 @item Reference implementation:
 @pgindex @command{mds-registry}
-@command{mds-registry}.
+@command{mds-registry}
 @end table
 
 
@@ -3175,7 +3180,7 @@ Required.
 
 @item Reference implementation:
 @pgindex @command{mds-vt}
-@code{mds-vt}
+@command{mds-vt}
 @end table
 
 
@@ -3207,9 +3212,13 @@ Required.
 @code{Command: key-sent}
 
 @item Action:
+@cpindex Keyboard input events
+@cpindex Input events, keyboard
 Announce a keyboard input event.
 
 @item Required header: @code{Keyboard}
+@cpindex Keyboard ID
+@cpindex ID of keyboard
 Any string that uniquely identifies the keyboard.
 @table @asis
 @item Purpose:
@@ -3217,6 +3226,7 @@ Enable multi-keyboard aware programs and give at
 least one keyboard per seat in a multi-seat
 environment.
 @item Note:
+@pgindex @command{mds-kkbd}
 @command{mds-kkbd} uses @code{kernel} to indicate that
 it uses the kernel and thus lumps together all
 keyboards.
@@ -3237,10 +3247,12 @@ feature built into most keyboards and servers should
 not try to circumvent this.
 
 @item Required header: @code{Keycode}
+@cpindex Keycodes
 An unsigned 14-bit integer identifying the key, may
 be remapped.
 
 @item Optional header: @code{Scancode}
+@cpindex Scancodes
 Either an unsigned 7-bit integer or a single blank
 space separated trio of unsigned 7-bit integers,
 identifying the key. This is the scancode sent from
@@ -3249,6 +3261,8 @@ driver, however with the typed/released bit zeroed
 out. This may not be remapped.
 
 @item Optional header: @code{Modifiers}
+@cpindex Modifier keys
+@cpindex Keys, modifiers
 Single blank space separated list of active modifiers:
 @table @code
 @item shift
@@ -3283,6 +3297,8 @@ Single blank space separated list of active modifiers:
 @item compose
 @key{Compose} (rare, it is usually a dead key)
 @end table
+@cpindex Lock keys
+@cpindex Keys, lock
 Any key that has been locked should be prefix with
 @code{+}, if the key has been locked by nullified
 with non-lock modifier it should be prefixed with a
@@ -3393,6 +3409,8 @@ affect the value.
 UTF-8 encoded string that has been written.
 
 @item Purpose:
+@cpindex On-screen keyboards
+@cpindex Keyboards, on-screen
 Enable the user to use a keyboard, physical or
 on-screen.
 
@@ -3405,6 +3423,9 @@ Highly-recommended, a computer is as good as useless
 without a keyboard.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
+@pgindex @command{mds-keytrans}
 @command{mds-kkbd}, @command{mds-kbd} and
 @command{mds-keytrans}
 @end table
@@ -3415,6 +3436,8 @@ without a keyboard.
 @subsection @code{enumerate-keyboards}
 @prindex @code{enumerate-keyboards}
 
+@cpindex Keyboard listing
+@cpindex List keyboards
 @table @asis
 @item Identifying header:
 @code{Command: enumerate-keyboards}
@@ -3427,6 +3450,8 @@ Your ID, provided by the @code{ID assignment}-header in
 response to a @code{Command: assign-id}-header.
 
 @item Instructions:
+@prindex @code{keyboard-enumeration}
+@prindex @code{key-sent}
 This message must be consumed by the first server that
 receives it and implements support for it, and then
 send out a @code{Command: keyboard-enumeration}
@@ -3442,6 +3467,8 @@ keyboards so that can be configured individually.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
 @command{mds-kkbd} and @command{mds-kbd}
 @end table
 
@@ -3451,19 +3478,24 @@ Optional.
 @subsection @code{keyboard-enumeration}
 @prindex @code{keyboard-enumeration}
 
+@cpindex Keyboard listing
+@cpindex List keyboards
 @table @asis
 @item Identifying header:
 @code{Command: keyboard-enumeration}
 
 @item Action:
+@prindex @code{enumerate-keyboards}
 Response to @code{Command: enumerate-keyboards}.
 
 @item Required header: @code{To}
+@prindex @code{enumerate-keyboards}
 The ID received under @code{Client ID}-header in the
 @code{Command: enumerate-keyboards}-message that
 triggered this message to be broadcasted
 
 @item Required header: @code{In response to}
+@prindex @code{enumerate-keyboards}
 The ID received under the @code{Message ID}-header in
 the @code{Command: enumerate-keyboards}-message that
 triggered this message to be broadcasted.
@@ -3484,10 +3516,13 @@ Make it possible for clients to list all available
 keyboards so that can be configured individually
 
 @item Compulsivity:
+@prindex @code{enumerate-keyboards}
 Required if you implement
 @code{Command: enumerate-keyboards}.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
 @command{mds-kkbd} and @command{mds-kbd}
 @end table
 
@@ -3497,6 +3532,8 @@ Required if you implement
 @subsection @code{set-keyboard-leds}
 @prindex @code{set-keyboard-leds}
 
+@cpindex Keyboard LED:s
+@cpindex LED:s, keyboard
 @table @asis
 @item Identifying header:
 @code{Command: set-keyboard-leds}
@@ -3541,6 +3578,9 @@ locks.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
+@pgindex @command{mds-keytrans}
 @command{mds-kkbd}, @command{mds-kbd} and
 @command{mds-keytrans}
 @end table
@@ -3551,6 +3591,8 @@ Optional.
 @subsection @code{get-keyboard-leds}
 @prindex @code{get-keyboard-leds}
 
+@cpindex Keyboard LED:s
+@cpindex LED:s, keyboard
 @table @asis
 @item Identifying header:
 @code{Command: get-keyboard-leds}
@@ -3567,6 +3609,7 @@ A string that identifies the keyboard that should be
 affected.
 
 @item Response:
+@prindex @code{set-keyboard-leds}
 The server implementing support for
 @code{Command: get-keyboard-leds} for the keyboard
 indicated by @code{Keyboard} should send a message back
@@ -3579,7 +3622,7 @@ List of currently turned on LED:s.
 List of LED:s that the server believes to be present
 on the keyboards.
 @end table
-Both of these headers followes the rules of the
+Both of these headers follows the rules of the
 @code{Active}-header under
 @code{Command: set-keyboard-leds}.
 
@@ -3589,12 +3632,16 @@ active locks when the server starts based on
 currently active LED:s
 
 @item Compulsivity:
+@prindex @code{set-keyboard-leds}
 Recommended. Required if you implement support for
 @code{Command: set-keyboard-leds}. If you do not
 support this protocol servers and clients and stall
 when they try to get the active LED:s
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
+@pgindex @command{mds-keytrans}
 @command{mds-kkbd}, @command{mds-kbd} and
 @command{mds-keytrans}
 @end table
@@ -3613,10 +3660,12 @@ when they try to get the active LED:s
 Set the repeat rate and repeat delay on a keyboard.
 
 @item Optional header: @code{Rate}
-A floating point value of the repeat rate, measured
-in cycles per second (hertz). Zero means no repeat.
+@cpindex Keyboard repeat rate
+A floating point value of the repeat rate, measured in
+cycles per second (hertz). Zero means no repeat.
 
 @item Optional header: @code{Delay}
+@cpindex Keyboard repeat delay
 An unsigned 16-bit integer of the number of
 milliseconds to wait before the first time a key is
 repeated. Zero means that the delay is matched with
@@ -3657,6 +3706,8 @@ repeat delay on keyboards.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
 @command{mds-kkbd} and @command{mds-kbd}
 @end table
 
@@ -3666,6 +3717,8 @@ Optional.
 @subsection @code{get-keyboard-rate}
 @prindex @code{get-keyboard-rate}
 
+@cpindex Keyboard repeat rate
+@cpindex Keyboard repeat delay
 @table @asis
 @item Identifying header:
 @code{Command: get-keyboard-rate}
@@ -3682,6 +3735,7 @@ A string that identifies the keyboard that should be
 affected.
 
 @item Response:
+@prindex @code{set-keyboard-rate}
 The server implementing support for
 @code{Command: get-keyboard-rate} for the keyboard
 indicated by @code{Keyboard} should send a message back
@@ -3724,6 +3778,8 @@ when they try to get the current repeat rate and
 repeat delay on the keyboard.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
 @command{mds-kkbd} and @command{mds-kbd}
 @end table
 
@@ -3733,6 +3789,11 @@ repeat delay on the keyboard.
 @subsection @code{keycode-map}
 @prindex @code{keycode-map}
 
+@cpindex Keycodes, remapping
+@cpindex Keyboard, remapping
+@cpindex Remapping keycodes
+@cpindex Keys, swap
+@cpindex Swap keys
 @table @asis
 @item Identifying header:
 @code{Command: keycode-map}
@@ -3799,6 +3860,8 @@ mapped keyboard.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-kbd}
+@pgindex @command{mds-kkbd}
 @command{mds-kbd} and @command{mds-kkbd}
 @end table
 
@@ -3808,6 +3871,8 @@ Optional.
 @subsection @code{new-keyboard}
 @prindex @code{new-keyboard}
 
+@cpindex Keyboard, devices
+@cpindex Devices, keyboards
 @table @asis
 @item Identifying header:
 @code{Command: new-keyboard}
@@ -3829,6 +3894,8 @@ Enable servers and clients to detect new keyboards.
 Recommended.
 
 @item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
 @command{mds-kbd} and @command{mds-kkbd}
 @end table
 
@@ -3838,6 +3905,8 @@ Recommended.
 @subsection @code{old-keyboard}
 @prindex @code{old-keyboard}
 
+@cpindex Keyboard, devices
+@cpindex Devices, keyboards
 @table @asis
 @item Identifying header:
 @code{Command: old-keyboard}
@@ -3860,6 +3929,7 @@ keyboards.
 Recommended.
 
 @item Reference implementation:
+@pgindex @command{mds-kbd}
 @command{mds-kbd}
 @end table
 
@@ -3879,6 +3949,8 @@ Recommended.
 @subsection @code{clipboard}
 @prindex @code{clipboard}
 
+@cpindex Clipboard
+@cpindex Clipstack
 @table @asis
 @item Identifying header:
 @code{Command: clipboard}
@@ -4002,6 +4074,7 @@ to be aware of eathother to any extent.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-clipboard}
 @command{mds-clipboard}
 @end table
 
@@ -4011,6 +4084,8 @@ Optional.
 @subsection @code{clipboard-info}
 @prindex @code{clipboard-info}
 
+@cpindex Clipboard
+@cpindex Clipstack
 @table @asis
 @item Identifying header:
 @code{Command: clipboard-info}
@@ -4045,6 +4120,7 @@ software crash.
 @end table
 
 @item Purpose:
+@prindex @code{clipboard}
 Enable clients to get notification about changes to
 the clipboard, that cannot trivially derived from
 @code{Command: clipboard}
@@ -4053,6 +4129,7 @@ the clipboard, that cannot trivially derived from
 Optional add-on to the clipboard's functionallity.
 
 @item Reference implementation:
+@pgindex @command{mds-clipboard}
 @command{mds-clipboard}
 @end table
 
@@ -4127,6 +4204,7 @@ Will contain a value as described in
 Will contain an ID to where the icon should be
 embeded.
 @item Will send update
+@prindex @code{tray-update}
 The value of this header will be @code{yes} if this
 message will be followed by a
 @code{Command: tray-update}-message. Otherwise the
@@ -4179,6 +4257,7 @@ icons.
 Hide icons without actually removing them.
 
 @item Compulsivity:
+@prindex @code{add-tray-icon}
 Required if supporting @code{Command: add-tray-icon},
 only @code{Status: hide} and @code{Status show} is
 required.
@@ -4371,6 +4450,7 @@ programs have started and attempted to add their
 icons.
 
 @item Compulsivity:
+@prindex @code{add-tray-icon}
 Required if supporting @code{Command: add-tray-icon}.
 @end table
 
@@ -4389,7 +4469,7 @@ Required if supporting @code{Command: add-tray-icon}.
 
 @node get-gamma-info
 @subsection @code{get-gamma-info}
-@prindex @code{get-gamma-icon}
+@prindex @code{get-gamma-info}
 
 @table @asis
 @item Identifying header:
@@ -4450,12 +4530,18 @@ Enable performance optimisation when manipulating
 gamma ramps.
 
 @item Compulsivity:
+@prindex @code{get-gamma}
+@prindex @code{set-gamma}
 Optional. Required if your implement support for
 @code{Command: get-gamma} or @code{Command: set-gamma}.
 
 @item Reference implementation:
+@pgindex @command{mds-hwgamma}
+@pgindex @command{mds-swgamma}
+@pgindex @command{mds-coopgamma}
+@pgindex @command{mds-cursorgamma}
 @command{mds-hwgamma}, @command{mds-swgamma},
-@command{mds-coopgamma} and @command{mds-cursorgamma}.
+@command{mds-coopgamma} and @command{mds-cursorgamma}
 @end table
 
 
@@ -4492,6 +4578,7 @@ The lower bound of the priority range of the gamma
 ramps to received. This is a signed 64-bit integer.
 
 @item Response:
+@prindex @code{error}
 The server will response with a @code{Command: error}
 on error, unsuccess the server will respond with a
 message contain the headers:
@@ -4557,13 +4644,19 @@ Enable analysis and readings of the current gamma
 ramps.
 
 @item Compulsivity:
+@prindex @code{get-gamma-info}
+@prindex @code{set-gamma}
 Optional. Required if your implement support for
 @code{Command: get-gamma-info} or
 @code{Command: set-gamma}.
 
 @item Reference implementation:
+@pgindex @command{mds-hwgamma}
+@pgindex @command{mds-swgamma}
+@pgindex @command{mds-coopgamma}
+@pgindex @command{mds-cursorgamma}
 @command{mds-hwgamma}, @command{mds-swgamma},
-@command{mds-coopgamma} and @command{mds-cursorgamma}.
+@command{mds-coopgamma} and @command{mds-cursorgamma}
 @end table
 
 
@@ -4658,9 +4751,11 @@ all stops converted and then measure the length of
 that string.
 
 @item Response:
+@prindex @code{error}
 The server will response with a @code{Command: error}.
 
 @item Instructions:
+@prindex @code{set-gamma}
 For optimal flexibility a system may run a server such
 as @command{mds-hwgamma} that applies the gamma ramps,
 and a server such as @command{mds-coopgamma} to let
@@ -4691,13 +4786,19 @@ Enable colour output filters such colour temperature
 adjustments, colour invertion and dimming.
 
 @item Compulsivity:
+@prindex @code{get-gamma-info}
+@prindex @code{get-gamma}
 Optional. Required if your implement support for
 @code{Command: get-gamma-info} or
 @code{Command: get-gamma}.
 
 @item Reference implementation:
+@pgindex @command{mds-hwgamma}
+@pgindex @command{mds-swgamma}
+@pgindex @command{mds-coopgamma}
+@pgindex @command{mds-cursorgamma}
 @command{mds-hwgamma}, @command{mds-swgamma},
-@command{mds-coopgamma} and @command{mds-cursorgamma}.
+@command{mds-coopgamma} and @command{mds-cursorgamma}
 @end table
 
 
@@ -4796,6 +4897,7 @@ Allow programs to stop the screensaver from starting.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-screensaver}
 @command{mds-screensaver}
 @end table
 
@@ -4838,6 +4940,7 @@ the screensaver starts.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-screensaver}
 @command{mds-screensaver}
 @end table
 
@@ -4888,6 +4991,10 @@ input devices.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-screensaver}
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
+@pgindex @command{mds-rat}
 @command{mds-screensaver}, @command{mds-kkbd},
 @command{mds-kbd} and @command{mds-rat}
 @end table
@@ -4935,6 +5042,7 @@ Network heartbeat.
 Recommended for network enabled servers.
 
 @item Reference implementation:
+@pgindex @command{mds-echo}
 @command{mds-echo}
 @end table
 
@@ -4969,6 +5077,7 @@ usually be used if no signal is to be sent, this is
 however dependent on the operating system.
 
 @item Response:
+@prindex @code{error}
 The server will respond with a
 @code{Command: error}-message. In this message the
 server all include an ad-hoc header:
@@ -4983,6 +5092,8 @@ them by one of their windows.
 Optional.
 
 @item Reference implementation:
+@pgindex @command{mds-kill}
+@pgindex @command{mds-slay}
 @command{mds-kill} and @command{mds-slay}
 @end table
 
@@ -7928,7 +8039,7 @@ restricted to the 31:th power of 2.
 @node Escaping
 @subsection Escaping
 
-@cpindex Keyboard layout, Escaping special character
+@cpindex Keyboard layout, escaping special character
 @cpindex Keyboard layout, special character, escaping
 @cpindex Escaping special character, keyboard layout
 @cpindex Special character, escaping, keyboard layout
