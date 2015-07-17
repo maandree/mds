@@ -177,6 +177,7 @@ libraries and concepts.
 
 @defindex op
 @defindex sg
+@defindex ub
 
 
 
@@ -257,6 +258,7 @@ libraries and concepts.
 * Signal index::                    Index of signals.
 * Function index::                  Index of functions.
 * Data type index::                 Index of data types.
+* Unicode block index::             Index of unicode block.
 @end menu
 @c TODO @detailmenu (`C-c C-u m`)
 
@@ -8006,6 +8008,7 @@ has been used, @code{\get(1 0)} evaluates to 4.
 @node Default Keyboard Layouts
 @chapter Default Keyboard Layouts
 
+@cpindex Compose tables
 The chapter is about the special keyboard layouts
 and compose tables included with @command{mds}.
 
@@ -8018,6 +8021,10 @@ and compose tables included with @command{mds}.
 @node Dead Compose Table
 @section Dead Compose Table
 
+@cpindex Dead keys
+@cpindex Compose key
+@cpindex Keys, dead
+@cpindex Keys, compose
 This section describes the structure for the mappings
 used in the compose table for the dead key version of
 the compose key.
@@ -8275,6 +8282,7 @@ the compose key.
 
 @node Arrows
 @subsection Arrows
+@ubindex Arrows
 
 970
 
@@ -8282,6 +8290,7 @@ the compose key.
 
 @node Basic Latin
 @subsection Basic Latin
+@ubindex Basic Latin
 
 125
 
@@ -8289,6 +8298,7 @@ the compose key.
 
 @node Block Elements
 @subsection Block Elements
+@ubindex Block Elements
 
 1648
 
@@ -8296,6 +8306,7 @@ the compose key.
 
 @node Box Drawing
 @subsection Box Drawing
+@ubindex Box Drawing
 
 Most of the box drawing glyphs can be composed by
 typing @kbd{<dead compose>} followed by two glyphs
@@ -8383,6 +8394,7 @@ a double dashed vertical line.
 
 @node Braille Patterns
 @subsection Braille Patterns
+@ubindex Braille Patterns
 
 The sequence @kbd{<shift dead compose> "b" <space>}
 can be used to create a blank braille pattern.
@@ -8408,6 +8420,7 @@ overlays with its mirror pattern.
 
 @node Domino Tiles
 @subsection Domino Tiles
+@ubindex Domino Tiles
 @c TODO compose tiles together
 
 There are two types of domino tile glyphs:
@@ -8434,6 +8447,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Enclosed Alphanumeric Supplement
 @subsection Enclosed Alphanumeric Supplement
+@ubindex Enclosed Alphanumeric Supplement
 
 1476
 
@@ -8441,6 +8455,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Enclosed Alphanumerics
 @subsection Enclosed Alphanumerics
+@ubindex Enclosed Alphanumerics
 
 3133
 
@@ -8448,6 +8463,7 @@ the user is composed with either @kbd{"|"} or
 
 @node General Punctuation
 @subsection General Punctuation
+@ubindex General Punctuation
 
 730
 
@@ -8455,6 +8471,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Geometric Shapes
 @subsection Geometric Shapes
+@ubindex Geometric Shapes
 
 1687
 
@@ -8462,6 +8479,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Geometric Shapes Extended
 @subsection Geometric Shapes Extended
+@ubindex Geometric Shapes Extended
 
 3194
 
@@ -8469,6 +8487,7 @@ the user is composed with either @kbd{"|"} or
 
 @node IPA Extensions
 @subsection IPA Extensions
+@ubindex IPA Extensions
 
 568
 
@@ -8476,6 +8495,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Latin Extended-A
 @subsection Latin Extended-A
+@ubindex Latin Extended-A
 
 236
 
@@ -8483,6 +8503,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Latin Extended-B
 @subsection Latin Extended-B
+@ubindex Latin Extended-B
 
 364
 
@@ -8490,6 +8511,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Latin Extended-C
 @subsection Latin Extended-C
+@ubindex Latin Extended-C
 
 2834
 
@@ -8497,6 +8519,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Latin-1 Supplement
 @subsection Latin-1 Supplement
+@ubindex Latin-1 Supplement
 
 136
 
@@ -8504,6 +8527,7 @@ the user is composed with either @kbd{"|"} or
 
 @node Mahjong Tiles
 @subsection Mahjong Tiles
+@ubindex Mahjong Tiles
 
 Unnumbered mahjong tiles are composed with
 @kbd{<shift dead compose> "m" "t"} followed by one
@@ -8563,6 +8587,7 @@ Circles (bing)
 
 @node Mathematical Operators
 @subsection Mathematical Operators
+@ubindex Mathematical Operators
 
 1118
 
@@ -8570,6 +8595,7 @@ Circles (bing)
 
 @node Miscellaneous Mathematical Symbols-A
 @subsection Miscellaneous Mathematical Symbols-A
+@ubindex Miscellaneous Mathematical Symbols-A
 
 1824
 
@@ -8577,6 +8603,7 @@ Circles (bing)
 
 @node Miscellaneous Mathematical Symbols-B
 @subsection Miscellaneous Mathematical Symbols-B
+@ubindex Miscellaneous Mathematical Symbols-B
 
 2119
 
@@ -8584,6 +8611,7 @@ Circles (bing)
 
 @node Miscellaneous Symbols and Arrows
 @subsection Miscellaneous Symbols and Arrows
+@ubindex Miscellaneous Symbols and Arrows
 
 2594
 
@@ -8591,6 +8619,7 @@ Circles (bing)
 
 @node Number Forms
 @subsection Number Forms
+@ubindex Number Forms
 
 889
 
@@ -8598,6 +8627,7 @@ Circles (bing)
 
 @node Playing Cards
 @subsection Playing Cards
+@ubindex Playing Cards
 
 @kbd{<shift dead compose> "p" "c"} composes the
 character presenting the back of a playing card.
@@ -8663,6 +8693,7 @@ Black or white clubs symbol
 
 @node Superscripts and Subscripts
 @subsection Superscripts and Subscripts
+@ubindex Superscripts and Subscripts
 
 840
 
@@ -8670,6 +8701,7 @@ Black or white clubs symbol
 
 @node Supplemental Arrows-A
 @subsection Supplemental Arrows-A
+@ubindex Supplemental Arrows-A
 
 1900
 
@@ -8677,6 +8709,7 @@ Black or white clubs symbol
 
 @node Supplemental Arrows-B
 @subsection Supplemental Arrows-B
+@ubindex Supplemental Arrows-B
 
 1973
 
@@ -8684,6 +8717,7 @@ Black or white clubs symbol
 
 @node Supplemental Arrows-C
 @subsection Supplemental Arrows-C
+@ubindex Supplemental Arrows-C
 
 3284
 
@@ -8691,6 +8725,7 @@ Black or white clubs symbol
 
 @node Supplemental Mathematical Operators
 @subsection Supplemental Mathematical Operators
+@ubindex Supplemental Mathematical Operators
 
 2286
 
@@ -8698,6 +8733,7 @@ Black or white clubs symbol
 
 @node Tags
 @subsection Tags
+@ubindex Tags
 
 The ``Tags'' block in Unicode has been deprecated.
 Characters in this block is therefore not mapped in
@@ -8707,6 +8743,8 @@ the compose table.
 
 @node Variation Selectors
 @subsection Variation Selectors
+@ubindex Variation Selectors
+@ubindex Variation Selectors Supplement
 @c TODO Variation Selectors, Variation Selectors Supplement
 
 There are 256 variation selectors, numbered 1 through
@@ -11639,6 +11677,11 @@ requires that be listen for updates to the backgrund.
 @node Data type index
 @unnumbered Data type index
 @printindex tp
+
+@node Unicode block index
+@unnumbered Unicode block index
+@printindex ub
+
 
 @bye
 
