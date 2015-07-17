@@ -8988,18 +8988,30 @@ speed)^(1 + curve)
 @node Rat Cursors
 @section Rat Cursors
 
+@cpindex Cursor, specifications
+@cpindex Rat cursor, specifications
+@cpindex Mouse cursor, specifications
+@pgindex @command{mds-cursorshadow}
+@cpindex Cursor shadow
+@cpindex Rat cursor shadow
+@cpindex Mouse cursor shadow
+@cpindex Shadow, cursor
 Rat cursor themes should not add shadows to the
 cursors. Shadows are added by the
 @command{mds-cursorshadow} server according to the
 user's specifications.
 
-@command{mds}'s rat cursors specifications is based on
+@command{mds}'s rat cursors specifications are based on
 @url{http://www.freedesktop.org/wiki/Specifications/cursor-spec}.
 
 All rat cursor themes should include the cursors
 listed below. The icons are conceptual examples of
 how they can look.
 
+@cpindex Cursor animation
+@cpindex Rat cursor animation
+@cpindex Mouse cursor animation
+@cpindex Animation, cursors
 In addition to the cursors below, each of the may be
 accompanied with @code{X-press}, @code{X-hold} and
 @code{X-release}, where @code{X} is the name of the
@@ -9057,6 +9069,8 @@ north-north-east-pointing arrow.
 
 @page
 @item context-menu
+@cpindex Menus, context menus
+@cpindex Context menus
 This cursor indicates the same state as
 @command{default} with he addition that the object
 beneath it can be right-clicked (left-clicked if
@@ -9090,6 +9104,8 @@ with a small menu.
 @page
 @end ifset
 @item text
+@cpindex Text, horizontal
+@cpindex Horizontal text
 This cursor should be used when the rat pointers is
 above an horizontal text that can be selected and
 possibly edited.
@@ -9121,6 +9137,10 @@ This cursor is usually a vertical I-beam.
 @page
 @end ifclear
 @item vertical-text
+@cpindex Text, vertical
+@cpindex Vertical text
+@cpindex Text, rotated
+@cpindex Rotated text
 This cursor should be used when the rat pointers is
 above an vertical text that can be selected and
 possibly edited.
@@ -9146,6 +9166,8 @@ This cursor is usually a horizontal I-beam.
 @page
 @end ifset
 @item progress
+@cpindex Wait cursor
+@cpindex Progress cursor
 This cursor indicates that the interface can be used
 as when @command{default} is used. But that the
 program is working in the background with command the
@@ -9179,6 +9201,8 @@ This cursor is usually rendered as a combination of
 @page
 @end ifclear
 @item wait
+@cpindex Wait cursor
+@cpindex Progress cursor
 This cursor indicates that the interface cannot be
 used because it is working or is blocked by an
 external resource.
@@ -9211,8 +9235,10 @@ watch, sundial or some sort of animated ring.
 @page
 @end ifset
 @item pointer
+@cpindex Clickable
+@cpindex Links
 This cursor indicates that the object beneath it is
-clickable. Typically a link in a web browser.
+clickable. Typically a link in a Web browser.
 However, it should not be used for pushbuttons and
 other user interface elements where it is apparent by
 design that the object is clickable.
@@ -9245,6 +9271,7 @@ left-handed) pointing with the index-finger.
 @page
 @end ifclear
 @item help
+@cpindex Help mode
 This cursor indicates that the interface is in
 context help mode. This is usually activated by
 clicking an help button --- which usally has a
@@ -9275,6 +9302,7 @@ with a question mark next to it.
 @vskip 0pt plus 1filll
 
 @item drag
+@cpindex Drag-and-drop
 This cursor indicates that an object is being dragged.
 
 This cursor is usually a closed right hand, or closed
@@ -9297,6 +9325,8 @@ left hand if left-handed.
 
 @page
 @item copy
+@cpindex Drag-and-drop, copy
+@cpindex Copy, drag-and-drop
 This cursor indicates that the dragged object will be
 copied or listed upon release.
 
@@ -9331,6 +9361,8 @@ plus-sign next to it.
 @page
 @end ifset
 @item move
+@cpindex Drag-and-drop, move
+@cpindex Move, drag-and-drop
 This cursor indicates that the dragged object will be
 moved upon release, or otherwise acted upon.
 
@@ -9364,6 +9396,10 @@ north-east, or north-west if left-handed.
 
 @page
 @item alias
+@cpindex Drag-and-drop, link
+@cpindex Link, drag-and-drop
+@cpindex Drag-and-drop, alias
+@cpindex Alias, drag-and-drop
 This cursor indicates that the dragged object will be
 aliased upon release, or otherwise acted upon. This
 may entail creating a symlink.
@@ -9404,6 +9440,7 @@ arrow.
 @end ifclear
 @end ifclear
 @item no-drop
+@cpindex Drag-and-drop
 This cursor indicates that the dragged object cannot
 be release where the rat pointer is located, but that
 the object beneath it usually allow drops of objects
@@ -9439,6 +9476,8 @@ This cursor is typically rendered as a combination of
 
 @page
 @item not-allowed
+@cpindex Invalid
+@cpindex Not allowed
 This cursor indicates that the region beneath the rat
 pointer is invalid for the current operation.
 
@@ -9469,7 +9508,8 @@ diagonal line through it.
 @ifset AFIVEPAPER
 @page
 @end ifset
-@item not-allowed
+@item all-scroll
+@cpindex Scrolling
 This cursor is used to indicate that moving the rat
 will also move the object beneath below the cursor
 
@@ -9500,6 +9540,7 @@ and horizontal twin-headed arrow.
 @page
 @end ifclear
 @item up-arrow
+@cpindex Insertion point
 This cursor is typically used to identify an
 insertion point.
 
@@ -9525,6 +9566,9 @@ It is often rendered an upwards-pointing arrow.
 @page
 @end ifset
 @item cell
+@cpindex Spread-sheets
+@cpindex Cell selection
+@cpindex Tables, selection
 This cursor is often used in spread-sheet applications
 when selecting cells.
 
@@ -9552,6 +9596,9 @@ It is typically rendered as a thick plus-sign.
 @page
 @end ifclear
 @item col-resize
+@cpindex Tables, resize
+@cpindex Columns, resize
+@cpindex Resize table columns
 This cursor is used to indicate the the cursor is
 within a region that allows it rat to be used to
 resize a column.
@@ -9594,6 +9641,9 @@ horizontally towards it.
 @page
 @end ifset
 @item row-resize
+@cpindex Tables, resize
+@cpindex Rows, resize
+@cpindex Resize table rows
 This cursor is used to indicate the the cursor is
 within a region that allows it rat to be used to
 resize a column.
@@ -9638,6 +9688,9 @@ vertically towards it.
 @page
 @end ifset
 @item crosshair
+@cpindex Drawing
+@cpindex Precision drawing
+@cpindex Crosshair cursor
 This cursor is used for precision drawing or
 precision manipulation of an area.
 
@@ -9664,6 +9717,8 @@ This cursor typically a thin crosshair.
 @vskip 0pt plus 1filll
 
 @item w-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{w-select} should be
 used as the first fallback, @code{ew-resize} should
 be used as the second fallback, @code{ew-select}
@@ -9690,6 +9745,8 @@ arrow, optionally with a wall at the arrowhead.
 @page
 @end ifset
 @item w-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{w-resize} should be
 used as the first fallback, @code{ew-select} should
 be used as the second fallback, @code{ew-resize}
@@ -9721,6 +9778,8 @@ arrow.
 @page
 @end ifset
 @item e-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{e-select} should be
 used as the first fallback, @code{ew-resize} should
 be used as the second fallback, @code{ew-select}
@@ -9749,6 +9808,8 @@ arrow, optionally with a wall at the arrowhead.
 @end ifclear
 @end ifset
 @item e-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{e-resize} should be
 used as the first fallback, @code{ew-select} should
 be used as the second fallback, @code{ew-resize}
@@ -9780,6 +9841,8 @@ arrow.
 @page
 @end ifset
 @item n-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{n-select} should be
 used as the first fallback, @code{ns-resize} should
 be used as the second fallback, @code{ns-select}
@@ -9820,6 +9883,8 @@ arrow, optionally with a wall at the arrowhead.
 @page
 @end ifset
 @item n-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{n-resize} should be
 used as the first fallback, @code{ns-select} should
 be used as the second fallback, @code{ns-resize}
@@ -9856,6 +9921,8 @@ arrow.
 @page
 @end ifset
 @item s-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{s-select} should be
 used as the first fallback, @code{ns-resize} should
 be used as the second fallback, @code{ns-select}
@@ -9893,6 +9960,8 @@ arrow, optionally with a wall at the arrowhead.
 @end ifclear
 @end ifclear
 @item s-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{s-resize} should be
 used as the first fallback, @code{ns-select} should
 be used as the second fallback, @code{ns-resize}
@@ -9926,6 +9995,8 @@ arrow.
 @page
 @end ifset
 @item nw-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{nw-select}
 should be used as the first fallback,
 @code{nwse-resize} should be used as the second
@@ -9964,6 +10035,8 @@ at the arrowhead.
 @end ifclear
 @end ifclear
 @item nw-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{nw-resize} should be
 used as the first fallback, @code{nwse-select} should
 be used as the second fallback, @code{nwse-resize}
@@ -9996,6 +10069,8 @@ north-west-pointing arrow.
 @page
 @end ifset
 @item se-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{se-select} should be
 used as the first fallback, @code{nwse-resize} should
 be used as the second fallback, @code{nwse-select}
@@ -10034,6 +10109,8 @@ at the arrowhead.
 @end ifclear
 @end ifclear
 @item se-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{se-resize} should be
 used as the first fallback, @code{nwse-select} should
 be used as the second fallback, @code{nwse-resize}
@@ -10066,6 +10143,8 @@ south-east-pointing arrow.
 @page
 @end ifset
 @item ne-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{ne-select} should be
 used as the first fallback, @code{nesw-resize} should
 be used as the second fallback, @code{nesw-select}
@@ -10104,6 +10183,8 @@ at the arrowhead.
 @end ifclear
 @end ifclear
 @item ne-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{ne-resize} should be
 used as the first fallback, @code{nesw-select} should
 be used as the second fallback, @code{nesw-resize}
@@ -10136,6 +10217,8 @@ north-east-pointing arrow.
 @page
 @end ifset
 @item sw-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{sw-select} should be
 used as the first fallback, @code{nesw-resize} should
 be used as the second fallback, @code{nesw-select}
@@ -10174,6 +10257,8 @@ at the arrowhead.
 @end ifclear
 @end ifclear
 @item sw-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{sw-resize} should be
 used as the first fallback, @code{nesw-select} should
 be used as the second fallback, @code{nesw-resize}
@@ -10203,6 +10288,8 @@ south-west-pointing arrow.
 @vskip 0pt plus 1filll
 
 @item ew-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{ew-select} should be
 used as the first fallback, and @code{col-resize}.
 should be used as the second fallback.
@@ -10229,6 +10316,8 @@ the arrowheads.
 @end ifset
 @end ifset
 @item ew-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{ew-resize} should be
 used as the first fallback, and @code{col-resize}.
 should be used as the second fallback.
@@ -10252,6 +10341,8 @@ west-pointing twin-arrow.
 @page
 @end ifclear
 @item ns-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{ns-select} should be
 used as the first fallback, and @code{row-resize}.
 should be used as the second fallback.
@@ -10282,6 +10373,8 @@ the arrowheads.
 @vskip 0pt plus 1filll
 
 @item ns-select
+@cpindex Cell selection
+@cpindex Tables, selection
 If this cursor is missing, @code{ns-resize} should be
 used as the first fallback, and @code{row-resize}.
 should be used as the second fallback.
@@ -10318,6 +10411,8 @@ south-pointing twin-arrow.
 @page
 @end ifset
 @item nwse-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{all-resize} should
 be used as the first fallback.
 
@@ -10350,6 +10445,8 @@ corner at the arrowheads.
 @page
 @end ifset
 @item nesw-resize
+@cpindex Resizing
+@cpindex Window resizing
 If this cursor is missing, @code{all-resize} should
 be used as the first fallback.
 
@@ -10380,6 +10477,8 @@ corner at the arrowheads.
 
 @page
 @item all-resize
+@cpindex Resizing
+@cpindex Window resizing
 This cursor is typically rendered as a cross between
 a north-east and south-west-pointing twin-arrow and a
 north-west- and south-east-pointing twin-arrow,
@@ -11577,5 +11676,4 @@ TODO In `Rat Cursors` use anchors and references to hyperlink names.
 TODO Indices:
   Protocols
   Default Keyboard Layouts
-  Specifications → Rat Cursors
 
