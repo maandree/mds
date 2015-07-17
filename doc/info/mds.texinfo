@@ -1770,9 +1770,9 @@ server.
 @cpindex Network heartbeat
 @command{mds-echo} is a server that echos message
 that contain the header--value pair
-@command{Command: echo}.
-This server can be used for debugging and testing
-as well as to enable network heartbeats.
+@code{Command: echo}. This server can be used for
+debugging and testing as well as to enable network
+heartbeats.
 
 
 
@@ -2749,7 +2749,7 @@ tray.
 
 
 @node assign-id
-@subsection assign-id
+@subsection @code{assign-id}
 
 @table @asis
 @item Identifying header:
@@ -2772,7 +2772,7 @@ Manditory, part of the core infrastructure.
 
 
 @node intercept
-@subsection intercept
+@subsection @code{intercept}
 
 @table @asis
 @item Identifying header:
@@ -2819,7 +2819,7 @@ Manditory, part of the core infrastructure.
 
 
 @node register
-@subsection register
+@subsection @code{register}
 
 @table @asis
 @item Identifying header:
@@ -2830,8 +2830,8 @@ Register availability of a command for which you
 implement a service.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Conditionally required header: @code{Length}
 Length of the message.
@@ -2881,7 +2881,7 @@ depending on the program's implementation.
 
 
 @node reregister
-@subsection reregister
+@subsection @code{reregister}
 
 @table @asis
 @item Identifying header:
@@ -2889,9 +2889,9 @@ depending on the program's implementation.
 
 @item Action:
 Request that all servers resends
-@code{Command: register} with either
-@code{Action: add} or without the @code{Action}-header
-(does the same thing.)
+@code{Command: register} with either @code{Action: add}
+or without the @code{Action}-header (does the same
+thing.)
 
 @item Purpose:
 Rebuild registry created with @code{Command: register}
@@ -2909,7 +2909,7 @@ do not implement this in your server.
 
 
 @node error
-@subsection error
+@subsection @code{error}
 
 @table @asis
 @item Identifying header:
@@ -2965,7 +2965,7 @@ Optional.
 
 
 @node get-vt
-@subsection get-vt
+@subsection @code{get-vt}
 
 @table @asis
 @item Identifying header:
@@ -2976,8 +2976,8 @@ Get the index of the virtual terminal the server is
 display on.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Response:
 The server will response with the header
@@ -3011,7 +3011,7 @@ Required.
 
 
 @node configure-vt
-@subsection configure-vt
+@subsection @code{configure-vt}
 
 @table @asis
 @item Identifying header:
@@ -3022,8 +3022,8 @@ Reconfigure the virtual terminal the server is
 display on.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Optional header: @code{Graphical}
 @table @code
@@ -3078,7 +3078,7 @@ Required.
 
 
 @node switching-vt
-@subsection switching-vt
+@subsection @code{switching-vt}
 
 @table @asis
 @item Identifying header:
@@ -3155,11 +3155,11 @@ Required.
 
 
 @node key-sent
-@subsection key-sent
+@subsection @code{key-sent}
 
 @table @asis
 @item Identifying header:
-@command{Command: key-sent}
+@code{Command: key-sent}
 
 @item Action:
 Announce a keyboard input event.
@@ -3366,18 +3366,18 @@ without a keyboard.
 
 
 @node enumerate-keyboards
-@subsection enumerate-keyboards
+@subsection @code{enumerate-keyboards}
 
 @table @asis
 @item Identifying header:
-@command{Command: enumerate-keyboards}
+@code{Command: enumerate-keyboards}
 
 @item Action:
 List available keyboards.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Instructions:
 This message must be consumed by the first server that
@@ -3401,11 +3401,11 @@ Optional.
 
 
 @node keyboard-enumeration
-@subsection keyboard-enumeration
+@subsection @code{keyboard-enumeration}
 
 @table @asis
 @item Identifying header:
-@command{Command: keyboard-enumeration}
+@code{Command: keyboard-enumeration}
 
 @item Action:
 Response to @code{Command: enumerate-keyboards}.
@@ -3437,7 +3437,7 @@ keyboards so that can be configured individually
 
 @item Compulsivity:
 Required if you implement
-@command{Command: enumerate-keyboards}.
+@code{Command: enumerate-keyboards}.
 
 @item Reference implementation:
 @command{mds-kkbd} and @command{mds-kbd}
@@ -3446,11 +3446,11 @@ Required if you implement
 
 
 @node set-keyboard-leds
-@subsection set-keyboard-leds
+@subsection @code{set-keyboard-leds}
 
 @table @asis
 @item Identifying header:
-@command{Command: set-keyboard-leds}
+@code{Command: set-keyboard-leds}
 
 @item Action:
 Activate and deactivate LED:s on a keyboard.
@@ -3499,18 +3499,18 @@ Optional.
 
 
 @node get-keyboard-leds
-@subsection get-keyboard-leds
+@subsection @code{get-keyboard-leds}
 
 @table @asis
 @item Identifying header:
-@command{Command: get-keyboard-leds}
+@code{Command: get-keyboard-leds}
 
 @item Action:
 List exisiting LED:s on a keyboard and their state.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3519,10 +3519,9 @@ affected.
 @item Response:
 The server implementing support for
 @code{Command: get-keyboard-leds} for the keyboard
-indicated by @code{Keyboard} should send a message
-back to the client indicated by the
-@code{Client ID}-header (using the @code{To}-header)
-with the headers:
+indicated by @code{Keyboard} should send a message back
+to the client indicated by the @code{Client ID}-header
+(using the @code{To}-header) with the headers:
 @table @code
 @item Active
 List of currently turned on LED:s.
@@ -3553,11 +3552,11 @@ when they try to get the active LED:s
 
 
 @node set-keyboard-rate
-@subsection set-keyboard-rate
+@subsection @code{set-keyboard-rate}
 
 @table @asis
 @item Identifying header:
-@command{Command: set-keyboard-rate}
+@code{Command: set-keyboard-rate}
 
 @item Action:
 Set the repeat rate and repeat delay on a keyboard.
@@ -3613,18 +3612,18 @@ Optional.
 
 
 @node get-keyboard-rate
-@subsection get-keyboard-rate
+@subsection @code{get-keyboard-rate}
 
 @table @asis
 @item Identifying header:
-@command{Command: get-keyboard-rate}
+@code{Command: get-keyboard-rate}
 
 @item Action:
 Get the repeat rate and repeat delay on a keyboard.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Keyboard}
 A string that identifies the keyboard that should be
@@ -3633,21 +3632,20 @@ affected.
 @item Response:
 The server implementing support for
 @code{Command: get-keyboard-rate} for the keyboard
-indicated by @code{Keyboard} should send a message
-back to the client indicated by the
-@code{Client ID}-header (using the @code{To}-header)
-with the headers:
+indicated by @code{Keyboard} should send a message back
+to the client indicated by the @code{Client ID}-header
+(using the @code{To}-header) with the headers:
 @table @code
 @item Rate
 The current repeat rate. Same syntax as in
-@code{Command: set-keyboard-rate}.
-Set to @code{unknown} if the server does not know
-what the value is.
+@code{Command: set-keyboard-rate}. Set to
+@code{unknown} if the server does not know what the
+value is.
 @item Delay
 The current repeat delay. Same syntax as in
-@code{Command: set-keyboard-rate}.
-Set to @code{unknown} if the server does not know
-what the value is.
+@code{Command: set-keyboard-rate}. Set to
+@code{unknown} if the server does not know what the
+value is.
 @item Emulated
 @table @code
 @item yes
@@ -3680,11 +3678,11 @@ repeat delay on the keyboard.
 
 
 @node keycode-map
-@subsection keycode-map
+@subsection @code{keycode-map}
 
 @table @asis
 @item Identifying header:
-@command{Command: keycode-map}
+@code{Command: keycode-map}
 
 @item Action:
 Remap keyboard keycodes and query current mapping.
@@ -3710,8 +3708,8 @@ A string that identifies the keyboard that should be
 affected. If omitted all keyboard are affected.
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 Required if @code{Action: query} is included in the
 headers.
 
@@ -3754,11 +3752,11 @@ Optional.
 
 
 @node new-keyboard
-@subsection new-keyboard
+@subsection @code{new-keyboard}
 
 @table @asis
 @item Identifying header:
-@command{Command: new-keyboard}
+@code{Command: new-keyboard}
 
 @item Action:
 Announce the existance of a new keyboard.
@@ -3783,11 +3781,11 @@ Recommended.
 
 
 @node old-keyboard
-@subsection old-keyboard
+@subsection @code{old-keyboard}
 
 @table @asis
 @item Identifying header:
-@command{Command: old-keyboard}
+@code{Command: old-keyboard}
 
 @item Action:
 Announce the removal of an old keyboard.
@@ -3823,11 +3821,11 @@ Recommended.
 
 
 @node clipboard
-@subsection clipboard
+@subsection @code{clipboard}
 
 @table @asis
 @item Identifying header:
-@command{Command: clipboard}
+@code{Command: clipboard}
 
 @item Action:
 Read or manipulate a clipboard.
@@ -3886,8 +3884,8 @@ Required if @code{Action: set-size} is included in
 the headers.
 
 @item Conditionally required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 Required if @code{Action: read} or @code{Action: read}
 is included in the headers, or if @code{Action: add}
 is included in the headers and if the header
@@ -3954,11 +3952,11 @@ Optional.
 
 
 @node clipboard-info
-@subsection clipboard-info
+@subsection @code{clipboard-info}
 
 @table @asis
 @item Identifying header:
-@command{Command: clipboard-info}
+@code{Command: clipboard-info}
 
 @item Action:
 The clipboard server sends out some information about
@@ -3992,7 +3990,7 @@ software crash.
 @item Purpose:
 Enable clients to get notification about changes to
 the clipboard, that cannot trivially derived from
-@command{Command: clipboard}
+@code{Command: clipboard}
 
 @item Compulsivity:
 Optional add-on to the clipboard's functionallity.
@@ -4016,11 +4014,11 @@ Optional add-on to the clipboard's functionallity.
 
 
 @node add-tray-icon
-@subsection add-tray-icon
+@subsection @code{add-tray-icon}
 
 @table @asis
 @item Identifying header:
-@command{Command: add-tray-icon}
+@code{Command: add-tray-icon}
 
 @item Action:
 Add a status icons to the status icon tray.
@@ -4031,8 +4029,8 @@ two or three, …, and that it will get a response once
 from every tray.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{Package}
 The name of the package to which the program
@@ -4089,11 +4087,11 @@ Optional.
 
 
 @node update-tray-icon
-@subsection update-tray-icon
+@subsection @code{update-tray-icon}
 
 @table @asis
 @item Identifying header:
-@command{Command: update-tray-icon}
+@code{Command: update-tray-icon}
 
 @item Action:
 Change the status of a status icon.
@@ -4130,11 +4128,11 @@ required.
 
 
 @node tray-update
-@subsection tray-update
+@subsection @code{tray-update}
 
 @table @asis
 @item Identifying header:
-@command{Command: tray-update}
+@code{Command: tray-update}
 
 @item Action:
 Send updates about the status tray to the status icon.
@@ -4296,11 +4294,11 @@ Optional.
 
 
 @node new-tray
-@subsection new-tray
+@subsection @code{new-tray}
 
 @table @asis
 @item Identifying header:
-@command{Command: new-tray}
+@code{Command: new-tray}
 
 @item Action:
 Announce the existence of a new status icon trays.
@@ -4329,18 +4327,18 @@ Required if supporting @code{Command: add-tray-icon}.
 
 
 @node get-gamma-info
-@subsection get-gamma-info
+@subsection @code{get-gamma-info}
 
 @table @asis
 @item Identifying header:
-@command{Command: get-gamma-info}
+@code{Command: get-gamma-info}
 
 @item Action:
 Query gamma ramp information.
 
 @item Required header: @code{Client ID}
-Your ID, provided by the @code{ID assignment}-header
-in response to a @code{Command: assign-id}-header.
+Your ID, provided by the @code{ID assignment}-header in
+response to a @code{Command: assign-id}-header.
 
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
@@ -4391,8 +4389,7 @@ gamma ramps.
 
 @item Compulsivity:
 Optional. Required if your implement support for
-@command{Command: get-gamma} or
-@command{Command: set-gamma}.
+@code{Command: get-gamma} or @code{Command: set-gamma}.
 
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
@@ -4402,11 +4399,11 @@ Optional. Required if your implement support for
 
 
 @node get-gamma
-@subsection get-gamma
+@subsection @code{get-gamma}
 
 @table @asis
 @item Identifying header:
-@command{Command: get-gamma}
+@code{Command: get-gamma}
 
 @item Action:
 Query gamma ramps.
@@ -4457,13 +4454,13 @@ no metadata for gamma ramps have changed, which could
 happen if the user switches between hardware and
 software gamma ramps. The response will also contain
 a @code{Length}-header and a message formatted in the
-same manner as for @command{Command. set-gamma}
-messages. That is, assuming as an example that the
-gamma ramp depth is 16 bits, @code{Coalesce: yes} was
-used in the query, the red ramp is (1, 2, 3, 4, 5,
-6), the green ramp is (17, 18, 19, 20, 21, 22, 23)
-and the blue ramp is (33, 34, 35, 36, 37, 38, 39, 40)
-then the message will be (hexadecimal representation):
+same manner as for @code{Command. set-gamma}-messages.
+That is, assuming as an example that the gamma ramp
+depth is 16 bits, @code{Coalesce: yes} was used in the
+query, the red ramp is (1, 2, 3, 4, 5, 6), the green
+ramp is (17, 18, 19, 20, 21, 22, 23) and the blue ramp
+is (33, 34, 35, 36, 37, 38, 39, 40) then the message
+will be (hexadecimal representation):
 @example
 @group
 0001 0002 0003 0004 0005 0006
@@ -4498,8 +4495,8 @@ ramps.
 
 @item Compulsivity:
 Optional. Required if your implement support for
-@command{Command: get-gamma-info} or
-@command{Command: set-gamma}.
+@code{Command: get-gamma-info} or
+@code{Command: set-gamma}.
 
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
@@ -4509,11 +4506,11 @@ Optional. Required if your implement support for
 
 
 @node set-gamma
-@subsection set-gamma
+@subsection @code{set-gamma}
 
 @table @asis
 @item Identifying header:
-@command{Command: set-gamma}
+@code{Command: set-gamma}
 
 @item Action:
 Modify gamma ramps.
@@ -4610,14 +4607,13 @@ and when a modification is made it sends the grand
 result to @command{mds-hwgamma}, that is, what the
 filters together produce. To do this,
 @command{mds-coopgamma} listens for
-@command{Command: set-gamma} with priority
-@math{2^{62}} and modifies the message so the payload
-is filled with the result rather than to single
-filter. This modified message is then received by
-@command{mds-hwgamma} that listens with priority zero
-and applies the gamma ramps. @command{mds-hwgamma}
-will ignore the @code{Priority} and the
-@code{Class}-header, but it will respect the
+@code{Command: set-gamma} with priority @math{2^{62}}
+and modifies the message so the payload is filled with
+the result rather than to single filter. This modified
+message is then received by @command{mds-hwgamma} that
+listens with priority zero and applies the gamma ramps.
+@command{mds-hwgamma} will ignore the @code{Priority}
+and the @code{Class}-header, but it will respect the
 @code{Lifespan}-header, therefore
 @command{mds-coopgamma} will always modify the value
 of the @code{Lifespan}-header to @code{until-removal}.
@@ -4632,8 +4628,8 @@ adjustments, colour invertion and dimming.
 
 @item Compulsivity:
 Optional. Required if your implement support for
-@command{Command: get-gamma-info} or
-@command{Command: get-gamma}.
+@code{Command: get-gamma-info} or
+@code{Command: get-gamma}.
 
 @item Reference implementation:
 @command{mds-hwgamma}, @command{mds-swgamma},
@@ -4654,7 +4650,7 @@ Optional. Required if your implement support for
 
 
 @node configure-screensaver
-@subsection configure-screensaver
+@subsection @code{configure-screensaver}
 
 @table @asis
 @item Identifying header:
@@ -4741,7 +4737,7 @@ Optional.
 
 
 @node start-screensaver
-@subsection start-screensaver
+@subsection @code{start-screensaver}
 
 @table @asis
 @item Identifying header:
@@ -4782,7 +4778,7 @@ Optional.
 
 
 @node screensaver-start-test
-@subsection screensaver-start-test
+@subsection @code{screensaver-start-test}
 
 @table @asis
 @item Identifying header:
@@ -4842,11 +4838,11 @@ Optional.
 
 
 @node echo
-@subsection echo
+@subsection @code{echo}
 
 @table @asis
 @item Identifying header:
-@command{Command: echo}
+@code{Command: echo}
 
 @item Action:
 Echo back a message.
@@ -4877,11 +4873,11 @@ Recommended for network enabled servers.
 
 
 @node kill
-@subsection kill
+@subsection @code{kill}
 
 @table @asis
 @item Identifying header:
-@command{Command: kill}
+@code{Command: kill}
 
 @item Action:
 Kill and identify processes based on the their
@@ -4905,10 +4901,10 @@ however dependent on the operating system.
 
 @item Response:
 The server will respond with a
-@command{Command: error}-message.
-In this message the server all include an ad-hoc
-header: @code{Process ID}@. Its value will be the ID
-of the process that owns the window.
+@code{Command: error}-message. In this message the
+server all include an ad-hoc header:
+@code{Process ID}@. Its value will be the ID of the
+process that owns the window.
 
 @item Purpose:
 Identify and send signal to processes by refering to
