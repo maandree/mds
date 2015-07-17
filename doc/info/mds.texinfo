@@ -8291,6 +8291,7 @@ the compose key.
 @node Basic Latin
 @subsection Basic Latin
 @ubindex Basic Latin
+@ubindex Latin, Basic
 
 125
 
@@ -8464,6 +8465,7 @@ the user is composed with either @kbd{"|"} or
 @node General Punctuation
 @subsection General Punctuation
 @ubindex General Punctuation
+@ubindex Punctuation, General
 
 730
 
@@ -8596,6 +8598,7 @@ Circles (bing)
 @node Miscellaneous Mathematical Symbols-A
 @subsection Miscellaneous Mathematical Symbols-A
 @ubindex Miscellaneous Mathematical Symbols-A
+@ubindex Mathematical Symbols-A, Miscellaneous
 
 1824
 
@@ -8604,6 +8607,7 @@ Circles (bing)
 @node Miscellaneous Mathematical Symbols-B
 @subsection Miscellaneous Mathematical Symbols-B
 @ubindex Miscellaneous Mathematical Symbols-B
+@ubindex Mathematical Symbols-B, Miscellaneous
 
 2119
 
@@ -8612,6 +8616,8 @@ Circles (bing)
 @node Miscellaneous Symbols and Arrows
 @subsection Miscellaneous Symbols and Arrows
 @ubindex Miscellaneous Symbols and Arrows
+@ubindex Symbols and Arrows, Miscellaneous
+@ubindex Arrows, Miscellaneous Symbols and
 
 2594
 
@@ -8694,6 +8700,7 @@ Black or white clubs symbol
 @node Superscripts and Subscripts
 @subsection Superscripts and Subscripts
 @ubindex Superscripts and Subscripts
+@ubindex Subscripts, Superscripts and
 
 840
 
@@ -8702,6 +8709,7 @@ Black or white clubs symbol
 @node Supplemental Arrows-A
 @subsection Supplemental Arrows-A
 @ubindex Supplemental Arrows-A
+@ubindex Arrows-A, Supplemental
 
 1900
 
@@ -8710,6 +8718,7 @@ Black or white clubs symbol
 @node Supplemental Arrows-B
 @subsection Supplemental Arrows-B
 @ubindex Supplemental Arrows-B
+@ubindex Arrows-B, Supplemental
 
 1973
 
@@ -8718,6 +8727,7 @@ Black or white clubs symbol
 @node Supplemental Arrows-C
 @subsection Supplemental Arrows-C
 @ubindex Supplemental Arrows-C
+@ubindex Arrows-C, Supplemental
 
 3284
 
@@ -8726,6 +8736,7 @@ Black or white clubs symbol
 @node Supplemental Mathematical Operators
 @subsection Supplemental Mathematical Operators
 @ubindex Supplemental Mathematical Operators
+@ubindex Mathematical Operators, Supplemental
 
 2286
 
@@ -11744,5 +11755,4 @@ TODO In `Rat Cursors` use anchors and references to hyperlink names.
 
 TODO Indices:
   Protocols
-  Default Keyboard Layouts
 
