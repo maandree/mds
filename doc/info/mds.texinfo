@@ -53,6 +53,15 @@ Texts. A copy of the license is included in the section entitled
   you can run `make` with for example `TEXIFLAGS='-D HARDCOPY'`
   or `TEXIFLAGS='--texinfo="@set HARDCOPY"'`.
 
+  Finally, you can include, on the front page, the version
+  of mds that the manual is up to date with, by setting
+  the value of VERSION to the version of mds, as well as
+  date of the last update by setting DATE, and edition by
+  setting EDITION. This is intended for printed manuals.
+  The date is recommended to not be more accurate, or less
+  accurate, than to the month. The edition should be
+  formated as, for example, "1@sup{st}".
+
 @end ignore
 
 @ifclear SINGLE_HEADINGS
@@ -174,7 +183,6 @@ libraries and concepts.
 
 
 
-
 @defindex op
 @defindex sg
 @defindex ub
@@ -195,6 +203,41 @@ libraries and concepts.
 @titlepage
 @title mds
 @subtitle The avant-garde micro-display server
+
+@ifset DATE
+@ifset VERSION
+@ifset EDITION
+@subtitle @value{DATE}, mds version@tie{}@value{VERSION}, @value{EDITION} edition
+@end ifset
+@ifclear EDITION
+@subtitle @value{DATE}, mds version@tie{}@value{VERSION}
+@end ifclear
+@end ifset
+@ifclear VERSION
+@ifset EDITION
+@subtitle @value{DATE}, @value{EDITION} edition
+@end ifset
+@ifclear EDITION
+@subtitle @value{DATE}
+@end ifclear
+@end ifclear
+@end ifset
+@ifclear DATE
+@ifset VERSION
+@ifset EDITION
+@subtitle mds version@tie{}@value{VERSION}, @value{EDITION} edition
+@end ifset
+@ifclear EDITION
+@subtitle mds version@tie{}@value{VERSION}
+@end ifclear
+@end ifset
+@ifclear VERSION
+@ifset EDITION
+@subtitle @value{EDITION} edition
+@end ifset
+@end ifclear
+@end ifclear
+
 @ifset LOGO
 @vskip 0pt plus 1filll
 @comment this way, it is centered exactly in pdf and approximently in dvi and ps
