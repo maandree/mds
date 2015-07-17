@@ -10504,6 +10504,32 @@ optionally with a corner at the arrow heads.
 @end example
 @end table
 
+@cpindex Cell selection
+@cpindex Tables, selection
+In addition, it is advised to @code{nwse-select} and
+@code{nesw-select} that are rendered in the same mannar
+as the other @code{*-select} cursors and analogously to
+@code{nwse-resize} and @code{nesw-resize},
+respectively.
+
+@cpindex Text, rotated
+@cpindex Rotated text
+It is also advisd to a cursors intermediate to
+@code{text} and @code{vertical-text}. These are named
+with the pattern @code{text-*}, where @code{*} is
+replaced by the number of degrees the text is rotated
+anti-clockwise. This means that @code{text} should be
+used if @code{text-0} is requested but missing, and
+@code{vertical-text} should be used if @code{text-90}
+is requested but missing. Finally, the closest
+existing cursor should be used, and the cursor rotated
+180 degrees of what is requested should be used if
+there is no matching cursor with a rotation distance
+within, but excluding, 90 degrees. @code{*} should be
+in the interval [0; 360[, and a period (`.') should be
+used as a decimal pointer, as it is used in most
+programming languages.
+
 
 
 @node Nesting Applications
