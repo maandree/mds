@@ -2718,6 +2718,7 @@ simple, reference implementation of, workspaces.
 @cpindex Status icon tray
 @cpindex System tray
 @cpindex Tray, status icons
+@cpindex Icon, status, tray
 @command{mds-tray} is a server that provides a
 simple, reference implementation of a, status icon
 tray.
@@ -4151,6 +4152,10 @@ Optional add-on to the clipboard's functionallity.
 @subsection @code{add-tray-icon}
 @prindex @code{add-tray-icon}
 
+@cpindex Status icon tray
+@cpindex System tray
+@cpindex Tray, status icons
+@cpindex Icon, status, tray
 @table @asis
 @item Identifying header:
 @code{Command: add-tray-icon}
@@ -4226,6 +4231,10 @@ Optional.
 @subsection @code{update-tray-icon}
 @prindex @code{update-tray-icon}
 
+@cpindex Status icon tray
+@cpindex System tray
+@cpindex Tray, status icons
+@cpindex Icon, status, tray
 @table @asis
 @item Identifying header:
 @code{Command: update-tray-icon}
@@ -4269,6 +4278,10 @@ required.
 @subsection @code{tray-update}
 @prindex @code{tray-update}
 
+@cpindex Status icon tray
+@cpindex System tray
+@cpindex Tray, status icons
+@cpindex Icon, status, tray
 @table @asis
 @item Identifying header:
 @code{Command: tray-update}
@@ -4305,16 +4318,19 @@ value of the @code{Has alpha}-header is @code{no}.
 Required if the @code{Length}-header is used.
 
 @item Conditionally required header: @code{Bytes}
+@cpindex Deep colour
+@cpindex Colour, deep
+@cpindex Endianness
 The number of bytes the subpixels used, for example,
 24-bit colours will have this set to 1 because each
-subpixel has 8 bits, 48-bit colours will have this
-set to 2 because each subpixel has 16 bits. Allowed
-values are: 1, 2, 4 and 8. These values are used so
-that CPU:s with any endianness can be trivially used
-as the words sizes are guaranteed to be supported in
-C, and mixed/middle-endiannes gets complicated if we
-go outside this. Required if the @code{Length}-header
-is used.
+subpixel has 8 bits, 48-bit colours will have this set
+to 2 because each subpixel has 16 bits. Allowed values
+are: 1, 2, 4 and 8. These values are used so that
+CPU:s with any endianness can be trivially used as the
+words sizes are guaranteed to be supported in C, and
+mixed/middle-endiannes gets complicated if we go
+outside this. Required if the @code{Length}-header is
+used.
 
 @item Conditionally optional/required header: @code{Colour}
 Single blank space-separated [0, @code{<Max colour>}]
@@ -4335,6 +4351,8 @@ The opacity of the tray.
 Length of the message.
 
 @item Optional header: @code{Use urgency}
+@cpindex Notification of urgency
+@cpindex Urgency notification
 @table @code
 @item yes
 The icon tray may blink if the value of the
@@ -4412,6 +4430,8 @@ FF FF 08 07 0 0 0 0 FF FF 0 0 0A 09 0 0
 @end example
 @end ifclear
 
+@cpindex Networking
+@cpindex Endianness
 It is up to the networking servers to translate the
 encoding between machines.@footnote{The host
 translates to big-endian unless they can confirm that
@@ -4436,6 +4456,10 @@ Optional.
 @subsection @code{new-tray}
 @prindex @code{new-tray}
 
+@cpindex Status icon tray
+@cpindex System tray
+@cpindex Tray, status icons
+@cpindex Icon, status, tray
 @table @asis
 @item Identifying header:
 @code{Command: new-tray}
@@ -4471,6 +4495,7 @@ Required if supporting @code{Command: add-tray-icon}.
 @subsection @code{get-gamma-info}
 @prindex @code{get-gamma-info}
 
+@cpindex Gamma correction
 @table @asis
 @item Identifying header:
 @code{Command: get-gamma-info}
@@ -4550,6 +4575,11 @@ Optional. Required if your implement support for
 @subsection @code{get-gamma}
 @prindex @code{get-gamma}
 
+@cpindex Gamma correction
+@cpindex Gamma correction, cooperative
+@cpindex Gamma correction, chain
+@cpindex Gamma correction, filters
+@cpindex Cooperative gamma correction
 @table @asis
 @item Identifying header:
 @code{Command: get-gamma}
@@ -4665,6 +4695,11 @@ Optional. Required if your implement support for
 @subsection @code{set-gamma}
 @prindex @code{set-gamma}
 
+@cpindex Gamma correction
+@cpindex Gamma correction, cooperative
+@cpindex Gamma correction, chain
+@cpindex Gamma correction, filters
+@cpindex Cooperative gamma correction
 @table @asis
 @item Identifying header:
 @code{Command: set-gamma}
@@ -4683,8 +4718,8 @@ The output name for the CRTC of interest.
 A signed 64-bit integer of the priority for the
 filter. gamma correction should use zero priority. It
 is preferable that search logical adjustment is sent
-with different priorities so other programs can
-insert filters between them.
+with different priorities so other programs can insert
+filters between them.
 
 @item Required header: @code{Class}
 A UTF-8 string that identifies the filter. It should
@@ -4818,6 +4853,7 @@ Optional. Required if your implement support for
 @subsection @code{configure-screensaver}
 @prindex @code{configure-screensaver}
 
+@cpindex Screensaver
 @table @asis
 @item Identifying header:
 @code{Command: configure-screensaver}
@@ -4850,6 +4886,9 @@ has the same meaning as @code{disable}, which means
 that the screensaver should never start.
 
 @item Optional header: @code{Lock delay}
+@cpindex Screen locking
+@cpindex Locking, screen
+@vrindex @env{MDS_SCREENSAVER_LOCK}
 The number of seconds to wait after the screensaver
 starts before authentication via login passphrase is
 required to deactivate the screensaver. Floating
@@ -4862,6 +4901,7 @@ should be interpreted by the screensaver as that it
 should not start the lock mechanism.
 
 @item Optional header: @code{Panic on error}
+@cpindex Security, screen locking
 The command, in POSIX shell syntax, to run if the
 screensaver exits without another value than 0. If
 you do no want anything to happen, choose either of
@@ -4870,6 +4910,10 @@ intended as a security measure, in case the
 screensaver fails to start the lock mechanism.
 
 @item Optional header: @code{DPMS}
+@cpindex DPMS
+@cpindex Display Power Management Signaling @c [sic!]
+@cpindex VESA Display Power Management Signaling @c [sic!]
+@cpindex Power management, Display Power Management Signaling @c [sic!]
 TODO
 
 @item Optional header: @code{Inhibit}
@@ -4903,6 +4947,7 @@ Optional.
 
 
 
+@cpindex Screensaver
 @node start-screensaver
 @subsection @code{start-screensaver}
 @prindex @code{start-screensaver}
@@ -4950,6 +4995,7 @@ Optional.
 @subsection @code{screensaver-start-test}
 @prindex @code{screensaver-start-test}
 
+@cpindex Screensaver
 @table @asis
 @item Identifying header:
 @code{Command: screensaver-start-test}
@@ -5015,6 +5061,10 @@ Optional.
 @subsection @code{echo}
 @prindex @code{echo}
 
+@cpindex Ping
+@cpindex Debugging
+@cpindex Heartbeat
+@cpindex Network heartbeat
 @table @asis
 @item Identifying header:
 @code{Command: echo}
@@ -5052,6 +5102,8 @@ Recommended for network enabled servers.
 @subsection @code{kill}
 @prindex @code{kill}
 
+@cpindex Process killing
+@cpindex Killing processes
 @table @asis
 @item Identifying header:
 @code{Command: kill}
@@ -11725,6 +11777,7 @@ workspaces.
 @cpindex Status icon tray
 @cpindex System tray
 @cpindex Tray, status icons
+@cpindex Icon, status, tray
 Traditionally, status icon trays have been
 implemented with window embed method. And apart
 from there being two competing standard, this is
@@ -11932,7 +11985,4 @@ TODO application menu features:
     browers may include a safe-browsing mode.
 
 TODO In `Rat Cursors` use anchors and references to hyperlink names.
-
-TODO Indices:
-  Protocols
 
