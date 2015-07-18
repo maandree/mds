@@ -11991,6 +11991,7 @@ TODO other input devices
        gyroscope
        camera
        3d camera
+TODO 3d output
 
 TODO protocol: embed: embedding windows inside other windows such as a status icon tray
 TODO protocol: arcade: a game takes over control over outputs for increased performance
