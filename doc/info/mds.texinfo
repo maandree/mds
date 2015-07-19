@@ -1930,6 +1930,30 @@ accessed by reconfiguring stdin in a TTY using
 layout, rather it broadcasts scancodes and keycodes.
 However it can remap keycodes, but not scancodes.
 
+@cpindex Keyboard LED:s
+@cpindex LED:s, keyboard
+@cpindex Keyboard LED:s, remap
+@cpindex LED:s, keyboard, remap
+@cpindex Remap keyboard LED:s
+@cpindex Remap LED:s, keyboard
+@opindex @option{--led}
+@command{mds-kkbd} implements control over keyboard
+LED:s, the indicators for locked keys. The user can
+remap the LED:s both while the server is running, and
+at launch via the command line arguments. The option
+@option{--led} is used to remap the LED:s. The valid
+LED names are @code{num}, @code{caps} and @code{scrl},
+and also @code{compose} and SPARC machines. The swap,
+for example @key{Caps Lock}'s LED and @key{Num Lock}'s
+LED, start @command{mds-kkbd} with
+@option{--led caps=num} and @option{--led num=caps}.
+You can also use an index instead of a name, for
+example @option{--led caps=0}, but not
+@option{--led 0=caps}. The index must be a
+non-negative integer. The server's behaviour is
+undefined if the used value does not map to a real
+LED.
+
 
 
 @node mds-kkbdrate
@@ -3238,6 +3262,7 @@ Required.
 * keyboard-enumeration::                      Response to @code{Command: enumerate-keyboards}.
 * set-keyboard-leds::                         Activate and deactivate LED:s on a keyboard.
 * get-keyboard-leds::                         List exisiting LED:s on a keyboard and their state.
+* map-keyboard-leds::                         Remap LED:s on a keyboard.
 * set-keyboard-rate::                         Set the repeat rate and repeat delay on a keyboard.
 * get-keyboard-rate::                         Get the repeat rate and repeat delay on a keyboard.
 * keycode-map::                               Remap keyboard keycodes and query current mapping.
@@ -3557,7 +3582,7 @@ once recieved.
 
 @item Purpose:
 Make it possible for clients to list all available
-keyboards so that can be configured individually
+keyboards so that can be configured individually.
 
 @item Compulsivity:
 @prindex @code{enumerate-keyboards}
@@ -3680,7 +3705,7 @@ currently active LED:s
 Recommended. Required if you implement support for
 @code{Command: set-keyboard-leds}. If you do not
 support this protocol servers and clients and stall
-when they try to get the active LED:s
+when they try to get the active LED:s.
 
 @item Reference implementation:
 @pgindex @command{mds-kkbd}
@@ -3688,6 +3713,76 @@ when they try to get the active LED:s
 @pgindex @command{mds-keytrans}
 @command{mds-kkbd}, @command{mds-kbd} and
 @command{mds-keytrans}
+@end table
+
+
+
+@node map-keyboard-leds
+@subsection @code{map-keyboard-leds}
+@prindex @code{map-keyboard-leds}
+
+@cpindex Keyboard LED:s, remap
+@cpindex LED:s, keyboard, remap
+@cpindex Remap keyboard LED:s
+@cpindex Remap LED:s, keyboard
+@table @asis
+@item Identifying header:
+@code{Command: map-keyboard-leds}
+
+@item Action:
+Remap LED:s on a keyboard.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
+
+@item Required header: @code{Length}
+The length of the message.
+
+@item Optional header: @code{Keyboard}
+A string that identifies the keyboard that should be
+affected. If omitted all keyboard are affected.
+
+@item Message:
+Each line contains two single space delimited values,
+the first value is the LED's name, the second value is
+the LED's new position, either a zero-based index or
+the name of the LED that was originally mapped to that
+position. For example, @code{num num} sets the LED for
+@key{Num Lock} to its original position. This is
+equivalent to @code{num 0} on SPARC machines and
+@code{num 1} on non-SPARC machines.
+@example
+@group
+num caps
+caps num
+@end group
+@end example
+swaps the LED:s for @key{Num Lock} and
+@key{Caps Lock}. Valid LED names are @code{num},
+@code{caps} and @code{scrl}, and on SPARC machines
+@code{compose}.
+
+@item Instructions:
+The server should remap the LED:s and update their
+activity accordingly. The server should do this
+atomically.
+
+@item Purpose:
+Allow the user to swap LED:s on the keyboard. Some
+keyboards use a non-standard layout, which can be very
+distracting or confusing.
+
+@item Purpose:
+Allow the user to correct invalid LED mappings.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@pgindex @command{mds-kkbd}
+@pgindex @command{mds-kbd}
+@command{mds-kkbd} and @command{mds-kbd}
 @end table
 
 
@@ -3877,13 +3972,12 @@ Available and optional if @code{Action: remap} is
 included in the headers.
 
 @item Message:
-Each line contains contains two single space
-delimited numbers, the first number is the keycode as
-determined by the scancode, the second number is
-keycode that scancode should generate. For example,
-@code{1 1} resets @key{Escape} to be mapped to
-@key{Escape}, and @code{1 59} remaps @key{Escape} to
-@key{F1}, while
+Each line contains two single space delimited numbers,
+the first number is the keycode as determined by the
+scancode, the second number is keycode that scancode
+should generate. For example, @code{1 1} resets
+@key{Escape} to be mapped to @key{Escape}, and
+@code{1 59} remaps @key{Escape} to @key{F1}, while
 @example
 @group
 1 59
