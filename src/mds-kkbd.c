@@ -407,8 +407,10 @@ int master_loop(void)
   int rc = 1, joined = 0, r;
   void* kbd_ret;
   
+  /* Start thread that reads input from the keyboard. */
   fail_if ((errno = pthread_create(&kbd_thread, NULL, keyboard_loop, NULL)));
   
+  /* Listen for messages. */
   while (!reexecing && !terminating)
     {
       if (danger)
