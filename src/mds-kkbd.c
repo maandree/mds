@@ -281,7 +281,7 @@ int postinitialise_server(void)
  * child server process exits, if the server has completed its
  * initialisation
  * 
- * @param  status  The status the child died with
+ * @param  status  The status witch which the child died
  */
 void fork_cleanup(int status)
 {
