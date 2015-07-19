@@ -1946,10 +1946,10 @@ LED names are @code{num}, @code{caps} and @code{scrl},
 and also @code{compose} and SPARC machines. The swap,
 for example @key{Caps Lock}'s LED and @key{Num Lock}'s
 LED, start @command{mds-kkbd} with
-@option{--led caps=num} and @option{--led num=caps}.
+@option{--led=caps=num} and @option{--led=num=caps}.
 You can also use an index instead of a name, for
-example @option{--led caps=0}, but not
-@option{--led 0=caps}. The index must be a
+example @option{--led=caps=0}, but not
+@option{--led=0=caps}. The index must be a
 non-negative integer. The server's behaviour is
 undefined if the used value does not map to a real
 LED.
@@ -3622,7 +3622,7 @@ LED:s:
 @key{Num lock}
 @item caps
 @key{Caps lock}
-@item scroll
+@item scrl
 @key{Scroll lock}
 @item compose
 @key{Compose}

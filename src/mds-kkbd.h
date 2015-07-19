@@ -84,6 +84,15 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 
 /**
  * Handle the received message after it has been
+ * identified to contain `Command: map-keyboard-leds`
+ * 
+ * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                 Zero on success, -1 on error
+ */
+int handle_map_keyboard_leds(const char* recv_keyboard);
+
+/**
+ * Handle the received message after it has been
  * identified to contain `Command: keycode-map`
  * 
  * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
@@ -94,6 +103,16 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
  */
 int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
 		       const char* recv_action, const char* recv_keyboard);
+
+/**
+ * Remap a LED, from the command line
+ * 
+ * @param   arg  The name of the LED to remap, the new position of the LED,
+ *               either zero-based index or name of the original LED with
+ *               that position; delimited by an equals-sign
+ * @return       Zero on success, -1 on error
+ */
+int remap_led_cmdline(char* arg);
 
 /**
  * Send a full message even if interrupted

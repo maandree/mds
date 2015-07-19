@@ -32,6 +32,7 @@
 #include <sys/ioctl.h>
 #include <linux/kd.h>
 #include <pthread.h>
+#include <alloca.h>
 #define reconnect_to_display() -1
 
 
@@ -186,6 +187,81 @@ static pthread_mutex_t send_mutex;
  */
 static pthread_mutex_t mapping_mutex;
 
+/**
+ * The value Num Lock's LED is mapped
+ */
+static int led_num_lock = LED_NUM_LOCK;
+
+/**
+ * The value Caps Lock's LED is mapped
+ */
+static int led_caps_lock = LED_CAPS_LOCK;
+
+/**
+ * The value Scroll Lock's LED is mapped
+ */
+static int led_scrl_lock = LED_SCRL_LOCK;
+
+#ifdef LED_COMPOSE
+/**
+ * The value Compose's LED is mapped
+ */
+static int led_compose = LED_COMPOSE;
+#endif
+
+
+
+/**
+ * Parse command line arguments
+ * 
+ * @return  Non-zero on error
+ */
+int parse_cmdline(void)
+{
+  int i;
+  
+  /* Parse command line arguments. */
+  for (i = 1; i < argc; i++)
+    {
+      char* arg = argv[i];
+      int v;
+      if ((v = strequals(arg, "--initial-spawn")) || /* Initial spawn? */
+	  strequals(arg, "--respawn"))               /* Respawning after crash? */
+	{
+	  exit_if (is_respawn == v,
+		   eprintf("conflicting arguments %s and %s cannot be combined.",
+			   "--initial-spawn", "--respawn"););
+	  is_respawn = !v;
+	}
+      else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
+	is_reexec = 1;
+      else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
+	alarm(min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+      else if (strequals(arg, "--on-init-fork")) /* Fork process when initialised. */
+	on_init_fork = 1;
+      else if (startswith(arg, "--on-init-sh=")) /* Run a command when initialised. */
+	on_init_sh = arg + strlen("--on-init-sh=");
+      else if (strequals(arg, "--immortal")) /* I return to serve. */
+	is_immortal = 1;
+      else if (startswith(arg, "--led=")) /* Remap LED:s. */
+	{
+	  if (remap_led_cmdline(arg + strlen("--led=")) < 0)
+	    return -1;
+	}
+    }
+  if (is_reexec)
+    {
+      is_respawn = 1;
+      eprint("re-exec performed.");
+    }
+  
+  /* Check that mandatory arguments have been specified. */
+  if (server_characteristics.require_respawn_info)
+    exit_if (is_respawn < 0,
+	     eprintf("missing state argument, require either %s or %s.",
+		     "--initial-spawn", "--respawn"););
+  return 0;
+}
 
 
 /**
@@ -212,10 +288,11 @@ int initialise_server(void)
   const char* const message =
     "Command: intercept\n"
     "Message ID: 0\n"
-    "Length: 75\n"
+    "Length: 102\n"
     "\n"
     "Command: set-keyboard-leds\n"
     "Command: get-keyboard-leds\n"
+    "Command: map-keyboard-leds\n"
     "Command: keycode-map\n"
     /* NEXT MESSAGE */
     "Command: intercept\n"
@@ -536,12 +613,17 @@ int handle_message(void)
     t (handle_enumerate_keyboards(recv_client_id, recv_message_id, recv_modify_id));
   if (strequals(recv_command, "keyboard-enumeration"))
     t (handle_keyboard_enumeration(recv_modify_id));
+  if (strequals(recv_command, "keycode-map"))
+    t (handle_keycode_map(recv_client_id, recv_message_id, recv_action, recv_keyboard));
+  /* The following do not need to be inside a mutex, because this server
+     only interprets on message at the time, thus there can not be any
+     conflicts and access to LED:s are automatically atomic. */
   if (strequals(recv_command, "set-keyboard-leds"))
     t (handle_set_keyboard_leds(recv_active, recv_mask, recv_keyboard));
   if (strequals(recv_command, "get-keyboard-leds"))
     t (handle_get_keyboard_leds(recv_client_id, recv_message_id, recv_keyboard));
-  if (strequals(recv_command, "keycode-map"))
-    t (handle_keycode_map(recv_client_id, recv_message_id, recv_action, recv_keyboard));
+  if (strequals(recv_command, "map-keyboard-leds"))
+    t (handle_map_keyboard_leds(recv_keyboard));
 #undef t
   
   return 0; /* How did that get here, not matter, just ignore it? */
@@ -782,11 +864,11 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
   for (begin = end = recv_active; end != NULL;)
     {
       end = strchr(begin, ' ');
-      if      (__test(begin, "num"))      active |= LED_NUM_LOCK;
-      else if (__test(begin, "caps"))     active |= LED_CAPS_LOCK;
-      else if (__test(begin, "scroll"))   active |= LED_SCRL_LOCK;
+      if      (__test(begin, "num"))      active |= led_num_lock;
+      else if (__test(begin, "caps"))     active |= led_caps_lock;
+      else if (__test(begin, "scrl"))     active |= led_scrl_lock;
 #ifdef LED_COMPOSE
-      else if (__test(begin, "compose"))  active |= LED_COMPOSE;
+      else if (__test(begin, "compose"))  active |= led_compose;
 #endif
       begin = end + 1;
     }
@@ -794,11 +876,11 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
   for (begin = end = recv_mask; end != NULL;)
     {
       end = strchr(begin, ' ');
-      if      (__test(begin, "num"))      mask |= LED_NUM_LOCK;
-      else if (__test(begin, "caps"))     mask |= LED_CAPS_LOCK;
-      else if (__test(begin, "scroll"))   mask |= LED_SCRL_LOCK;
+      if      (__test(begin, "num"))      mask |= led_num_lock;
+      else if (__test(begin, "caps"))     mask |= led_caps_lock;
+      else if (__test(begin, "scrl"))     mask |= led_scrl_lock;
 #ifdef LED_COMPOSE
-      else if (__test(begin, "compose"))  mask |= LED_COMPOSE;
+      else if (__test(begin, "compose"))  mask |= led_compose;
 #endif
       begin = end + 1;
     }
@@ -872,11 +954,11 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 	  "Present: " PRESENT_LEDS "\n"
 	  "\n",
 	  recv_client_id, recv_message_id, msgid,
-	  (leds & LED_NUM_LOCK)  ? " num"    : "",
-	  (leds & LED_CAPS_LOCK) ? " caps"   : "",
-	  (leds & LED_SCRL_LOCK) ? " scroll" : "",
+	  (leds & led_num_lock)  ? " num"      : "",
+	  (leds & led_caps_lock) ? " caps"     : "",
+	  (leds & led_scrl_lock) ? " scrl"     : "",
 #ifdef LED_COMPOSE
-	  (leds & LED_COMPOSE) ? " compose"  :
+	  (leds & led_compose)   ? " compose"  :
 #endif
 	  "",
 	  leds == 0 ? " none" : ""
@@ -892,6 +974,158 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
  fail:
   xperror(*argv);
   return -1;
+}
+
+
+/**
+ * Retrieve the value of a LED from its name
+ * 
+ * @param   name  The name of the LED
+ * @return        The value of the LED
+ */
+static int parse_led(const char* name)
+{
+  if (strequals(name, "num"))      return LED_NUM_LOCK;
+  if (strequals(name, "caps"))     return LED_CAPS_LOCK;
+  if (strequals(name, "scrl"))     return LED_SCRL_LOCK;
+#ifdef LED_COMPOSE
+  if (strequals(name, "compose"))  return LED_COMPOSE;
+#endif
+  return -1;
+}
+
+
+/**
+ * Remap a LED
+ * 
+ * @param  name      The name of the LED to remap
+ * @param  position  The new position of the LED, either zero-based index
+ *                   or name of the original LED with that position
+ */
+static void remap_led(const char* name, const char* position)
+{
+  int* leds[] = { [LED_NUM_LOCK]  = &led_num_lock,
+		  [LED_CAPS_LOCK] = &led_caps_lock,
+#ifdef LED_COMPOSE
+		  [LED_COMPOSE]   = &led_compose,
+#endif
+		  [LED_SCRL_LOCK] = &led_scrl_lock};
+  
+  int led = parse_led(name);
+  int pos = parse_led(position);
+  size_t i, n;
+  char c;
+  
+  if (led < 0)
+    {
+      eprintf("received invalid LED, %s, to remap, ignoring.", name);
+      return;
+    }
+  
+  if (pos >= 0)
+    goto done;
+  
+  for (pos = 0, i = 0, n = strlen(position); i < n; i++)
+    if (c = position[i], ('0' <= c) && (c <= '9'))
+      pos = pos * 10 + (c & 15);
+    else
+      break;
+  
+  if (i < n)
+    {
+      eprintf("received invalid LED position, %s, ignoring.", position);
+      return;
+    }
+  
+  pos = 1 << pos;
+  
+ done:
+  *(leds[led]) = pos;
+}
+
+
+/**
+ * Remap a LED, from the command line
+ * 
+ * @param   arg  The name of the LED to remap, the new position of the LED,
+ *               either zero-based index or name of the original LED with
+ *               that position; delimited by an equals-sign
+ * @return       Zero on success, -1 on error
+ */
+int remap_led_cmdline(char* arg)
+{
+  char* pos = strchr(arg, '=');
+  
+  if ((pos == NULL) || (strlen(pos) == 1))
+    {
+      eprintf("received invalid argument for --led: %s", arg);
+      errno = 0;
+      return -1;
+    }
+  
+  *pos++ = '\0';
+  remap_led(arg, pos);
+  return 0;
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: map-keyboard-leds`
+ * 
+ * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
+ * @return                 Zero on success, -1 on error
+ */
+int handle_map_keyboard_leds(const char* recv_keyboard)
+{
+  char* led = NULL;
+  char* pos = NULL;
+  int stage = 0;
+  size_t i;
+  
+  if ((recv_keyboard != NULL) && !strequals(recv_keyboard, KEYBOARD_ID))
+    return 0;
+  
+  /* Parse the payload. `led` and `pos` are set just when thier first
+     character is iterated over, rather than at the delimiter. This way
+     we can easily check for message corruption at the end and give a
+     better error message. */
+  for (i = 0; i < received.payload_size; i++)
+    if (stage == 0)
+      {
+	if (led == NULL)
+	  led = received.payload + i;
+	if (received.payload[i] == ' ')
+	  received.payload[i] = '\0', stage = 1;
+      }
+    else if (stage == 1)
+      {
+	if (pos == NULL)
+	  pos = received.payload + i;
+	if (received.payload[i] == '\n')
+	  {
+	    received.payload[i] = '\0';
+	    remap_led(led, pos);
+	    led = pos = NULL;
+	    stage = 0;
+	  }
+      }
+  if ((stage == 1) && (pos != NULL))
+    {
+      /* Copy over the position value to a new allocation on the stack
+         and NUL-terminate it. We are at the of the payload and cannot
+         besure sure that we can put an extra NUL at the end of it
+	 without reallocating the payload which is much ore complicated. */
+      size_t len = (size_t)(pos - received.payload);
+      char* pos_ = alloca((len + 1) * sizeof(char));
+      memcpy(pos_, pos, len * sizeof(char));
+      pos_[len] = '\0';
+      remap_led(led, pos_);
+    }
+  else if (led != NULL)
+    eprint("received incomplete LED remapping instruction, ignoring.");
+  
+  return 0;
 }
 
 
