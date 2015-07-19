@@ -68,7 +68,7 @@
 /* NOTE: length hardcoded in `initialise_server` */
 
 /**
- * LED:s that we believe are pressent on the keyboard
+ * LED:s that we believe are present on the keyboard
  */
 #ifdef LED_COMPOSE
 # define PRESENT_LEDS  "num caps scrl compose"
