@@ -11225,7 +11225,7 @@ binary.
 @cpindex Wayland
 @cpindex Weston
 @cpindex Surface Flinger
-@cpindex Andriod/Linux, Surface Flinger
+@cpindex Android/Linux, Surface Flinger
 @cpindex Quartz Compositor
 @cpindex Mac OS X, Quartz Compositor
 @cpindex OS X, Quartz Compositor
