@@ -54,6 +54,42 @@ Hyphen should however be used if it significantly improves
 readability. Note well, it is hypercorrect (incorrect) to
 replace a space with a hyphen to emphasis linking between
 words to avoid ambiguity.
+Some examples:
+  Correct: Pro-Russian forces
+    ‘Pro-’ is prefix and ‘Russian’ as capitalisation on its
+    first letter, requiring a hyphen.
+
+  Incorrect: I am pro-GPL
+  Correct: I am pro GPL
+    ‘Pro’ is not a prefix this case, but rather a preposition,
+    you have an opinion rather than being an object.
+
+  Incorrect: Linux powered computer
+  Correct: Linux-powered computer
+  Incorrect: Linuxpowered computer
+    In the first example, powered with past tense of the verb
+    power. Note, it is almost grammatically correct, but it does
+    not mean what was intended, the only grammatical error is that
+    ‘computer’ needs to be replace by ‘a computer’, ‘computers’ or
+    ‘the computer’. In the second and third example the tense is
+    present, but the computers are powered by Linux rather than that
+    Linux used to power the computer. The third example is however
+    incorrect because Linux is a proper noun.
+
+  Incorrect: Solar powered computer
+  Correct: Solar-powered computer
+  Preferred: Solarpowered computer
+    Similar to the previous group of examples.
+    ‘Solar’ is not a noun (in this case), but an adjective, so the
+    first example is incorrect. ‘Solar’ and ‘powered’ needs to be
+    joined to form a single, four-morpheme (both ‘solar’ and ‘powered’
+    are two-morpheme), word. This can either be done with a hyphen
+    or by a complete join without space or hyphen, the latter is
+    preferred.
+
+  Correct: A solar day on Mars
+  Incorrect: A solar-day on Mars
+    ‘Solar’ is an adjective. Adjectives and nouns are never joined.
 
 
 
