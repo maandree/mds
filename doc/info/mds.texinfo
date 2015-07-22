@@ -1268,8 +1268,10 @@ other character, or multiple LF:s.
 @pgindex @command{mds-respawn}
 @cpindex Respawning servers, automatic
 @cpindex Crash resilience
-@command{mds-respawn} is a utility intended to be used
-in @file{$@{XDG_CONFIG_HOME@}/mdsinitrc}. It will
+@cpindex Hyposerver
+@command{mds-respawn} is a hyposerver, that is, a
+utility beneath servers, and intended to be used in
+@file{$@{XDG_CONFIG_HOME@}/mdsinitrc}. It will
 spawn a selected set of servers. If a server it
 spawns exits with a bad status, @command{mds-respawn}
 will respawn it. @command{mds-respawn} supports two
