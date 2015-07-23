@@ -2527,6 +2527,7 @@ logical monitor inside another monitor or cinerama, an
 endomonitor. This lets you for example start a
 single-monitor full screen game but keep a part, for
 example the status bar with the clock, visible.
+For more information, see @ref{Endomonitor}.
 
 
 
@@ -2595,6 +2596,8 @@ displays started on other servers can run
 so that all computers share the same clipboard.
 However, this network will be centralised and not
 distributed, so it is not perfect.
+
+For more information, see @ref{Metadisplay Server}.
 
 
 
