@@ -1784,7 +1784,7 @@ server.
 * mds-crtc::                                  The @command{mds-crtc} server.
 * mds-dri::                                   The @command{mds-dri} server.
 * mds-fb::                                    The @command{mds-fb} server.
-* mds-epimon::                                The @command{mds-epimon} server.
+* mds-endomon::                               The @command{mds-endomon} server.
 * mds-mds::                                   The @command{mds-mds} server.
 * mds-meta::                                  The @command{mds-meta} server.
 * mds-seat::                                  The @command{mds-seat} server.
@@ -2509,26 +2509,24 @@ using framebuffers.
 
 
 
-@node mds-epimon
-@section @command{mds-epimon}
+@node mds-endomon
+@section @command{mds-endomon}
 
-@pgindex @command{mds-epimon}
+@pgindex @command{mds-endomon}
 @cpindex CRTC
 @cpindex Cathode ray tube controller
 @cpindex Presentation
 @cpindex Display of content
 @cpindex Content, display
-@cpindex Epimonitor
-@cpindex Monitor, epi-
+@cpindex Endomonitor
+@cpindex Monitor, endo-
 @cpindex Cinerama
 @pgindex @command{mds-cinerama}
-@command{mds-epimon} is a server that provides
-a logical monitor on top of another monitor or
-cinerama, an epimonitor. The epimonitor is position
-is inside the physical monitor. This lets you
-for example start a single-monitor full screen game
-but keep a part, for example the status bar with
-the clock, visible.
+@command{mds-endomon} is a server that provides a
+logical monitor inside another monitor or cinerama, an
+endomonitor. This lets you for example start a
+single-monitor full screen game but keep a part, for
+example the status bar with the clock, visible.
 
 
 
@@ -11079,7 +11077,7 @@ Should be added if you are running an
 
 @menu
 * Metadisplay Server::                        Goals and features of metadisplays.
-* Epimonitor::                                Goals and features of epimonitors.
+* Endomonitor::                               Goals and features of endomonitors.
 @end menu
 
 
@@ -11136,36 +11134,37 @@ output servers, and even windowing servers.
 
 
 
-@node Epimonitor
-@section Epimonitor
+@node Endomonitor
+@section Endomonitor
 
-@pgindex @command{mds-epimon}
+@pgindex @command{mds-endomon}
 @cpindex CRTC
 @cpindex Cathode ray tube controller
 @cpindex Presentation
 @cpindex Display of content
 @cpindex Content, display
-@cpindex Epimonitor
-@cpindex Monitor, epi-
+@cpindex Endomonitor
+@cpindex Monitor, endo-
 @cpindex Cinerama
 @pgindex @command{mds-cinerama}
 There are two forms of logical monitors: cineramas
-and epimonitor. A cinerama combines monitors into
-one monitor. Epimonitors takes a subset of a single
-monitor. Similar to having two monitors with overlaping
-output,@footnote{For example a monitor with mode--position
-1600x1200+0+0 and a monitor with mode--position
-1600x1200+800+600.} An epimonitor overlaps with another
-monitor, but only with that monitor and cannot be outside
-it even partially. But it does not need to cover it
-completely. This allows you to put a full-screen window
-on the epimonitor and thus only partially cover the
-physical monitor; for example keeping the clock visible.
+and endomonitor. A cinerama combines monitors into
+one monitor. Endomonitors takes a subset of a single
+monitor. Similar to having two monitors with
+overlaping output,@footnote{For example a monitor with
+mode--position 1600x1200+0+0 and a monitor with
+mode--position 1600x1200+800+600.} An endomonitor
+overlaps with another monitor, but only with that
+monitor and cannot be outside it even partially. But
+it does not need to cover it completely. This allows
+you to put a full-screen window on the endomonitor and
+thus only partially cover the physical monitor; for
+example keeping the clock visible.
 
-Epimonitors do not need to be placed inside a physical
-monitor. They can be placed on top of a logical monitor
-too. Putting an epimonitor on top of a cineramma lets
-you create a logical monitor that covers multiple
+Endomonitors do not need to be placed inside a
+physical monitor. They can be placed inside logical
+monitor too. Putting an endomonitor inside a cinerama
+lets you create a logical monitor that covers multiple
 monitors partially.
 
 

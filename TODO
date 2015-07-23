@@ -16,7 +16,7 @@ Extra servers:
 	tray		retro-crt	kbd2rat		multikey
 	keystick	posmem		nest		mds
 	meta		keybounce	slowkey		keycue
-	ratbarrier	desktop		epimon
+	ratbarrier	desktop		endomon
 	a speech-to-keyboard server
 	some server that hides the cursor when appropriate, such
 	  as when the user starts typing
