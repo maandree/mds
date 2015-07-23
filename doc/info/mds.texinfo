@@ -7669,6 +7669,25 @@ For instance @code{<left shift>} denotes the left
 the @key{Left} arrow key with a @key{Shift} key held
 down. Modifiers goes first.
 
+@cpindex Void mapping, keys
+@cpindex Mapping, void, keys
+@cpindex Key mapping, void
+@cpindex Inferred key mapping
+@cpindex Inferred mapping, keys
+@cpindex Key mapping, inferred
+@cpindex Mapping, inferred, keys
+Mapping to @code{<void>} can be used to suppress an
+inferred mapping. For example,
+
+@example
+<num keycode 28> : <void>
+@end example
+
+removes all actions from the normal @key{Return} key
+when @key{Num} is active. Note well, this cannot be
+used to remove an explicit mapping. Explicit mappings
+may not conflict.
+
 
 
 @node Sequence Mapping
