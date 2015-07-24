@@ -5320,7 +5320,7 @@ Optional.
 
 libmdsserver is library written for the reference
 implementation of the @command{mds} servers.
-llibmdsserver does not contain support or any
+llibmdsserver does not contain support for any
 protocols, rather it contains auxiliary functions,
 macros, data structures such as linked lists and hash
 tables, and support the basics of the message passing
