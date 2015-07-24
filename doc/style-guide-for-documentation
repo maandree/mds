@@ -262,3 +262,22 @@ For example, write ‘The user … if she …’ rather than:
   ‘One … if one …’
   ‘… if you …’
 
+
+
+
+‘an’ versus ‘a’
+---------------
+Follow the rule that says only words starting with
+a vowel is preceded by ‘an’. This means that semivowels
+and ‘h’:s regardless of silentness and even
+syllable-emphasis are preceded by ‘a’.
+For example:
+  ‘a universe’     (phonetically starts with semivowel ‘j’)
+  ‘a hyperbola’    (starts with non-silent ‘h’, emphasis on second syllable)
+  ‘a hotel’        (starts with non-silent ‘h’ in modern pronunciations)
+  ‘an hour’        (phonetically starts with diphthong ou, ‘h’ is silent)
+  ‘an umbrella’    (starts with vowel ‘u’, no ‘j’ is prepended)
+  ‘a hammer’       (starts with consonant ‘h’, no ‘j’ is prepended)
+  ‘a July-night’   (starts with semivowel ‘j’, or alternatively consonant ‘dj’)
+  ‘a ‘one’’        (phonetically starts with semivowel ‘w’)
+
