@@ -11101,7 +11101,7 @@ displays connected to the metadisplay.
 
 The idea of the the metadisplay server came from the
 idea of letting the user have the clipboard shared
-across any number of @emph{selected} display server.
+across any number of @emph{selected} display servers.
 Rather than having a clipboard server written
 specifically for this, it was seen as more
 appropriate to have a server than could let any
