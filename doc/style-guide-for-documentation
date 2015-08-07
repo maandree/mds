@@ -281,3 +281,17 @@ For example:
   ‘a July-night’   (starts with semivowel ‘j’, or alternatively consonant ‘dj’)
   ‘a ‘one’’        (phonetically starts with semivowel ‘w’)
 
+
+
+
+Units
+-----
+
+Abstain from putting spaces between units and their multiplier. For example 1 metre,
+should be written ‘1m’. This can help reduce ambiguity. For example,
+“The computers in my house have 2 Gb/s ethernet-ports.” does not mean the same thing as
+“The computers in my house have 2Gb/s ethernet-ports.” In fact, the first former means
+“The computers in my house have 2 ethernet-ports with Gb/s capacity.” and the latter
+means “The computers in my house have ethernet-ports with 2Gb/s capacity.”
+This is however only important, if ambiguity is possible.
+
