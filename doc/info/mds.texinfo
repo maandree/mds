@@ -6621,8 +6621,8 @@ is @code{compare_func*}.
 
 @table @asis
 @item @code{key_comparator} [@code{compare_func*}]
-@vrindex @code{ket_comparator}
-@vrindex @code{hash_table_t.ket_comparator}
+@vrindex @code{key_comparator}
+@vrindex @code{hash_table_t.key_comparator}
 Identical to @code{value_comparator}, except it is
 used for keys rather the values.
 
