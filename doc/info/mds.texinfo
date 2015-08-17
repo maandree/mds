@@ -2111,7 +2111,7 @@ to respond to squences rather than single keys and
 single key combinations. alternatively you could bind
 @kbd{<super>x} to press @key{x} a selected number of
 times with a short selectable delay between them; or
-@kbd{<super>x, 5'} to press @key{x} five times.
+@kbd{<super>x, 5} to press @key{x} five times.
 
 
 
