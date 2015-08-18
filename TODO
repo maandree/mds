@@ -31,6 +31,9 @@ Extra servers:
 			most keyboards for the pause-key. This is
 			primarily intended for keyboards that do not
 			have this feature on the pause-key.
+	ratrot: rotate input of pointer device. Should be able do be
+		monitor dependent and be able to follow the rotation
+		of that monitor's output.
 
 Missing commands:
 
