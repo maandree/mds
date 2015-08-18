@@ -119,7 +119,7 @@ int remap_led_cmdline(char* arg);
  * 
  * @param   message  The message to send
  * @param   length   The length of the message
- * @return           Non-zero on success
+ * @return           Zero on success, -1 on error
  */
 int full_send(const char* message, size_t length);
 
