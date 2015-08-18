@@ -446,7 +446,7 @@ static int handle_register_message(void)
     }
   else if (recv_message_id == NULL)
     {
-      eprint("received message with ID, ignoring, master server is misbehaving.");
+      eprint("received message without ID, ignoring, master server is misbehaving.");
       return 0;
     }
   

@@ -601,7 +601,7 @@ int handle_message(void)
   
   if (recv_message_id == NULL)
     {
-      eprint("received message with ID, ignoring, master server is misbehaving.");
+      eprint("received message without ID, ignoring, master server is misbehaving.");
       return 0;
     }
   
