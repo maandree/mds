@@ -6,7 +6,7 @@ Missing servers:
 	host		remote		fb		kbd
 	keytrans	kkbdrate	rat		compositor
 	crtc		seat		dri		drag
-	cursorshadow	kill		focus		colour
+	cursorshadow	kill		focus		dither
 	state		screensaver
 
 Extra servers:
@@ -48,6 +48,7 @@ Need testing:
 	kkbd
 	kkbd, on a SPARC
 	vt
+	colour
 
 Fast lanes
 Optimise use of mutexe by replace them with rwlocks (where appropriate)

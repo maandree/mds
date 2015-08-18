@@ -16,7 +16,7 @@ LIBOBJ = linked-list client-list hash-table fd-table mds-message util
 
 # Servers and utilities.
 SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \
-          mds-kkbd mds-vt
+          mds-kkbd mds-vt mds-colour
 
 # Utilities that do not utilise mds-base.
 TOOLS = mds-kbdc

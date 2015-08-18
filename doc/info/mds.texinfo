@@ -1286,7 +1286,7 @@ seconds. At most 1 minute.
 @item --interval=SECONDS
 @opindex @option{--interval}
 @sgindex @code{SIGUSR2}
-Spawned servers that die twice with @var{SECONDS}
+Spawned servers that die twice within @var{SECONDS}
 seconds should stop respawning until the signal
 @code{SIGUSR2} is send to @command{mds-respawn}.
 At most 1 minute.
@@ -1775,6 +1775,7 @@ server.
 * mds-coopgamma::                             The @command{mds-coopgamma} server.
 * mds-dcvs::                                  The @command{mds-dcvs} server.
 * mds-colour::                                The @command{mds-colour} server.
+* mds-dither::                                The @command{mds-dither} server.
 * mds-retro-crt::                             The @command{mds-retro-crt} server.
 * mds-state::                                 The @command{mds-state} server.
 * mds-focus::                                 The @command{mds-focus} server.
@@ -2357,6 +2358,7 @@ defective colour vision.
 @cpindex System colours
 @cpindex Colours, system
 @cpindex Colours, names
+@sgindex @code{SIGUSR2}
 @command{mds-colour} is a server that implements
 colour names, such as system colours and generic
 names, for example `red', whose exact colour can be
@@ -2370,25 +2372,42 @@ fact `red', only that it is the colour the user
 wants to see when a colour is supposed to be `red'.
 @command{mds-colour} will notify clients when a
 colour has been reconfigured, added or removed.
+@command{mds-colour} can be notified to reload its
+settings by sending @code{SIGUSR2} to the server.
 
+
+
+@node mds-dither
+@section @command{mds-dither}
+
+@pgindex @command{mds-dither}
 @cpindex Colour dithering
 @cpindex Dithering of colours
-@command{mds-colour} is also responsible for
+@command{mds-dither} is a server responsible for
 informing clients on which two colours clients
 should use and how to dither them (by percent, not
-by pattern). This is useful if only 16-bit colours
+by pattern.) This is useful if only 16-bit colours
 can be used, or if only 24-colour can used but
 gradients between for example sRGB(255, 255, 255)
 and sRGB(254, 254, 254) is to be drawn.
 
 @cpindex Gamma correction, dithering
-@command{mds-colour} is gamma ramp-aware. For
+@command{mds-dither} is gamma ramp-aware. For
 example, if for the red channel, 0 is mapped to 0, 1
 is mapped to 3, 2 is mapped 2 and 3 is mapped to 1,
 but 1 and 3 requires dithering, then if 3 is
-requested, @command{mds-colour} will tell the client
+requested, @command{mds-dither} will tell the client
 to dither 0 and 2 with 50 %, which should generate 1,
 but 1 and 3 has been swapped.
+
+@command{mds-dither} holds a cache of the outputs
+gamma ramps to optimise performance. It will also
+inform clients when it is time to redither colours.
+This happens the gamma ramps change substantially,
+small changes should not trigger redithering, make
+it a waste of CPU time if all clients using dithering
+would spend time figuring out whether redithering
+is required.
 
 
 
@@ -4492,7 +4511,7 @@ to 2 because each subpixel has 16 bits. Allowed values
 are: 1, 2, 4 and 8. These values are used so that
 CPU:s with any endianness can be trivially used as the
 words sizes are guaranteed to be supported in C, and
-mixed/middle-endiannes gets complicated if we go
+mixed/middle-endianness gets complicated if we go
 outside this. Required if the @code{Length}-header is
 used.
 
@@ -4651,6 +4670,15 @@ Required if supporting @code{Command: add-tray-icon}.
 * get-gamma-info::                            Query gamma ramp information.
 * get-gamma::                                 Query gamma ramps.
 * set-gamma::                                 Modify gamma ramps.
+* list-colours::                              Retrieve colour table.
+* get-colour::                                Query colour table.
+* set-colour::                                Modify colour table.
+* colour-added::                              Announce new colours.
+* colour-removed::                            Announce removal of colours.
+* colour-changed::                            Announce modified colours.
+* dither::                                    Dither colours.
+* dither-stop::                               Inform the dither server that a colour is no longer being dithered.
+* redither::                                  Announce that redithering is required.
 @end menu
 
 
@@ -4676,7 +4704,7 @@ The output name for the CRTC of interest.
 
 @item Response:
 The server will response with a @code{Command: error}
-on error, unsuccess the server will respond with a
+on error, on success the server will respond with a
 message contain the headers:
 @table @code
 @item To
@@ -4774,7 +4802,7 @@ ramps to received. This is a signed 64-bit integer.
 @item Response:
 @prindex @code{error}
 The server will response with a @code{Command: error}
-on error, unsuccess the server will respond with a
+on error, on success the server will respond with a
 message contain the headers:
 @table @code
 @item Depth
@@ -4999,6 +5027,575 @@ Optional. Required if your implement support for
 @command{mds-hwgamma}, @command{mds-swgamma},
 @command{mds-coopgamma} and @command{mds-cursorgamma}
 @end table
+
+
+
+@node list-colours
+@subsection @code{list-colours}
+@prindex @code{list-colours}
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@table @asis
+@item Identifying header:
+@code{Command: list-colours}
+
+@item Action:
+Retrieve an exhaustive list of defined colours.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
+
+@item Optional header: @code{Include values}
+@table @code
+@item yes
+Include the values of the colours in addition to the
+name of the colours.
+@item no
+Include only the names of the colours.
+@end table
+@code{no} is used if omitted.
+
+@item Response:
+The server will response with a @code{Command: error}
+on error, on success the server will respond with a
+message whose payload is a list all defined colours.
+Each line in the payload represents a colour. If values
+where not requested, each line contain, exactly, the
+name of the colour it lists. If however values are
+requested, each name will be prefixed with the number
+of bytes with which each channel is encoded, the red value,
+the green value and the blue value of the colour,
+each of these values will be suffixed with a single
+regular blank space making the format
+@code{bytes red green blue name}. Note that the name may
+contain any whitespace@footnote{Tab space is discouraged.}
+except a line feed.
+
+The payload will end with a line break unless it is
+empty. No empty lines will otherwise be included
+(unless a colours name happend to be nothing
+@footnote{You should not define colours whose name
+is of zero length or containing non-ASCII or
+non-printable characters.}.)
+
+@item Purpose:
+Enable programs to list named colours, system colours
+or otherwise.
+
+@item Compulsivity:
+@prindex @code{get-colour}
+@prindex @code{set-colour}
+Optional. Required if your implement support for
+@code{Command: get-colour} or
+@code{Command: set-colour}.
+
+@item Reference implementation:
+@pgindex @command{mds-colour}
+@command{mds-colour}
+@end table
+
+
+
+@node get-colour
+@subsection @code{get-colour}
+@prindex @code{get-colour}
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@table @asis
+@item Identifying header:
+@code{Command: get-colour}
+
+@item Action:
+Query the values of a defined colour.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
+
+@item Required header: @code{Name}
+The name of the colour whose values you want to
+retrieve.
+
+@item Response:
+The server will response with a @code{Command: error}
+on error, on success the server will respond with a
+message contain the headers:
+@table @code
+@item Bytes
+The number of bytes with which each channel is encoded.
+@item Red
+The value of the red channel.
+@item Green
+The value of the green channel.
+@item Blue
+The value of the blue channel.
+@end table
+
+@item Purpose:
+@cpindex Toolkits, colours
+@cpindex Colours, toolkits
+Provide a central place for retrieving system colours,
+such as text field background, for toolkits.
+
+@item Purpose:
+Provide a central place for retrieving themeable colours.
+
+@item Compulsivity:
+@prindex @code{list-colours}
+@prindex @code{set-colour}
+Optional. Required if your implement support for
+@code{Command: list-colours} or
+@code{Command: set-colour}.
+
+@item Reference implementation:
+@pgindex @command{mds-colour}
+@command{mds-colour}
+@end table
+
+
+
+@node set-colour
+@subsection @code{set-colour}
+@prindex @code{set-colour}
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@table @asis
+@item Identifying header:
+@code{Command: set-colour}
+
+@item Action:
+Change the value of a defined colour, or
+remove it.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
+
+@item Required header: @code{Name}
+The name of the colour you want to define, modify or undefine.
+
+@item Optional header: @code{Remove}
+@table @code
+@item yes
+Remove the colour definition.
+@item no
+Add or modify colour definition.
+@end table
+@code{no} is used if omitted.
+
+@item Conditionally required header: @code{Bytes}
+The number of bytes with which each channel is encoded.
+Required unless @code{Remove: yes} is included in the headers.
+
+@item Conditionally required header: @code{Red}
+The value of the red channel.
+Required unless @code{Remove: yes} is included in the headers.
+
+@item Conditionally required header: @code{Green}
+The value of the green channel.
+Required unless @code{Remove: yes} is included in the headers.
+
+@item Conditionally required header: @code{Blue}
+The value of the blue channel.
+Required unless @code{Remove: yes} is included in the headers.
+
+@item Purpose:
+@cpindex Toolkits, colours
+@cpindex Colours, toolkits
+Provide a central place for defining system colours,
+such as text field background, for toolkits to use.
+
+@item Purpose:
+Provide a central place for defining themeable colours.
+
+@item Compulsivity:
+Optional.
+
+@item Reference implementation:
+@pgindex @command{mds-colour}
+@command{mds-colour}
+@end table
+
+
+
+@node colour-added
+@subsection @code{colour-added}
+@prindex @code{colour-added}
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@table @asis
+@item Identifying header:
+@code{Command: colour-added}
+
+@item Action:
+Announce that a new colour has been defined.
+
+@item Included header: @code{Name}
+The name of the new colour.
+
+@item Included header: @code{Bytes}
+The number of bytes with which each channel is encoded.
+
+@item Included header: @code{Red}
+The value of the colour's red channel.
+
+@item Included header: @code{Green}
+The value of the colour's green channel.
+
+@item Included header: @code{Blue}
+The value of the colour's blue channel.
+
+@item Included header: @code{Last update}
+@table @code
+@item yes
+No more updates are queued.
+@item changes
+No more additions or deletions are queued,
+but modifications are queued.
+@item no
+More additions or deletions are queued.
+@end table
+
+@item Purpose:
+@prindex @code{colour}
+Supplement @code{Command: list-colours} with
+automatic updating.
+
+@item Compulsivity:
+@prindex @code{list-colours}
+Optional. Recommended if your implement support for
+@code{Command: list-colours}.
+
+@item Reference implementation:
+@pgindex @command{mds-colour}
+@command{mds-colour}
+@end table
+
+
+
+@node colour-removed
+@subsection @code{colour-removed}
+@prindex @code{colour-removed}
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@table @asis
+@item Identifying header:
+@code{Command: colour-removed}
+
+@item Action:
+Announce when colour definition is removed.
+
+@item Included header: @code{Name}
+The name of the removed colour.
+
+@item Included header: @code{Last update}
+@table @code
+@item yes
+No more updates are queued.
+@item changes
+No more additions or deletions are queued,
+but modifications are queued.
+@item no
+More additions or deletions are queued.
+@end table
+
+@item Purpose:
+@prindex @code{colour}
+Supplement @code{Command: list-colours} with
+automatic updating.
+
+@item Compulsivity:
+@prindex @code{list-colours}
+Optional. Recommended if your implement support for
+@code{Command: list-colours}.
+
+@item Reference implementation:
+@pgindex @command{mds-colour}
+@command{mds-colour}
+@end table
+
+
+
+@node colour-changed
+@subsection @code{colour-changed}
+@prindex @code{colour-changed}
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@table @asis
+@item Identifying header:
+@code{Command: colour-changed}
+
+@item Action:
+Announce when a defined colour changes value.
+
+@item Included header: @code{Name}
+The name of the modified colour.
+
+@item Included header: @code{Bytes}
+The number of bytes with which each channel is encoded.
+
+@item Included header: @code{Red}
+The new value of the colour's red channel.
+
+@item Included header: @code{Green}
+The new value of the colour's green channel.
+
+@item Included header: @code{Blue}
+The new value of the colour's blue channel.
+
+@item Included header: @code{Last update}
+@table @code
+@item yes
+No more updates are queued.
+@item no
+More changes are queued.
+@end table
+
+@item Instructions:
+The server must always send additions and deletions
+of colour definitions before modifitions, when sending
+multiple update.
+
+@item Purpose:
+Provide a way to detect when a themeable colour, or
+system colour, has changed, and the program needs to
+be redrawn with new colours.
+
+@item Compulsivity:
+@prindex @code{list-colours}
+@prindex @code{get-colour}
+Optional. Recommended if your implement support for
+@code{Command: list-colours} or
+@code{Command: get-colour}.
+
+@item Reference implementation:
+@pgindex @command{mds-colour}
+@command{mds-colour}
+@end table
+
+
+
+@node dither
+@subsection @code{dither}
+@prindex @code{dither}
+
+@cpindex Colour dithering
+@cpindex Dithering of colours
+@table @asis
+@item Identifying header:
+@code{Command: dither}
+
+@item Action:
+Request output device dependent colour dithering,
+and inform the dither server that the colour is
+being dithered.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}-header
+in response to a @code{Command: assign-id}-header.
+
+@item Required header: @code{Bytes}
+The number of bytes with which each channel is encoded.
+
+@item Required header: @code{Red}
+The value of the colour's red channel.
+
+@item Required header: @code{Green}
+The value of the colour's green channel.
+
+@item Required header: @code{Blue}
+The value of the colour's blue channel.
+
+@item Response:
+The server will response with a @code{Command: error}
+on error, on success the server will respond with a
+message contain a payload describing how the colour
+should be dithered on each output. Each line on the
+payload will decribed be dithering on an output.
+No empty lines will required, however the payload
+will end with a line feed unless it is
+empty@footnote{It can only be empty if there are
+no outputs.}. Each line will contain line single
+blank space-delimited values. These values are:
+@itemize @bullet{}
+@item
+The number of bytes with which each channel is
+encoded.
+@item
+The value of the primary colour's red channel.
+@item
+The value of the primary colour's green channel.
+@item
+The value of the primary colour's blue channel.
+@item
+A floating point value describing the predominance
+of the primary colour. A period is used as
+decimal comma. This value is between 0 and 1, but
+cannot be zero. If the value is @code{1}, the
+secondary colour is identical to the primary and
+no dithering is required. As an example,
+@code{0.75} means that there should be 75% of the
+primary colour and 25% of the secondary colour.
+@item
+The value of the secondary colour's red channel.
+@item
+The value of the secondary colour's green channel.
+@item
+The value of the secondary colour's blue channel.
+@item
+The name of the CRTC for which the line describes
+the colour's dithering. Note that thes value may
+contain whitespace.
+@end itemize
+Note that the pattern to use of dithering is not
+included in the response. It is up to the client
+to select a pattern.
+
+@item Instructions:
+@prindex @code{dither-stop}
+The dither server should count how many times
+the colour's dithering has be queried, per client.
+It should be decremented by one request each time
+@code{Command: dither-stop} is received for
+the colour and client. When the counter reaches
+zero for a client, the server knows that the client
+is no longer displaying the dithered colour.
+
+@item Purpose:
+Provide dithering for low colour-depth-output,
+that is gamma correction- and output filter-aware.
+
+@item Purpose:
+Provide gamma correction- and output filter-aware
+dither for low-delta colour gradients.
+
+@item Compulsivity:
+@prindex @code{redither}
+@prindex @code{dither-stop}
+Optional. Required if your implement support for
+@code{Command: redither} or
+@code{Command: dither-stop}.
+
+@item Reference implementation:
+@pgindex @command{mds-dither}
+@command{mds-dither}
+@end table
+
+
+
+@node dither-stop
+@subsection @code{dither-stop}
+@prindex @code{dither-stop}
+
+@cpindex Colour dithering
+@cpindex Dithering of colours
+@table @asis
+@item Identifying header:
+@code{Command: dither-stop}
+
+@item Action:
+Inform the dither server that a colour is no
+longer being dithered.
+
+@item Required header: @code{Client ID}
+Your ID, provided by the @code{ID assignment}-header
+
+@item Required header: @code{Bytes}
+The number of bytes with which each channel is encoded.
+
+@item Required header: @code{Red}
+The value of the colour's red channel.
+
+@item Required header: @code{Green}
+The value of the colour's green channel.
+
+@item Required header: @code{Blue}
+The value of the colour's blue channel.
+in response to a @code{Command: assign-id}-header.
+
+@item Purpose:
+Allow dithering server to know when a client is not
+longer dithering colours, or a specific colour.
+
+@item Compulsivity:
+@prindex @code{dither}
+@prindex @code{redither}
+Optional. Required if your implement support for
+@code{Command: dither} or
+@code{Command: redither}.
+
+@item Reference implementation:
+@pgindex @command{mds-dither}
+@command{mds-dither}
+@end table
+
+
+
+@node redither
+@subsection @code{redither}
+@prindex @code{redither}
+
+@cpindex Colour dithering
+@cpindex Dithering of colours
+@table @asis
+@item Identifying header:
+@code{Command: redither}
+
+@item Action:
+Announce that the client needs to redither
+its dithered colours.
+
+@item Included header: @code{Length}
+The length of the message.
+
+@item Message:
+A line feed-terminated, line feed-separated list
+of colours that need to be dithered on the client.
+Each line will be formatted @code{Bytes Red Green Blue},
+where each these words are replaced by the values
+associated with the same headers of the same name
+in the @code{Command: dither} message that let
+the dither server know that the colour is being
+dithered.
+
+@item Purpose:
+@prindex @code{dither}
+Supplement @code{Command: dither} with automatic
+detection of when colours need to be redithered,
+without all clients needing to determine when,
+thus saving CPU time.
+
+@item Compulsivity:
+@prindex @code{dither}
+@prindex @code{dither-stop}
+Optional. Required if your implement support for
+@code{Command: dither} or
+@code{Command: dither-stop}.
+
+@item Reference implementation:
+@pgindex @command{mds-dither}
+@command{mds-dither}
+@end table
+
 
 
 
@@ -9441,6 +10038,7 @@ speed)^(1 + curve)
 * Nesting Applications::                      Specifications for nesting applications.
 * The Real Display Server::                   Identifying the real display server.
 @end menu
+@c TODO list of recommended colour names
 
 
 
