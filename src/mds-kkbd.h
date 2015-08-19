@@ -115,15 +115,6 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
 int remap_led_cmdline(char* arg);
 
 /**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length);
-
-/**
  * Acquire access of the keyboard's LED:s
  * 
  * @return  Zero on success, -1 on error

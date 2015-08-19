@@ -212,6 +212,17 @@ static int led_compose = LED_COMPOSE;
 
 
 /**
+ * Send a full message even if interrupted
+ * 
+ * @param   message:const char*  The message to send
+ * @param   length:size_t        The length of the message
+ * @return  :int                 Zero on success, -1 on error
+ */
+#define full_send(message, length)  \
+  ((full_send)(socket_fd, message, length))
+
+
+/**
  * Parse command line arguments
  * 
  * @return  Non-zero on error
@@ -1388,37 +1399,6 @@ void signal_all(int signo)
   if (kbd_thread_started)
     if (pthread_equal(current_thread, kbd_thread) == 0)
       pthread_kill(kbd_thread, signo);
-}
-
-
-/**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length)
-{
-  size_t sent;
-  
-  while (length > 0)
-    {
-      sent = send_message(socket_fd, message, length);
-      if (sent > length)
-	{
-	  eprint("Sent more of a message than exists in the message, aborting.");
-	  return -1;
-	}
-      else
-	fail_if ((sent < length) && (errno != EINTR));
-      message += sent;
-      length -= sent;
-    }
-  return 0;
- fail:
-  xperror(*argv);
-  return -1;
 }
 
 

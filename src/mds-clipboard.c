@@ -85,6 +85,17 @@ static clipitem_t* clipboard[CLIPBOARD_LEVELS];
 
 
 /**
+ * Send a full message even if interrupted
+ * 
+ * @param   message:const char*  The message to send
+ * @param   length:size_t        The length of the message
+ * @return  :int                 Zero on success, -1 on error
+ */
+#define full_send(message, length)  \
+  ((full_send)(socket_fd, message, length))
+
+
+/**
  * This function will be invoked before `initialise_server` (if not re-exec:ing)
  * or before `unmarshal_server` (if re-exec:ing)
  * 
@@ -388,37 +399,6 @@ int master_loop(void)
 	free(clipboard[i]);
       }
   return rc;
-}
-
-
-/**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length)
-{
-  size_t sent;
-  
-  while (length > 0)
-    {
-      sent = send_message(socket_fd, message, length);
-      if (sent > length)
-	{
-	  eprint("Sent more of a message than exists in the message, aborting.");
-	  return -1;
-	}
-      else
-	fail_if ((sent < length) && (errno != EINTR));
-      message += sent;
-      length -= sent;
-    }
-  return 0;
- fail:
-  xperror(*argv);
-  return -1;
 }
 
 

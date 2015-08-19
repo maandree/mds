@@ -314,6 +314,31 @@ char* full_read(int fd, size_t* length)
 
 
 /**
+ * Send a full message even if interrupted
+ * 
+ * @param   socket   The file descriptor for the socket to use
+ * @param   message  The message to send
+ * @param   length   The length of the message
+ * @return           Zero on success, -1 on error
+ */
+int full_send(int socket, const char* message, size_t length)
+{
+  size_t sent;
+  
+  while (length > 0)
+    {
+      sent = send_message(socket, message, length);
+      fail_if ((sent < length) && (errno != EINTR));
+      message += sent;
+      length -= sent;
+    }
+  return 0;
+ fail:
+  return -1;
+}
+
+
+/**
  * Check whether a string begins with a specific string,
  * where neither of the strings are necessarily NUL-terminated
  * 

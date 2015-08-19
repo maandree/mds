@@ -36,15 +36,6 @@ void reg_table_free_key(size_t obj);
  */
 void reg_table_free_value(size_t obj);
 
-/**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length);
-
 
 #endif
 

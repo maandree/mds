@@ -38,6 +38,17 @@
 
 
 /**
+ * Send a full message even if interrupted
+ * 
+ * @param   message:const char*  The message to send
+ * @param   length:size_t        The length of the message
+ * @return  :int                 Zero on success, -1 on error
+ */
+#define full_send(message, length)  \
+  ((full_send)(socket_fd, message, length))
+
+
+/**
  * Handle the received message containing a ‘Client closed’-header
  * 
  * @return  Zero on success -1 on error or interruption,

@@ -6552,6 +6552,14 @@ if not @code{NULL}, the length of the read file is
 stored in @code{*length}. On success, the read
 content is retured, on error @code{NULL} is returned.
 
+@item @code{full_send} [(@code{int socket, const char* message, size_t length}) @arrow{} @code{int}]
+@fnindex @code{full_send}
+@cpindex Message passing
+Send the message @code{message}, with the length
+@code{length}, to the socket whose file descriptor is
+@code{socket} and ignores interruptions. Returns zero on
+success and @code{-1} on error.
+
 @item @code{startswith_n} [(@code{const char*, const char*, size_t, size_t}) @arrow{} @code{int}]
 @fnindex @code{startswith_n}
 @cpindex String comparison

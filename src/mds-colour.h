@@ -71,15 +71,5 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
 		      const char* recv_red, const char* recv_green, const char* recv_blue);
 
 
-/**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length);
-
-
 #endif
 

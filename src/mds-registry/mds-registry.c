@@ -21,6 +21,7 @@
 #include "globals.h"
 #include "registry.h"
 
+#include <libmdsserver/util.h>
 #include <libmdsserver/macros.h>
 #include <libmdsserver/hash-help.h>
 #include <libmdsserver/linked-list.h>
@@ -47,6 +48,17 @@ server_characteristics_t server_characteristics =
     .danger_is_deadly = 0
   };
 
+
+
+/**
+ * Send a full message even if interrupted
+ * 
+ * @param   message:const char*  The message to send
+ * @param   length:size_t        The length of the message
+ * @return  :int                 Zero on success, -1 on error
+ */
+#define full_send(message, length)  \
+  ((full_send)(socket_fd, message, length))
 
 
 /**

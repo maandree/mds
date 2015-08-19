@@ -82,17 +82,6 @@ void received_switch_vt(int signo);
 
 
 /**
- * Send a full message even if interrupted
- * 
- * @param   socket   The file descriptor for the socket to use
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(int socket, const char* message, size_t length);
-
-
-/**
  * Get the index of the virtual terminal on which the display should be opened
  * 
  * @return  The index of the virtual terminal on which the display should be opened, -1 on error

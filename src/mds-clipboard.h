@@ -90,15 +90,6 @@ typedef struct clipitem
 
 
 /**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length);
-
-/**
  * Handle the received message
  * 
  * @return  Zero on success, -1 on error

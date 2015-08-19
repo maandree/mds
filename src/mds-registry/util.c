@@ -56,34 +56,3 @@ void reg_table_free_value(size_t obj)
   free(list);
 }
 
-
-/**
- * Send a full message even if interrupted
- * 
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(const char* message, size_t length)
-{
-  size_t sent;
-  
-  while (length > 0)
-    {
-      sent = send_message(socket_fd, message, length);
-      if (sent > length)
-	{
-	  eprint("Sent more of a message than exists in the message, aborting.");
-	  return -1;
-	}
-      else
-	fail_if ((sent < length) && (errno != EINTR));
-      message += sent;
-      length -= sent;
-    }
-  return 0;
- fail:
-  xperror(*argv);
-  return -1;
-}
-

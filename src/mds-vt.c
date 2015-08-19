@@ -722,38 +722,6 @@ void received_switch_vt(int signo)
 
 
 /**
- * Send a full message even if interrupted
- * 
- * @param   socket   The file descriptor for the socket to use
- * @param   message  The message to send
- * @param   length   The length of the message
- * @return           Zero on success, -1 on error
- */
-int full_send(int socket, const char* message, size_t length)
-{
-  size_t sent;
-  
-  while (length > 0)
-    {
-      sent = send_message(socket, message, length);
-      if (sent > length)
-	{
-	  eprint("Sent more of a message than exists in the message, aborting.");
-	  return -1;
-	}
-      else
-	fail_if ((sent < length) && (errno != EINTR));
-      message += sent;
-      length -= sent;
-    }
-  return 0;
- fail:
-  xperror(*argv);
-  return -1;
-}
-
-
-/**
  * Get the index of the virtual terminal on which the display should be opened
  * 
  * @return  The index of the virtual terminal on which the display should be opened, -1 on error
