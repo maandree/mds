@@ -356,9 +356,9 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
   if (strequals(recv_client_id, "0:0"))
     return eprint("got a query from an anonymous client, ignoring."), 0;
   
-  if      (recv_include_values == NULL)            remove_include_values = 0;
-  else if (strequals(recv_include_values, "yes"))  remove_include_values = 1;
-  else if (strequals(recv_include_values, "no"))   remove_include_values = 0;
+  if      (recv_include_values == NULL)            include_values = 0;
+  else if (strequals(recv_include_values, "yes"))  include_values = 1;
+  else if (strequals(recv_include_values, "no"))   include_values = 0;
   else
     ; /* TODO send EPROTO*/
   
@@ -431,7 +431,7 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
 	return eprint("got an invalid value on the Bytes-header, ignoring."), 0;
       
       if (bytes < 8)
-	limit = (((uint64)1) << (bytes * 8)) - 1;
+	limit = (((uint64_t)1) << (bytes * 8)) - 1;
       
       if (strict_atou64(recv_red, &red, 0, limit))
 	return eprint("got an invalid value on the Red-header, ignoring."), 0;
