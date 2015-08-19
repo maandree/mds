@@ -335,6 +335,227 @@ int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max
 }
 
 
+#define __strict_y(Y, TYPE, PARA_TYPE, HYPER_Y, HYPER_TYPE)					\
+  int strict_##Y(const char* str, TYPE* value, PARA_TYPE min, PARA_TYPE max)			\
+  {												\
+    HYPER_TYPE intermediate_value;								\
+    if (strict_##HYPER_Y(str, &intermediate_value, (HYPER_TYPE)min, (HYPER_TYPE)max) < 0)	\
+      return -1;										\
+    return *value = (TYPE)intermediate_value, 0;						\
+  }
+
+
+#define __strict_x(X, TYPE, HYPER_X, HYPER_TYPE)  \
+  __strict_y(X, TYPE, TYPE, HYPER_X, HYPER_TYPE)
+
+
+/**
+ * A version of `atoh` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_y(atoh, short int, int, atoi, int)
+
+
+/**
+ * A version of `atouh` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_y(atouh, unsigned short int, unsigned int, atouj, uintmax_t)
+
+
+/**
+ * A version of `atou` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atou, unsigned int, atouj, uintmax_t)
+
+
+/**
+ * A version of `atol` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atol, long int, atoj, intmax_t)
+
+
+/**
+ * A version of `atoul` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atoul, unsigned long int, atouj, uintmax_t)
+
+
+/**
+ * A version of `atoll` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atoll, long long int, atoj, intmax_t)
+
+
+/**
+ * A version of `atoull` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atoull, unsigned long long int, atouj, uintmax_t)
+
+
+/**
+ * A version of `atoz` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atoz, size_t, atouj, uintmax_t)
+
+
+/**
+ * A version of `atosz` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atosz, ssize_t, atoj, intmax_t)
+
+
+/**
+ * A version of `ato8` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_y(ato8, int8_t, int, atoi, int)
+
+
+/**
+ * A version of `atou8` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_y(atou8, uint8_t, int, atoi, int)
+
+
+/**
+ * A version of `ato16` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_y(ato16, int16_t, int, atoi, int)
+
+
+/**
+ * A version of `atou16` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_y(atou16, uint16_t, unsigned int, atouj, uintmax_t)
+
+
+/**
+ * A version of `ato32` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(ato32, int32_t, atoj, intmax_t)
+
+
+/**
+ * A version of `atou32` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atou32, uint32_t, atouj, uintmax_t)
+
+
+/**
+ * A version of `ato64` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(ato64, int64_t, atoj, intmax_t)
+
+
+/**
+ * A version of `atou64` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+__strict_x(atou64, uint64_t, atouj, uintmax_t)
+
+
+#undef __strict_x
+
+
 /**
  * Send a buffer into a file and ignore interruptions
  * 

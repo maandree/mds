@@ -6535,29 +6535,169 @@ string is not a 10-radix integer or has a value
 outside [@code{min}, @code{max}], @code{-1} is
 returned, otherwise zero is returned.
 
-@item @code{strict_atoj} [(@code{const char* str, intmax_t* value, intmax_t min, intmax_t max}) @arrow{} @code{int}]
+@item @code{strict_atou}
+@fnindex @code{strict_atou}
+@fnindex @code{atou}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{unsigned int} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atoh}
+@fnindex @code{strict_atoh}
+@fnindex @code{atoh}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{short int} instead
+of @code{int} on its parameters. Note however that @code{min} and
+@code{max} is in @code{int}, because smaller types should not be
+passed as arguments.
+
+@item @code{strict_atouh}
+@fnindex @code{strict_atouh}
+@fnindex @code{atouh}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{unsigned short int} instead
+of @code{int} on its parameters. Note however that @code{min} and
+@code{max} is in @code{unsigned int}, because smaller types should
+not be passed as arguments.
+
+@item @code{strict_atol}
+@fnindex @code{strict_atol}
+@fnindex @code{atol}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{long int} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atoul}
+@fnindex @code{strict_atoul}
+@fnindex @code{atoul}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{unsigned long int} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atoll}
+@fnindex @code{strict_atoll}
+@fnindex @code{atoll}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{long long int} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atoull}
+@fnindex @code{strict_atoull}
+@fnindex @code{atoull}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{unsigned long long int} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atoj}
 @fnindex @code{strict_atoj}
 @fnindex @code{atoj}
 @cpindex Integer parsing
 @cpindex Error management
-A version of @code{atoj} that is strict about the
-syntax and bounds. Parses the string @code{str} into
-an @code{int} and stores it in @code{*value}. If the
-string is not a 10-radix integer or has a value
-outside [@code{min}, @code{max}], @code{-1} is
-returned, otherwise zero is returned.
+A variant of @code{strict_atoi} that uses @code{intmax_t} instead
+of @code{int} on its parameters.
 
-@item @code{strict_atouj} [(@code{const char* str, uintmax_t* value, uintmax_t min, uintmax_t max}) @arrow{} @code{int}]
+@item @code{strict_atouj}
 @fnindex @code{strict_atouj}
 @fnindex @code{atouj}
 @cpindex Integer parsing
 @cpindex Error management
-A version of @code{atouj} that is strict about the
-syntax and bounds. Parses the string @code{str} into
-an @code{int} and stores it in @code{*value}. If the
-string is not a 10-radix integer or has a value
-outside [@code{min}, @code{max}], @code{-1} is
-returned, otherwise zero is returned.
+A variant of @code{strict_atoi} that uses @code{uintmax_t} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atoz}
+@fnindex @code{strict_atoz}
+@fnindex @code{atoz}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{size_t} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atosz}
+@fnindex @code{strict_atosz}
+@fnindex @code{atosz}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{ssize_t} instead
+of @code{int} on its parameters.
+
+@item @code{strict_ato8}
+@fnindex @code{strict_ato8}
+@fnindex @code{ato8}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{int8_t} instead
+of @code{int} on its parameters. Note however that @code{min} and
+@code{max} is in @code{int}, because smaller types should not be
+passed as arguments.
+
+@item @code{strict_atou8}
+@fnindex @code{strict_atou8}
+@fnindex @code{atou8}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{uint8_t} instead
+of @code{int} on its parameters. Note however that @code{min} and
+@code{max} is in @code{int}, because smaller types should not be
+passed as arguments.
+
+@item @code{strict_ato16}
+@fnindex @code{strict_ato16}
+@fnindex @code{ato16}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{int16_t} instead
+of @code{int} on its parameters. Note however that @code{min} and
+@code{max} is in @code{int}, because smaller types should not be
+passed as arguments.
+
+@item @code{strict_atou16}
+@fnindex @code{strict_atou16}
+@fnindex @code{atou16}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{uint16_t} instead
+of @code{int} on its parameters. Note however that @code{min} and
+@code{max} is in @code{unsigned int}, because smaller types should
+not be passed as arguments.
+
+@item @code{strict_ato32}
+@fnindex @code{strict_ato32}
+@fnindex @code{ato32}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{int32_t} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atou32}
+@fnindex @code{strict_atou32}
+@fnindex @code{atou32}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{uint32_t} instead
+of @code{int} on its parameters.
+
+@item @code{strict_ato64}
+@fnindex @code{strict_ato64}
+@fnindex @code{ato64}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{int64_t} instead
+of @code{int} on its parameters.
+
+@item @code{strict_atou64}
+@fnindex @code{strict_atou64}
+@fnindex @code{atou64}
+@cpindex Integer parsing
+@cpindex Error management
+A variant of @code{strict_atoi} that uses @code{uint64_t} instead
+of @code{int} on its parameters.
 
 @item @code{full_write} [(@code{int fd, const char* buffer, size_t length}) @arrow{} @code{int}]
 @fnindex @code{full_write}

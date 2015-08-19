@@ -132,6 +132,194 @@ int strict_atoj(const char* str, intmax_t* value, intmax_t min, intmax_t max);
 int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max);
 
 /**
+ * A version of `atoh` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoh(const char* str, short int* value, int min, int max);
+
+/**
+ * A version of `atouh` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atouh(const char* str, unsigned short int* value, unsigned int min, unsigned int max);
+
+/**
+ * A version of `atou` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atou(const char* str, unsigned int* value, unsigned int min, unsigned int max);
+
+/**
+ * A version of `atol` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atol(const char* str, long int* value, long int min, long int max);
+
+/**
+ * A version of `atoul` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoul(const char* str, unsigned long int* value, unsigned long int min, unsigned long int max);
+
+/**
+ * A version of `atoll` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoll(const char* str, long long int* value, long long int min, long long int max);
+
+/**
+ * A version of `atoull` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoull(const char* str, unsigned long long int* value,
+		  unsigned long long int min, unsigned long long int max);
+
+/**
+ * A version of `atoz` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoz(const char* str, size_t* value, size_t min, size_t max);
+
+/**
+ * A version of `atosz` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atosz(const char* str, ssize_t* value, ssize_t min, ssize_t max);
+
+/**
+ * A version of `ato8` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_ato8(const char* str, int8_t* value, int min, int max);
+
+/**
+ * A version of `atou8` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atou8(const char* str, uint8_t* value, int min, int max);
+
+/**
+ * A version of `ato16` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_ato16(const char* str, int16_t* value, int min, int max);
+
+/**
+ * A version of `atou16` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atou16(const char* str, uint16_t* value, unsigned int min, unsigned int max);
+
+/**
+ * A version of `ato32` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_ato32(const char* str, int32_t* value, int32_t min, int32_t max);
+
+/**
+ * A version of `atou32` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atou32(const char* str, uint32_t* value, uint32_t min, uint32_t max);
+
+/**
+ * A version of `ato64` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_ato64(const char* str, int64_t* value, int64_t min, int64_t max);
+
+/**
+ * A version of `atou64` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atou64(const char* str, uint64_t* value, uint64_t min, uint64_t max);
+
+/**
  * Send a buffer into a file and ignore interruptions
  * 
  * @param   fd      The file descriptor
