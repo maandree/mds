@@ -22,6 +22,8 @@
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
 #include <libmdsserver/mds-message.h>
+#include <libmdsserver/hash-table.h>
+#include <libmdsserver/hash-help.h>
 
 #include <errno.h>
 #include <inttypes.h>
@@ -79,6 +81,11 @@ static char* send_buffer = NULL;
  */
 static size_t send_buffer_size = 0;
 
+/**
+ * List of all colours
+ */
+static colour_slot_t* colour_list = NULL;
+
 
 
 /**
@@ -129,7 +136,7 @@ int initialise_server(void)
   return 0;
  fail:
   xperror(*argv);
-  if (stage == 1)
+  if (stage >= 1)
     mds_message_destroy(&received);
   return 1;
 }
@@ -165,7 +172,9 @@ int postinitialise_server(void)
  */
 size_t marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(uint32_t) + mds_message_marshal_size(&received);
+  size_t rc = 2 * sizeof(int) + sizeof(uint32_t);
+  rc += mds_message_marshal_size(&received);
+  return rc;
 }
 
 
@@ -180,7 +189,9 @@ int marshal_server(char* state_buf)
   buf_set_next(state_buf, int, MDS_COLOUR_VARS_VERSION);
   buf_set_next(state_buf, int, connected);
   buf_set_next(state_buf, uint32_t, message_id);
+  
   mds_message_marshal(&received, state_buf);
+  state_buf += mds_message_marshal_size(&received) / sizeof(char*);
   
   mds_message_destroy(&received);
   return 0;
@@ -240,6 +251,7 @@ int master_loop(void)
 	  danger = 0;
 	  free(send_buffer), send_buffer = NULL;
 	  send_buffer_size = 0;
+	  colour_list_pack(&colour_list);
 	}
       
       if (r = mds_message_read(&received, socket_fd), r == 0)
@@ -408,8 +420,8 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
 {
   uint64_t limit = UINT64_MAX;
   int remove_colour = 0;
+  colour_t colour;
   int bytes;
-  uint64_t red, green, blue;
   
   if      (recv_remove == NULL)            remove_colour = 0;
   else if (strequals(recv_remove, "yes"))  remove_colour = 1;
@@ -433,14 +445,15 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
       if (bytes < 8)
 	limit = (((uint64_t)1) << (bytes * 8)) - 1;
       
-      if (strict_atou64(recv_red, &red, 0, limit))
+      colour.bytes = bytes;
+      if (strict_atou64(recv_red, &(colour.red), 0, limit))
 	return eprint("got an invalid value on the Red-header, ignoring."), 0;
-      if (strict_atou64(recv_green, &green, 0, limit))
+      if (strict_atou64(recv_green, &(colour.green), 0, limit))
 	return eprint("got an invalid value on the Green-header, ignoring."), 0;
-      if (strict_atou64(recv_blue, &blue, 0, limit))
+      if (strict_atou64(recv_blue, &(colour.blue), 0, limit))
 	return eprint("got an invalid value on the Blue-header, ignoring."), 0;
       
-      /* TOOD set colour */
+      /* TODO set colour */
     }
   else
     {

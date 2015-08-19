@@ -21,6 +21,74 @@
 
 #include "mds-base.h"
 
+#include <stdint.h>
+
+
+
+/**
+ * Data structure for colour
+ */
+typedef struct colour
+{
+  /**
+   * The value of the red channel
+   */
+  uint64_t red;
+  
+  /**
+   * The value of the green channel
+   */
+  uint64_t green;
+  
+  /**
+   * The value of the blue channel
+   */
+  uint64_t blue;
+  
+  /**
+   * The number of bytes with which
+   * each channel is encoded
+   */
+  int bytes;
+  
+} colour_t;
+
+
+/**
+ * Slot for a colour in a list of colours
+ */
+typedef struct colour_slot
+{
+  /**
+   * The name of the colour, `NULL` if the slot is unused
+   */
+  char* name;
+  
+  /**
+   * The index of the next unused slot,
+   * only used on unused slot
+   */
+  size_t next_unused;
+  
+  /**
+   * The index of the previous unused slot,
+   * only used on unused slot
+   */
+  size_t prev_unused;
+  
+  /**
+   * The hash of `name`
+   */
+  size_t name_hash;
+  
+  /**
+   * The value of the colour
+   */
+  colour_t colour;
+  
+} colour_slot_t;
+
+
 
 /**
  * Handle the received message
@@ -28,7 +96,6 @@
  * @return  Zero on success, -1 on error
  */
 int handle_message(void);
-
 
 /**
  * Handle the received message after it has been
@@ -42,7 +109,6 @@ int handle_message(void);
 int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
 			const char* recv_include_values);
 
-
 /**
  * Handle the received message after it has been
  * identified to contain `Command: get-colour`
@@ -53,7 +119,6 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
  * @return                   Zero on success, -1 on error
  */
 int handle_get_colour(const char* recv_client_id, const char* recv_message_id, const char* recv_name);
-
 
 /**
  * Handle the received message after it has been
