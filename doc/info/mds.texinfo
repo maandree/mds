@@ -12881,6 +12881,8 @@ requires that be listen for updates to the backgrund.
 @node Why Dither Colours
 @section Why Dither Colours
 
+@cpindex Colour dithering
+@cpindex Dithering of colours
 Now that almost all computers, and all modern computers,
 have support for 24-bit colour, colour dithering have
 faded to unexistence. The common logic is that the colours
