@@ -290,7 +290,7 @@ libraries and concepts.
 * Accessibility::                             Dealing with disabilities.
 * Specifications::                            Specifications.
 * New Concepts::                              Discussion of new display server concepts.
-* Discussion::                                Discussion on display server-architecture.
+* Discussion::                                Discussion on display server-architecture and decision.
 
 * GNU General Public License::                Copying and sharing @command{mds}.
 * GNU Free Documentation License::            Copying and sharing this manual.
@@ -11958,6 +11958,7 @@ monitors partially.
 * Why Not Wayland::                           Why Wayland Won't Cut It.
 * Why Not Mir::                               Why Mir Won't Cut It.
 * Desktop Environments::                      What are desktop environments' relationship to mds?
+* Why Dither Colours::                        Is dithering not a thing of the past?
 @end menu
 
 
@@ -12877,6 +12878,34 @@ requires that be listen for updates to the backgrund.
 
 
 
+@node Why Dither Colours
+@section Why Dither Colours
+
+Now that almost all computers, and all modern computers,
+have support for 24-bit colour, colour dithering have
+faded to unexistence. The common logic is that the colours
+are good enough, or that we can only perceive 10 million
+colours, and 24-bit colour gives us almost 17 million
+colours. However, we can see the difference between
+two colours if they are next to each other and painted
+on large areas, even if the difference is the smallest
+that 24-bit colour can bring us.
+
+So whilst 24-bit colour is good enough in most cases,
+it is not enough in gradients where the difference
+between the end colours are low, especially when these
+colours are bright. Therefore we still need dithering
+in some cases.
+
+Now that we get increasingly higher pixel pitch our
+display output, dithering is going to look increasingly
+better.
+
+Since we somehow got stuck at 24-bit colour, dithering
+is important.
+
+
+
 @node GNU General Public License
 @appendix GNU General Public License
 @include gpl.texinfo
@@ -12953,7 +12982,6 @@ TODO protocol: drag;; drag and drop should be usable for saving files.
 TODO protocol: keytrans: changing keyboard layout
 TODO protocol: rat
 TODO protocol: cursor
-TODO protocol: colour
 TODO protocol: state
 TODO protocol: focus;; multifocus
 TODO protocol: compositor
