@@ -3085,8 +3085,8 @@ header @code{Error}.
 
 @item Message:
 Description of the error, single line, mid-sentence
-case, no punctuation in the end, must not be question
-but rather it must be a statement.
+case, no punctuation in the end, must not be a
+question but rather it must be a statement.
 
 @item Purpose:
 Enable keyboard layout servers to automatically set

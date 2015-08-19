@@ -673,7 +673,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   
   if (recv_modify_id == NULL)
     {
-      eprint("did not get add modify ID, ignoring.");
+      eprint("did not get a modify ID, ignoring.");
       return 0;
     }
   
@@ -754,7 +754,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   
   if (recv_modify_id == NULL)
     {
-      eprint("did not get add modify ID, ignoring.");
+      eprint("did not get a modify ID, ignoring.");
       return 0;
     }
   

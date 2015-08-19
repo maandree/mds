@@ -272,6 +272,118 @@ int master_loop(void)
  */
 int handle_message(void)
 {
+  const char* recv_command = NULL;
+  const char* recv_client_id = "0:0";
+  const char* recv_message_id = NULL;
+  const char* recv_include_values = NULL;
+  const char* recv_name = NULL;
+  const char* recv_remove = NULL;
+  const char* recv_bytes = NULL;
+  const char* recv_red = NULL;
+  const char* recv_green = NULL;
+  const char* recv_blue = NULL;
+  size_t i;
+  
+#define __get_header(storage, header)			\
+  (startswith(received.headers[i], header))		\
+    storage = received.headers[i] + strlen(header)
+  
+  for (i = 0; i < received.header_count; i++)
+    {
+      if      __get_header(recv_command,        "Command: ");
+      else if __get_header(recv_client_id,      "Client ID: ");
+      else if __get_header(recv_message_id,     "Message ID: ");
+      else if __get_header(recv_include_values, "Include values: ");
+      else if __get_header(recv_name,           "Name: ");
+      else if __get_header(recv_remove,         "Remove: ");
+      else if __get_header(recv_bytes,          "Bytes: ");
+      else if __get_header(recv_red,            "Red: ");
+      else if __get_header(recv_green,          "Green: ");
+      else if __get_header(recv_blue,           "Blue: ");
+    }
+  
+#undef __get_header
+  
+  if (recv_message_id == NULL)
+    {
+      eprint("received message without ID, ignoring, master server is misbehaving.");
+      return 0;
+    }
+  
+  if (recv_command == NULL)
+    return 0; /* How did that get here, not matter, just ignore it? */
+
+#define t(expr)  do { fail_if (expr); return 0; } while (0)
+  if (strequals(recv_command, "list-colours"))
+    t (handle_list_colours(recv_client_id, recv_message_id, recv_include_values));
+  if (strequals(recv_command, "get-colour"))
+    t (handle_get_colour(recv_client_id, recv_message_id, recv_name));
+  if (strequals(recv_command, "set-colour"))
+    t (handle_set_colour(recv_name, recv_remove, recv_bytes, recv_red, recv_green, recv_blue));
+#undef t
+  
+  return 0; /* How did that get here, not matter, just ignore it? */
+ fail:
+  return -1;
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: list-colours`
+ * 
+ * @param   recv_client_id       The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id      The value of the `Message ID`-header
+ * @param   recv_include_values  The value of the `Include values`-header, `NULL` if omitted
+ * @return                       Zero on success, -1 on error
+ */
+int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
+			const char* recv_include_values)
+{
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: get-colour`
+ * 
+ * @param   recv_client_id   The value of the `Client ID`-header, "0:0" if omitted
+ * @param   recv_message_id  The value of the `Message ID`-header
+ * @param   recv_name        The value of the `Name`-header, `NULL` if omitted
+ * @return                   Zero on success, -1 on error
+ */
+int handle_get_colour(const char* recv_client_id, const char* recv_message_id, const char* recv_name)
+{
+}
+
+
+/**
+ * Handle the received message after it has been
+ * identified to contain `Command: set-colour`
+ * 
+ * @param   recv_name    The value of the `Name`-header, `NULL` if omitted
+ * @param   recv_remove  The value of the `Remove`-header, `NULL` if omitted
+ * @param   recv_bytes   The value of the `Bytes`-header, `NULL` if omitted
+ * @param   recv_red     The value of the `Red`-header, `NULL` if omitted
+ * @param   recv_green   The value of the `Green`-header, `NULL` if omitted
+ * @param   recv_blue    The value of the `Blue`-header, `NULL` if omitted
+ * @return               Zero on success, -1 on error
+ */
+int handle_set_colour(const char* recv_name, const char* recv_remove, const char* recv_bytes,
+		      const char* recv_red, const char* recv_green, const char* recv_blue)
+{
+  int remove_colour = 0;
+  
+  if      (recv_remove == NULL)            remove_colour = 0;
+  else if (strequals(recv_remove, "yes"))  remove_colour = 1;
+  else if (strequals(recv_remove, "no"))   remove_colour = 0;
+  else
+    {
+      eprint("got an invalid value on the Remove-header, ignoring.");
+      return 0;
+    }
+  
+  return 0;
 }
 
 
