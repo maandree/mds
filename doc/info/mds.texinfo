@@ -12600,7 +12600,7 @@ agreement (CLA).
 @cpindex Flexibility
 Mir, like Wayland, is very limited. Mir is however
 easier to extend. Ignoring the CLA, Mir is better
-Wayland, but for similar reasons it is still not
+tham Wayland, but for similar reasons it is still not
 good enough.
 
 Mir is however licensed under the GNU General Public
