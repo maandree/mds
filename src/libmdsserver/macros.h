@@ -40,6 +40,12 @@
 /* # pragma GCC diagnostic ignored "-Wpedantic" */
 
 
+/* CLOCK_MONOTONIC_RAW is a Linux-specific bug-fix */
+#ifndef CLOCK_MONOTONIC_RAW
+ #define CLOCK_MONOTONIC_RAW  CLOCK_MONOTONIC
+#endif
+
+
 /**
  * Wrapper around `asprintf` that makes sure that first
  * argument gets set to `NULL` on error and that zero is
