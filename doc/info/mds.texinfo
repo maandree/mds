@@ -3086,7 +3086,8 @@ header @code{Error}.
 @item Message:
 Description of the error, single line, mid-sentence
 case, no punctuation in the end, must not be a
-question but rather it must be a statement.
+question but rather it must be a statement. The
+message shall end with a line feed.
 
 @item Purpose:
 Enable keyboard layout servers to automatically set
@@ -5073,7 +5074,8 @@ each of these values will be suffixed with a single
 regular blank space making the format
 @code{bytes red green blue name}. Note that the name may
 contain any whitespace@footnote{Tab space is discouraged.}
-except a line feed.
+except a line feed. Allowed values for the byte count
+are 1, 2, 4 and 8.
 
 The payload will end with a line break unless it is
 empty. No empty lines will otherwise be included
@@ -5130,6 +5132,7 @@ message contain the headers:
 @table @code
 @item Bytes
 The number of bytes with which each channel is encoded.
+Allowed values are 1, 2, 4 and 8.
 @item Red
 The value of the red channel.
 @item Green
@@ -5137,6 +5140,9 @@ The value of the green channel.
 @item Blue
 The value of the blue channel.
 @end table
+If the colour is not defined, the @code{Command: error}
+message will return a custom error, with the message
+``not defined''.
 
 @item Purpose:
 @cpindex Toolkits, colours
@@ -5195,6 +5201,7 @@ Add or modify colour definition.
 
 @item Conditionally required header: @code{Bytes}
 The number of bytes with which each channel is encoded.
+Allowed values are 1, 2, 4 and 8.
 Required unless @code{Remove: yes} is included in the headers.
 
 @item Conditionally required header: @code{Red}

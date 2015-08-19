@@ -351,6 +351,20 @@ int handle_message(void)
 int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
 			const char* recv_include_values)
 {
+  int include_values = 0;
+  
+  if (strequals(recv_client_id, "0:0"))
+    return eprint("got a query from an anonymous client, ignoring."), 0;
+  
+  if      (recv_include_values == NULL)            remove_include_values = 0;
+  else if (strequals(recv_include_values, "yes"))  remove_include_values = 1;
+  else if (strequals(recv_include_values, "no"))   remove_include_values = 0;
+  else
+    ; /* TODO send EPROTO*/
+  
+  /* TODO send list */
+  
+  return 0;
 }
 
 
@@ -365,6 +379,15 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
  */
 int handle_get_colour(const char* recv_client_id, const char* recv_message_id, const char* recv_name)
 {
+  if (strequals(recv_client_id, "0:0"))
+    return eprint("got a query from an anonymous client, ignoring."), 0;
+  
+  if (recv_name == NULL)
+    ; /* TODO send EPROTO */
+  
+  /* TODO send colour, "not defined" if missing */
+  
+  return 0;
 }
 
 
@@ -383,15 +406,45 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
 int handle_set_colour(const char* recv_name, const char* recv_remove, const char* recv_bytes,
 		      const char* recv_red, const char* recv_green, const char* recv_blue)
 {
+  uint64_t limit = UINT64_MAX;
   int remove_colour = 0;
+  int bytes;
+  uint64_t red, green, blue;
   
   if      (recv_remove == NULL)            remove_colour = 0;
   else if (strequals(recv_remove, "yes"))  remove_colour = 1;
   else if (strequals(recv_remove, "no"))   remove_colour = 0;
   else
+    return eprint("got an invalid value on the Remove-header, ignoring."), 0;
+  
+  if (recv_name == NULL)
+    return eprint("did not get all required headers, ignoring."), 0;
+  
+  if (remove_colour == 0)
     {
-      eprint("got an invalid value on the Remove-header, ignoring.");
-      return 0;
+      if ((recv_bytes == NULL) || (recv_red == NULL) || (recv_green == NULL) || (recv_blue == NULL))
+	return eprint("did not get all required headers, ignoring."), 0;
+      
+      if (strict_atoi(recv_bytes, &bytes, 1, 8))
+	return eprint("got an invalid value on the Bytes-header, ignoring."), 0;
+      if ((bytes != 1) && (bytes != 2) && (bytes != 4) && (bytes != 8))
+	return eprint("got an invalid value on the Bytes-header, ignoring."), 0;
+      
+      if (bytes < 8)
+	limit = (((uint64)1) << (bytes * 8)) - 1;
+      
+      if (strict_atou64(recv_red, &red, 0, limit))
+	return eprint("got an invalid value on the Red-header, ignoring."), 0;
+      if (strict_atou64(recv_green, &green, 0, limit))
+	return eprint("got an invalid value on the Green-header, ignoring."), 0;
+      if (strict_atou64(recv_blue, &blue, 0, limit))
+	return eprint("got an invalid value on the Blue-header, ignoring."), 0;
+      
+      /* TOOD set colour */
+    }
+  else
+    {
+      /* TODO remove colour */
     }
   
   return 0;
