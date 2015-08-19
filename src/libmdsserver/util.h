@@ -110,6 +110,28 @@ size_t send_message(int socket, const char* message, size_t length);
 int strict_atoi(const char* str, int* value, int min, int max);
 
 /**
+ * A version of `atoj` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoj(const char* str, intmax_t* value, intmax_t min, intmax_t max);
+
+/**
+ * A version of `atouj` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max);
+
+/**
  * Send a buffer into a file and ignore interruptions
  * 
  * @param   fd      The file descriptor
@@ -128,7 +150,6 @@ int full_write(int fd, const char* buffer, size_t length);
  */
 char* full_read(int fd, size_t* length);
 
-
 /**
  * Send a full message even if interrupted
  * 
@@ -138,7 +159,6 @@ char* full_read(int fd, size_t* length);
  * @return           Zero on success, -1 on error
  */
 int full_send(int socket, const char* message, size_t length);
-
 
 /**
  * Check whether a string begins with a specific string,

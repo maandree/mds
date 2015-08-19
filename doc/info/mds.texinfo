@@ -6535,6 +6535,30 @@ string is not a 10-radix integer or has a value
 outside [@code{min}, @code{max}], @code{-1} is
 returned, otherwise zero is returned.
 
+@item @code{strict_atoj} [(@code{const char* str, intmax_t* value, intmax_t min, intmax_t max}) @arrow{} @code{int}]
+@fnindex @code{strict_atoj}
+@fnindex @code{atoj}
+@cpindex Integer parsing
+@cpindex Error management
+A version of @code{atoj} that is strict about the
+syntax and bounds. Parses the string @code{str} into
+an @code{int} and stores it in @code{*value}. If the
+string is not a 10-radix integer or has a value
+outside [@code{min}, @code{max}], @code{-1} is
+returned, otherwise zero is returned.
+
+@item @code{strict_atouj} [(@code{const char* str, uintmax_t* value, uintmax_t min, uintmax_t max}) @arrow{} @code{int}]
+@fnindex @code{strict_atouj}
+@fnindex @code{atouj}
+@cpindex Integer parsing
+@cpindex Error management
+A version of @code{atouj} that is strict about the
+syntax and bounds. Parses the string @code{str} into
+an @code{int} and stores it in @code{*value}. If the
+string is not a 10-radix integer or has a value
+outside [@code{min}, @code{max}], @code{-1} is
+returned, otherwise zero is returned.
+
 @item @code{full_write} [(@code{int fd, const char* buffer, size_t length}) @arrow{} @code{int}]
 @fnindex @code{full_write}
 @cpindex File writing

@@ -241,6 +241,101 @@ int strict_atoi(const char* str, int* value, int min, int max)
 
 
 /**
+ * A version of `atoj` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atoj(const char* str, intmax_t* value, intmax_t min, intmax_t max)
+{
+  static char minstr[3 * sizeof(intmax_t) + 2] = { '\0' };
+  intmax_t r = 0;
+  char c;
+  int neg = 0;
+  
+  if (*str == '-')
+    {
+      if (*minstr == '\0')
+	sprintf(minstr, "%j", INTMAX_MIN);
+      if (!strcmp(str, minstr))
+	{
+	  r = INTMAX_MIN;
+	  goto done;
+	}
+      neg = 1, str++;
+    }
+  
+  if (*str == '\0')
+    return -1;
+  
+  while ((c = *str))
+    if (('0' <= c) && (c <= '9'))
+      {
+	if (r > INTMAX_MAX / 10)
+	  return -1;
+	else if (r == INTMAX_MAX / 10)
+	  if ((c & 15) > INTMAX_MAX % 10)
+	    return -1;
+	r = r * 10 + (c & 15);
+      }
+    else
+      return -1;
+  
+  if (neg)
+    r = -r;
+  
+ done:
+  
+  if ((r < min) || (r > max))
+    return -1;
+  
+  *value = r;
+  return 0;
+}
+
+
+/**
+ * A version of `atouj` that is strict about the syntax and bounds
+ * 
+ * @param   str    The text to parse
+ * @param   value  Slot in which to store the value
+ * @param   min    The minimum accepted value
+ * @param   max    The maximum accepted value
+ * @return         Zero on success, -1 on syntax error
+ */
+int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max)
+{
+  uintmax_t r = 0;
+  char c;
+  
+  if (*str == '\0')
+    return -1;
+  
+  while ((c = *str))
+    if (('0' <= c) && (c <= '9'))
+      {
+	if (r > INTMAX_MAX / 10)
+	  return -1;
+	else if (r == INTMAX_MAX / 10)
+	  if ((c & 15) > INTMAX_MAX % 10)
+	    return -1;
+	r = r * 10 + (c & 15);
+      }
+    else
+      return -1;
+  
+  if ((r < min) || (r > max))
+    return -1;
+  
+  *value = r;
+  return 0;
+}
+
+
+/**
  * Send a buffer into a file and ignore interruptions
  * 
  * @param   fd      The file descriptor
