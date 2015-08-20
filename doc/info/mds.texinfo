@@ -2364,9 +2364,9 @@ colour names, such as system colours and generic
 names, for example `red', whose exact colour can be
 configured by the user. A terminal written for
 @command{mds} would look up colours such as `red'
-and `light red' and get the colours the terminal
+and `light-red' and get the colours the terminal
 should use by default. Nothing is to be assumed
-for such colours, not even that `light red' is in
+for such colours, not even that `light-red' is in
 fact lighter than `dark red', or that `red' is in
 fact `red', only that it is the colour the user
 wants to see when a colour is supposed to be `red'.
@@ -10517,10 +10517,10 @@ speed)^(1 + curve)
 
 @menu
 * Rat Cursors::                               Rat cursor specifications.
+* Colour Names::                              Recommended colour names.
 * Nesting Applications::                      Specifications for nesting applications.
 * The Real Display Server::                   Identifying the real display server.
 @end menu
-@c TODO list of recommended colour names
 
 
 
@@ -12065,9 +12065,297 @@ existing cursor should be used, and the cursor rotated
 180 degrees of what is requested should be used if
 there is no matching cursor with a rotation distance
 within, but excluding, 90@tie{}degrees. @code{*}
-should be in the interval [0, 360[, and a
+should be in the interval [0,@tie{}360[, and a
 period@tie{}(`.') should be used as a decimal
 pointer, as it is used in most programming languages.
+
+
+
+@node Colour Names
+@section Colour Names
+
+@cpindex Colour names
+@cpindex System colours
+@cpindex Colours, system
+@cpindex Colours, names
+@command{mds} protocols provide an optional way to
+name colours. This is used primarily for colours
+used by toolkits. These are called system colours.
+But it is also possible to have names for common
+colours that should be tunable. These are called
+named colours.
+
+There are no colours is guaranteed to exist. Nor
+is it guaranteed that value of named colours
+reflect the names of them, in any aspect. For
+example `red' could be a light blue, and
+`light-red` could be a dark green. In fact, you
+use assume that the names does not reflect the
+actual colour. For example, if a terminal uses
+named colours for the colours choosen by programs
+via ANSI escape sequences, the use can change
+these colours to create a theme she likes better,
+even if the colours are no longer what ANSI
+defines them.
+
+There is however a list of recommended colour
+names, with recommended definitions:
+
+@table @code
+@item black
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 30 m} or
+@code{CSI 40 m}. This colour is usually pure
+black.
+
+@item red
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 31 m} or
+@code{CSI 41 m}. This colour is usually a
+medium red.
+
+@item green
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 32 m} or
+@code{CSI 42 m}. This colour is usually a
+medium green.
+
+@item yellow
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 33 m} or
+@code{CSI 43 m}. This colour is usually a
+medium yellow or medium orange.
+
+@item blue
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 34 m} or
+@code{CSI 44 m}. This colour is usually a
+medium blue.
+
+@item purple
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 35 m} or
+@code{CSI 45 m}. This colour is usually a
+medium purple, medium lilac or medium
+fuchsia/magenta.
+
+@item teal
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 36 m} or
+@code{CSI 46 m}. This colour is usually a
+medium teal or medium turquoise/cyan
+
+@item grey
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequences @code{CSI 37 m} or
+@code{CSI 47 m}. This colour is usually around
+50% grey.
+
+@item dark-grey
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 30 m}.
+This colour is usually around 25% grey.
+
+@item light-red
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 31 m}.
+This colour is usually the same colour as,
+but brighter than, @code{red}.
+
+@item light-green
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 32 m}.
+This colour is usually the same colour as,
+but brighter than, @code{green}.
+
+@item light-yellow
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 33 m}.
+This colour is usually a bright yellow.
+
+@item light-blue
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 34 m}.
+This colour is usually the same colour as,
+but brighter than, @code{blue}.
+
+@item light-purple
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 35 m}.
+This colour is usually the same colour as,
+but brighter than, @code{purple}.
+
+@item light-teal
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 36 m}.
+This colour is usually the same colour as,
+but brighter than, @code{teal}.
+
+@item white
+It is recommended that terminals use this as
+the default colour for the colour selected by
+the ANSI escape sequence @code{CSI 1 ; 37 m}.
+This colour is usually a pure white or very
+bright grey.
+
+@item background
+It is recommended that terminals use this as
+the default background colour. This should
+be noted, that it is not recommened for or
+programs.
+
+@item foreground
+It is recommended that terminals use this as
+the default text colour. This should be noted,
+that it is not recommened for or programs.
+
+@item desktop-background
+@item desktop-foreground
+@item window-background
+@item window-foreground
+@item window-foreground-disabled
+@item window-cursor
+@item window-selection
+@item link
+@item link-active
+@item link-visited
+@item link-broken
+@item link-hover
+@item link-active-hover
+@item link-visited-hover
+@item link-broken-hover
+@item link-disabled
+@item link-active-disabled
+@item link-visited-disabled
+@item link-broken-disabled
+@item button-background
+@item button-foreground
+@item button-aura
+@item button-background-hover
+@item button-foreground-hover
+@item button-aura-hover
+@item button-background-disabled
+@item button-foreground-disabled
+@item button-aura-disabled
+@item button-background-toggled
+@item button-foreground-toggled
+@item button-aura-toggled
+@item button-background-toggled-hover
+@item button-foreground-toggled-hover
+@item button-aura-toggled-hover
+@item button-background-toggled-disabled
+@item button-foreground-toggled-disabled
+@item button-aura-toggled-disabled
+@item button-background-change
+@item button-foreground-change
+@item button-aura-change
+@item button-aura-change-disabled
+@item button-background-change-toggled
+@item button-foreground-change-toggled
+@item button-aura-change-toggled
+@item input-background
+@item input-foreground
+@item input-selection
+@item input-mark
+@item input-cursor
+@item input-aura
+@item input-highlight
+@item input-background-hover
+@item input-foreground-hover
+@item input-selection-hover
+@item input-mark-hover
+@item input-cursor-hover
+@item input-aura-hover
+@item input-highlight-hover
+@item input-background-disabled
+@item input-foreground-disabled
+@item input-selection-disabled
+@item input-mark-disabled
+@item input-cursor-disabled
+@item input-aura-disabled
+@item input-highlight-disabled
+@item option-background
+@item option-foreground
+@item option-aura
+@item option-background-active
+@item option-foreground-active
+@item option-aura-active
+@item option-background-intermediate
+@item option-foreground-intermediate
+@item option-aura-intermediate
+@item option-background-hover
+@item option-foreground-hover
+@item option-aura-hover
+@item option-background-active-hover
+@item option-foreground-active-hover
+@item option-aura-active-hover
+@item option-background-intermediate-hover
+@item option-foreground-intermediate-hover
+@item option-aura-intermediate-hover
+@item option-background-disabled
+@item option-foreground-disabled
+@item option-aura-disabled
+@item option-background-active-disabled
+@item option-foreground-active-disabled
+@item option-aura-active-disabled
+@item option-background-intermediate-disabled
+@item option-foreground-intermediate-disabled
+@item option-aura-intermediate-disabled
+@item option-background-change
+@item option-foreground-change
+@item option-aura-change
+@item option-background-active-change
+@item option-foreground-active-change
+@item option-aura-active-change
+@item option-background-intermediate-change
+@item option-foreground-intermediate-change
+@item option-aura-intermediate-change
+
+tab
+scroller
+slider
+progress
+
+@item menu-background
+@item menu-foreground
+@item menu-delimiter
+@item menu-tear
+@item menu-background-disabled
+@item menu-foreground-disabled
+@item menu-tear-disabled
+@item menu-background-hover
+@item menu-foreground-hover
+@item menu-tear-hover
+@item menu-background-disabled-hover
+@item menu-foreground-disabled-hover
+@item menu-tear-disabled-hover
+@item menu-background-opened
+@item menu-foreground-opened
+@item tooltip-background
+@item tooltip-foreground
+@item notification-background
+@item notification-foreground
+@item notification-low
+@item notification-normal
+@item notification-high
+@item notification-critical
+
+@end table
 
 
 
