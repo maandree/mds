@@ -21,6 +21,8 @@
 
 #include "mds-base.h"
 
+#include <libmdsserver/hash-list.h>
+
 #include <stdint.h>
 
 
@@ -52,41 +54,6 @@ typedef struct colour
   int bytes;
   
 } colour_t;
-
-
-/**
- * Slot for a colour in a list of colours
- */
-typedef struct colour_slot
-{
-  /**
-   * The name of the colour, `NULL` if the slot is unused
-   */
-  char* name;
-  
-  /**
-   * The index of the next unused slot,
-   * only used on unused slot
-   */
-  size_t next_unused;
-  
-  /**
-   * The index of the previous unused slot,
-   * only used on unused slot
-   */
-  size_t prev_unused;
-  
-  /**
-   * The hash of `name`
-   */
-  size_t name_hash;
-  
-  /**
-   * The value of the colour
-   */
-  colour_t colour;
-  
-} colour_slot_t;
 
 
 
@@ -134,6 +101,17 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
  */
 int handle_set_colour(const char* recv_name, const char* recv_remove, const char* recv_bytes,
 		      const char* recv_red, const char* recv_green, const char* recv_blue);
+
+
+CREATE_HASH_LIST_SUBCLASS(colour_list, char* restrict, const char* restrict, colour_t)
+
+
+/**
+ * Free the key and value of an entry in a colour list
+ * 
+ * @param  entry  The entry
+ */
+void colour_list_entry_free(colour_list_entry_t* entry);
 
 
 #endif

@@ -22,7 +22,7 @@
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
 #include <libmdsserver/mds-message.h>
-#include <libmdsserver/hash-table.h>
+#include <libmdsserver/hash-list.h>
 #include <libmdsserver/hash-help.h>
 
 #include <errno.h>
@@ -84,7 +84,7 @@ static size_t send_buffer_size = 0;
 /**
  * List of all colours
  */
-static colour_slot_t* colour_list = NULL;
+static colour_list_t colours;
 
 
 
@@ -130,14 +130,15 @@ int initialise_server(void)
     "Command: set-colour\n";
   
   fail_if (full_send(message, strlen(message)));
-  fail_if (server_initialised() < 0);  stage++;
+  fail_if (server_initialised() < 0);  stage++;;
+  fail_if (colour_list_create(&colours, 64) < 0);  stage++;
   fail_if (mds_message_initialise(&received));
   
   return 0;
  fail:
   xperror(*argv);
-  if (stage >= 1)
-    mds_message_destroy(&received);
+  if (stage >= 2)  colour_list_destroy(&colours);
+  if (stage >= 1)  mds_message_destroy(&received);
   return 1;
 }
 
@@ -150,6 +151,9 @@ int initialise_server(void)
  */
 int postinitialise_server(void)
 {
+  colours.freer = colour_list_entry_free;
+  colours.hasher = string_hash;
+  
   if (connected)
     return 0;
   
@@ -251,7 +255,7 @@ int master_loop(void)
 	  danger = 0;
 	  free(send_buffer), send_buffer = NULL;
 	  send_buffer_size = 0;
-	  colour_list_pack(&colour_list);
+	  colour_list_pack(&colours);
 	}
       
       if (r = mds_message_read(&received, socket_fd), r == 0)
@@ -477,5 +481,78 @@ void received_info(int signo)
   iprintf("next message ID: %" PRIu32, message_id);
   iprintf("connected: %s", connected ? "yes" : "no");
   iprintf("send buffer size: %zu bytes", send_buffer_size);
+}
+
+
+/**
+ * Comparing keys
+ * 
+ * @param   key_a  The first key, will never be `NULL`
+ * @param   key_b  The second key, will never be `NULL`
+ * @return         Whether the keys are equal
+ */
+static inline int colour_list_key_comparer(const char* key_a, const char* key_b)
+{
+  return !strcmp(key_a, key_b);
+}
+
+
+/**
+ * Determine the marshal-size of an entry's key and value
+ * 
+ * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @return         The marshal-size of the entry's key and value
+ */
+static inline size_t colour_list_submarshal_size(const colour_list_entry_t* entry)
+{
+  return sizeof(colour_t) + (strlen(entry->key) + 1) * sizeof(char);
+}
+
+
+/**
+ * Marshal an entry's key and value
+ * 
+ * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @return         The marshal-size of the entry's key and value
+ */
+static inline size_t colour_list_submarshal(const colour_list_entry_t* entry, char* restrict data)
+{
+  size_t n = (strlen(entry->key) + 1) * sizeof(char);
+  memcpy(data, &(entry->value), sizeof(colour_t));
+  data += sizeof(colour_t) / sizeof(char);
+  memcpy(data, entry->key, n);
+  return sizeof(colour_t) + n;
+}
+
+
+/**
+ * Unmarshal an entry's key and value
+ * 
+ * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @return         The number of read bytes, zero on error
+ */
+static inline size_t colour_list_subunmarshal(colour_list_entry_t* entry, char* restrict data)
+{
+  size_t n = 0;
+  memcpy(&(entry->value), data, sizeof(colour_t));
+  data += sizeof(colour_t) / sizeof(char);
+  while (data[n++]);
+  n *= sizeof(char);
+  entry->key = malloc(n);
+  if (entry->key == NULL)
+    return 0;
+  memcpy(entry->key, data, n);
+  return sizeof(colour_t) + n;
+}
+
+
+/**
+ * Free the key and value of an entry in a colour list
+ * 
+ * @param  entry  The entry
+ */
+void colour_list_entry_free(colour_list_entry_t* entry)
+{
+  free(entry->key);
 }
 

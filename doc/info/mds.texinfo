@@ -6846,10 +6846,23 @@ In the header file
 defines a data structure for message between the
 server or client and the master server, with the
 capability of reading for a socket.
+
+@item @code{hash_list} @{abstract@}
+@tpindex @code{hash_list}
+@cpindex Lists, hash
+@cpindex Hash lists
+@cpindex Tables, hash
+@cpindex Maps, hash
+@cpindex Dictionary, hash
+@cpindex Hash table
+In the header file @file{<libmdsserver/hash-list.h>},
+libmdsserver defines an abstract class known as hash list.
+It is intended as an alternative to hash tables, where
+the number of stored elements is low.
 @end table
 
 These data structures share a common set of associated
-function. However, they do not use the same functions;
+methods. However, they do not use the same methods;
 they are identical except they are are named with the
 associated data structure. We will use @code{X_t} as
 an example.
@@ -6893,7 +6906,7 @@ in @code{*out}.
 @sgindex @code{SIGUSR1}
 @sgindex @code{SIGUPDATE}
 Calculates the exact allocate size needed for the
-parameter @code{data} in the function @code{X_marshal}
+parameter @code{data} in the method @code{X_marshal}
 if called with the same @code{this} parameter.
 
 @item @code{X_marshal} [(@code{const X_t* restrict this, char* restrict data}) @arrow{} @code{void}]
@@ -6944,12 +6957,12 @@ However, @code{hash_table_unmarshal} and
 * Client List::                               The @code{client_list_t} data structure.
 * Linked List::                               The @code{linked_list_t} data structure.
 * Tables::                                    The @code{fd_table_t} and @code{hash_table_t} data structures.
+* Hash List::                                 The @code{hash_list} abstract data structure.
 * Message Structure::                         The @code{mds_message_t} data structure.
 @end menu
 
 
 
-@page
 @node Client List
 @subsection Client List
 
@@ -6973,19 +6986,19 @@ grow when needed, but it is a good idea to tell it
 how many elements you are planning to populate it
 with.
 
-@code{client_list_t} has two associated functions for
+@code{client_list_t} has two associated methods for
 manipulating its content:
 
 @table @asis
 @item @code{client_list_add} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{int}]
 @fnindex @code{client_list_add}
-This function will add the element @code{client} to
+This method will add the element @code{client} to
 the list @code{*this}, and return zero on and only on
 success.
 
 @item @code{client_list_remove} [(@code{client_list_t* restrict this, uint64_t client}) @arrow{} @code{void}]
 @fnindex @code{client_list_remove}
-This function will remove exactly one occurrence,
+This method will remove exactly one occurrence,
 provided that there is at least one occurrence, of the
 element @code{client} for the list @code{*this}.
 @end table
@@ -7089,7 +7102,7 @@ grow when needed, but it is a good idea to tell it
 how many elements you are planning to populate it
 with.
 
-There are five functions adding and removing items to
+There are five methods adding and removing items to
 and from a linked list:
 
 @table @asis
@@ -7127,7 +7140,7 @@ Remove the node @code{node} from the list
 
 The data type for @code{this} is @code{linked_list_t*}
 with the @code{restrict} modifier for these and all
-other @code{linked_list_t} functions.
+other @code{linked_list_t} methods.
 
 Note that if the node @code{this->edge} is removed,
 the list become circularly linked and the sentinel
@@ -7194,7 +7207,7 @@ Note that the data type for @code{this} in the macro
 is not a pointer.
 @end table
 
-There is also a function intended for debugging:
+There is also a method intended for debugging:
 
 @table @asis
 @item @code{linked_list_dump} [(@code{linked_list_t* restrict this, FILE* restrict output}) @arrow{} @code{void}]
@@ -7222,13 +7235,13 @@ the stream @code{output}.
 @cpindex Hash table
 libmdsserver defines two similar data structures:
 @code{fd_table_t} and @code{hash_table_t}. Whenever a
-function exists for both data structures we will
+method exists for both data structures we will
 write @code{X_table} instead of @code{fd_table} and
 @code{hash_table}. Additionally, unless otherwise
-stated, a function's parameter named @code{this} will
-be of the type @code{hash_table_t*} if the function's
+stated, a method's parameter named @code{this} will
+be of the type @code{hash_table_t*} if the method's
 name start with @code{hash_table} and
-@code{fd_table_t*} if the function's name start with
+@code{fd_table_t*} if the method's name start with
 @code{fd_table}, with the @code{restrict} modifier.
 
 @table @asis
@@ -7238,7 +7251,7 @@ name start with @code{hash_table} and
 Initialises @code{*this} so it can be used as a
 table. Returns zero on and only on success.
 
-These functions are defined as macros.
+These methods are defined as macros.
 
 @item @code{X_table_create_tuned} [(@code{this, size_t initial_capacity}) @arrow{} @code{int}]
 @fnindex @code{hash_table_create_tuned}
@@ -7264,9 +7277,9 @@ success.
 Release all resources in the table @code{*this}, but
 do not @code{free} @code{this} itself. Should be
 called even if construction fails. If
-@code{keys_freer} is not @code{NULL}, this function
+@code{keys_freer} is not @code{NULL}, this method
 will be called for each key. If @code{values_freer}
-is not @code{NULL}, this function will be called for
+is not @code{NULL}, this method will be called for
 each value.
 
 @item @code{X_table_contains_value} [(@code{const this, size_t value}) @arrow{} @code{int}]
@@ -7333,9 +7346,9 @@ Unmaps all keys in the table @code{*this}.
 @fnindex @code{fd_table_unmarshal}
 As described in @ref{Data Structures} but with one
 additional parameter: @code{remapper}. If this
-parameter is not @code{NULL} this function is used to
+parameter is not @code{NULL} this method is used to
 edit values. It will be called once for each value
-and the output of the function will be used inplace
+and the output of the method will be used inplace
 of the input value.
 @end table
 
@@ -7346,7 +7359,7 @@ wrapper macro for the @code{for}-keyword:
 @item @code{foreach_hash_table_entry} [(@code{hash_table_t this, size_t i, hash_entry_t* entry})]
 @fnindex @code{foreach_hash_table_entry}
 Iterates over entry element in the hash table
-@code{*this}. On each iteration, the entry will be
+@code{this}. On each iteration, the entry will be
 stored to the variable @code{entry} and the bucket
 index will be stored to the variable @code{i}.
 
@@ -7374,8 +7387,8 @@ void print_hash_table(hash_table_t* table)
 @end example
 @end ifclear
 
-Note the the data type for the parameter @code{this}
-is not a popinter.
+Note that the data type for the parameter @code{this}
+is not a pointer.
 @end table
 
 @vrindex @code{value_comparator}
@@ -7389,7 +7402,7 @@ two values will be considered equal if and only if
 they are numerically identical; otherwise two values
 will be considered equal if and only if
 @code{value_comparator} returned a non-zero value if
-those two values are used for the function's
+those two values are used for the method's
 arguments. The data type for @code{value_comparator}
 is @code{compare_func*}.
 
@@ -7433,38 +7446,38 @@ The hash value of the key.
 By inclusion of @file{<libmdsserver/table-common.h>},
 @file{<libmdsserver/hash-table.h>} and
 @file{<libmdsserver/fd-table.h>} defines four
-@code{typedef}:s for function signatures:
+@code{typedef}:s for method signatures:
 
 @table @asis
 @item @code{compare_func} [(@code{size_t a, size_t b}) @arrow{} @code{int}]
 @tpindex @code{compare_func}
-A function that performs a comparison of two objects.
+A method that performs a comparison of two objects.
 Should return non-zero if and only if @code{a} and
 @code{b} are to be considered equal in the given
 context.
 
 @item @code{hash_func} [(@code{size_t value}) @arrow{} @code{size_t}]
 @tpindex @code{hash_func}
-A function that hashes an object or a value. Should
+A method that hashes an object or a value. Should
 return the hash value for @code{value}.
 
 @item @code{free_func} [(@code{size_t obj}) @arrow{} @code{void}]
 @tpindex @code{free_func}
-A function that, to the extent that is appropriate,
+A method that, to the extent that is appropriate,
 releases the object @code{obj}'s resources and
 @code{free}:s it.
 
 @item @code{remap_func} [(@code{size_t obj}) @arrow{} @code{size_t}]
 @tpindex @code{remap_func}
-A function that translates a object into a new object.
-The function should return new object that should
+A method that translates a object into a new object.
+The method should return new object that should
 replace the object @code{obj}.
 @end table
 
 If you are working with strings, you may consider
 including the header file
 @file{<libmdsserver/hash-help.h>}. It defines to
-useful functions:
+useful methods:
 
 @table @asis
 @item @code{string_hash} [(@code{const char* str}) @arrow{} @code{size_t}]
@@ -7481,8 +7494,298 @@ Returns non-zero if either both @code{str_a} and
 their first NUL characters (or by address.)
 @end table
 
-These functions are defined as pure and
+These methods are defined as pure and
 @code{static inline}.
+
+
+
+@node Hash List
+@subsection Hash List
+
+@tpindex @code{hash_list}
+@cpindex List, hash
+@cpindex Hash list
+@cpindex Tables, hash
+@cpindex Maps, hash
+@cpindex Dictionary, hash
+@cpindex Hash table
+@code{hash_list} is an abstract data structure,
+provided as an alternative to hash tables with
+a low number of elements. @code{hash_list} is a
+associated dynamic list, with hash keys, that
+keeps removed slot free for reuse until they
+are as many as the occupied slots.
+
+@fnindex @code{CREATE_HASH_LIST_SUBCLASS}
+To use @code{hash_list}, a concrete subclass of
+it must be created. To do this, call the macro
+@code{CREATE_HASH_LIST_SUBCLASS}. It takes four
+parameters:
+
+@enumerate 1
+@item
+The name of the subclass, this must not be a string,
+but rather formated as an identifier. This text
+will replace the @code{hash_list} in all that the
+macro defines.
+
+@item
+@tpindex @code{KEY_T}
+The data type of the keys. We will hence refer to
+this as @code{KEY_T}.
+
+@item
+A @code{const} version of the data type of the keys.
+We will hence refer to this as @code{const KEY_T}.
+
+@item
+@tpindex @code{VALUE_T}
+The data type of the values. We will hence refer to
+this as @code{VALUE_T}. It is however internally
+type-defined as @code{hash_list_value_t}, but this
+is not guaranteed to be true in the future.
+@end enumerate
+
+@code{CREATE_HASH_LIST_SUBCLASS} will define two
+structures, two method type definitions, four
+@code{static inline} methods for the creator
+of the subclass to implement, and a set of methods,
+as well as one auxiliary type definition@footnote{This
+type definition would be @code{hash_list_value_t} as
+specified above.}.
+
+@tpindex @code{hash_list_entry_t}
+@tpindex @code{struct hash_list_entry}
+The first structure is called @code{hash_list_entry_t}
+@{also known as @code{struct hash_list_entry}@}. Keep in
+mind that @code{hash_list} is replaced by the first
+argument in the call to @code{CREATE_HASH_LIST_SUBCLASS}.
+This structure represents a entry, or slot, the hash list,
+it contains three elements:
+
+@table @asis
+@item @code{key} [@code{KEY_T}]
+The key of the entry. Will be @code{NULL} if the slot
+is unused; a @code{NULL} on a key is disallowed.
+Note that @code{NULL} is equivalent to zero if the
+data type is numeral primitively.
+
+@item @code{key_hash} [@code{size_t}]
+The hash of the key. This element is transparent to the
+user of the class.
+
+@item @code{value} [@code{VALUE_T}]
+The value.
+@end table
+
+@tpindex @code{hash_list_t}
+@tpindex @code{struct hash_list}
+The other structure is called @code{hash_list_t}
+@{also known as @code{struct hash_list}@}. This
+structure represents the entire hash list. It contains
+six elements:
+
+@table @asis
+@item @code{allocated} [@code{size_t}]
+The number of allocated slots. This element is
+transparent to the user of the class.
+
+@item @code{unused} [@code{size_t}]
+The number of unused slot that has previously be used.
+This element is transparent to the user of the class.
+
+@item @code{used} [@code{size_t}]
+The number of slots that have been used, even if
+no longer used. This element is transparent to the
+user of the class.
+
+@item @code{slots} [@code{hash_list_entry_t*}]
+The allocation for the slots. This element is
+transparent to the user of the class.
+
+@item @code{freer} [@code{hash_list_entry_free_func*}]
+@tpindex @code{hash_list_entry_free_func}
+Method used to free keys and values of entries.
+If left @code{NULL}, no keys or values are freed.
+This value must be set after @code{hash_list_create}
+or @code{hash_list_unmarshal} is called, not before.
+
+@item @code{hasher} [@code{hash_list_key_hash_func*}]
+@tpindex @code{hash_list_key_hash_func}
+method used to calculate the hash of a key.
+If left @code{NULL}, the identity hash is used, that
+is, the address of the key, or if it is numeral, it
+is casted to @code{size_t}.
+This value must be set after @code{hash_list_create}
+or @code{hash_list_unmarshal} is called, not before.
+@end table
+
+The two method-type definitions are:
+@table @asis
+@item @code{hash_list_entry_free_func} [(@code{hash_list_entry_t* entry}) @arrow{} @code{void}]
+@tpindex @code{hash_list_entry_free_func}
+The method shall free the key and value, if defined
+in such a way that they can be freed. It is guaranteed
+that neither @code{entry} or @code{entry->key} are
+@code{NULL}.
+
+@item @code{hash_list_key_hash_func} [(@code{const KEY_T key}) @arrow{} @code{size_t}]
+@tpindex @code{hash_list_key_hash_func}
+The method shall return the hash of the @code{key}.
+It is guaranteed that @code{key} is not @code{NULL}.
+@end table
+
+There are five methods specific to @code{hash_list_t}.
+The @code{this}-parameter's data type for this methods
+are @code{hash_list_t*} with the @code{restrict} modifier.
+
+@table @asis
+@item @code{hash_list_create} [(@code{this, size_t capacity}) @arrow{} @code{int}]
+@fnindex @code{hash_list_create}
+Create a hash list, and store it in @code{this}.
+The hash list's initial capacity will be at least the value @code{capacity}.
+If, however, @code{capacity} is zero, a default capacity will be used.
+Zero is returned on success, @code{-1} is returned on error.
+
+@item @code{hash_list_pack} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{hash_list_pack}
+Pack the list so that there are no reusable positions, and
+reduce the capacity to the smallest capacity that can be used.
+This method has linear time complexity and constant memory
+complexity. Zero is returned on success, @code{-1} is returned
+on error. Errors are however non-fatal and can be ignored,
+it only means that the capacity could not be reduces, because
+a called to @code{realloc} failed.
+
+@item @code{hash_list_get} [(@code{const this, const KEY_T key, VALUE_T* restrict value}) @arrow{} @code{int}]
+@fnindex @code{hash_list_get}
+Look up a value, with the key @code{key}, in the hash list
+@code{this}. The found value will be stored in @code{*value}.
+This method cannot fail, therefore it cannot return a value
+indicating that it failed. Instead it returns one if the
+entry was found and nought if it was not found.
+
+@item @code{hash_list_put} [(@code{this, KEY_T key, const VALUE_T* restrict value}) @arrow{} @code{int}]
+@fnindex @code{hash_list_put}
+Store the value stored in @code{*value} to the hash list
+@code{this}. The value will be stored with the key @code{key}.
+If a value with this key already exists, that entry will
+be freed and replaced. @code{key} will be stored in the
+hash list, and the caller is not longer responsble for freeing
+it unless the call to this function fails. Zero is returned
+on success, @code{-1} is returned on error.
+
+If however @code{value} is @code{NULL}, the entry with the
+key @code{key} will be removed if it exists. And zero is
+always returned. The caller will be responsible for freeing
+@code{key} in this case.
+
+@item @code{hash_list_remove} [(@code{this, const KEY_T key}) @arrow{} @code{void}]
+@fnindex @code{hash_list_remove}
+Calling this function is equivalent to calling
+@code{hash_list_put} with the last argument being @code{NULL}.
+However, it allows the key to be stored with @code{const} and
+it does not have a return value.
+@end table
+
+Keep in mind that the methods
+@itemize @bullet{}
+@item @code{hash_list_destroy}
+@item @code{hash_list_clone}
+@item @code{hash_list_marshal_size}
+@item @code{hash_list_marshal}
+@item @code{hash_list_unmarshal}
+@end itemize
+also have @code{hash_list} exchanged with whatever
+is in the first argument of the on the call to
+@code{CREATE_HASH_LIST_SUBCLASS}.
+Additionally @code{hash_list_clone} cannot clone
+keys or values that are pointers. So if freeing
+method is set, you need to manually clone keys
+and values after calling @code{hash_list_clone}.
+
+@code{CREATE_HASH_LIST_SUBCLASS} also defines the
+prototypes for four functions the user of the class
+is required to implement. This four functions are
+defined with @code{static inline}. The @code{entry}
+parameter is defined with the type
+@code{hash_list_entry_t*}@footnote{Keep in mind
+that @code{hash_list} is replaced with the value
+of the first argument in @code{CREATE_HASH_LIST_SUBCLASS}}.
+
+@table @asis
+@item @code{hash_list_key_comparer} [(@code{const KEY_T key_a, const KEY_T key_b}) @arrow{} @code{int}]
+@fnindex @code{hash_list_key_comparer}
+Compare two keys, @code{key_a} and @code{key_b}. The
+function shall return zero on inequality and non-zero
+on equality.
+
+@item @code{hash_list_submarshal_size} [(@code{const entry}) @arrow{} @code{size_t}]
+@fnindex @code{hash_list_submarshal_size}
+The function shall return the number of bytes required
+to marshal @code{entry->key} and @code{entry->value}.
+
+@item @code{hash_list_submarshal} [(@code{const entry, char* restrict data}) @arrow{} @code{size_t}]
+@fnindex @code{hash_list_submarshal}
+The function shall marshal @code{entry->key} and
+@code{entry->value} into the buffer @code{data}.
+The function shall then return the number of
+written bytes, that is, the value returned by
+@code{hash_list_submarshal_size}.
+
+@item @code{hash_list_subunmarshal} [(@code{entry, char* restrict data}) @arrow{} @code{size_t}]
+@fnindex @code{hash_list_subunmarshal}
+The function shall unmarshal the key and value
+of an entry stored in the beginning of @code{data}.
+The unmarshaled key and value should be stored
+to @code{entry->key} and @code{entry->value},
+respectively. The function shall then return the
+number of read bytes, that is, the value
+@code{hash_list_submarshal_size} returned when
+the marshal took place, or equivalently, the
+will it would return after the unmarshalling.
+The function shall return zero on error.
+@end table
+
+@file{<libmdsserver/hash-list.h>} also defines a
+macro that is uneffected by @code{CREATE_HASH_LIST_SUBCLASS}.
+
+@table @asis
+@item @code{foreach_hash_list_entry} [(@code{hash_list_t this, size_t i, hash_list_entry_t* entry})]
+This marcro is a warpper for the @code{for}-keyword.
+It iterates over entry element in the hash list @code{this}.
+On each iteration, the entry (used slots) will be stored
+to the variable @code{entry}. The variable @code{i} defined
+as a @code{size_t} must be available for the macro to use
+freely.
+
+@ifset AFOURPAPER_OR_USLETTER_OR_SMALLBOOK_WITH_SMALLFONT
+@example
+void print_hash_list(hash_list_t* table)
+@{
+  hash_list_entry_t* entry;
+  size_t i;
+  foreach_hash_table_entry (*table, i, entry)
+    printf("%zu --> %zu\n", entry->key, entry->value);
+@}
+@end example
+@end ifset
+@ifclear AFOURPAPER_OR_USLETTER_OR_SMALLBOOK_WITH_SMALLFONT
+@example
+void print_hash_list(hash_list_t* table)
+@{
+  hash_list_entry_t* entry;
+  size_t i;
+  foreach_hash_lsit_entry (*table, i, entry)
+    printf("%zu --> %zu\n", entry->key,
+                            entry->value);
+@}
+@end example
+@end ifclear
+
+Note thay the data type for the parameter @code{this}
+is not a pointer.
+@end table
 
 
 
@@ -7517,9 +7820,9 @@ The length of the message's payload. This value will
 be the same as the value of the @code{Length}-header.
 @end table
 
-There are six functions specific to
+There are six methods specific to
 @code{mds_message_t}. The @code{this}-parameter's
-data type for this functions are @code{mds_message_t*}
+data type for this methods are @code{mds_message_t*}
 with the @code{restrict} modifier.
 
 @table @asis
@@ -7532,7 +7835,7 @@ using @code{mds_message_destroy}.
 
 @item @code{mds_message_zero_initialise} [(@code{this}) @arrow{} @code{void}]
 @fnindex @code{mds_message_zero_initialise}
-This function is similar to
+This method is similar to
 @code{mds_message_initialise}, however it cannot fail
 and thus have no return value. The difference it is
 action is that it will not allocate an internal
@@ -7558,13 +7861,13 @@ be recovered from.
 
 @item @code{mds_message_compose_size} [(@code{const this}) @arrow{} @code{size_t}]
 @fnindex @code{mds_message_compose_size}
-This function is to @code{mds_message_compose} as
+This method is to @code{mds_message_compose} as
 @code{mds_message_marshal_size} is to
 @code{mds_message_marshal}.
 
 @item @code{mds_message_compose} [(@code{const this, char* restrict data}) @arrow{} @code{void}]
 @fnindex @code{mds_message_compose}
-This function is similar to
+This method is similar to
 @code{mds_message_marshal}. The only difference is
 that it will not store internal data and instead
 create a message that can be broadcasted in the
@@ -10835,7 +11138,7 @@ It is typically rendered as a thick plus-sign.
 @cpindex Tables, resize
 @cpindex Columns, resize
 @cpindex Resize table columns
-This cursor is used to indicate the the cursor is
+This cursor is used to indicate that the cursor is
 within a region that allows it rat to be used to
 resize a column.
 
@@ -10880,7 +11183,7 @@ horizontally towards it.
 @cpindex Tables, resize
 @cpindex Rows, resize
 @cpindex Resize table rows
-This cursor is used to indicate the the cursor is
+This cursor is used to indicate that the cursor is
 within a region that allows it rat to be used to
 resize a column.
 
@@ -11876,7 +12179,7 @@ own. Any server, or even client, running in this
 display will effectively be running in all of the
 displays connected to the metadisplay.
 
-The idea of the the metadisplay server came from the
+The idea of the metadisplay server came from the
 idea of letting the user have the clipboard shared
 across any number of @emph{selected} display servers.
 Rather than having a clipboard server written
