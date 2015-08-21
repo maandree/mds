@@ -507,7 +507,7 @@ T##_unmarshal(T##_t* restrict this, char* restrict data)\
  */
 #define foreach_hash_list_entry(this, i, entry)	\
   for (i = 0; i < (this).used; i++)		\
-    if (entry = (this).slots, entry->keys != NULL)
+    if (entry = (this).slots, entry->key != NULL)
 
 
 #endif

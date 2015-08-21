@@ -477,10 +477,18 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
  */
 void received_info(int signo)
 {
+  size_t i;
+  colour_list_entry_t* entry;
   (void) signo;
   iprintf("next message ID: %" PRIu32, message_id);
   iprintf("connected: %s", connected ? "yes" : "no");
   iprintf("send buffer size: %zu bytes", send_buffer_size);
+  iprint("DEFINED COLOURS (bytes red green blue name-hash name)");
+  foreach_hash_list_entry (colours, i, entry)
+    iprintf("%i %"PRIu64" %"PRIu64" %"PRIu64" %zu %s",
+	    entry->value.bytes, entry->value.red, entry->value.green,
+	    entry->value.blue, entry->key_hash, entry->key);
+  iprint("END DEFINED COLOURS");
 }
 
 
