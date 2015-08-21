@@ -12248,7 +12248,8 @@ icon is being hovered.
 The background on windows.
 
 @item window-foreground
-The colour on text on windows.
+The colour on text on windows, as well
+as the colour of frames.
 
 @item window-foreground-disabled
 The colour on text, associated with disabled
@@ -12901,20 +12902,56 @@ mode, that is, paritally checked and is being
 hovered and clicked.
 
 @item tabpane-background
+Background overriding @code{window-background}
+inside tabpanes.
+
 @item tabpane-frame
+The colour on tabpane frames.
+
 @item tabgroup-background
+The colour on the background on tab groups.
+
+@item tabgroup-background-hover
+The colour on the background on tab groups, for
+hovered groups.
+
 @item tab-background
+The background colour on tabs.
+
 @item tab-foreground
+The colour on text on tabs.
+
 @item tab-head
+The colour of a the head on tabs.
+
 @item tab-background-active
+The background colour on active tabs.
+
 @item tab-foreground-active
+The colour on text on active tabs.
+
 @item tab-head-active
+The colour of a the head on active tabs.
+
 @item tab-background-hover
+The background colour on hovered tabs.
+
 @item tab-foreground-hover
+The colour on text on hovered tabs.
+
 @item tab-head-hover
+The colour of a the head on hovered tabs.
+
 @item tab-background-active-hover
+The background colour on active and hovered tabs.
+
 @item tab-foreground-active-hover
+The colour on text on active and hovered tabs.
+
 @item tab-head-active-hover
+The colour of a the head on active and
+hovered tabs.
+
 @item slider-background
 @item slider-selected
 @item slider-unselected
