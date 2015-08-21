@@ -12953,53 +12953,306 @@ The colour of a the head on active and
 hovered tabs.
 
 @item slider-background
+The background colour in sliders.
+
 @item slider-selected
+The background colour in sliders, marking
+the area that is selected.
+
 @item slider-unselected
+The background colour in sliders, marking
+the area that is not selected.
+
 @item slider-foreground
+The colour on text over sliders indicating
+the current value.
+
 @item slider-knob
+The colour of the knob used to change the
+value on sliders.
+
+@item slider-aura
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus.
+
 @item slider-stop
+The colour of the stop lines for sliders.
+
 @item slider-background-hover
+The background colour in sliders, under the
+condition that the slider is being hovered.
+
 @item slider-selected-hover
+The background colour in sliders, marking
+the area that is selected, under the condition
+that the slider is being hovered.
+
 @item slider-unselected-hover
+The background colour in sliders, marking
+the area that is not selected, under the
+condition that the slider is being hovered.
+
 @item slider-foreground-hover
+The colour on text over sliders indicating
+the current value, under the condition that
+the slider is being hovered.
+
 @item slider-knob-hover
+The colour of the knob used to change the value
+on sliders, under the condition that the slider
+is being hovered.
+
+@item slider-aura-hover
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus, under the condition
+that the slider is being hovered.
+
 @item slider-stop-hover
+The colour of the stop lines for sliders,
+under the condition that the slider is being
+hovered.
+
 @item slider-background-hover-selected
+The background colour in sliders, under the
+condition that the slider is being hovered
+on the side of the slider that marks the
+selection.
+
 @item slider-selected-hover-selected
+The background colour in sliders, marking
+the area that is selected, under the condition
+that the slider is being hovered on the side
+of the slider that marks the selection.
+
 @item slider-unselected-hover-selected
+The background colour in sliders, marking
+the area that is not selected, under the
+condition that the slider is being hovered
+on the side of the slider that marks the
+selection.
+
 @item slider-foreground-hover-selected
+The colour on text over sliders indicating
+the current value, under the condition that
+the slider is being hovered on the side of
+the slider that marks the selection.
+
 @item slider-knob-hover-selected
+The colour of the knob used to change the value
+on sliders, under the condition that the slider
+is being hovered on the side of the slider that
+marks the selection.
+
+@item slider-aura-hover-selected
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus, under the condition
+that the slider is being hovered on the side
+of the slider that marks the selection.
+
 @item slider-stop-hover-selected
+The colour of the stop lines for sliders,
+under the condition that the slider is
+being hovered on the side of the slider
+that marks the selection.
+
 @item slider-background-hover-unselected
+The background colour in sliders, under the
+condition that the slider is being hovered
+on the side of the slider that does not mark
+the selection.
+
 @item slider-selected-hover-unselected
+The background colour in sliders, marking
+the area that is selected, under the condition
+that the slider is being hovered on the side
+of the slider that does not mark the selection.
+
 @item slider-unselected-hover-unselected
+The background colour in sliders, marking
+the area that is not selected, under the
+condition that the slider is being hovered
+on the side of the slider that does not
+mark the selection.
+
 @item slider-foreground-hover-unselected
+The colour on text over sliders indicating
+the current value, under the condition that
+the slider is being hovered on the side of
+the slider that does not mark the selection.
+
 @item slider-knob-hover-unselected
+The colour of the knob used to change the value
+on sliders, under the condition that the slider
+is being hovered on the side of the slider that
+does not mark the selection.
+
+@item slider-aura-hover-unselected
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus, under the condition
+that the slider is being hovered on the side
+of the slider that does not mark the selection.
+
 @item slider-stop-hover-unselected
+The colour of the stop lines for sliders,
+under the condition that the slider is being
+hovered on the side of the slider that does
+not mark the selection.
+
 @item slider-background-hold
+The background colour in sliders, under the
+condition that the slider is being pressed.
+
 @item slider-selected-hold
+The background colour in sliders, marking
+the area that is selected, under the condition
+that the slider is being pressed.
+
 @item slider-unselected-hold
+The background colour in sliders, marking
+the area that is not selected, under the
+condition that the slider is being pressed.
+
 @item slider-foreground-hold
+The colour on text over sliders indicating
+the current value, under the condition that
+the slider is being pressed.
+
 @item slider-knob-hold
+The colour of the knob used to change the
+value on sliders, under the condition that
+the slider is being pressed.
+
+@item slider-aura-hold
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus, under the condition
+that the slider is being pressed.
+
 @item slider-stop-hold
+The colour of the stop lines for sliders,
+under the condition that the slider is being
+pressed.
+
 @item slider-background-hold-selected
+The background colour in sliders, under the
+condition that the slider is being pressed
+on the side of the slider that marks the
+selection.
+
 @item slider-selected-hold-selected
+The background colour in sliders, marking
+the area that is selected, under the condition
+that the slider is being pressed on the side
+of the slider that marks the selection.
+
 @item slider-unselected-hold-selected
+The background colour in sliders, marking
+the area that is not selected, under the
+condition that the slider is being pressed
+on the side of the slider that marks the
+selection.
+
 @item slider-foreground-hold-selected
+The colour on text over sliders indicating
+the current value, under the condition that
+the slider is being pressed on the side of
+the slider that marks the selection.
+
 @item slider-knob-hold-selected
+The colour of the knob used to change the
+value on sliders, under the condition that
+the slider is being pressed on the side of
+the slider that marks the selection.
+
+@item slider-aura-hold-selected
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus, under the condition
+that the slider is being pressed on the side
+of the slider that marks the selection.
+
 @item slider-stop-hold-selected
+The colour of the stop lines for sliders,
+under the condition that the slider is being
+pressed on the side of the slider that marks
+the selection.
+
 @item slider-background-hold-unselected
+The background colour in sliders, under the
+condition that the slider is being pressed
+on the side of the slider that does not mark
+the selection.
+
 @item slider-selected-hold-unselected
+The background colour in sliders, marking
+the area that is selected, under the condition
+that the slider is being pressed on the side
+of the slider that does not mark the selection.
+
 @item slider-unselected-hold-unselected
+The background colour in sliders, marking
+the area that is not selected, under the
+condition that the slider is being pressed
+on the side of the slider that does not
+mark the selection.
+
 @item slider-foreground-hold-unselected
+The colour on text over sliders indicating
+the current value, under the condition that
+the slider is being pressed on the side of
+the slider that does not mark the selection.
+
 @item slider-knob-hold-unselected
+The colour of the knob used to change the
+value on sliders, under the condition that the
+slider is being pressed on the side of the
+slider that does not mark the selection.
+
+@item slider-aura-hold-unselected
+The colour of the aura around knob, used to
+change the value on sliders, marking the
+slider as having focus, under the condition
+that the slider is being pressed on the side
+of the slider that does not mark the selection.
+
 @item slider-stop-hold-unselected
+The colour of the stop lines for sliders,
+under the condition that the slider is being
+pressed on the side of the slider that does
+not mark the selection.
+
 @item slider-background-disabled
+The background colour in disabled sliders.
+
 @item slider-selected-disabled
+The background colour in disabled sliders,
+marking the area that is selected.
+
 @item slider-unselected-disabled
+The background colour in disabled sliders,
+marking the area that is not selected.
+
 @item slider-foreground-disabled
+The colour on text over disabled sliders
+indicating the current value.
+
 @item slider-knob-disabled
+The colour of the knob used to change the
+value on disabled sliders.
+
+@item slider-aura-disabled
+The colour of the aura around knob, used to
+change the value on disabled sliders,
+marking the slider as having focus.
+
 @item slider-stop-disabled
+The colour of the stop lines for disabled
+sliders.
+
 @item scroll-background
 @item scroll-foreground
 @item scroll-knob
