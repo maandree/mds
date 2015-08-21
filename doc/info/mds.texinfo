@@ -12225,25 +12225,187 @@ the default text colour. This should be noted,
 that it is not recommened for or programs.
 
 @item desktop-background
+The default background colour on the desktop.
+
 @item desktop-foreground
+The colour for text on icons and gadgets
+on the desktop.
+
 @item desktop-selection
+The background for text on icons that
+have been selected on the desktop.
+
+@item desktop-foreground-hover
+The colour for text on icons on the desktop,
+when the icon is being hovered.
+
+@item desktop-selection-hover
+The background for text on icons that
+have been selected on the desktop, when the
+icon is being hovered.
+
 @item window-background
+The background on windows.
+
 @item window-foreground
+The colour on text on windows.
+
 @item window-foreground-disabled
+The colour on text, associated with disabled
+components, on windows.
+
 @item window-cursor
+The colour on text cursors for selectable
+text on windows.
+
 @item window-selection
+The colour on text-selection highlight for
+selectable text on windows.
+
 @item link
+The colour on text for unvisited links.
+
 @item link-active
+The colour on text for links that are currently
+being visited.
+
 @item link-visited
+The colour on text for visited links.
+
 @item link-broken
+The colour on text for broken links.
+
+@item link-background
+The background colour for unvisited links.
+
+@item link-active-background
+The background colour for links that are
+currently being visited.
+
+@item link-visited-background
+The background colour for visited links.
+
+@item link-broken-background
+The background colour for broken links.
+
+@item link-selection
+The colour on text highlight for selected
+text on unvisited links.
+
+@item link-active-selection
+The colour on text highlight for selected
+text on links that are currently being visited.
+
+@item link-visited-selection
+The colour on text highlight for selected
+text on visited links.
+
+@item link-broken-selection
+The colour on text highlight for selected
+text on broken links.
+
 @item link-hover
+The colour on text for unvisited links,
+when the link is being hovered.
+
 @item link-active-hover
+The colour on text for links that are currently
+being visited, when the link is being hovered.
+
 @item link-visited-hover
+The colour on text for visited links, when the
+link is being hovered.
+
 @item link-broken-hover
+The colour on text for broken links, when the
+link is being hovered.
+
+@item link-background-hover
+The background colour for unvisited links,
+when the link is being hovered.
+
+@item link-active-background-hover
+The background colour for links that are
+currently being visited, when the link is
+being hovered.
+
+@item link-visited-background-hover
+The background colour for visited links,
+when the link is being hovered.
+
+@item link-broken-background-hover
+The background colour for broken links,
+when the link is being hovered.
+
+@item link-selection-hover
+The colour on text highlight for selected
+text on unvisited links, when the link is
+being hovered.
+
+@item link-active-selection-hover
+The colour on text highlight for selected
+text on links that are currently being visited,
+when the link is being hovered.
+
+@item link-visited-selection-hover
+The colour on text highlight for selected
+text on visited links, when the link is being
+hovered.
+
+@item link-broken-selection-hover
+The colour on text highlight for selected
+text on broken links, when the link is being
+hovered.
+
 @item link-disabled
+The colour on text for unvisited links, when
+the link is disbled.
+
 @item link-active-disabled
+The colour on text for links that are currently
+being visited, when the link is disbled.
+
 @item link-visited-disabled
+The colour on text for visited links, when
+the link is disbled.
+
 @item link-broken-disabled
+The colour on text for broken links, when
+the link is disbled.
+
+@item link-background-disabled
+The background colour for unvisited links,
+when the link is disbled.
+
+@item link-active-background-disabled
+The background colour for links that are
+currently being visited, when the link is disbled.
+
+@item link-visited-background-disabled
+The background colour for visited links, when
+the link is disbled.
+
+@item link-broken-background-disabled
+The background colour for broken links, when
+the link is disbled.
+
+@item link-selection-disabled
+The colour on text highlight for selected
+text on unvisited links, when the link is disbled.
+
+@item link-active-selection-disabled
+The colour on text highlight for selected
+text on links that are currently being visited,
+when the link is disbled.
+
+@item link-visited-selection-disabled
+The colour on text highlight for selected
+text on visited links, when the link is disbled.
+
+@item link-broken-selection-disabled
+The colour on text highlight for selected
+text on broken links, when the link is disbled.
+
 @item button-background
 @item button-foreground
 @item button-aura
@@ -12432,6 +12594,9 @@ that it is not recommened for or programs.
 @item menu-tear-disabled-hover
 @item menu-background-opened
 @item menu-foreground-opened
+@item toolbar-background
+@item toolbar-foreground
+@item toolbar-delimiter
 @item tooltip-background
 @item tooltip-foreground
 @item notification-background
