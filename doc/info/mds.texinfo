@@ -12523,26 +12523,111 @@ condition that the button is toggled and is being
 clicked.
 
 @item input-background
+The background colour on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables.
+
 @item input-foreground
+The colour on text on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables.
+
 @item input-selection
+The colour on text highlight for selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables.
+
 @item input-mark
+The colour on text highlight for secondarily
+selected text on text-input components, such as
+comboboxes and text-fields, as well as lists and
+tables.
+
 @item input-cursor
+The colour on the text cursor on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables.
+
 @item input-aura
-@item input-highlight
+The colour on the aura around text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, to mark that they have focus.
+
 @item input-background-hover
+The background colour on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+component is being hovered.
+
 @item input-foreground-hover
+The colour on text on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+component is being hovered.
+
 @item input-selection-hover
+The colour on text highlight for selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under
+the condition that the component is being hovered.
+
 @item input-mark-hover
+The colour on text highlight for secondarily
+selected text on text-input components, such as
+comboboxes and text-fields, as well as lists and
+tables, under the condition that the component
+is being hovered.
+
 @item input-cursor-hover
+The colour on the text cursor on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the component is being hovered.
+
 @item input-aura-hover
-@item input-highlight-hover
+The colour on the aura around text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, to mark that they have focus,
+under the condition that the component is being
+hovered.
+
 @item input-background-disabled
+The background colour on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+component is disabled.
+
 @item input-foreground-disabled
+The colour on text on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+component is disabled.
+
 @item input-selection-disabled
+The colour on text highlight for selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under
+the condition that the component is disabled.
+
 @item input-mark-disabled
+The colour on text highlight for secondarily
+selected text on text-input components, such as
+comboboxes and text-fields, as well as lists and
+tables, under the condition that the component
+is disabled.
+
 @item input-cursor-disabled
+The colour on the text cursor on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the component is disabled.
+
 @item input-aura-disabled
-@item input-highlight-disabled
+The colour on the aura around text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, to mark that they have focus,
+under the condition that the component is disabled.
+
 @item option-background
 @item option-foreground
 @item option-aura
@@ -12581,7 +12666,7 @@ clicked.
 @item option-aura-intermediate-change
 @item tabpane-background
 @item tabpane-frame
-@item tabground-background
+@item tabgroup-background
 @item tab-background
 @item tab-foreground
 @item tab-head
@@ -12688,6 +12773,7 @@ clicked.
 @item toolbar-background
 @item toolbar-foreground
 @item toolbar-delimiter
+@item toolbar-handle
 @item tooltip-background
 @item tooltip-foreground
 @item notification-background
