@@ -12629,41 +12629,194 @@ lists and tables, to mark that they have focus,
 under the condition that the component is disabled.
 
 @item option-background
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is not checked.
+
 @item option-foreground
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is not checked.
+
 @item option-aura
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is not checked.
+
 @item option-background-active
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is checked.
+
 @item option-foreground-active
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is checked.
+
 @item option-aura-active
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is checked.
+
 @item option-background-intermediate
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is in intermediate mode, that is, paritally checked.
+
 @item option-foreground-intermediate
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is in intermediate
+mode, that is, paritally checked.
+
 @item option-aura-intermediate
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is in intermediate
+mode, that is, paritally checked.
+
 @item option-background-hover
+The background colour for the box on hovered
+checkboxes and radioboxes, under the condition
+that the box is not checked.
+
 @item option-foreground-hover
+The colour on text for hovered checkboxes and
+radioboxes, under the condition that the box is
+not checked.
+
 @item option-aura-hover
+The colour of the aura around hovered checkboxes
+and radioboxes to mark them as having focus,
+under the condition that the box is not checked.
+
 @item option-background-active-hover
+The background colour for the box on hovered
+checkboxes and radioboxes, under the condition
+that the box is checked.
+
 @item option-foreground-active-hover
+The colour on text for hovered checkboxes and
+radioboxes, under the condition that the box is
+checked.
+
 @item option-aura-active-hover
+The colour of the aura around hovered checkboxes
+and radioboxes to mark them as having focus, under
+the condition that the box is checked.
+
 @item option-background-intermediate-hover
+The background colour for the box on hovered
+checkboxes and radioboxes, under the condition
+that the box is in intermediate mode, that is,
+paritally checked.
+
 @item option-foreground-intermediate-hover
+The colour on text for hovered checkboxes and
+radioboxes, under the condition that the box is
+in intermediate mode, that is, paritally checked.
+
 @item option-aura-intermediate-hover
+The colour of the aura around hovered checkboxes
+and radioboxes to mark them as having focus, under
+the condition that the box is in intermediate
+mode, that is, paritally checked.
+
 @item option-background-disabled
+The background colour for the box on disabled
+checkboxes and radioboxes, under the condition
+that the box is not checked.
+
 @item option-foreground-disabled
+The colour on text for disabled checkboxes and
+radioboxes, under the condition that the box is
+not checked.
+
 @item option-aura-disabled
+The colour of the aura around disabled checkboxes
+and radioboxes to mark them as having focus,
+under the condition that the box is not checked.
+
 @item option-background-active-disabled
+The background colour for the box on disabled
+checkboxes and radioboxes, under the condition
+that the box is checked.
+
 @item option-foreground-active-disabled
+The colour on text for disabled checkboxes and
+radioboxes, under the condition that the box is
+checked.
+
 @item option-aura-active-disabled
+The colour of the aura around disabled checkboxes
+and radioboxes to mark them as having focus, under
+the condition that the box is checked.
+
 @item option-background-intermediate-disabled
+The background colour for the box on disabled
+checkboxes and radioboxes, under the condition
+that the box is in intermediate mode, that is,
+paritally checked.
+
 @item option-foreground-intermediate-disabled
+The colour on text for disabled checkboxes and
+radioboxes, under the condition that the box is
+in intermediate mode, that is, paritally checked.
+
 @item option-aura-intermediate-disabled
+The colour of the aura around disabled checkboxes
+and radioboxes to mark them as having focus, under
+the condition that the box is in intermediate
+mode, that is, paritally checked.
+
 @item option-background-change
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is not checked but is being clicked.
+
 @item option-foreground-change
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is not checked
+but is being clicked.
+
 @item option-aura-change
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is not checked but
+is being clicked.
+
 @item option-background-active-change
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is checked and is being clicked.
+
 @item option-foreground-active-change
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is checked and
+is being clicked.
+
 @item option-aura-active-change
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is checked and is
+being clicked.
+
 @item option-background-intermediate-change
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is in intermediate mode, that is, paritally checked
+and is being clicked.
+
 @item option-foreground-intermediate-change
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is in intermediate
+mode, that is, paritally checked, and is being
+clicked.
+
 @item option-aura-intermediate-change
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is in intermediate
+mode, that is, paritally checked and is being
+clicked.
+
 @item tabpane-background
 @item tabpane-frame
 @item tabgroup-background
