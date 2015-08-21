@@ -13445,18 +13445,51 @@ The colour on text on menus and menu-items
 that are opened, that is submenus are visible.
 
 @item toolbar-background
-@item toolbar-foreground
-@item toolbar-delimiter
-@item toolbar-handle
-@item tooltip-background
-@item tooltip-foreground
-@item notification-background
-@item notification-foreground
-@item notification-low
-@item notification-normal
-@item notification-high
-@item notification-critical
+The background colour on toolbars.
 
+@item toolbar-foreground
+The colour on text on toolbars.
+
+@item toolbar-delimiter
+The colour on group-separation lines in
+toolbars.
+
+@item toolbar-handle
+The colour on the handle used to move
+toolbars.
+
+@item tooltip-background
+The background colour on tooltips.
+
+@item tooltip-foreground
+The colour on text on tooltips.
+
+@item notification-background
+The background on notification.
+
+@item notification-foreground
+The colour on text on notification.
+
+@item notification-low
+Colour on notifications to indicate
+that they are of low priority.
+This colour is usually green or blue.
+
+@item notification-normal
+Colour on notifications to indicate
+that they are of normal priority.
+This colour is usually blue or the
+same as @code{notification-background}.
+
+@item notification-high
+Colour on notifications to indicate
+that they are of high priority.
+This colour is usually orange.
+
+@item notification-critical
+Colour on notifications to indicate
+that they are of critical priority.
+This colour is usually red.
 @end table
 
 
