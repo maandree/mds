@@ -12522,6 +12522,38 @@ controls to mark that they have focus, under that
 condition that the button is toggled and is being
 clicked.
 
+@item button-background-hover-change
+The background colour on buttons and button-like
+controls, under the condition that the button is
+being clicked.
+
+@item button-foreground-hover-change
+The colour on text on buttons and button-like
+controls, under the condition that the button is
+being hovered and clicked.
+
+@item button-aura-hover-change
+The colour on aura around buttons and button-like
+controls to mark that they have focus, under the
+condition that the button is being hovered and
+clicked.
+
+@item button-background-toggled-hover-change
+The background colour on buttons and button-like
+controls, under that condition that the button
+is toggled and is being hovered and clicked.
+
+@item button-foreground-toggled-hover-change
+The colour on text on buttons and button-like
+controls, under that condition that the button
+is toggled and is being hovered and clicked.
+
+@item button-aura-toggled-hover-change
+The colour on aura around buttons and button-like
+controls to mark that they have focus, under that
+condition that the button is toggled and is being
+hovered and clicked.
+
 @item input-background
 The background colour on text-input components,
 such as comboboxes and text-fields, as well as
@@ -12816,6 +12848,57 @@ radioboxes to mark them as having focus, under
 the condition that the box is in intermediate
 mode, that is, paritally checked and is being
 clicked.
+
+@item option-background-hover-change
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is not checked but is being hovered and clicked.
+
+@item option-foreground-hover-change
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is not checked
+but is being hovered and clicked.
+
+@item option-aura-hover-change
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is not checked but
+is being hovered and clicked.
+
+@item option-background-active-hover-change
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is checked and is being hovered and clicked.
+
+@item option-foreground-active-hover-change
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is checked and
+is being hovered and clicked.
+
+@item option-aura-active-hover-change
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is checked and is
+being hovered and clicked.
+
+@item option-background-intermediate-hover-change
+The background colour for the box on checkboxes
+and radioboxes, under the condition that the box
+is in intermediate mode, that is, paritally checked
+and is being hovered and clicked.
+
+@item option-foreground-intermediate-hover-change
+The colour on text for checkboxes and radioboxes,
+under the condition that the box is in intermediate
+mode, that is, paritally checked, and is being
+hovered and clicked.
+
+@item option-aura-intermediate-hover-change
+The colour of the aura around checkboxes and
+radioboxes to mark them as having focus, under
+the condition that the box is in intermediate
+mode, that is, paritally checked and is being
+hovered and clicked.
 
 @item tabpane-background
 @item tabpane-frame
