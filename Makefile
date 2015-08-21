@@ -9,7 +9,7 @@ include mk/config.mk
 
 
 # Splits of the info manual.
-INFOPARTS = 1 2
+INFOPARTS = 1 2 3
 
 # Object files for the libary.
 LIBOBJ = linked-list client-list hash-table fd-table mds-message util

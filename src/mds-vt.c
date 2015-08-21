@@ -166,7 +166,7 @@ static int write_vt_file(void)
  fail:
   saved_errno = errno;
   if (fd >= 0)
-    close(fd);
+    xclose(fd);
   return errno = saved_errno, -1;
 }
 
@@ -830,7 +830,7 @@ int vt_open(int vt, struct stat* restrict old_stat)
  fail:
   saved_errno = errno;
   if (fd >= 0)
-    close(fd);
+    xclose(fd);
   return errno = saved_errno, -1;
 }
 
@@ -848,7 +848,7 @@ void vt_close(int fd, struct stat* restrict old_stat)
       xperror(*argv);
       eprint("while resetting TTY ownership.");
     }
-  close(fd);
+  xclose(fd);
 }
 
 

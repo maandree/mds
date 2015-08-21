@@ -187,7 +187,7 @@ int __attribute__((weak)) connect_to_display(void)
  fail:
   xperror(*argv);
   if (socket_fd >= 0)
-    close(socket_fd);
+    xclose(socket_fd);
   return 1;
 }
 
@@ -422,7 +422,7 @@ static int base_unmarshal(void)
   fail_if ((state_buf = state_buf_ = full_read(reexec_fd, NULL)) == NULL);
   
   /* Release resources. */
-  close(reexec_fd);
+  xclose(reexec_fd);
   shm_unlink(shm_path);
   
   
@@ -509,7 +509,7 @@ static void perform_reexec(void)
   reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
   fail_if (reexec_fd < 0);
   fail_if (base_marshal(reexec_fd) < 0);
-  close(reexec_fd);
+  xclose(reexec_fd);
   reexec_fd = -1;
   
   /* Re-exec the server. */
@@ -519,7 +519,7 @@ static void perform_reexec(void)
   xperror(*argv);
   if (reexec_fd >= 0)
     {
-      close(reexec_fd);
+      xclose(reexec_fd);
       shm_unlink(shm_path);
     }
 }
@@ -597,14 +597,14 @@ int main(int argc_, char** argv_)
       fail_if (1);
     }
   
-  close(socket_fd);
+  xclose(socket_fd);
   return 0;
   
   
  fail:
   xperror(*argv);
   if (socket_fd >= 0)
-    close(socket_fd);
+    xclose(socket_fd);
   return 1;
 }
 

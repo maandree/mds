@@ -140,7 +140,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
     fail_if (xxrealloc(old, content, buf_ptr, char));
   
   /* Close file decriptor for the file. */
-  close(fd);
+  xclose(fd);
   
   *size = buf_ptr;
   return content;
@@ -150,7 +150,7 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
   free(old);
   free(content);
   if (fd >= 0)
-    close(fd);
+    xclose(fd);
   return NULL;
 }
 

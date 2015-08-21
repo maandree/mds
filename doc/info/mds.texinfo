@@ -6183,6 +6183,26 @@ Stores the time of an unspecified monotonic clock
 into @code{time_slot}. Returns zero on and only on
 success.
 
+@item @code{xclose} [(@code{int fd}) @arrow{} @code{void}]
+@fnindex @code{xclose}
+@cpindex Clean up
+Wrapper for the @code{close} function. This wrapper
+will retry if the call is interrupted by a signal.
+It will however not return value, but you can detect
+if an error have occured by inspecting @code{errno},
+it is guaranteed to be zero on success and otherwise
+indicate the error that occurred.
+
+@item @code{xfclose} [(@code{FILE* f}) @arrow{} @code{void}]
+@fnindex @code{xfclose}
+@cpindex Clean up
+Wrapper for the @code{fclose} function. This wrapper
+will retry if the call is interrupted by a signal.
+It will however not return value, but you can detect
+if an error have occured by inspecting @code{errno},
+it is guaranteed to be zero on success and otherwise
+indicate the error that occurred.
+
 @item @code{close_files} [(@code{condition}) @arrow{} @code{void}]
 @fnindex @code{close_files}
 @cpindex File descriptions, close all
@@ -6430,6 +6450,16 @@ integer to an @code{intmax_t}.
 Parse a human readable @code{const char*} 10-radix
 integer to an @code{uintmax_t}.
 @end table
+
+The header file @file{<libmdsserver/macros.h>}, also
+define the macro @code{TEMP_FAILURE_RETRY} if missing,
+however without a return value but will clear @code{errno}
+if no error occurs@footnote{@code{glibc} will not clear
+@code{errno} on success, however this behaviour is defined
+@code{MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY}
+will be defined.}, and creates the alias
+@code{CLOCK_MONOTONIC_RAW} for @code{CLOCK_MONOTONIC}
+unless @code{CLOCK_MONOTONIC_RAW} is already defined.
 
 
 

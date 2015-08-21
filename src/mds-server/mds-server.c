@@ -330,7 +330,7 @@ void* slave_loop(void* data)
   
  done:
   /* Close socket and free resources. */
-  close(slave_fd);
+  xclose(slave_fd);
   free(msgbuf);
   if (information != NULL)
     {

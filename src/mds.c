@@ -139,11 +139,11 @@ int main(int argc_, char** argv_)
 	      continue;
 	    }
 	  r = is_pid_file_reusable(f);
-	  fclose(f);
+	  xfclose(f);
 	  if (r == 0)
 	    continue;
 	}
-      close(fd);
+      xclose(fd);
       break;
     }
   exit_if (display == DISPLAY_MAX,
@@ -155,11 +155,11 @@ int main(int argc_, char** argv_)
   xsnprintf(piddata, "%u\n", getpid());
   if (fwrite(piddata, 1, strlen(piddata), f) < strlen(piddata))
     {
-      fclose(f);
+      xfclose(f);
       fail_if (1);
     }
   fflush(f);
-  fclose(f);
+  xfclose(f);
   if (chmod(pathname, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) < 0)
     xperror(*argv);
   
@@ -202,7 +202,7 @@ int main(int argc_, char** argv_)
   if (fd != -1)
     {
       shutdown(fd, SHUT_RDWR);
-      close(fd);
+      xclose(fd);
       unlink(pathname);
     }
   

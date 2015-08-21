@@ -1413,7 +1413,7 @@ int open_leds(void)
   fail_if ((ledfd = open(SPARC_KBD, O_RDONLY)) < 0);
   if (ioctl(ledfd, GET_LED, &saved_leds) < 0)
     {
-      close(ledfd);
+      xclose(ledfd);
       fail_if (1);
     }
   return 0;
@@ -1434,7 +1434,7 @@ void close_leds(void)
   if (ioctl(ledfd, SET_LED, saved_leds) < 0)
     xperror(*argv);
 #ifdef __sparc__
-  close(ledfd);
+  xclose(ledfd);
 #endif
 }
 

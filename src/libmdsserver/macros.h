@@ -25,12 +25,13 @@
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
+#include <unistd.h>
+#include <time.h>
+#include <stddef.h>
 
 /*
-#include <unistd.h>
 #include <pthread.h>
 #include <string.h>
-#include <time.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -42,7 +43,25 @@
 
 /* CLOCK_MONOTONIC_RAW is a Linux-specific bug-fix */
 #ifndef CLOCK_MONOTONIC_RAW
- #define CLOCK_MONOTONIC_RAW  CLOCK_MONOTONIC
+# define CLOCK_MONOTONIC_RAW  CLOCK_MONOTONIC
+#endif
+
+/* Define TEMP_FAILURE_RETRY if not defined, however
+ * this version does not return a value, it will hoever
+ * clear `errno` if no error occurs. */
+#ifndef TEMP_FAILURE_RETRY
+# define TEMP_FAILURE_RETRY(expression)			\
+  do							\
+    {							\
+      ssize_t __result;					\
+      do						\
+	__result = (ssize_t)(expression);		\
+      while ((__result < 0) && (errno == EINTR));	\
+      if (__result >= 0)				\
+	errno = 0;					\
+    }							\
+  while (0)
+# define MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
 #endif
 
 
@@ -322,10 +341,40 @@
  * monotonic time, the exact clock ID is not specified
  * 
  * @param   time_slot:struct timespec*  Pointer to the variable in which to store the time
- * @return  :int                        Zero on sucess, -1 on error
+ * @return  :int                        Zero on success, -1 on error
  */
 #define monotone(time_slot)  \
   clock_gettime(CLOCK_MONOTONIC_RAW, time_slot)
+
+
+/**
+ * Wrapper for `close` that will retry if it gets
+ * interrupted
+ * 
+ * @param  fd:int  The file descriptor
+ */
+#ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
+# define xclose(fd)  \
+  TEMP_FAILURE_RETRY(close(fd))
+#else
+# define xclose(fd)  \
+  (TEMP_FAILURE_RETRY(close(fd)) < 0 ? 0 : (errno = 0))
+#endif
+
+
+/**
+ * Wrapper for `fclose` that will retry if it gets
+ * interrupted
+ * 
+ * @param  f:FILE*  The stream
+ */
+#ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
+# define xfclose(f)  \
+  TEMP_FAILURE_RETRY(fclose(f))
+#else
+# define xfclose(f)  \
+  (TEMP_FAILURE_RETRY(fclose(f)) < 0 ? 0 : (errno = 0))
+#endif
 
 
 /**
@@ -347,7 +396,7 @@
 	    {											\
 	      int fd = atoi(file->d_name);							\
 	      if (condition)									\
-		close(fd);									\
+		xclose(fd);									\
 	    }											\
 												\
       closedir(dir);										\
