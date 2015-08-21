@@ -12407,30 +12407,121 @@ The colour on text highlight for selected
 text on broken links, when the link is disbled.
 
 @item button-background
+The background colour on buttons and button-like
+controls.
+
 @item button-foreground
+The colour on text on buttons and button-like
+controls.
+
 @item button-aura
-@item button-background-hover
-@item button-foreground-hover
-@item button-aura-hover
-@item button-background-disabled
-@item button-foreground-disabled
-@item button-aura-disabled
+The colour on aura around buttons and button-like
+controls to mark that they have focus.
+
 @item button-background-toggled
+The background colour on buttons and button-like
+controls, under that condition that the button
+is toggled.
+
 @item button-foreground-toggled
+The colour on text on buttons and button-like
+controls, under that condition that the button
+is toggled.
+
 @item button-aura-toggled
+The colour on aura around buttons and button-like
+controls to mark that they have focus, under that
+condition that the button is toggled.
+
+@item button-background-hover
+The background colour on buttons and button-like
+controls, when the button is being hovered.
+
+@item button-foreground-hover
+The colour on text on buttons and button-like
+controls, when the button is being hovered.
+
+@item button-aura-hover
+The colour on aura around buttons and button-like
+controls to mark that they have focus, when the
+button is being hovered.
+
 @item button-background-toggled-hover
+The background colour on buttons and button-like
+controls, when the button is being hovered, under
+that condition that the button is toggled.
+
 @item button-foreground-toggled-hover
+The colour on text on buttons and button-like
+controls, when the button is being hovered, under
+that condition that the button is toggled.
+
 @item button-aura-toggled-hover
+The colour on aura around buttons and button-like
+controls to mark that they have focus, when the
+button is being hovered, under that condition that
+the button is toggled.
+
+@item button-background-disabled
+The background colour on disabled buttons and
+button-like controls.
+
+@item button-foreground-disabled
+The colour on text on disabled buttons and
+button-like controls.
+
+@item button-aura-disabled
+The colour on aura around disabled buttons
+and button-like controls to mark that they
+have focus.
+
 @item button-background-toggled-disabled
+The background colour on disabled buttons and
+button-like controls, under that condition that
+the button is toggled.
+
 @item button-foreground-toggled-disabled
+The colour on text on disabled buttons and
+button-like controls, under that condition that
+the button is toggled.
+
 @item button-aura-toggled-disabled
+The colour on aura around disabled buttons and
+button-like controls to mark that they have
+focus, under that condition that the button is
+toggled.
+
 @item button-background-change
+The background colour on buttons and button-like
+controls, under the condition that the button is
+being clicked.
+
 @item button-foreground-change
+The colour on text on buttons and button-like
+controls, under the condition that the button is
+being clicked.
+
 @item button-aura-change
-@item button-aura-change-disabled
-@item button-background-change-toggled
-@item button-foreground-change-toggled
-@item button-aura-change-toggled
+The colour on aura around buttons and button-like
+controls to mark that they have focus, under the
+condition that the button is being clicked.
+
+@item button-background-toggled-change
+The background colour on buttons and button-like
+controls, under that condition that the button
+is toggled and is being clicked.
+
+@item button-foreground-toggled-change
+The colour on text on buttons and button-like
+controls, under that condition that the button
+is toggled and is being clicked.
+
+@item button-aura-toggled-change
+The colour on aura around buttons and button-like
+controls to mark that they have focus, under that
+condition that the button is toggled and is being
+clicked.
+
 @item input-background
 @item input-foreground
 @item input-selection
