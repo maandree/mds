@@ -12359,52 +12359,52 @@ hovered.
 
 @item link-disabled
 The colour on text for unvisited links, when
-the link is disbled.
+the link is disabled.
 
 @item link-active-disabled
 The colour on text for links that are currently
-being visited, when the link is disbled.
+being visited, when the link is disabled.
 
 @item link-visited-disabled
 The colour on text for visited links, when
-the link is disbled.
+the link is disabled.
 
 @item link-broken-disabled
 The colour on text for broken links, when
-the link is disbled.
+the link is disabled.
 
 @item link-background-disabled
 The background colour for unvisited links,
-when the link is disbled.
+when the link is disabled.
 
 @item link-active-background-disabled
 The background colour for links that are
-currently being visited, when the link is disbled.
+currently being visited, when the link is disabled.
 
 @item link-visited-background-disabled
 The background colour for visited links, when
-the link is disbled.
+the link is disabled.
 
 @item link-broken-background-disabled
 The background colour for broken links, when
-the link is disbled.
+the link is disabled.
 
 @item link-selection-disabled
 The colour on text highlight for selected
-text on unvisited links, when the link is disbled.
+text on unvisited links, when the link is disabled.
 
 @item link-active-selection-disabled
 The colour on text highlight for selected
 text on links that are currently being visited,
-when the link is disbled.
+when the link is disabled.
 
 @item link-visited-selection-disabled
 The colour on text highlight for selected
-text on visited links, when the link is disbled.
+text on visited links, when the link is disabled.
 
 @item link-broken-selection-disabled
 The colour on text highlight for selected
-text on broken links, when the link is disbled.
+text on broken links, when the link is disabled.
 
 @item button-background
 The background colour on buttons and button-like
