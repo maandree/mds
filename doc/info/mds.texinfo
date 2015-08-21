@@ -13867,7 +13867,7 @@ footprint than its full-fledged counterparts.
 @cpindex Macroserver architecture
 @cpindex Architecture, macroserver
 @cpindex Macrodisplay servers
-Description: The display server is implmeneted with
+Description: The display server is implemeneted with
 the microserver architecture except some components
 are built into the master server for performance or
 security reasons.
