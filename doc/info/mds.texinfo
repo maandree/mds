@@ -13874,15 +13874,18 @@ security reasons.
 
 @noindent
 Hybrid display server could arguably be called
-milli-display servers to emphasis that they are
-small, but not as small as micro-display servers, are
+milli-display servers@footnote{Playing of the
+International System of Units and its illogical
+prefix names.} to emphasis that they are small,
+but not as small as micro-display servers, are
 much more closely related to micro-display servers
 than monolithic display servers, and, in constrast
 with OS kernels, have a proper distinction from
 monolithic systems and microsystems. @footnote{I
 don't know about calling them macro-display servers,
 that implies that they are the total opposite of
-micro-display servers.}
+micro-display servers, since ‘macro’ means large
+and ‘micro’ means small.}
 
 @noindent
 Implementations: none?
@@ -13992,7 +13995,7 @@ systems.
 @noindent
 @cpindex Gaming
 Megalithic display servers could be interesting for
-high performing gaming consoles.
+high-performing gaming consoles.
 
 
 
@@ -14121,8 +14124,8 @@ display server protocol.
 @end itemize
 
 @noindent
-Exo-display servers could be interesting for high
-performing gaming consoles.
+Exo-display servers could be interesting for
+high-performing gaming consoles.
 
 
 
