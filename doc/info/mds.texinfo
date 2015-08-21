@@ -13390,20 +13390,60 @@ the area that is covered by a bar
 indicating a critical state.
 
 @item menu-background
+The background colour on menus and menu-items.
+
 @item menu-foreground
+The colour on text on menus and menu-items.
+
 @item menu-delimiter
+The colour on group-separation lines in menus.
+
 @item menu-tear
+The colour on lines on menu-tearing menu-items.
+
 @item menu-background-disabled
+The background colour on disabled menus and
+menu-items.
+
 @item menu-foreground-disabled
+The colour on text on disabled menus and
+menu-items.
+
 @item menu-tear-disabled
+The colour on lines on disabled menu-tearing
+menu-items.
+
 @item menu-background-hover
+The background colour on menus and menu-items
+that are being hovered.
+
 @item menu-foreground-hover
+The colour on text on menus and menu-items
+that are being hovered.
+
 @item menu-tear-hover
+The colour on lines on menu-tearing menu-items.
+
 @item menu-background-disabled-hover
+The background colour on disabled menus and
+menu-items that are being hovered.
+
 @item menu-foreground-disabled-hover
+The colour on text on disabled menus and
+menu-items that are being hovered.
+
 @item menu-tear-disabled-hover
-@item menu-background-opened
-@item menu-foreground-opened
+The colour on lines on disabled menu-tearing
+menu-items that are being hovered.
+
+@item menu-background-open
+The background colour on menus and menu-items
+that are opened, that is submenus are visible.
+
+@item menu-foreground-open
+The colour on text on menus and menu-items
+that are opened, that is submenus are visible.
+
 @item toolbar-background
 @item toolbar-foreground
 @item toolbar-delimiter
