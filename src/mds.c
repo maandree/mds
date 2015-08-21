@@ -186,7 +186,7 @@ int main(int argc_, char** argv_)
   address.sun_family = AF_UNIX;
   strcpy(address.sun_path, pathname);
   unlink(pathname);
-  fail_if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0);
+  fail_if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0);
   fail_if (fchmod(fd, S_IRWXU) < 0);
   fail_if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0);
   fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
