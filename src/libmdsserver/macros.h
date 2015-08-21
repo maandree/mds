@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stddef.h>
+#include <sys/socket.h>
 
 /*
 #include <pthread.h>
@@ -63,6 +64,48 @@
   while (0)
 # define MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
 #endif
+
+
+/* Ensure that all aliases for AF_UNIX are defined */
+#if !defined(AF_LOCAL) && !defined(AF_UNIX) && defined(AF_FILE)
+# define AF_LOCAL AF_FILE
+# define AF_UNIX AF_FILE
+#elif !defined(AF_LOCAL) && defined(AF_UNIX)
+# define AF_LOCAL AF_UNIX
+#elif defined(AF_LOCAL) && !defined(AF_UNIX)
+# define AF_UNIX AF_LOCAL
+#endif
+#if !defined(AF_FILE) && defined(AF_LOCAL)
+# define AF_FILE AF_LOCAL
+#endif
+
+/* Ensure that all aliases for PF_UNIX are defined */
+#if !defined(PF_LOCAL) && !defined(PF_UNIX) && defined(PF_FILE)
+# define PF_LOCAL PF_FILE
+# define PF_UNIX PF_FILE
+#elif !defined(PF_LOCAL) && defined(PF_UNIX)
+# define PF_LOCAL PF_UNIX
+#elif defined(PF_LOCAL) && !defined(PF_UNIX)
+# define PF_UNIX PF_LOCAL
+#endif
+#if !defined(PF_FILE) && defined(PF_LOCAL)
+# define PF_FILE PF_LOCAL
+#endif
+
+/* Ensure that all aliases for AF_NETLINK are defined */
+#if !defined(AF_NETLINK) && defined(AF_ROUTE)
+# define AF_NETLINK AF_ROUTE
+#elif defined(AF_NETLINK) && !defined(AF_ROUTE)
+# define AF_ROUTE AF_NETLINK
+#endif
+
+/* Ensure that all aliases for PF_NETLINK are defined */
+#if !defined(PF_NETLINK) && defined(PF_ROUTE)
+# define PF_NETLINK PF_ROUTE
+#elif defined(PF_NETLINK) && !defined(PF_ROUTE)
+# define PF_ROUTE PF_NETLINK
+#endif
+
 
 
 /**
