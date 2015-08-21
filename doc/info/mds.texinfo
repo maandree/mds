@@ -13254,21 +13254,73 @@ The colour of the stop lines for disabled
 sliders.
 
 @item scroll-background
+The background colour on scrolls.
+
 @item scroll-foreground
+The icon colour on buttons associated with
+scrolls.
+
 @item scroll-knob
+The colour of the knob on scrolls.
+
 @item scroll-button
+The background colour on buttons associated
+with scrolls.
+
 @item scroll-background-hover
+The background colour on scrolls, under the
+condition that the area is being hovered.
+
 @item scroll-foreground-hover
+The icon colour on buttons associated with
+scrolls, under the condition that the button
+is being hovered.
+
 @item scroll-knob-hover
+The colour of the knob on scrolls, under the
+condition that the knob is being hovered.
+
 @item scroll-button-hover
+The background colour on buttons associated
+with scrolls, under the condition that the
+button is being hovered.
+
 @item scroll-background-hold
+The background colour on scrolls, under the
+condition that the area is being pressed.
+
 @item scroll-foreground-hold
+The icon colour on buttons associated with
+scrolls, under the condition that the button
+is being pressed.
+
 @item scroll-knob-hold
+The colour of the knob on scrolls, under the
+condition that the knob is being pressed.
+
 @item scroll-button-hold
+The background colour on buttons associated
+with scrolls, under the condition that the
+button is being pressed.
+
 @item scroll-background-disabled
+The background colour on scrolls, under the
+condition that the scroll is disabled.
+
 @item scroll-foreground-disabled
+The icon colour on buttons associated with
+scrolls, under the condition that the button
+is disabled.
+
 @item scroll-knob-disabled
+The colour of the knob on scrolls, under the
+condition that the scroll is disabled.
+
 @item scroll-button-disabled
+The background colour on buttons associated
+with scrolls, under the condition that the
+button is disabled.
+
 @item progress-background
 @item progress-progress
 @item progress-good
