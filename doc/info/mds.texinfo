@@ -13322,17 +13322,73 @@ with scrolls, under the condition that the
 button is disabled.
 
 @item progress-background
+The background colour on progressbars.
+
 @item progress-progress
+The colour of the bar, on progressbars,
+indicating how much progress has been
+made, or the colour of a marquee bar.
+This colour is usually blue, but
+sometimes green.
+
 @item progress-good
+The colour of the bar, on progressbars,
+when the progressbar is used to indicate
+a state rather than a progress, and the
+state is considered good. This colour is
+usually green.
+
 @item progress-normal
+The colour of the bar, on progressbars,
+when the progressbar is used to indicate
+a state rather than a progress, and the
+state is considered normal. This colour is
+usually yellow or green.
+
 @item progress-bad
+The colour of the bar, on progressbars,
+when the progressbar is used to indicate
+a state rather than a progress, and the
+state is considered bad. This colour is
+usually orange or yellow.
+
 @item progress-critical
+The colour of the bar, on progressbars,
+when the progressbar is used to indicate
+a state rather than a progress, and the
+state is considered critical. This colour
+is usually red.
+
 @item progress-foreground
+The colour of text on progressbars, on
+the area that is not covered by a bar.
+
 @item progress-foreground-progress
+The colour of text on progressbars, on
+the area that is covered by a bar
+indicating how much progress has been
+made or a marquee bar.
+
 @item progress-foreground-good
+The colour of text on progressbars, on
+the area that is covered by a bar
+indicating a good state.
+
 @item progress-foreground-normal
+The colour of text on progressbars, on
+the area that is covered by a bar
+indicating a normal state.
+
 @item progress-foreground-bad
+The colour of text on progressbars, on
+the area that is covered by a bar
+indicating a bad state.
+
 @item progress-foreground-critical
+The colour of text on progressbars, on
+the area that is covered by a bar
+indicating a critical state.
+
 @item menu-background
 @item menu-foreground
 @item menu-delimiter
