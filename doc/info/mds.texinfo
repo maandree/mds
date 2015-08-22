@@ -12265,12 +12265,21 @@ on the desktop.
 The background for text on icons that
 have been selected on the desktop.
 
+@item desktop-selection-foreground
+The colour for text on icons that
+have been selected on the desktop.
+
 @item desktop-foreground-hover
 The colour for text on icons on the desktop,
 when the icon is being hovered.
 
 @item desktop-selection-hover
 The background for text on icons that
+have been selected on the desktop, when the
+icon is being hovered.
+
+@item desktop-selection-foreground-hover
+The colour for text on icons that
 have been selected on the desktop, when the
 icon is being hovered.
 
@@ -12293,20 +12302,24 @@ text on windows.
 The colour on text-selection highlight for
 selectable text on windows.
 
-@item link
+@item window-selection-foreground
+The colour on text on selected for text on
+windows.
+
+@item link-foreground
 The colour on text for unvisited links.
 
-@item link-active
+@item link-active-foreground
 The colour on text for links that are currently
 being visited.
 
-@item link-visited
+@item link-visited-foreground
 The colour on text for visited links.
 
-@item link-broken
+@item link-broken-foreground
 The colour on text for broken links.
 
-@item link-background
+@item link-background-foreground
 The background colour for unvisited links.
 
 @item link-active-background
@@ -12335,23 +12348,36 @@ text on visited links.
 The colour on text highlight for selected
 text on broken links.
 
-@item link-hover
+@item link-selection-foreground
+The colour on selected text on unvisited links.
+
+@item link-active-selection-foreground
+The colour on selected text on links that are
+currently being visited.
+
+@item link-visited-selection-foreground
+The colour on selected text on visited links.
+
+@item link-broken-selection-foreground
+The colour on selected text on broken links.
+
+@item link-foreground-hover
 The colour on text for unvisited links,
 when the link is being hovered.
 
-@item link-active-hover
+@item link-active-foreground-hover
 The colour on text for links that are currently
 being visited, when the link is being hovered.
 
-@item link-visited-hover
+@item link-visited-foreground-hover
 The colour on text for visited links, when the
 link is being hovered.
 
-@item link-broken-hover
+@item link-broken-foreground-hover
 The colour on text for broken links, when the
 link is being hovered.
 
-@item link-background-hover
+@item link-background-foreground-hover
 The background colour for unvisited links,
 when the link is being hovered.
 
@@ -12388,19 +12414,36 @@ The colour on text highlight for selected
 text on broken links, when the link is being
 hovered.
 
-@item link-disabled
+@item link-selection-foreground-hover
+The colour on selected text on unvisited
+links, when the link is being hovered.
+
+@item link-active-selection-foreground-hover
+The colour on selected text on links that are
+currently being visited, when the link is being
+hovered.
+
+@item link-visited-selection-foreground-hover
+The colour on selected text on visited links,
+when the link is being hovered.
+
+@item link-broken-selection-foreground-hover
+The colour on selected text on broken links,
+when the link is being hovered.
+
+@item link-foreground-disabled
 The colour on text for unvisited links, when
 the link is disabled.
 
-@item link-active-disabled
+@item link-active-foreground-disabled
 The colour on text for links that are currently
 being visited, when the link is disabled.
 
-@item link-visited-disabled
+@item link-visited-foreground-disabled
 The colour on text for visited links, when
 the link is disabled.
 
-@item link-broken-disabled
+@item link-broken-foreground-disabled
 The colour on text for broken links, when
 the link is disabled.
 
@@ -12436,6 +12479,22 @@ text on visited links, when the link is disabled.
 @item link-broken-selection-disabled
 The colour on text highlight for selected
 text on broken links, when the link is disabled.
+
+@item link-selection-foreground-disabled
+The colour on selected text on unvisited links,
+when the link is disabled.
+
+@item link-active-selection-foreground-disabled
+The colour on selected text on links that are
+currently being visited, when the link is disabled.
+
+@item link-visited-selection-foreground-disabled
+The colour on selected text on visited links,
+when the link is disabled.
+
+@item link-broken-selection-foreground-disabled
+The colour on selected text on broken links,
+when the link is disabled.
 
 @item button-background
 The background colour on buttons and button-like
@@ -12598,13 +12657,26 @@ lists and tables.
 @item input-selection
 The colour on text highlight for selected text on
 text-input components, such as comboboxes and
-text-fields, as well as lists and tables.
+text-fields, as well as lists and tables. This
+colour is usually blue.
+
+@item input-selection-foreground
+The colour on selected text on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables. This colour is
+usually blue.
 
 @item input-mark
 The colour on text highlight for secondarily
 selected text on text-input components, such as
 comboboxes and text-fields, as well as lists and
-tables.
+tables. This colour is usually yellow.
+
+@item input-mark-foreground
+The colour on secondarily selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables. This
+colour is usually yellow.
 
 @item input-cursor
 The colour on the text cursor on text-input
@@ -12634,12 +12706,24 @@ text-input components, such as comboboxes and
 text-fields, as well as lists and tables, under
 the condition that the component is being hovered.
 
+@item input-selection-foreground-hover
+The colour on selected text on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the component is being hovered.
+
 @item input-mark-hover
 The colour on text highlight for secondarily
 selected text on text-input components, such as
 comboboxes and text-fields, as well as lists and
 tables, under the condition that the component
 is being hovered.
+
+@item input-mark-foreground-hover
+The colour on secondarily selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under
+the condition that the component is being hovered.
 
 @item input-cursor-hover
 The colour on the text cursor on text-input
@@ -12672,12 +12756,24 @@ text-input components, such as comboboxes and
 text-fields, as well as lists and tables, under
 the condition that the component is disabled.
 
+@item input-selection-foreground-disabled
+The colour on selected text on text-input components,
+such as comboboxes and text-fields, as well as lists
+and tables, under the condition that the component
+is disabled.
+
 @item input-mark-disabled
 The colour on text highlight for secondarily
 selected text on text-input components, such as
 comboboxes and text-fields, as well as lists and
 tables, under the condition that the component
 is disabled.
+
+@item input-mark-foreground-disabled
+The colour on secondarily selected text on text-input
+components, such as comboboxes and text-fields, as
+well as lists and tables, under the condition that
+the component is disabled.
 
 @item input-cursor-disabled
 The colour on the text cursor on text-input
