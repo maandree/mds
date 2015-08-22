@@ -12649,6 +12649,11 @@ The background colour on text-input components,
 such as comboboxes and text-fields, as well as
 lists and tables.
 
+@item input-background-alternate
+The alternate background colour on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables.
+
 @item input-foreground
 The colour on text on text-input components,
 such as comboboxes and text-fields, as well as
@@ -12659,6 +12664,12 @@ The colour on text highlight for selected text on
 text-input components, such as comboboxes and
 text-fields, as well as lists and tables. This
 colour is usually blue.
+
+@item input-selection-alternate
+The alternate colour on text highlight for
+selected text on text-input components, such as
+comboboxes and text-fields, as well as lists and
+tables. This colour is usually blue.
 
 @item input-selection-foreground
 The colour on selected text on text-input
@@ -12694,6 +12705,12 @@ such as comboboxes and text-fields, as well as
 lists and tables, under the condition that the
 component is being hovered.
 
+@item input-background-alternate-hover
+The alternate background colour on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the component is being hovered.
+
 @item input-foreground-hover
 The colour on text on text-input components,
 such as comboboxes and text-fields, as well as
@@ -12704,6 +12721,12 @@ component is being hovered.
 The colour on text highlight for selected text on
 text-input components, such as comboboxes and
 text-fields, as well as lists and tables, under
+the condition that the component is being hovered.
+
+@item input-selection-alternate-hover
+The alternate colour on text highlight for selected
+text on text-input components, such as comboboxes
+and text-fields, as well as lists and tables, under
 the condition that the component is being hovered.
 
 @item input-selection-foreground-hover
@@ -12744,6 +12767,12 @@ such as comboboxes and text-fields, as well as
 lists and tables, under the condition that the
 component is disabled.
 
+@item input-background-alternate-disabled
+The alternate background colour on text-input
+components, such as comboboxes and text-fields, as
+well as lists and tables, under the condition that
+the component is disabled.
+
 @item input-foreground-disabled
 The colour on text on text-input components,
 such as comboboxes and text-fields, as well as
@@ -12755,6 +12784,12 @@ The colour on text highlight for selected text on
 text-input components, such as comboboxes and
 text-fields, as well as lists and tables, under
 the condition that the component is disabled.
+
+@item input-selection-alternate-disabled
+The alternate colour on text highlight for selected
+text on text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under the
+condition that the component is disabled.
 
 @item input-selection-foreground-disabled
 The colour on selected text on text-input components,
@@ -12786,6 +12821,14 @@ The colour on the aura around text-input components,
 such as comboboxes and text-fields, as well as
 lists and tables, to mark that they have focus,
 under the condition that the component is disabled.
+
+@item input-delimiter
+The colour on lines in tables used to delimit rows
+or coloumns.
+
+@item input-delimiter-disabled
+The colour on lines in tables used to delimit rows
+or coloumns, when the table is disabled.
 
 @item option-background
 The background colour for the box on checkboxes
