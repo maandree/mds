@@ -12674,8 +12674,7 @@ tables. This colour is usually blue.
 @item input-selection-foreground
 The colour on selected text on text-input
 components, such as comboboxes and text-fields,
-as well as lists and tables. This colour is
-usually blue.
+as well as lists and tables.
 
 @item input-mark
 The colour on text highlight for secondarily
@@ -12821,6 +12820,155 @@ The colour on the aura around text-input components,
 such as comboboxes and text-fields, as well as
 lists and tables, to mark that they have focus,
 under the condition that the component is disabled.
+
+@item input-background-selected
+The background colour on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+item is selected.
+
+@item input-background-alternate-selected
+The alternate background colour on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected.
+
+@item input-foreground-selected
+The colour on text on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+item is selected.
+
+@item input-selection-selected
+The colour on text highlight for selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under
+the condition that the item is selected.
+
+@item input-selection-alternate-selected
+The alternate colour on text highlight for
+selected text on text-input components, such as
+comboboxes and text-fields, as well as lists and
+tables, under the condition that the item is
+selected.
+
+@item input-selection-foreground-selected
+The colour on selected text on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected.
+
+@item input-cursor-selected
+The colour on the text cursor on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected.
+
+@item input-aura-selected
+The colour on the aura around text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, to mark that they have focus,
+under the condition that the item is selected.
+
+@item input-background-selected-hover
+The background colour on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+item is selected and is being hovered.
+
+@item input-background-alternate-selected-hover
+The alternate background colour on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected and is being hovered.
+
+@item input-foreground-selected-hover
+The colour on text on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+item is selected and is being hovered.
+
+@item input-selection-selected-hover
+The colour on text highlight for selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under
+the condition that the item is selected and is
+being hovered.
+
+@item input-selection-alternate-selected-hover
+The alternate colour on text highlight for selected
+text on text-input components, such as comboboxes
+and text-fields, as well as lists and tables, under
+the condition that the item is selected and is
+being hovered.
+
+@item input-selection-foreground-selected-hover
+The colour on selected text on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected and is being hovered.
+
+@item input-cursor-selected-hover
+The colour on the text cursor on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected and is being hovered.
+
+@item input-aura-selected-hover
+The colour on the aura around text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, to mark that they have focus,
+under the condition that the item is selected and
+is being hovered.
+
+@item input-background-selected-disabled
+The background colour on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+item is selected but disabled.
+
+@item input-background-alternate-selected-disabled
+The alternate background colour on text-input
+components, such as comboboxes and text-fields, as
+well as lists and tables, under the condition that
+the item is selected but disabled.
+
+@item input-foreground-selected-disabled
+The colour on text on text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, under the condition that the
+item is selected but disabled.
+
+@item input-selection-selected-disabled
+The colour on text highlight for selected text on
+text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under
+the condition that the item is selected but disabled.
+
+@item input-selection-alternate-selected-disabled
+The alternate colour on text highlight for selected
+text on text-input components, such as comboboxes and
+text-fields, as well as lists and tables, under the
+condition that the item is selected but disabled.
+
+@item input-selection-foreground-selected-disabled
+The colour on selected text on text-input components,
+such as comboboxes and text-fields, as well as lists
+and tables, under the condition that the item is
+selected butdisabled.
+
+@item input-cursor-selected-disabled
+The colour on the text cursor on text-input
+components, such as comboboxes and text-fields,
+as well as lists and tables, under the condition
+that the item is selected but disabled.
+
+@item input-aura-selected-disabled
+The colour on the aura around text-input components,
+such as comboboxes and text-fields, as well as
+lists and tables, to mark that they have focus,
+under the condition that the item is selected but
+disabled.
 
 @item input-delimiter
 The colour on lines in tables used to delimit rows
@@ -13497,8 +13645,8 @@ The background colour on progressbars.
 The colour of the bar, on progressbars,
 indicating how much progress has been
 made, or the colour of a marquee bar.
-This colour is usually blue, but
-sometimes green.
+This colour is usually blue, but sometimes
+green.
 
 @item progress-good
 The colour of the bar, on progressbars,
