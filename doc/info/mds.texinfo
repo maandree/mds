@@ -6902,6 +6902,7 @@ This function returns zero if the @code{string} is
 properly formatted, and @code{-1} otherwise.
 
 @item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size}) @arrow{} @code{size_t}]
+@cpindex Error management
 This function constructs an error message to be sent to
 a client. It implements the @code{error} protocol with
 with identifying header @code{Command: error}.
@@ -6955,6 +6956,7 @@ message on success, and zero on failure. On failure
 @code{errno} will be set accordingly.
 
 @item @code{send_error} [(@code{..., int socket_fd}) @arrow{} @code{int}]
+@cpindex Error management
 This function is a wrapper for @code{construct_error_message} that also
 sends constructed message to the socket whose file descriptor is @code{socket_fd}.
 This function has the same parameters as @code{construct_error_message},
