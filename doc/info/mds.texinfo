@@ -6902,6 +6902,7 @@ This function returns zero if the @code{string} is
 properly formatted, and @code{-1} otherwise.
 
 @item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size}) @arrow{} @code{size_t}]
+@cpindex @code{construct_error_message}
 @cpindex Error management
 This function constructs an error message to be sent to
 a client. It implements the @code{error} protocol with
@@ -6956,6 +6957,7 @@ message on success, and zero on failure. On failure
 @code{errno} will be set accordingly.
 
 @item @code{send_error} [(@code{..., int socket_fd}) @arrow{} @code{int}]
+@fnindex @code{send_error}
 @cpindex Error management
 This function is a wrapper for @code{construct_error_message} that also
 sends constructed message to the socket whose file descriptor is @code{socket_fd}.
@@ -7752,16 +7754,22 @@ it contains three elements:
 
 @table @asis
 @item @code{key} [@code{KEY_T}]
+@vrindex @code{key}
+@vrindex @code{hash_list_entry_t.key}
 The key of the entry. Will be @code{NULL} if the slot
 is unused; a @code{NULL} on a key is disallowed.
 Note that @code{NULL} is equivalent to zero if the
 data type is numeral primitively.
 
 @item @code{key_hash} [@code{size_t}]
+@vrindex @code{key_hash}
+@vrindex @code{hash_list_entry_t.key_hash}
 The hash of the key. This element is transparent to the
 user of the class.
 
 @item @code{value} [@code{VALUE_T}]
+@vrindex @code{value}
+@vrindex @code{hash_list_entry_t.value}
 The value.
 @end table
 
@@ -7774,23 +7782,33 @@ six elements:
 
 @table @asis
 @item @code{allocated} [@code{size_t}]
+@vrindex @code{allocated}
+@vrindex @code{hash_list_t.allocated}
 The number of allocated slots. This element is
 transparent to the user of the class.
 
 @item @code{unused} [@code{size_t}]
+@vrindex @code{unused}
+@vrindex @code{hash_list_t.unused}
 The number of unused slot that has previously be used.
 This element is transparent to the user of the class.
 
 @item @code{used} [@code{size_t}]
+@vrindex @code{used}
+@vrindex @code{hash_list_t.used}
 The number of slots that have been used, even if
 no longer used. This element is transparent to the
 user of the class.
 
 @item @code{slots} [@code{hash_list_entry_t*}]
+@vrindex @code{slots}
+@vrindex @code{hash_list_t.slots}
 The allocation for the slots. This element is
 transparent to the user of the class.
 
 @item @code{freer} [@code{hash_list_entry_free_func*}]
+@vrindex @code{freer}
+@vrindex @code{hash_list_t.freer}
 @tpindex @code{hash_list_entry_free_func}
 Method used to free keys and values of entries.
 If left @code{NULL}, no keys or values are freed.
@@ -7798,6 +7816,8 @@ This value must be set after @code{hash_list_create}
 or @code{hash_list_unmarshal} is called, not before.
 
 @item @code{hasher} [@code{hash_list_key_hash_func*}]
+@vrindex @code{hasher}
+@vrindex @code{hash_list_t.hasher}
 @tpindex @code{hash_list_key_hash_func}
 method used to calculate the hash of a key.
 If left @code{NULL}, the identity hash is used, that
