@@ -602,8 +602,7 @@ static inline size_t colour_list_subunmarshal(colour_list_entry_t* entry, char* 
   data += sizeof(colour_t) / sizeof(char);
   while (data[n++]);
   n *= sizeof(char);
-  entry->key = malloc(n);
-  if (entry->key == NULL)
+  if (xbmalloc(entry->key, n))
     return 0;
   memcpy(entry->key, data, n);
   return sizeof(colour_t) + n;
