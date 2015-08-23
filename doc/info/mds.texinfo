@@ -316,7 +316,7 @@ libraries and concepts.
 server.} is a display server protocol and an
 implementation of said protocol. What makes
 @command{mds} stand out is its core design choice:
-it is desigend just like a microkernel. Rather than
+it is designed just like a microkernel. Rather than
 one, possibly modular, process --- a monolithic
 process --- @code{mds} is comprised of many small
 servers, each exchangable and responsible for one
