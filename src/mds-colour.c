@@ -178,6 +178,7 @@ size_t marshal_server_size(void)
 {
   size_t rc = 2 * sizeof(int) + sizeof(uint32_t);
   rc += mds_message_marshal_size(&received);
+  rc += colour_list_marshal_size(&colours);
   return rc;
 }
 
@@ -197,7 +198,10 @@ int marshal_server(char* state_buf)
   mds_message_marshal(&received, state_buf);
   state_buf += mds_message_marshal_size(&received) / sizeof(char*);
   
+  colour_list_marshal(&colours, state_buf);
+  
   mds_message_destroy(&received);
+  colour_list_destroy(&colours);
   return 0;
 }
 
@@ -214,15 +218,24 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
+  int stage = 0;
+  
   /* buf_get_next(state_buf, int, MDS_COLOUR_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, uint32_t, message_id);
+  
   fail_if (mds_message_unmarshal(&received, state_buf));
+  state_buf += mds_message_marshal_size(&received) / sizeof(char*);
+  stage++;
+  
+  fail_if (colour_list_unmarshal(&colours, state_buf));
+  
   return 0;
  fail:
   xperror(*argv);
-  mds_message_destroy(&received);
+  if (stage >= 0)  mds_message_destroy(&received);
+  if (stage >= 1)  colour_list_destroy(&colours);
   return -1;
 }
 
@@ -457,14 +470,34 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
       if (strict_atou64(recv_blue, &(colour.blue), 0, limit))
 	return eprint("got an invalid value on the Blue-header, ignoring."), 0;
       
-      /* TODO set colour */
+      return set_colour(recv_name, &colour);
     }
   else
-    {
-      /* TODO remove colour */
-    }
+    colour_list_remove(&colours, recv_name);
   
   return 0;
+}
+
+
+/**
+ * Add or modify a colour
+ * 
+ * @param   name    The name of the colour, must not be `NULL`
+ * @param   colour  The colour, must not be `NULL`
+ * @return          Zero on success, -1 on error, removal of
+ *                  non-existent colour does not constitute an error
+ */
+int set_colour(const char* name, const colour_t* colour)
+{
+  char* name_;
+  int r;
+  
+  if (xstrdup(name_, name))
+    return -1;
+  r = colour_list_put(&colours, name_, colour);
+  if (r < 0)
+    free(name_);
+  return r;
 }
 
 

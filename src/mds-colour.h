@@ -103,6 +103,17 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
 		      const char* recv_red, const char* recv_green, const char* recv_blue);
 
 
+/**
+ * Add or modify a colour
+ * 
+ * @param   name    The name of the colour, must not be `NULL`
+ * @param   colour  The colour, must not be `NULL`
+ * @return          Zero on success, -1 on error, removal of
+ *                  non-existent colour does not constitute an error
+ */
+int set_colour(const char* name, const colour_t* colour) __attribute__((nonnull));
+
+
 CREATE_HASH_LIST_SUBCLASS(colour_list, char* restrict, const char* restrict, colour_t)
 
 
