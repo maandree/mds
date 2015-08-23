@@ -339,7 +339,7 @@ perhaps modify them. This enables you to do so much
 more with your display server. Moreover, if a single
 part of the system crashes it does not bring down the
 whole system, and the crashed server can be respawned
-with minor side effects. @command{mds} is
+with minor side-effects. @command{mds} is
 architectured in three layers: a microkernel, a
 master server and a collection of servers. And
 clients are actually located on the same layer as the
@@ -368,7 +368,7 @@ privileges.
 All @command{mds}'s servers, that is all running
 parts of @command{mds} except the kernel, are
 designed so that they can re-execute themself so that
-they can be updated online without any side effects.
+they can be updated online without any side-effects.
 Servers serialises their state, saves it to RAM (in a
 directory created by the kernel), re-execute themself
 and loads their serialised state. The kernel cannot
