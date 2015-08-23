@@ -1,3 +1,9 @@
+documentation:
+	Make sure everything uses active voice
+	Make sure mood is consistent
+		Texinfo manual should use declarative mood
+		Source code documentation should use imperative mood
+
 Missing servers:
 
 	xmds		wmds		mmds		mdsx

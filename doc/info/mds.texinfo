@@ -276,6 +276,7 @@ libraries and concepts.
 
 @menu
 * Overview::                                  Brief overview of @command{mds}.
+* Features::                                  Reasons to install and use @command{mds}.
 * Architecture::                              Architectural overview of @command{mds}.
 * Application Design::                        Guildlines for your applications.
 * Protocol::                                  The @command{mds} procotol.
@@ -318,7 +319,7 @@ implementation of said protocol. What makes
 @command{mds} stand out is its core design choice:
 it is designed just like a microkernel. Rather than
 one, possibly modular, process --- a monolithic
-process --- @code{mds} is comprised of many small
+process --- @command{mds} is comprised of many small
 servers, each exchangable and responsible for one
 thing.
 
@@ -379,6 +380,77 @@ crash. It would technically be possible to enable the
 kernel to re-execute but it is not worth it as there
 is no reason to re-execute, and doing so puts the
 display server at risk of crashing.
+
+
+
+@node Features
+@chapter Features
+
+@command{mds} is not the most shiny display server
+known to the planet (yet), but it does have a number
+of enticing features:
+
+@table @asis
+@item it is free software
+Anybody can use, modify, and redistribute it under the
+terms of the GNU General Public License version 3
+(@pxref{GNU General Public License}). Unlike some
+other display server that are licnes under the MIT
+license, @command{mds} is licensed under a copyleft
+license. Not only that, it is a strong copyleft license
+too.
+
+@item is is open source
+As an unintended side-effect of @command{mds} being
+licensed udner the GNU General Public License,
+@command{mds} is also open source. The principal author
+of @command{mds} do not value open source, however some
+people do.
+
+@item it will compatible
+@command{mds}'s design makes it easy to make it
+compatile with any display server using a compatibility
+server. When @command{mds} matures, compatibility
+servers for X, Wayland and Mir will we written, both
+for using those display server's client programs in
+@command{mds} and @command{mds} client programs in those
+display servers.
+
+@item it is built to survive
+Unlike other dispaly servers, @command{mds} has an
+object-oriented structure that allows it to evolve
+without compromising its design. This structure will
+help the @command{mds} undergo major redesign and
+modifications without having to be entirely rewritten.
+
+@item it is scalable
+@command{mds}'s design makes it inherently aggressively
+multithreaded and easy to strip down on features, so
+that it runs efficiently on any system. @command{mds}
+can also be distributed on multiple computers in a
+network, although the servers for this has not yet been
+implemented.
+
+@item it is extensible
+@command{mds} is designed to modified and extended.
+Every part of @command{mds} is separated into distinct
+servers that can easily be modified or replaced, but it
+is also easy to create servers to modifies or otherwise
+uses the communication between other servers and clients.
+@command{mds} is a perfect place for developing new
+display server technology or just learn about display
+server technology.
+
+@item it is stable
+It is possible to develop and test new @command{mds}
+servers without restarting the display server. Servers
+can be updated to newer versions of themself without
+losing their state. This means to you never have to
+restart your display server to update it. Additionally
+servers that crash can be startared automatically and
+their state can for the most part be restored.
+@end table
+
 
 
 
@@ -13874,7 +13946,7 @@ any other program.
 @cpindex Compatibility layers
 @vrindex @env{PREFERRED_DISPLAY}
 The environment variable @env{PREFERRED_DISPLAY},
-should be set with the value @code{mds}, if and only
+should be set with the value @command{mds}, if and only
 if @command{mds} is started as a display server and
 not as a compatibility layer.
 
@@ -13883,7 +13955,7 @@ list of supported display server protocol, ordered by
 preference. 
 
 If @command{mds} is started as a compatibility layer,
-@code{mds} should be added to @env{PREFERRED_DISPLAY}
+@command{mds} should be added to @env{PREFERRED_DISPLAY}
 if and only if @env{PREFERRED_DISPLAY} lists any
 other display protocol.
 
@@ -14120,11 +14192,11 @@ when starting the display server, it becomes much
 easier to mount the display server on top of an
 already running display server. For example, if you
 want the performance of @code{weston} but then
-flexibility and functionallity of @code{mds}, you
-could start @code{mds} inside @code{weston} and
+flexibility and functionallity of @command{mds}, you
+could start @command{mds} inside @code{weston} and
 replace a small set of the servers with variants
 written to running on top of Wayland; of course with
-some functionallity of @code{mds} missing.
+some functionallity of @command{mds} missing.
 
 @item
 @cpindex Security
