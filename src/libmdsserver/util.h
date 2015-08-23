@@ -405,7 +405,6 @@ int verify_utf8(const char* string, int allow_modified_nul) __attribute__((pure)
 size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
 			       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
 			       size_t* restrict send_buffer_size) __attribute__((nonnull(1, 2, 6, 7)));
-/* TODO document in info manual */
 
 /**
  * Send an error message
@@ -433,7 +432,6 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
 int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
 	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
 	       size_t* restrict send_buffer_size, int socket_fd) __attribute__((nonnull(1, 2, 6, 7)));
-/* TODO document in info manual */
 
 
 #endif

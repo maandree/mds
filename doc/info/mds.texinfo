@@ -6885,7 +6885,7 @@ interruption unless it is interrupted one hundred
 times within the same clock second. The parameters
 and return value are exactly those of @code{waitpid}.
 
-@item @code{verify_utf8}[(@code{const char* string, int allow_modified_nul}) @arrow{} @code{int}]
+@item @code{verify_utf8} [(@code{const char* string, int allow_modified_nul}) @arrow{} @code{int}]
 @fnindex @code{verify_utf8}
 @cpindex Security, encoding, UTF-8
 @cpindex UTF-8, security
@@ -6900,6 +6900,67 @@ NUL-character.@footnote{Remember @code{0} is used
 to terminated the string, but @code{192 128} is not.}
 This function returns zero if the @code{string} is
 properly formatted, and @code{-1} otherwise.
+
+@item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size}) @arrow{} @code{size_t}]
+This function constructs an error message to be sent to
+a client. It implements the @code{error} protocol with
+with identifying header @code{Command: error}.
+The parameters are:
+
+@table @code
+@item recv_client_id
+The client ID attached on the message that was
+received in the message that caused the error,
+that is, the value of the header @code{Client ID}
+on the received message and the header @code{To}
+in the message to construct. Must not be @code{NULL}.
+@item recv_message_id
+The message ID attached on the message that was
+received in the message that caused the error,
+that is, the value of the header @code{Message ID}
+on the received message and the header
+@code{In response to} in the message to construct.
+Must not be @code{NULL}.
+@item custom
+If and only if set to zero, value of @code{errnum}
+is a value for @code{errno}.
+@item errnum
+A numeric value describing the error. A negative
+value, such as @code{-1} should be used if the
+error does not have a numeric value. Zero is
+reserved to indicate success.
+@item message
+The description of the error, the line feed at the end
+is added automatically and thus should not be included.
+The description should be a statement in mid-sentence
+case and without punctuation at the end.
+@code{NULL} if no description should be included.
+@item send_buffer
+Pointer to the buffer where the message should be stored,
+it should contain the current send buffer. Must not be
+@code{NULL}
+@item send_buffer_size
+Pointer to the allocation size of @code{*send_buffer},
+it should contain the current size of @code{*send_buffer}
+and will be updated with the new size. Must not be
+@code{NULL}
+@end table
+
+It is not allowed to have a negative value on
+@code{errnum} and a zero value on @code{custom}
+at the same time.
+
+This function returns the length of the constructed
+message on success, and zero on failure. On failure
+@code{errno} will be set accordingly.
+
+@item @code{send_error} [(@code{..., int socket_fd}) @arrow{} @code{int}]
+This function is a wrapper for @code{construct_error_message} that also
+sends constructed message to the socket whose file descriptor is @code{socket_fd}.
+This function has the same parameters as @code{construct_error_message},
+but with one additional parameter as its last parameter: @code{socket_fd}.
+Also, instead of returning the length of the message, it returns zero
+on success and @code{-1} on error.
 @end table
 
 
