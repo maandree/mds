@@ -789,3 +789,155 @@ int verify_utf8(const char* string, int allow_modified_nul)
   return read_bytes == 0 ? 0 : -1;
 }
 
+
+/**
+ * Construct an error message to be sent to a client
+ * 
+ * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
+ * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   custom            Non-zero if the error is a custom error
+ * @param   errnum            The error number, `errno` should be used if the error
+ *                            is not a custom error, zero should be used on success,
+ *                            a negative integer, such as -1, indicates that the error
+ *                            message should not include an error number,
+ *                            it is not allowed to have this value be negative and
+ *                            `custom` be zero at the same time
+ * @param   message           The description of the error, the line feed at the end
+ *                            is added automatically, `NULL` if the description should
+ *                            be omitted
+ * @param   send_buffer       Pointer to the buffer where the message should be stored,
+ *                            it should contain the current send buffer, must not be `NULL`
+ * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
+ *                            contain the current size of `*send_buffer` and will be updated
+ *                            with the new size, must not be `NULL`
+ * @return                    The length of the message, zero on error
+ */
+size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
+			       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
+			       size_t* restrict send_buffer_size)
+{
+  ssize_t part_length;
+  size_t length = 0;
+  char* temp;
+  
+  /* Measure the length of mandatory headers and either values,
+     as well as the line to end the headers. The Error-header
+     however is currently measure without error number. */
+  snprintf(NULL, 0,
+	   "Command: error\n"
+	   "To: %s\n"
+	   "In response to: %s\n"
+	   "Error: %s\n"
+	   "\n%zn",
+	   recv_client_id, recv_message_id,
+	   custom ? "custom" : "",
+	   &part_length),
+    length += (size_t)part_length;
+  
+  /* If the error number is custom and their is a number,
+     a blank space is required between the word ‘custom’
+     and the number */
+  if (custom && (errnum >= 0))
+    length++;
+  /* Measure the length of the error number */
+  if (errnum >= 0)
+    snprintf(NULL, 0, "%i%zn", errnum, &part_length),
+      length += (size_t)part_length;
+  
+  /* Measure the length of the error description and
+     the length of the header specifying its length */
+  if (message != NULL)
+    snprintf(NULL, 0, "Length: %zu\n%zn",
+	     strlen(message) + 1, &part_length),
+      length += (size_t)part_length + strlen(message) + 1;
+  
+  /* Ensure that the send buffer is large enough */
+  if (length > *send_buffer_size)
+    {
+      if (yrealloc(temp, *send_buffer, length, char))
+	return 0;
+      *send_buffer_size = length;
+    }
+  
+  /* Reset `length` to indicate that the currently written
+     message has zero in length */
+  length = 0;
+  
+  /* Start writting the error message, begin with required
+     headers, but exclude the error number */
+  sprintf((*send_buffer) + length,
+	  "Command: error\n"
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Error: %s%zn",
+	  recv_client_id, recv_message_id,
+	  custom ? "custom" : "",
+	  &part_length),
+    length += (size_t)part_length;
+  
+  /* If the error is custom and has a number we need
+     blank space before we write the error number */
+  if (custom && (errnum >= 0))
+    (*send_buffer)[length++] = ' ';
+  
+  /* Add the error number of there is one */
+  if (errnum >= 0)
+    sprintf((*send_buffer) + length, "%i%zn", errnum, &part_length),
+      length += (size_t)part_length;
+  
+  /* End the Error-header line */
+  (*send_buffer)[length++] = '\n';
+  
+  /* Add the Length-header if there is a description  */
+  if (message != NULL)
+    sprintf((*send_buffer) + length, "Length: %zu\n%zn",
+	    strlen(message) + 1, &part_length),
+      length += (size_t)part_length + strlen(message) + 1;
+  
+  /* Add an empty line to mark the end of headers */
+  (*send_buffer)[length++] = '\n';
+  
+  /* Write the description if there is one */
+  if (message)
+    {
+      memcpy((*send_buffer) + length, message, strlen(message) * sizeof(char));
+      length += strlen(message);
+      (*send_buffer)[length++] = '\n';
+    }
+  
+  return length;
+}
+
+
+/**
+ * Send an error message
+ * 
+ * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
+ * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   custom            Non-zero if the error is a custom error
+ * @param   errnum            The error number, `errno` should be used if the error
+ *                            is not a custom error, zero should be used on success,
+ *                            a negative integer, such as -1, indicates that the error
+ *                            message should not include an error number,
+ *                            it is not allowed to have this value be negative and
+ *                            `custom` be zero at the same time
+ * @param   message           The description of the error, the line feed at the end
+ *                            is added automatically, `NULL` if the description should
+ *                            be omitted
+ * @param   send_buffer       Pointer to the buffer where the message should be stored,
+ *                            it should contain the current send buffer, must not be `NULL`
+ * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
+ *                            contain the current size of `*send_buffer` and will be updated
+ *                            with the new size, must not be `NULL`
+ * @param   socket_fd         The file descriptor of the socket
+ * @return                    Zero on success, -1 on error
+ */
+int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
+	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
+	       size_t* restrict send_buffer_size, int socket_fd)
+{
+  size_t length = construct_error_message(recv_client_id, recv_message_id, custom, errnum,
+					  message, send_buffer, send_buffer_size);
+  return length ? full_send(socket_fd, *send_buffer, length) : -1;
+}
+

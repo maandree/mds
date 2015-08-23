@@ -380,6 +380,61 @@ pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options);
  */
 int verify_utf8(const char* string, int allow_modified_nul) __attribute__((pure));
 
+/**
+ * Construct an error message to be sent to a client
+ * 
+ * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
+ * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   custom            Non-zero if the error is a custom error
+ * @param   errnum            The error number, `errno` should be used if the error
+ *                            is not a custom error, zero should be used on success,
+ *                            a negative integer, such as -1, indicates that the error
+ *                            message should not include an error number,
+ *                            it is not allowed to have this value be negative and
+ *                            `custom` be zero at the same time
+ * @param   message           The description of the error, the line feed at the end
+ *                            is added automatically, `NULL` if the description should
+ *                            be omitted
+ * @param   send_buffer       Pointer to the buffer where the message should be stored,
+ *                            it should contain the current send buffer, must not be `NULL`
+ * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
+ *                            contain the current size of `*send_buffer` and will be updated
+ *                            with the new size, must not be `NULL`
+ * @return                    The length of the message, zero on error
+ */
+size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
+			       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
+			       size_t* restrict send_buffer_size) __attribute__((nonnull(1, 2, 6, 7)));
+/* TODO document in info manual */
+
+/**
+ * Send an error message
+ * 
+ * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
+ * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   custom            Non-zero if the error is a custom error
+ * @param   errnum            The error number, `errno` should be used if the error
+ *                            is not a custom error, zero should be used on success,
+ *                            a negative integer, such as -1, indicates that the error
+ *                            message should not include an error number,
+ *                            it is not allowed to have this value be negative and
+ *                            `custom` be zero at the same time
+ * @param   message           The description of the error, the line feed at the end
+ *                            is added automatically, `NULL` if the description should
+ *                            be omitted
+ * @param   send_buffer       Pointer to the buffer where the message should be stored,
+ *                            it should contain the current send buffer, must not be `NULL`
+ * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
+ *                            contain the current size of `*send_buffer` and will be updated
+ *                            with the new size, must not be `NULL`
+ * @param   socket_fd         The file descriptor of the socket
+ * @return                    Zero on success, -1 on error
+ */
+int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
+	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
+	       size_t* restrict send_buffer_size, int socket_fd) __attribute__((nonnull(1, 2, 6, 7)));
+/* TODO document in info manual */
+
 
 #endif
 

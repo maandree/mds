@@ -98,6 +98,27 @@ static colour_list_t colours;
 #define full_send(message, length)  \
   ((full_send)(socket_fd, message, length))
 
+/**
+ * Send an error message
+ * 
+ * @param   recv_client_id:const char*   The client ID attached on the message that was received
+ * @param   recv_message_id:const char*  The message ID attached on the message that was received
+ * @param   custom:int                   Non-zero if the error is a custom error
+ * @param   errnum:int                   The error number, `errno` should be used if the error
+ *                                       is not a custom error, zero should be used on success,
+ *                                       a negative integer, such as -1, indicates that the error
+ *                                       message should not include an error number,
+ *                                       it is not allowed to have this value be negative and
+ *                                       `custom` be zero at the same time
+ * @param   message:const char*          The description of the error, the line feed at the end
+ *                                       is added automatically, `NULL` if the description should
+ *                                       be omitted
+ * @return                               Zero on success, -1 on error
+ */
+#define send_error(recv_client_id, recv_message_id, custom, errnum, message)  \
+  ((send_error)(recv_client_id, recv_message_id, custom, errnum,              \
+		message, &send_buffer, &send_buffer_size, socket_fd))
+
 
 /**
  * This function will be invoked before `initialise_server` (if not re-exec:ing)
@@ -389,7 +410,7 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
   else if (strequals(recv_include_values, "yes"))  include_values = 1;
   else if (strequals(recv_include_values, "no"))   include_values = 0;
   else
-    ; /* TODO send EPROTO*/
+    return send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL);
   
   /* TODO send list */
   
@@ -412,7 +433,7 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
     return eprint("got a query from an anonymous client, ignoring."), 0;
   
   if (recv_name == NULL)
-    ; /* TODO send EPROTO */
+    return send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL);
   
   /* TODO send colour, "not defined" if missing */
   
