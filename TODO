@@ -4,6 +4,13 @@ documentation:
 		Texinfo manual should use declarative mood
 		Source code documentation should use imperative mood
 
+All responses should have a special header identifying
+their origin so that they can be observed or modified.
+The value of this head should be the value of the Command
+header in the query. For example if a server receives
+`Command: X`, it should respond with `Origin command: X`,
+or something like that.
+
 Missing servers:
 
 	xmds		wmds		mmds		mdsx

@@ -429,15 +429,49 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
  */
 int handle_get_colour(const char* recv_client_id, const char* recv_message_id, const char* recv_name)
 {
+  colour_t colour;
+  ssize_t length;
+  char* temp;
+  
   if (strequals(recv_client_id, "0:0"))
     return eprint("got a query from an anonymous client, ignoring."), 0;
   
   if (recv_name == NULL)
     return send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL);
   
-  /* TODO send colour, "not defined" if missing */
+  if (!colour_list_get(&colours, recv_name, &colour))
+    return send_error(recv_client_id, recv_message_id, 1, -1, "not defined");
   
-  return 0;
+  snprintf(NULL, 0,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Bytes: %i\n"
+	  "Red: %"PRIu64"\n"
+	  "Green; %"PRIu64"\n"
+	  "Blue: %"PRIu64"\n"
+	  "\n%zn",
+	  recv_client_id, recv_message_id, colour.bytes,
+	  colour.red, colour.green, colour.blue, &length);
+  
+  if ((size_t)length > send_buffer_size)
+    {
+      if (yrealloc(temp, send_buffer, (size_t)length, char))
+	return -1;
+      send_buffer_size = (size_t)length;
+    }
+  
+  sprintf(send_buffer,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Bytes: %i\n"
+	  "Red: %"PRIu64"\n"
+	  "Green; %"PRIu64"\n"
+	  "Blue: %"PRIu64"\n"
+	  "\n",
+	  recv_client_id, recv_message_id, colour.bytes,
+	  colour.red, colour.green, colour.blue);
+  
+  return full_send(send_buffer, (size_t)length);
 }
 
 
@@ -491,10 +525,10 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
       if (strict_atou64(recv_blue, &(colour.blue), 0, limit))
 	return eprint("got an invalid value on the Blue-header, ignoring."), 0;
       
-      return set_colour(recv_name, &colour);
+      return set_colour(recv_name, &colour); /* TODO broadcast update */
     }
   else
-    colour_list_remove(&colours, recv_name);
+    colour_list_remove(&colours, recv_name); /* TODO broadcast update */
   
   return 0;
 }
