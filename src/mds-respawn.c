@@ -225,9 +225,11 @@ static void spawn_server(size_t index)
  */
 static void received_revive(int signo)
 {
+  SIGHANDLER_START;
   (void) signo;
   reviving = 1;
   eprint("revive signal received.");
+  SIGHANDLER_END;
 }
 
 
@@ -545,6 +547,7 @@ int master_loop(void)
  */
 void received_info(int signo)
 {
+  SIGHANDLER_START;
   server_state_t state;
   size_t i, n = servers;
   char** cmdline;
@@ -577,5 +580,6 @@ void received_info(int signo)
       while (*cmdline)
 	iprintf("  %z", *cmdline++);
     }
+  SIGHANDLER_END;
 }
 

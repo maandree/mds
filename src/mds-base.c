@@ -334,6 +334,7 @@ static void __attribute__((const)) received_noop(int signo)
  */
 void __attribute__((weak)) received_reexec(int signo)
 {
+  SIGHANDLER_START;
   (void) signo;
   if (reexecing == 0)
     {
@@ -341,6 +342,7 @@ void __attribute__((weak)) received_reexec(int signo)
       eprint("re-exec signal received.");
       signal_all(signo);
     }
+  SIGHANDLER_END;
 }
 
 
@@ -354,6 +356,7 @@ void __attribute__((weak)) received_reexec(int signo)
  */
 void __attribute__((weak)) received_terminate(int signo)
 {
+  SIGHANDLER_START;
   (void) signo;
   if (terminating == 0)
     {
@@ -361,6 +364,7 @@ void __attribute__((weak)) received_terminate(int signo)
       eprint("terminate signal received.");
       signal_all(signo);
     }
+  SIGHANDLER_END;
 }
 
 
@@ -375,12 +379,14 @@ void __attribute__((weak)) received_terminate(int signo)
  */
 void __attribute__((weak)) received_danger(int signo)
 {
+  SIGHANDLER_START;
   (void) signo;
   if (danger == 0)
     {
       danger = 1;
       eprint("danger signal received.");
     }
+  SIGHANDLER_END;
 }
 
 

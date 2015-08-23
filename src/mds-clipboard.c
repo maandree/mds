@@ -899,6 +899,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
  */
 void received_info(int signo)
 {
+  SIGHANDLER_START;
   clipitem_t clipitem;
   size_t i, j, n;
   struct timespec now;
@@ -937,5 +938,6 @@ void received_info(int signo)
 		  clipitem.content);
 	}
     }
+  SIGHANDLER_END;
 }
 

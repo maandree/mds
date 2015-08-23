@@ -716,8 +716,10 @@ void signal_all(int signo)
  */
 void received_switch_vt(int signo)
 {
+  SIGHANDLER_START;
   int leaving = signo == (SIGRTMIN + 2);
   switching_vt = leaving ? 1 : -1;
+  SIGHANDLER_END;
 }
 
 
@@ -881,6 +883,7 @@ void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
  */
 void received_info(int signo)
 {
+  SIGHANDLER_START;
   (void) signo;
   iprintf("next message ID: %" PRIu32, message_id);
   iprintf("connected: %s", connected ? "yes" : "no");
@@ -896,5 +899,6 @@ void received_info(int signo)
   iprintf("secondary thread started: %s", secondary_thread_started ? "yes" : "no");
   iprintf("secondary thread failed: %s", secondary_thread_failed ? "yes" : "no");
   iprintf("non-exclusive counter: %zi", nonexclusive_counter);
+  SIGHANDLER_END;
 }
 

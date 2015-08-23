@@ -351,9 +351,11 @@ int echo_message(void)
  */
 void received_info(int signo)
 {
+  SIGHANDLER_START;
   (void) signo;
   iprintf("next message ID: %" PRIu32, message_id);
   iprintf("connected: %s", connected ? "yes" : "no");
   iprintf("echo buffer size: %zu bytes", echo_buffer_size);
+  SIGHANDLER_END;
 }
 

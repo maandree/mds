@@ -1730,6 +1730,7 @@ void shrink_map(void)
  */
 void received_info(int signo)
 {
+  SIGHANDLER_START;
   size_t i;
   (void) signo;
   iprintf("next message ID: %" PRIu32, message_id);
@@ -1746,5 +1747,6 @@ void received_info(int signo)
   for (i = 0; i < mapping_size; i++)
     if ((int)i != mapping[i])
       iprintf("  %zu -> %i", i, mapping[i]);
+  SIGHANDLER_END;
 }
 

@@ -752,5 +752,22 @@
 #endif
 
 
+/**
+ * Normal signal handlers should place this macro
+ * at the top of the function
+ */
+#define SIGHANDLER_START  \
+  int sighandler_saved_errno = errno
+
+
+/**
+ * Normal signal handlers should place this macro
+ * at the bottom of the function, or just before
+ * any `return`
+ */
+#define SIGHANDLER_END  \
+  (errno = sighandler_saved_errno)
+
+
 #endif
 

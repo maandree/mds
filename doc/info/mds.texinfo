@@ -6460,6 +6460,28 @@ if no error occurs@footnote{@code{glibc} will not clear
 will be defined.}, and creates the alias
 @code{CLOCK_MONOTONIC_RAW} for @code{CLOCK_MONOTONIC}
 unless @code{CLOCK_MONOTONIC_RAW} is already defined.
+The header file also ensure that all aliases for socket
+protocol families and address families, for all definied
+protocol families and address families.
+
+The header file @file{<libmdsserver/macros.h>}, also
+provides to macros to help write signal handlers.
+@table @code
+@item SIGHANDLER_START
+Normal signal handlers should place this macro
+at the top of the function. It will save the value
+of @code{errno}.
+@item SIGHANDLER_END
+Normal signal handlers should place this macro
+at the bottom of the function, or just before
+any @code{return}. It will restore the value of
+@code{errno} saved by @code{SIGHANDLER_START}.
+@end table
+These macros should be used, because signal handlers
+should not modify @code{errno}. The one occasion where
+exiting a signal handler with a modified @code{errno}
+is acceptable, is when the signal handler exits the
+program without returning.
 
 
 

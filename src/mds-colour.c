@@ -477,6 +477,7 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
  */
 void received_info(int signo)
 {
+  SIGHANDLER_START;
   size_t i;
   colour_list_entry_t* entry;
   (void) signo;
@@ -489,6 +490,7 @@ void received_info(int signo)
 	    entry->value.bytes, entry->value.red, entry->value.green,
 	    entry->value.blue, entry->key_hash, entry->key);
   iprint("END DEFINED COLOURS");
+  SIGHANDLER_END;
 }
 
 
