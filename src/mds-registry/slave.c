@@ -40,7 +40,7 @@
  */
 static int slave_notify_client(slave_t* slave)
 {
-  char buf[sizeof("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n\n") / sizeof(char) + 40];
+  char buf[sizeof("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n\n") / sizeof(char) + 41];
   size_t ptr = 0, sent, left;
   
   /* Construct message headers. */
