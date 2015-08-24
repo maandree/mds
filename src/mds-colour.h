@@ -115,10 +115,10 @@ int set_colour(const char* name, const colour_t* colour) __attribute__((nonnull(
 /**
  * Broadcast a colour list update event
  * 
- * @param   event        The event, that is, the value for the Command-header, must not be `NULL`
+ * @param   event        The event, that is, the value for the `Command`-header, must not be `NULL`
  * @param   name         The name of the colour, must not be `NULL`
  * @param   colour       The new colour, `NULL` if and only if removed
- * @param   last_update  The value on the Last update-header
+ * @param   last_update  The value on the `Last update`-header
  * @return               Zero on success, -1 on error
  */
 int broadcast_update(const char* event, const char* name, const colour_t* colour,
