@@ -117,19 +117,17 @@ int initialise_server(void)
    */
   
   fail_if (full_send(message, strlen(message)));  stage++;
-  fail_if (hash_table_create_tuned(&reg_table, 32));  stage++;
+  fail_if (hash_table_create_tuned(&reg_table, 32));
   reg_table.key_comparator = (compare_func*)string_comparator;
   reg_table.hasher = (hash_func*)string_hash;
-  fail_if (server_initialised() < 0);
+  fail_if (server_initialised() < 0);  stage++;
   fail_if (mds_message_initialise(&received));
   
   return 0;  
  fail:
   xperror(*argv);
-  if (stage == 1)
-    hash_table_destroy(&reg_table, NULL, NULL);
-  if (stage == 2)
-    mds_message_destroy(&received);
+  if (stage >= 1)  hash_table_destroy(&reg_table, NULL, NULL);
+  if (stage >= 2)  mds_message_destroy(&received);
   return 1;
 }
 
