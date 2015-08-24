@@ -204,15 +204,21 @@ size_t marshal_server_size(void)
 
 
 /**
+ * `memset`, but the compiler does not know that
+ */
+void* (* volatile mds_clipboard_my_explicit_memset)(void* s, int c, size_t n) = memset;
+
+
+/**
  * Wipe a memory area and free it
  * 
  * @param  s  The memory area
  * @param  n  The number of bytes to write
  */
-static inline __attribute__((optimize("-O0"))) void wipe_and_free(void* s, size_t n)
+static inline void wipe_and_free(void* s, size_t n)
 {
   if (s != NULL)
-    free(memset(s, 0, n)); /* TODO use explicit_bzero-like wipe */
+    free(mds_clipboard_my_explicit_memset(s, 0, n));
 }
 
 
