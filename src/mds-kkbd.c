@@ -611,10 +611,7 @@ int handle_message(void)
 #undef __get_header
   
   if (recv_message_id == NULL)
-    {
-      eprint("received message without ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
+    return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
   
   if (recv_command == NULL)
     return 0; /* How did that get here, not matter, just ignore it? */
@@ -683,10 +680,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
   int r;
   
   if (recv_modify_id == NULL)
-    {
-      eprint("did not get a modify ID, ignoring.");
-      return 0;
-    }
+    return eprint("did not get a modify ID, ignoring."), 0;
   
   
   if (strequals(recv_client_id, "0:0"))
@@ -764,10 +758,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   int r, have_len = 0;
   
   if (recv_modify_id == NULL)
-    {
-      eprint("did not get a modify ID, ignoring.");
-      return 0;
-    }
+    return eprint("did not get a modify ID, ignoring."), 0;
   
   for (i = 0; i < received.header_count; i++)
     n += strlen(received.headers[i]);
@@ -852,16 +843,10 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
     return 0;
   
   if (recv_active == NULL)
-    {
-      eprint("received LED writing request without active header, ignoring.");
-      return 0;
-    }
+    return eprint("received LED writing request without active header, ignoring."), 0;
   
   if (recv_mask == NULL)
-    {
-      eprint("received LED writing request without mask header, ignoring.");
-      return 0;
-    }
+    return eprint("received LED writing request without mask header, ignoring."), 0;
   
   current = get_leds();
   if (current < 0)
@@ -929,16 +914,10 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
     return 0;
   
   if (recv_keyboard == NULL)
-    {
-      eprint("received LED reading request but no specified keyboard, ignoring.");
-      return 0;
-    }
+    return eprint("received LED reading request but no specified keyboard, ignoring."), 0;
   
   if (strequals(recv_client_id, "0:0"))
-    {
-      eprint("received information request from an anonymous client, ignoring.");
-      return 0;
-    }
+    return eprint("received information request from an anonymous client, ignoring."), 0;
   
   leds = get_leds();
   if (leds < 0)
@@ -1028,10 +1007,7 @@ static void remap_led(const char* name, const char* position)
   char c;
   
   if (led < 0)
-    {
-      eprintf("received invalid LED, %s, to remap, ignoring.", name);
-      return;
-    }
+    return eprintf("received invalid LED, %s, to remap, ignoring.", name), 0;
   
   if (pos >= 0)
     goto done;
@@ -1043,10 +1019,7 @@ static void remap_led(const char* name, const char* position)
       break;
   
   if (i < n)
-    {
-      eprintf("received invalid LED position, %s, ignoring.", position);
-      return;
-    }
+    return eprintf("received invalid LED position, %s, ignoring.", position), 0;
   
   pos = 1 << pos;
   
@@ -1347,10 +1320,7 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
   else if (strequals(recv_action, "remap"))
     {
       if (received.payload_size == 0)
-	{
-	  eprint("received keycode remap request without a payload, ignoring.");
-	  return 0;
-	}
+	return eprint("received keycode remap request without a payload, ignoring."), 0;
       
       with_mutex (mapping_mutex,
 		  r = remap(received.payload, received.payload_size);
@@ -1368,10 +1338,7 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
   else if (strequals(recv_action, "query"))
     {
       if (strequals(recv_client_id, "0:0"))
-	{
-	  eprint("received information request from an anonymous client, ignoring.");
-	  return 0;
-	}
+	return eprint("received information request from an anonymous client, ignoring."), 0;
       
       fail_if (mapping_query(recv_client_id, recv_message_id));
     }
