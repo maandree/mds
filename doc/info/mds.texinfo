@@ -714,6 +714,7 @@ were closed the last time they were closed.
 * Filesystem::                                The display server's footprint on the filesystem.
 * Message Passing::                           Sending messages between servers and clients.
 * Interception::                              Implementing protocols and writing unanticipated clients.
+* Responses::                                 How responses to queries and commands are structured.
 * Portability::                               Restrictions for portability on protocols.
 @end menu
 
@@ -1242,6 +1243,62 @@ Length: 30\n
 \n
 Command: keyboard-enumeration\n
 @end example
+
+
+
+@node Responses
+@section Responses
+
+@cpindex Responses
+@cpindex Error management
+Many commands are met with no response. The client,
+can however sometimes infer when the commands has
+been processed by listening for events that are
+triggered when some commands have been process.
+Other times, commands are responded to with an
+error message either indicating success or failure.
+@footnote{See @ref{error}}.
+
+Queries are always met with a response unless
+the an involved server failed or the queries was
+malformated or included invalid parameters and
+therefore silently@footnote{Although in these
+cases most servers will print an error to their
+stderr} ignored. The response will either be
+an error message indicating failure (or success
+in very special cases,) or an especially formatted
+message that includes describes the requested data.
+
+Responses will always include at least four headers:
+@table @code
+@item To
+Will include the client's, who made the request,
+client ID. This will be the value of the header
+@code{Client ID} in the message that triggered
+the response.
+
+@item In response to
+Will include the message ID of the message that
+triggered the response. The value of the
+@code{Message ID}-header of the received message.
+
+@item Message ID
+The ID of the response message. You will probably
+not find any use of this. But it is required by
+the message passing protocol.
+
+@item Origin command
+The value of this header will be the value of the
+@code{Command}-header in the received message.
+This can be used if you want to listen for
+responses, and perhaps modify them, between
+other servers and clients.
+@end table
+
+The message @code{Command: assign-id} is except from
+this sections. In particular it will not include the
+headers @code{To}, @code{Message ID} and
+@code{Origin command}. See @ref{Message Passing}.
 
 
 
@@ -3129,6 +3186,7 @@ do not implement this in your server.
 @prindex @code{error}
 
 @cpindex Error management
+@cpindex Responses
 @table @asis
 @item Identifying header:
 @code{Command: error}
@@ -4313,7 +4371,7 @@ reference implementation will pop entries that have
 timed out when a new entry is added, the reading on
 the clipstack is requested or the server is
 reexecuted, but another implement may choose to pop
-entires asynchronously using another thread or an
+entries asynchronously using another thread or an
 alarm an pop when @code{SIGALRM} is received.
 
 Available and optional if the @code{Action: add} is
@@ -4350,7 +4408,7 @@ Optional.
 @item Action:
 The clipboard server sends out some information about
 what it is doing, such as automatically removing
-entires.
+entries.
 
 @item Included header: @code{Event}
 @table @code
@@ -6901,7 +6959,7 @@ to terminated the string, but @code{192 128} is not.}
 This function returns zero if the @code{string} is
 properly formatted, and @code{-1} otherwise.
 
-@item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size, uint32_t message_id}) @arrow{} @code{size_t}]
+@item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, const char* restrict recv_command, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size, uint32_t message_id}) @arrow{} @code{size_t}]
 @cpindex @code{construct_error_message}
 @cpindex Error management
 This function constructs an error message to be sent to
@@ -6923,6 +6981,9 @@ that is, the value of the header @code{Message ID}
 on the received message and the header
 @code{In response to} in the message to construct.
 Must not be @code{NULL}.
+@item recv_command
+The value of the @code{Command}-header on the
+message that was received. Must not be @code{NULL}.
 @item custom
 If and only if set to zero, value of @code{errnum}
 is a value for @code{errno}.

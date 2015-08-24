@@ -796,6 +796,8 @@ int verify_utf8(const char* string, int allow_modified_nul)
  * 
  * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
  * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   recv_command      The value of the `Command`-header on the message that was received,
+ *                            must not be `NULL`
  * @param   custom            Non-zero if the error is a custom error
  * @param   errnum            The error number, `errno` should be used if the error
  *                            is not a custom error, zero should be used on success,
@@ -815,21 +817,23 @@ int verify_utf8(const char* string, int allow_modified_nul)
  * @return                    The length of the message, zero on error
  */
 size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
-			       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
+			       const char* restrict recv_command, int custom, int errnum,
+			       const char* restrict message, char** restrict send_buffer,
 			       size_t* restrict send_buffer_size, uint32_t message_id)
 {
   ssize_t part_length;
-  size_t length = 0;
+  size_t length;
   char* temp;
   
   /* Measure the maximum length of message, including NUL-termination.. */
-  length += sizeof("Command: error\n"
-		   "To: 4294967296:4294967296\n"
-		   "In response to: 4294967296\n"
-		   "Message ID: 4294967296\n"
-		   "Error: custom \n"
-		   "Length: \n"
-		   "\n") / sizeof(char) + 3 * (sizeof(int));
+  length = sizeof("Command: error\n"
+		  "To: 4294967296:4294967296\n"
+		  "In response to: 4294967296\n"
+		  "Origin command: \n"
+		  "Message ID: 4294967296\n"
+		  "Error: custom \n"
+		  "Length: \n"
+		  "\n") / sizeof(char) + 3 * (sizeof(int)) + strlen(recv_command);
   if (message != NULL)
     length += (sizeof("Length: \n") / sizeof(char) - 1) + 3 * sizeof(char) + strlen(message) + 1;
   
@@ -850,9 +854,10 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
 	  "Command: error\n"
 	  "To: %s\n"
 	  "In response to: %s\n"
+	  "Origin command: %s\n"
 	  "Message ID: %"PRIu32"\n"
 	  "Error: %s%zn",
-	  recv_client_id, recv_message_id,
+	  recv_client_id, recv_message_id, recv_command,
 	  message_id, custom ? "custom" : "",
 	  &part_length),
     length += (size_t)part_length;
@@ -898,6 +903,8 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
  * 
  * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
  * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   recv_command      The value of the `Command`-header on the message that was received,
+ *                            must not be `NULL`
  * @param   custom            Non-zero if the error is a custom error
  * @param   errnum            The error number, `errno` should be used if the error
  *                            is not a custom error, zero should be used on success,
@@ -918,11 +925,12 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
  * @return                    Zero on success, -1 on error
  */
 int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
-	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
-	       size_t* restrict send_buffer_size, uint32_t message_id, int socket_fd)
+	       const char* restrict recv_command, int custom, int errnum, const char* restrict message,
+	       char** restrict send_buffer, size_t* restrict send_buffer_size, uint32_t message_id,
+	       int socket_fd)
 {
   size_t length;
-  fail_if ((length = construct_error_message(recv_client_id, recv_message_id, custom, errnum,
+  fail_if ((length = construct_error_message(recv_client_id, recv_message_id, recv_command, custom, errnum,
 					     message, send_buffer, send_buffer_size, message_id)) == 0);
   fail_if (full_send(socket_fd, *send_buffer, length));
   return 0;

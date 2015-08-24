@@ -40,11 +40,12 @@
  */
 static int slave_notify_client(slave_t* slave)
 {
-  char buf[sizeof("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n\n") / sizeof(char) + 41];
+  char buf[sizeof("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nOrigin command: register\n\n")
+	   / sizeof(char) + 41];
   size_t ptr = 0, sent, left;
   
   /* Construct message headers. */
-  sprintf(buf, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n\n",
+  sprintf(buf, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nOrigin command: register\n\n",
 	  slave->client_id, slave->message_id, message_id);
   
   /* Increase message ID. */

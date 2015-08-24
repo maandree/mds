@@ -378,15 +378,26 @@ static int list_registry(const char* recv_client_id, const char* recv_message_id
   
   /* Make sure the message headers can fit the send buffer. */
   
-  i = strlen(recv_message_id) + strlen(recv_client_id) + 10 + 19;
-  i += strlen("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nLength: %" PRIu64 "\n\n");
+  i = sizeof("To: \n"
+	     "In response to: \n"
+	     "Message ID: \n"
+	     "Origin command: register\n"
+	     "Length: \n"
+	     "\n") / sizeof(char) - 1;
+  i += strlen(recv_message_id) + strlen(recv_client_id) + 10 + 19;
   
   while (ptr + i >= send_buffer_size)
     fail_if (growalloc(old, send_buffer, send_buffer_size, char));
   
   
   /* Construct message headers. */
-  sprintf(send_buffer + ptr, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nLength: %" PRIu64 "\n\n",
+  sprintf(send_buffer + ptr,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIu32 "\n"
+	  "Origin command: register\n"
+	  "Length: %" PRIu64 "\n"
+	  "\n",
 	  recv_client_id, recv_message_id, message_id, ptr);
   
   /* Increase message ID. */
@@ -441,25 +452,13 @@ static int handle_register_message(void)
   /* Validate headers. */
   
   if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
-    {
-      eprint("received message from anonymous sender, ignoring.");
-      return 0;
-    }
+      return eprint("received message from anonymous sender, ignoring."), 0;
   else if (strchr(recv_client_id, ':') == NULL)
-    {
-      eprint("received message from sender without a colon it its ID, ignoring, invalid ID.");
-      return 0;
-    }
+    return eprint("received message from sender without a colon it its ID, ignoring, invalid ID."), 0;
   else if ((recv_length == NULL) && ((recv_action == NULL) || !strequals(recv_action, "list")))
-    {
-      eprint("received empty message without `Action: list`, ignoring, has no effect.");
-      return 0;
-    }
+    return eprint("received empty message without `Action: list`, ignoring, has no effect."), 0;
   else if (recv_message_id == NULL)
-    {
-      eprint("received message without ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
+    return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
   
   
   /* Get message length, and make sure the action is defined. */

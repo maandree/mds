@@ -385,6 +385,8 @@ int verify_utf8(const char* string, int allow_modified_nul) __attribute__((pure)
  * 
  * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
  * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   recv_command      The value of the `Command`-header on the message that was received,
+ *                            must not be `NULL`
  * @param   custom            Non-zero if the error is a custom error
  * @param   errnum            The error number, `errno` should be used if the error
  *                            is not a custom error, zero should be used on success,
@@ -404,15 +406,18 @@ int verify_utf8(const char* string, int allow_modified_nul) __attribute__((pure)
  * @return                    The length of the message, zero on error
  */
 size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
-			       int custom, int errnum, const char* restrict message,
-			       char** restrict send_buffer, size_t* restrict send_buffer_size,
-			       uint32_t message_id) __attribute__((nonnull(1, 2, 6, 7)));
+			       const char* restrict recv_command, int custom, int errnum,
+			       const char* restrict message, char** restrict send_buffer,
+			       size_t* restrict send_buffer_size,
+			       uint32_t message_id) __attribute__((nonnull(1, 2, 3, 7, 8)));
 
 /**
  * Send an error message
  * 
  * @param   recv_client_id    The client ID attached on the message that was received, must not be `NULL`
  * @param   recv_message_id   The message ID attached on the message that was received, must not be `NULL`
+ * @param   recv_command      The value of the `Command`-header on the message that was received,
+ *                            must not be `NULL`
  * @param   custom            Non-zero if the error is a custom error
  * @param   errnum            The error number, `errno` should be used if the error
  *                            is not a custom error, zero should be used on success,
@@ -433,9 +438,9 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
  * @return                    Zero on success, -1 on error
  */
 int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
-	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
-	       size_t* restrict send_buffer_size, uint32_t message_id,
-	       int socket_fd) __attribute__((nonnull(1, 2, 6, 7)));
+	       const char* restrict recv_command, int custom, int errnum, const char* restrict message,
+	       char** restrict send_buffer, size_t* restrict send_buffer_size, uint32_t message_id,
+	       int socket_fd) __attribute__((nonnull(1, 2, 3, 7, 8)));
 
 
 #endif

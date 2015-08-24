@@ -127,8 +127,12 @@ static size_t colour_list_buffer_with_values_length = 0;
 /**
  * Send an error message, message ID will be incremented
  * 
- * @param   recv_client_id:const char*   The client ID attached on the message that was received
- * @param   recv_message_id:const char*  The message ID attached on the message that was received
+ * @param   recv_client_id:const char*   The client ID attached on the message that was received,
+ *                                       must not be `NULL`
+ * @param   recv_message_id:const char*  The message ID attached on the message that was received,
+ *                                       must not be `NULL`
+ * @param   recv_command:const char*     The value of the `Command`-header on the message that was
+ *                                       received, must not be `NULL`
  * @param   custom:int                   Non-zero if the error is a custom error
  * @param   errnum:int                   The error number, `errno` should be used if the error
  *                                       is not a custom error, zero should be used on success,
@@ -141,9 +145,9 @@ static size_t colour_list_buffer_with_values_length = 0;
  *                                       be omitted
  * @return                               Zero on success, -1 on error
  */
-#define send_error(recv_client_id, recv_message_id, custom, errnum, message)		\
-  ((send_error)(recv_client_id, recv_message_id, custom, errnum,			\
-		message, &send_buffer, &send_buffer_size, message_id, socket_fd)	\
+#define send_error(recv_client_id, recv_message_id, recv_command, custom, errnum, message)	\
+  ((send_error)(recv_client_id, recv_message_id, recv_command, custom, errnum,			\
+		message, &send_buffer, &send_buffer_size, message_id, socket_fd)		\
    ? -1 : ((message_id = message_id == INT32_MAX ? 0 : (message_id + 1)), 0))
 
 
@@ -522,7 +526,7 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
   else if (strequals(recv_include_values, "no"))   include_values = 0;
   else
     {
-      fail_if (send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL));
+      fail_if (send_error(recv_client_id, recv_message_id, "list-colours", 0, EPROTO, NULL));
       return 0;
     }
   
@@ -559,19 +563,20 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
   
   if (recv_name == NULL)
     {
-      fail_if (send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL));
+      fail_if (send_error(recv_client_id, recv_message_id, "get-colour", 0, EPROTO, NULL));
       return 0;
     }
   
   if (!colour_list_get(&colours, recv_name, &colour))
     {
-      fail_if (send_error(recv_client_id, recv_message_id, 1, -1, "not defined"));
+      fail_if (send_error(recv_client_id, recv_message_id, "get-colour", 1, -1, "not defined"));
       return 0;
     }
   
   length = sizeof("To: \n"
 		  "In response to: \n"
 		  "Message ID: \n"
+		  "Origin command: get-colour\n"
 		  "Bytes: \n"
 		  "Red: \n"
 		  "Green; \n"
@@ -589,6 +594,7 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %"PRIu32"\n"
+	  "Origin command: get-colour\n"
 	  "Bytes: %i\n"
 	  "Red: %"PRIu64"\n"
 	  "Green; %"PRIu64"\n"

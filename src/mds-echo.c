@@ -310,7 +310,7 @@ int echo_message(void)
   
   /* Construct echo message headers. */
   
-  n = sizeof("To: \nIn response to: \nMessage ID: \n\n") / sizeof(char);
+  n = sizeof("To: \nIn response to: \nMessage ID: \nOrigin command: echo\n\n") / sizeof(char);
   n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(uint32_t);
   if (recv_length != NULL)
     n += strlen(recv_length) + 1;
@@ -318,7 +318,13 @@ int echo_message(void)
   if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
     fail_if (xxrealloc(old_buffer, echo_buffer, echo_buffer_size = n, char));
   
-  sprintf(echo_buffer, "To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\n%s%s\n",
+  sprintf(echo_buffer,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %" PRIu32 "\n"
+	  "Origin command: echo\n"
+	  "%s%s"
+	  "\n",
 	  recv_client_id, recv_message_id, message_id,
 	  recv_length == NULL ? "" : recv_length,
 	  recv_length == NULL ? "" : "\n");

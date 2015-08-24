@@ -611,7 +611,7 @@ int handle_message(void)
  */
 int handle_get_vt(const char* client, const char* message)
 {
-  char buf[57 + 44 + 3 * sizeof(int)];
+  char buf[81 + 44 + 3 * sizeof(int)];
   int active = vt_get_active();
   int r;
   
@@ -619,6 +619,7 @@ int handle_get_vt(const char* client, const char* message)
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIu32 "\n"
+	  "Origin command: get-vt\n"
 	  "VT index: %i\n"
 	  "Active: %s\n"
 	  "\n",

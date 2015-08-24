@@ -716,6 +716,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
       n = sizeof("To: \n"
 		 "In response to: \n"
 		 "Message ID: \n"
+		 "Origin command: clipboard\n"
 		 "\n") / sizeof(char);
       n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
       
@@ -725,6 +726,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
 	      "To: %s\n"
 	      "In response to: %s\n"
 	      "Message ID: %" PRIu32 "\n"
+	      "Origin command: clipboard\n"
 	      "\n",
 	      recv_client_id, recv_message_id, message_id);
       
@@ -739,6 +741,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   n = sizeof("To: \n"
 	     "In response to: \n"
 	     "Message ID: \n"
+	     "Origin command: clipboard\n"
 	     "Length: \n"
 	     "\n") / sizeof(char);
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 3 * sizeof(size_t);
@@ -749,6 +752,7 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIu32 "\n"
+	  "Origin command: clipboard\n"
 	  "Length: %zu\n"
 	  "\n",
 	  recv_client_id, recv_message_id, message_id, clip->length);
@@ -843,6 +847,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   n = sizeof("To: \n"
 	     "In response to: \n"
 	     "Message ID: \n"
+	     "Origin command: clipboard\n"
 	     "Size: \n"
 	     "Used: \n"
 	     "\n") / sizeof(char);
@@ -853,6 +858,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIu32 "\n"
+	  "Origin command: clipboard\n"
 	  "Size: %zu\n"
 	  "Used: %zu\n"
 	  "\n",
