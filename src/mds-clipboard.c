@@ -212,7 +212,7 @@ size_t marshal_server_size(void)
 static inline __attribute__((optimize("-O0"))) void wipe_and_free(void* s, size_t n)
 {
   if (s != NULL)
-    free(memset(s, 0, n));
+    free(memset(s, 0, n)); /* TODO use explicit_bzero-like wipe */
 }
 
 
@@ -446,10 +446,7 @@ int handle_message(void)
   /* Validate headers and take appropriate action. */
   
   if (recv_message_id == NULL)
-    {
-      eprint("received message without ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
+    return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
   
   if (recv_client_closed)
     {
@@ -459,41 +456,24 @@ int handle_message(void)
     }
   
   if (recv_action == NULL)
-    {
-      eprint("received message without any action, ignoring.");
-      return 0;
-    }
+    return eprint("received message without any action, ignoring."), 0;
   if (recv_level == NULL)
-    {
-      eprint("received message without specified clipboard level, ignoring.");
-      return 0;
-    }
+    return eprint("received message without specified clipboard level, ignoring."), 0;
   level = atoi(recv_level);
   if ((level < 0) || (CLIPBOARD_LEVELS <= level))
-    {
-      eprint("received message without invalid clipboard level, ignoring.");
-      return 0;
-    }
+    return eprint("received message without invalid clipboard level, ignoring."), 0;
   if (strequals(recv_client_id, "0:0"))
     if (strequals(recv_action, "read") || strequals(recv_action, "get-size"))
-      {
-	eprint("received information request from an anonymous client, ignoring.");
-	return 0;
-      }
+      return eprint("received information request from an anonymous client, ignoring."), 0;
   
   if (strequals(recv_action, "add"))
     {
       if (recv_length == NULL)
-	{
-	  eprint("received request for adding a clipboard entry but did not receive any content, ignoring.");
-	  return 0;
-	}
+	return eprint("received request for adding a clipboard entry "
+		      "but did not receive any content, ignoring."), 0;
       if ((strequals(recv_client_id, "0:0")) && startswith(recv_time_to_live, "until-death"))
-	{
-	  eprint("received request new clipboard entry with autopurge upon"
-		 " client close from an anonymous client, ignoring.");
-	  return 0;
-	}
+	return eprint("received request new clipboard entry with autopurge upon"
+		      " client close from an anonymous client, ignoring."), 0;
       return clipboard_add(level, recv_time_to_live, recv_client_id);
     }
   else if (strequals(recv_action, "read"))
@@ -503,10 +483,7 @@ int handle_message(void)
   else if (strequals(recv_action, "set-size"))
     {
       if (recv_size == NULL)
-	{
-	  eprint("received request for clipboard resizing without a new size, ignoring.");
-	  return 0;
-	}
+	return eprint("received request for clipboard resizing without a new size, ignoring."), 0;
       return clipboard_set_size(level, atoz(recv_size));
     }
   else if (strequals(recv_action, "get-size"))
@@ -543,19 +520,15 @@ static int clipboard_notify_pop(int level, size_t index)
 {
   size_t size = clipboard_size[level];
   size_t used = clipboard_used[level];
-  size_t n = 10 + 3 * (3 * sizeof(size_t) + sizeof(int));
-  char* message;
-  
-  n += strlen("Command: clipboard-info\n"
-	      "Event: crash\n"
-	      "Message ID: %" PRIu32 "\n"
-	      "Level: %i\n"
-	      "Popped: %zu\n"
-	      "Size: %zu\n"
-	      "Used: %zu\n"
-	      "\n");
-  
-  fail_if (xmalloc(message, n, char));
+  char message[10 + 3 * (sizeof(int) + 3 * sizeof(size_t)) +
+	       sizeof("Command: clipboard-info\n"
+		      "Event: crash\n"
+		      "Message ID: \n"
+		      "Level: \n"
+		      "Popped: \n"
+		      "Size: \n"
+		      "Used: \n"
+		      "\n") / sizeof(char)];
   
   sprintf(message,
 	  "Command: clipboard-info\n"
@@ -569,7 +542,8 @@ static int clipboard_notify_pop(int level, size_t index)
 	  message_id, level, index, size, used);
   
   message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
-  return full_send(message, strlen(message)) ? -1 : 0;
+  fail_if (full_send(message, strlen(message)) ? -1 : 0);
+  return 0;
  fail:
   return -1;
 }
@@ -687,7 +661,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
       struct timespec dethklok;
       fail_if (monotone(&dethklok));
       dethklok.tv_sec += (time_t)atoll(time_to_live);
-      /* It should really be `atol`, but we want to be future proof. */
+      /* It should really be `atol`, but we want to be future-proof. */
       new_clip.dethklok = dethklok;
     }
   else
@@ -733,10 +707,10 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   
   if (clipboard_used[level] == 0)
     {
-      n = strlen("To: %s\n"
-		 "In response to: %s\n"
-		 "Message ID: %" PRIu32 "\n"
-		 "\n");
+      n = sizeof("To: \n"
+		 "In response to: \n"
+		 "Message ID: \n"
+		 "\n") / sizeof(char);
       n += strlen(recv_client_id) + strlen(recv_message_id) + 10;
       
       fail_if (xmalloc(message, n, char));
@@ -756,11 +730,11 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   
   clip = clipboard[level] + index;
   
-  n = strlen("To: %s\n"
-	     "In response to: %s\n"
-	     "Message ID: %" PRIu32 "\n"
-	     "Length: %zu\n"
-	     "\n");
+  n = sizeof("To: \n"
+	     "In response to: \n"
+	     "Message ID: \n"
+	     "Length: \n"
+	     "\n") / sizeof(char);
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 3 * sizeof(size_t);
   
   fail_if (xmalloc(message, n, char));
@@ -783,7 +757,8 @@ int clipboard_read(int level, size_t index, const char* recv_client_id, const ch
   return 0;
  fail:
   xperror(*argv);
-  return -1;
+  free(message);
+  return errno = 0, -1;
 }
 
 
@@ -859,12 +834,12 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
   
   fail_if (clipboard_purge(level, NULL));
   
-  n = strlen("To: %s\n"
-	     "In response to: %s\n"
-	     "Message ID: %" PRIu32 "\n"
-	     "Size: %zu\n"
-	     "Used: %zu\n"
-	     "\n");
+  n = sizeof("To: \n"
+	     "In response to: \n"
+	     "Message ID: \n"
+	     "Size: \n"
+	     "Used: \n"
+	     "\n") / sizeof(char);
   n += strlen(recv_client_id) + strlen(recv_message_id) + 10 + 2 * 3 * sizeof(size_t);
   
   fail_if (xmalloc(message, n, char));
@@ -886,7 +861,7 @@ int clipboard_get_size(int level, const char* recv_client_id, const char* recv_m
  fail:
   xperror(*argv);
   free(message);
-  return -1;
+  return errno = 0, -1;
 }
 
 
