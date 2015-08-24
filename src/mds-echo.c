@@ -304,20 +304,14 @@ int echo_message(void)
   
   /* Validate headers. */
   if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
-    {
-      eprint("received message from anonymous sender, ignoring.");
-      return 0;
-    }
+      return eprint("received message from anonymous sender, ignoring."), 0;
   else if (recv_message_id == NULL)
-    {
-      eprint("received message without ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
+    return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
   
   /* Construct echo message headers. */
   
-  n = 1 + strlen("To: \nIn response to: \nMessage ID: \n\n");
-  n += strlen(recv_client_id) + strlen(recv_message_id) + 2 * sizeof(int32_t) + sizeof(uint32_t);
+  n = sizeof("To: \nIn response to: \nMessage ID: \n\n") / sizeof(char);
+  n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(uint32_t);
   if (recv_length != NULL)
     n += strlen(recv_length) + 1;
   
