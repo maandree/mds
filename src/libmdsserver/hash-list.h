@@ -376,7 +376,7 @@ T##_remove(T##_t* restrict this, CKEY_T key)\
   size_t i = this->last, n, hash = HASH_LIST_HASH(key);\
   T##_entry_t* slots = this->slots;\
   \
-  /* First, try cached index */\
+  /* First, try cached index. */\
   if (HASH_LIST_EXPECTED(i && (slots[i].key_hash == hash) && (slots[i].key != NULL)))\
     if (HASH_LIST_EXPECTED(T##_key_comparer(slots[i].key, key)))\
       goto do_remove;\
@@ -385,11 +385,11 @@ T##_remove(T##_t* restrict this, CKEY_T key)\
    * what is happening. So we do not expect to get
    * get to the next line. However, if do not expect to
    * run get before put or remove, you should modify the
-   * HASH_LIST_EXPECTED macro. However, this is single
+   * `HASH_LIST_EXPECTED` macro. However, this is single
    * case where will will get to the next line, when the
    * index of the item is zero. */\
   \
-  /* Then, search */\
+  /* Then, search. */\
   for (i = 0, n = this->used; i < n; i++)\
     if ((slots[i].key_hash == hash) && (slots[i].key != NULL))\
       if (T##_key_comparer(slots[i].key, key))\
@@ -422,17 +422,17 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
   size_t i = this->last, n, empty = this->used, hash;\
   T##_entry_t* slots = this->slots;\
   \
-  /* Remove entry if no value is passed */\
+  /* Remove entry if no value is passed. */\
   if (value == NULL)\
     {\
       T##_remove(this, key);\
       return 0;\
     }\
   \
-  /* Hash the input key */\
+  /* Hash the input key. */\
   hash = HASH_LIST_HASH(key);\
   \
-  /* Try cached index */\
+  /* Try cached index. */\
   if (HASH_LIST_EXPECTED(i && (slots[i].key != NULL)))\
     if (HASH_LIST_EXPECTED(slots[i].key_hash == hash))\
       if (HASH_LIST_EXPECTED(T##_key_comparer(slots[i].key, key)))\
@@ -442,11 +442,11 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
    * what is happening. So we do not expect to get
    * get to the next line. However, if do not expect to
    * run get before put or remove, you should modify the
-   * HASH_LIST_EXPECTED macro. However, this is single
+   * `HASH_LIST_EXPECTED` macro. However, this is single
    * case where will will get to the next line, when the
    * index of the item is zero. */\
   \
-  /* Find an unused slot or the current slot */\
+  /* Find an unused slot or the current slot. */\
   for (i = 0, n = this->used; i < n; i++)\
     if (slots[i].key == NULL)\
       empty = i;\
@@ -454,7 +454,7 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
       if (T##_key_comparer(slots[i].key, key))\
 	goto put;\
   \
-  /* Grow slot allocation is required */\
+  /* Grow slot allocation is required. */\
   if (empty == this->allocated)\
     {\
       if (empty >= SIZE_MAX >> 1)\
@@ -466,7 +466,7 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
       this->allocated <<= 1;\
     }\
   \
-  /* Store entry */\
+  /* Store entry. */\
   i = empty;\
   goto put_no_free;\
  put:\
