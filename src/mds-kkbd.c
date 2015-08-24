@@ -780,6 +780,11 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
   n += received.payload_size;
   
   
+  /* Calculate upper bound for the outbound message's payload */
+  n += lengthof("Length: \n") + 3 * sizeof(size_t);
+  n += lengthof(KEYBOARD_ID "\n");
+  
+  
   /* Calculate an upper bound for the outbound message.
      `off` is an upper bound for the outbound message's
      headers plus empty line and thus where we should
@@ -813,7 +818,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
 	  have_len = 1;
 	  sprintf(send_buffer + n,
 		  "Length: %zu\n",
-		  strlen(KEYBOARD_ID "\n") + received.payload_size);
+		  received.payload_size + lengthof(KEYBOARD_ID "\n"));
 	  n += strlen(send_buffer + n);
 	}
       else
@@ -823,11 +828,20 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
 	  send_buffer[n++] = '\n';
 	}
     }
+  /* If we did not `Length`-header we must add it as we will extend the payload. */
+  if (!have_len)
+    sprintf(send_buffer + n,
+	    "Length: %zu\n",
+	    lengthof(KEYBOARD_ID "\n")),
+      n += strlen(send_buffer + n);
   /* Mark end of inbound headers. */
   send_buffer[n++] = '\n';
   /* Write inbound message's payload to the outbound message. */
   memcpy(send_buffer + n, received.payload, received.payload_size * sizeof(char));
   n += received.payload_size;
+  /* Add our keyboard to the payload. */
+  memcpy(send_buffer + n, KEYBOARD_ID "\n", lengthof(KEYBOARD_ID "\n") * sizeof(char));
+  n += lengthof(KEYBOARD_ID "\n");
   /* Change `n` to tell the length of the outbound message's payload. */
   n -= off;
   
