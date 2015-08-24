@@ -400,11 +400,13 @@ int verify_utf8(const char* string, int allow_modified_nul) __attribute__((pure)
  * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
  *                            contain the current size of `*send_buffer` and will be updated
  *                            with the new size, must not be `NULL`
+ * @param   message_id        The message ID of this message
  * @return                    The length of the message, zero on error
  */
 size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
-			       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
-			       size_t* restrict send_buffer_size) __attribute__((nonnull(1, 2, 6, 7)));
+			       int custom, int errnum, const char* restrict message,
+			       char** restrict send_buffer, size_t* restrict send_buffer_size,
+			       uint32_t message_id) __attribute__((nonnull(1, 2, 6, 7)));
 
 /**
  * Send an error message
@@ -426,12 +428,14 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
  * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
  *                            contain the current size of `*send_buffer` and will be updated
  *                            with the new size, must not be `NULL`
+ * @param   message_id        The message ID of this message
  * @param   socket_fd         The file descriptor of the socket
  * @return                    Zero on success, -1 on error
  */
 int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
 	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
-	       size_t* restrict send_buffer_size, int socket_fd) __attribute__((nonnull(1, 2, 6, 7)));
+	       size_t* restrict send_buffer_size, uint32_t message_id,
+	       int socket_fd) __attribute__((nonnull(1, 2, 6, 7)));
 
 
 #endif

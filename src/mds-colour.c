@@ -125,7 +125,7 @@ static size_t colour_list_buffer_with_values_length = 0;
   ((full_send)(socket_fd, message, length))
 
 /**
- * Send an error message
+ * Send an error message, message ID will be incremented
  * 
  * @param   recv_client_id:const char*   The client ID attached on the message that was received
  * @param   recv_message_id:const char*  The message ID attached on the message that was received
@@ -141,9 +141,10 @@ static size_t colour_list_buffer_with_values_length = 0;
  *                                       be omitted
  * @return                               Zero on success, -1 on error
  */
-#define send_error(recv_client_id, recv_message_id, custom, errnum, message)  \
-  ((send_error)(recv_client_id, recv_message_id, custom, errnum,              \
-		message, &send_buffer, &send_buffer_size, socket_fd))
+#define send_error(recv_client_id, recv_message_id, custom, errnum, message)		\
+  ((send_error)(recv_client_id, recv_message_id, custom, errnum,			\
+		message, &send_buffer, &send_buffer_size, message_id, socket_fd)	\
+   ? -1 : ((message_id = message_id == INT32_MAX ? 0 : (message_id + 1)), 0))
 
 
 /**

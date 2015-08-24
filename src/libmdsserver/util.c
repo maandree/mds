@@ -31,6 +31,7 @@
 #include <time.h>
 #include <sys/wait.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 
 
@@ -810,52 +811,32 @@ int verify_utf8(const char* string, int allow_modified_nul)
  * @param   send_buffer_size  Pointer to the allocation size of `*send_buffer`, it should
  *                            contain the current size of `*send_buffer` and will be updated
  *                            with the new size, must not be `NULL`
+ * @param   message_id        The message ID of this message
  * @return                    The length of the message, zero on error
  */
 size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
 			       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
-			       size_t* restrict send_buffer_size)
+			       size_t* restrict send_buffer_size, uint32_t message_id)
 {
   ssize_t part_length;
   size_t length = 0;
   char* temp;
   
-  /* Measure the length of mandatory headers and either values,
-     as well as the line to end the headers. The `Error`-header
-     however is currently measure without error number. */
-  snprintf(NULL, 0,
-	   "Command: error\n"
-	   "To: %s\n"
-	   "In response to: %s\n"
-	   "Error: %s\n"
-	   "\n%zn",
-	   recv_client_id, recv_message_id,
-	   custom ? "custom" : "",
-	   &part_length),
-    length += (size_t)part_length;
-  
-  /* If the error number is custom and their is a number,
-     a blank space is required between the word ‘custom’
-     and the number. */
-  if (custom && (errnum >= 0))
-    length++;
-  /* Measure the length of the error number. */
-  if (errnum >= 0)
-    snprintf(NULL, 0, "%i%zn", errnum, &part_length),
-      length += (size_t)part_length;
-  
-  /* Measure the length of the error description and
-     the length of the header specifying its length. */
+  /* Measure the maximum length of message, including NUL-termination.. */
+  length += sizeof("Command: error\n"
+		   "To: 4294967296:4294967296\n"
+		   "In response to: 4294967296\n"
+		   "Message ID: 4294967296\n"
+		   "Error: custom \n"
+		   "Length: \n"
+		   "\n") / sizeof(char) + 3 * (sizeof(int));
   if (message != NULL)
-    snprintf(NULL, 0, "Length: %zu\n%zn",
-	     strlen(message) + 1, &part_length),
-      length += (size_t)part_length + strlen(message) + 1;
+    length += (sizeof("Length: \n") / sizeof(char) - 1) + 3 * sizeof(char) + strlen(message) + 1;
   
   /* Ensure that the send buffer is large enough. */
   if (length > *send_buffer_size)
     {
-      if (yrealloc(temp, *send_buffer, length, char))
-	return 0;
+      fail_if (yrealloc(temp, *send_buffer, length, char));
       *send_buffer_size = length;
     }
   
@@ -869,9 +850,10 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
 	  "Command: error\n"
 	  "To: %s\n"
 	  "In response to: %s\n"
+	  "Message ID: %"PRIu32"\n"
 	  "Error: %s%zn",
 	  recv_client_id, recv_message_id,
-	  custom ? "custom" : "",
+	  message_id, custom ? "custom" : "",
 	  &part_length),
     length += (size_t)part_length;
   
@@ -906,6 +888,8 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
     }
   
   return length;
+ fail:
+  return 0;
 }
 
 
@@ -930,14 +914,19 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
  *                            contain the current size of `*send_buffer` and will be updated
  *                            with the new size, must not be `NULL`
  * @param   socket_fd         The file descriptor of the socket
+ * @param   message_id        The message ID of this message
  * @return                    Zero on success, -1 on error
  */
 int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
 	       int custom, int errnum, const char* restrict message, char** restrict send_buffer,
-	       size_t* restrict send_buffer_size, int socket_fd)
+	       size_t* restrict send_buffer_size, uint32_t message_id, int socket_fd)
 {
-  size_t length = construct_error_message(recv_client_id, recv_message_id, custom, errnum,
-					  message, send_buffer, send_buffer_size);
-  return length ? full_send(socket_fd, *send_buffer, length) : -1;
+  size_t length;
+  fail_if ((length = construct_error_message(recv_client_id, recv_message_id, custom, errnum,
+					     message, send_buffer, send_buffer_size, message_id)) == 0);
+  fail_if (full_send(socket_fd, *send_buffer, length));
+  return 0;
+ fail:
+  return -1;
 }
 
