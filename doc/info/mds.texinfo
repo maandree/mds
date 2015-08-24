@@ -6901,7 +6901,7 @@ to terminated the string, but @code{192 128} is not.}
 This function returns zero if the @code{string} is
 properly formatted, and @code{-1} otherwise.
 
-@item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size}) @arrow{} @code{size_t}]
+@item @code{construct_error_message} [(@code{const char* restrict recv_client_id, const char* restrict recv_message_id, int custom, int errnum, const char* restrict message, char** restrict send_buffer, size_t* restrict send_buffer_size, uint32_t message_id}) @arrow{} @code{size_t}]
 @cpindex @code{construct_error_message}
 @cpindex Error management
 This function constructs an error message to be sent to
@@ -6946,6 +6946,8 @@ Pointer to the allocation size of @code{*send_buffer},
 it should contain the current size of @code{*send_buffer}
 and will be updated with the new size. Must not be
 @code{NULL}
+@item message_id
+The message ID of the message that is being constructed.
 @end table
 
 It is not allowed to have a negative value on
