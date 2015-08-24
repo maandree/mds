@@ -314,6 +314,92 @@ size_t libmds_headers_cherrypick_binary_sorted_v(char** restrict headers, size_t
  */
 void libmds_headers_sort(char** restrict headers, size_t header_count);
 
+/**
+ * Compose a message
+ * 
+ * @param   buffer          Pointer to the buffer where the message should be written,
+ *                          may point to `NULL` if `buffer_size` points to zero, but the
+ *                          pointer itself must not be `NULL`. The buffer may be reallocated.
+ *                          Will be updated with the new buffer it is allocated.
+ *                          The buffer the pointer points to will be filled with the
+ *                          message, however there is no guarantee it will be NUL-terminated.
+ * @param   buffer_size     The allocation size of, in `char` `*buffer`, if and only if `buffer`
+ *                          points to `NULL`, this point should point to zero, and vice versa.
+ *                          Must not be `NULL`. Will be update with the new allocation size.
+ *                          It is guaranteed that there will be remove to NUL-terminate
+ *                          the message even if it was already NUL-terminate (terminate it
+ *                          doubly in that case.)
+ * @param   length          Output parameter for the length of the constructed message.
+ *                          Must not be `NULL`.
+ * @param   payload         The payload that should be added to the message, it should end
+ *                          with a LF. `NULL` if the message should not have a payload.
+ * @param   payload_length  Pointer to the length of the payload. If `NULL`, `payload`
+ *                          must be NUL-terminated, and if it is `NULL` this NUL-termination
+ *                          will be used to find the length of the payload. This variable is
+ *                          not used if `payload` is `NULL`.
+ * @param   ...             The first argument should be a line describing the first header,
+ *                          it should be a printf(3)-formatted line that fully describes the
+ *                          header line, that is, the header name, colon, blank space and then
+ *                          the header's value. No LF should be included. The following
+ *                          arguments should be the argument to format the header line.
+ *                          This may be be iterated any number of this. The last argument
+ *                          should be `NULL` to specify that there are no more headers.
+ *                          The `Length`-header should not be included, it is added automatically.
+ *                          A header may not have a length larger than 2¹⁵, otherwise
+ *                          the behaviour of this function is undefined.
+ * @return                  Zero on success, -1 on error, `errno` will have been set
+ *                          accordingly on error.
+ * 
+ * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
+ *                          RLIMIT_DATA limit described in getrlimit(2).
+ */
+int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
+		   const char* restrict payload, const size_t* restrict payload_length,
+		   ...) __attribute__((nonnull(1, 2, 3)));
+
+/**
+ * Compose a message
+ * 
+ * @param   buffer          Pointer to the buffer where the message should be written,
+ *                          may point to `NULL` if `buffer_size` points to zero, but the
+ *                          pointer itself must not be `NULL`. The buffer may be reallocated.
+ *                          Will be updated with the new buffer it is allocated.
+ *                          The buffer the pointer points to will be filled with the
+ *                          message, however there is no guarantee it will be NUL-terminated.
+ * @param   buffer_size     The allocation size, in `char` of `*buffer`, if and only if `buffer`
+ *                          points to `NULL`, this point should point to zero, and vice versa.
+ *                          Must not be `NULL`. Will be update with the new allocation size.
+ *                          It is guaranteed that there will be remove to NUL-terminate
+ *                          the message even if it was already NUL-terminate (terminate it
+ *                          doubly in that case.)
+ * @param   length          Output parameter for the length of the constructed message.
+ *                          Must not be `NULL`.
+ * @param   payload         The payload that should be added to the message, it should end
+ *                          with a LF. `NULL` if the message should not have a payload.
+ * @param   payload_length  Pointer to the length of the payload. If `NULL`, `payload`
+ *                          must be NUL-terminated, and if it is `NULL` this NUL-termination
+ *                          will be used to find the length of the payload. This variable is
+ *                          not used if `payload` is `NULL`.
+ * @param   args            The first argument should be a line describing the first header,
+ *                          it should be a printf(3)-formatted line that fully describes the
+ *                          header line, that is, the header name, colon, blank space and then
+ *                          the header's value. No LF should be included. The following
+ *                          arguments should be the argument to format the header line.
+ *                          This may be be iterated any number of this. The last argument
+ *                          should be `NULL` to specify that there are no more headers.
+ *                          The `Length`-header should not be included, it is added automatically.
+ *                          A header may not have a length larger than 2¹⁵, otherwise
+ *                          the behaviour of this function is undefined.
+ * @return                  Zero on success, -1 on error, `errno` will have been set
+ *                          accordingly on error.
+ * 
+ * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
+ *                          RLIMIT_DATA limit described in getrlimit(2).
+ */
+int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
+		     const char* restrict payload, const size_t* restrict payload_length,
+		     va_list args) __attribute__((nonnull(1, 2, 3)));
+
 
 #endif
 

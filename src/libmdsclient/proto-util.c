@@ -15,11 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif
 #include "proto-util.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <stdio.h>
 
 
 
@@ -561,5 +565,181 @@ size_t libmds_headers_cherrypick_binary_sorted_v(char** restrict headers, size_t
 void libmds_headers_sort(char** restrict headers, size_t header_count)
 {
   qsort(headers, header_count, sizeof(char*), headerpcmp);
+}
+
+
+/**
+ * Compose a message
+ * 
+ * @param   buffer          Pointer to the buffer where the message should be written,
+ *                          may point to `NULL` if `buffer_size` points to zero, but the
+ *                          pointer itself must not be `NULL`. The buffer may be reallocated.
+ *                          Will be updated with the new buffer it is allocated.
+ *                          The buffer the pointer points to will be filled with the
+ *                          message, however there is no guarantee it will be NUL-terminated.
+ * @param   buffer_size     The allocation size, in `char`, of `*buffer`, if and only if `buffer`
+ *                          points to `NULL`, this point should point to zero, and vice versa.
+ *                          Must not be `NULL`. Will be update with the new allocation size.
+ *                          It is guaranteed that there will be remove to NUL-terminate
+ *                          the message even if it was already NUL-terminate (terminate it
+ *                          doubly in that case.)
+ * @param   length          Output parameter for the length of the constructed message.
+ *                          Must not be `NULL`.
+ * @param   payload         The payload that should be added to the message, it should end
+ *                          with a LF. `NULL` if the message should not have a payload.
+ * @param   payload_length  Pointer to the length of the payload. If `NULL`, `payload`
+ *                          must be NUL-terminated, and if it is `NULL` this NUL-termination
+ *                          will be used to find the length of the payload. This variable is
+ *                          not used if `payload` is `NULL`.
+ * @param   ...             The first argument should be a line describing the first header,
+ *                          it should be a printf(3)-formatted line that fully describes the
+ *                          header line, that is, the header name, colon, blank space and then
+ *                          the header's value. No LF should be included. The following
+ *                          arguments should be the argument to format the header line.
+ *                          This may be be iterated any number of this. The last argument
+ *                          should be `NULL` to specify that there are no more headers.
+ *                          The `Length`-header should not be included, it is added automatically.
+ *                          A header may not have a length larger than 2¹⁵, otherwise
+ *                          the behaviour of this function is undefined.
+ * @return                  Zero on success, -1 on error, `errno` will have been set
+ *                          accordingly on error.
+ * 
+ * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
+ *                          RLIMIT_DATA limit described in getrlimit(2).
+ */
+int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
+		   const char* restrict payload, const size_t* restrict payload_length, ...)
+{
+  va_list args;
+  int r, saved_errno;
+  va_start(args, payload_length);
+  r = libmds_compose_v(buffer, buffer_size, length, payload, payload_length, args);
+  saved_errno = errno;
+  va_end(args);
+  errno = saved_errno;
+  return r;
+}
+
+
+/**
+ * Compose a message
+ * 
+ * @param   buffer          Pointer to the buffer where the message should be written,
+ *                          may point to `NULL` if `buffer_size` points to zero, but the
+ *                          pointer itself must not be `NULL`. The buffer may be reallocated.
+ *                          Will be updated with the new buffer it is allocated.
+ *                          The buffer the pointer points to will be filled with the
+ *                          message, however there is no guarantee it will be NUL-terminated.
+ * @param   buffer_size     The allocation size, in `char`, of `*buffer`, if and only if `buffer`
+ *                          points to `NULL`, this point should point to zero, and vice versa.
+ *                          Must not be `NULL`. Will be update with the new allocation size.
+ *                          It is guaranteed that there will be remove to NUL-terminate
+ *                          the message even if it was already NUL-terminate (terminate it
+ *                          doubly in that case.)
+ * @param   length          Output parameter for the length of the constructed message.
+ *                          Must not be `NULL`.
+ * @param   payload         The payload that should be added to the message, it should end
+ *                          with a LF. `NULL` if the message should not have a payload.
+ * @param   payload_length  Pointer to the length of the payload. If `NULL`, `payload`
+ *                          must be NUL-terminated, and if it is `NULL` this NUL-termination
+ *                          will be used to find the length of the payload. This variable is
+ *                          not used if `payload` is `NULL`.
+ * @param   args            The first argument should be a line describing the first header,
+ *                          it should be a printf(3)-formatted line that fully describes the
+ *                          header line, that is, the header name, colon, blank space and then
+ *                          the header's value. No LF should be included. The following
+ *                          arguments should be the argument to format the header line.
+ *                          This may be be iterated any number of this. The last argument
+ *                          should be `NULL` to specify that there are no more headers.
+ *                          The `Length`-header should not be included, it is added automatically.
+ *                          A header may not have a length larger than 2¹⁵, otherwise
+ *                          the behaviour of this function is undefined.
+ * @return                  Zero on success, -1 on error, `errno` will have been set
+ *                          accordingly on error.
+ * 
+ * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
+ *                          RLIMIT_DATA limit described in getrlimit(2).
+ */
+int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
+		     const char* restrict payload, const size_t* restrict payload_length, va_list args)
+{
+  char* buf = *buffer;
+  size_t bufsize = *buffer_size;
+  size_t len = 0;
+  int part_len;
+  char* part_msg;
+  size_t payload_len = 0;
+  const char* format;
+  int saved_errno;
+  
+  *length = 0;
+  
+  if (payload != NULL)
+    payload_len = payload_length == NULL ? strlen(payload) : *payload_length;
+  
+  if (bufsize == 0)
+    {
+      bufsize = 128;
+      buf = realloc(buf, bufsize * sizeof(char));
+      if (buf == NULL)
+	return -1;
+    }
+  
+  for (;;)
+    {
+      format = va_arg(args, const char*);
+      if (format == NULL)
+	break;
+      
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+      part_len = vasprintf(&part_msg, format, args);
+# pragma GCC diagnostic pop
+      if (part_len < 0)
+	return -1;
+      
+      if (len + (size_t)part_len >= bufsize)
+	{
+	  *buffer_size = bufsize;
+	  *buffer = buf;
+	  do
+	    bufsize <<= 1;
+	  while (len + (size_t)part_len >= bufsize);
+	  buf = realloc(buf, bufsize * sizeof(char));
+	  if (buf == NULL)
+	    return saved_errno = errno, free(part_msg), errno = saved_errno, -1;
+	}
+      
+      memcpy(buf + len, part_msg, ((size_t)part_len) * sizeof(char));
+      len += (size_t)part_len;
+      buf[len++] = '\n';
+      free(part_msg);
+    }
+
+#define LENGTH_LEN  \
+  (payload_len > 0 ? ((sizeof("Length: \n") / sizeof(char) - 1) + 3 * sizeof(size_t)) : 0)
+  if (len + LENGTH_LEN + 1 + payload_len + 1 > bufsize)
+    {
+      *buffer_size = bufsize;
+      *buffer = buf;
+      bufsize = len + LENGTH_LEN + 1 + payload_len + 1;
+      buf = realloc(buf, bufsize * sizeof(char));
+      if (buf == NULL)
+	return -1;
+    }
+#undef LENGTH_LEN
+  
+  if (payload_len > 0)
+    sprintf(buf + len, "Length: %zu\n%n", payload_len, &part_len),
+      len += (size_t)part_len;
+  buf[len++] = '\n';
+  if (payload_len > 0)
+    memcpy(buf + len, payload, payload_len * sizeof(char)),
+      len += payload_len;
+  
+  *buffer_size = bufsize;
+  *buffer = buf;
+  *length = len;
+  return 0;
 }
 
