@@ -520,7 +520,7 @@ void* secondary_loop(void* data)
  */
 int switch_vt(int leave_foreground)
 {
-  char buf[46 + 12 + 3 * sizeof(int)];
+  char buf[46 + 22];
   
   sprintf(buf,
 	  "Command: switching-vt\n"
@@ -574,27 +574,15 @@ int handle_message(void)
   /* Validate headers. */
   
   if (recv_message_id == NULL)
-    {
-      eprint("received message without ID, ignoring, master server is misbehaving.");
-      return 0;
-    }
+    return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
   
   if (strequals(recv_client_id, "0:0"))
-    {
-      eprint("received information request from an anonymous client, ignoring.");
-      return 0;
-    }
+    return eprint("received information request from an anonymous client, ignoring."), 0;
   
   if (strlen(recv_client_id) > 21)
-    {
-      eprint("received invalid client ID, ignoring.");
-      return 0;
-    }
+    return eprint("received invalid client ID, ignoring."), 0;
   if (strlen(recv_message_id) > 10)
-    {
-      eprint("received invalid message ID, ignoring.");
-      return 0;
-    }
+    return eprint("received invalid message ID, ignoring."), 0;
   
   
   /* Take appropriate action. */
@@ -603,12 +591,14 @@ int handle_message(void)
     return 0; /* How did that get here, not matter, just ignore it? */
   
   if (strequals(recv_command, "get-vt"))
-    return handle_get_vt(recv_client_id, recv_message_id);
+    fail_if (handle_get_vt(recv_client_id, recv_message_id));
   
   if (strequals(recv_command, "configure-vt"))
-    return handle_configure_vt(recv_client_id, recv_message_id, recv_graphical, recv_exclusive);
+    fail_if (handle_configure_vt(recv_client_id, recv_message_id, recv_graphical, recv_exclusive));
   
   return 0; /* How did that get here, not matter, just ignore it? */
+ fail:
+  return -1;
 }
 
 
@@ -821,7 +811,7 @@ int vt_set_active(int vt)
  */
 int vt_open(int vt, struct stat* restrict old_stat)
 {
-  char vtpath[64]; /* Should be small enought and large enought for any
+  char vtpath[64]; /* Should be small enough and large enough for any
 		      lunatic alternative to /dev/ttyNNN, if not you
 		      will need to apply a patch (or fix your system.) */
   int fd = -1, saved_errno;
