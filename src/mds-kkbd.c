@@ -798,7 +798,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
      the buffer. */
   fail_if (ensure_send_buffer_size(n + 1) < 0);
   
-  /* Fetch and increment local message ID. */
+  /* Fetch and increase local message ID. */
   with_mutex (send_mutex,
 	      msgid = message_id;
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
@@ -1307,49 +1307,68 @@ static int remap(char* table, size_t n)
  * @param   recv_message_id  The value of the `Message ID`-header
  * @return                   Zero on success, -1 on error
  */
-static int mapping_query(const char* recv_client_id, const char* recv_message_id) /* TODO proofread */
+static int mapping_query(const char* recv_client_id, const char* recv_message_id)
 {
   size_t top = 64 + 3 * sizeof(size_t), n = 0, off, i;
-  int greatest = (int)mapping_size, r;
+  ssize_t len;
+  int greatest = 0, r;
   uint32_t msgid;
   
+  /* Count the number of non-identity mappings, and
+     figure out the value of non-identity mapping
+     with the highest value. */
   for (i = 0; i < mapping_size; i++)
     if (mapping[i] != (int)i)
       {
 	greatest = max(greatest, mapping[i]);
 	n++;
       }
+  /* If the highest source is larger than the
+     highest targt, that source value will
+     be highest integer that will be included
+     the mapping-table. */
+  greatest = max(greatest, (int)mapping_size);
+  /* Calculate an upper bound for the payload. */
+  n *= 2 + 2 * (size_t)(greatest > 0x00FF ? 5 : 3);
   
-  n *= 3 + (size_t)(greatest > 0x00FF ? 5 : 3);
-  
+  /* Ensure that the buffer is large enough for
+     the message and that `sprintf` will not
+     write outside it. */
   fail_if (ensure_send_buffer_size(top + n + 2) < 0);
   
+  /* Fetch and increase local message ID. */
   with_mutex (send_mutex,
 	      msgid = message_id;
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
 	      );
   
+  /* The offset for the payload should fit all
+     headers and an empty line. */
   off = top + 1;
+  /* Write all non-identity mappings to the payload. */
   for (i = 0; i < mapping_size; i++)
     if (mapping[i] != (int)i)
-      {
-	sprintf(send_buffer + off, "%i %i\n", i, mapping[i]);
-	off += strlen(send_buffer + off);
-      }
-  
+      sprintf(send_buffer + off, "%i %i\n%zn", i, mapping[i], &len),
+	off += (size_t)len;
+  /* Calculate the length of the payload. */
   n = (size_t)(off - (top + 1));
   
+  /* Write the headers, and the empty line after them. */
   sprintf(send_buffer,
 	  "To: %s\n"
 	  "In response to: %s\n"
 	  "Message ID: %" PRIu32 "\n"
 	  "Length: %zu\n"
-	  "\n",
-	  recv_client_id, recv_message_id, msgid, n);
-  
-  off = top + 1;
-  off -= top = strlen(send_buffer);
+	  "\n%zn",
+	  recv_client_id, recv_message_id, msgid, n, &len);
+  top = (size_t)len;
+  /* Move the headers and the empty line so that they are
+     juxtaposed with the payload. */
+  off -= top;
   memmove(send_buffer + off, send_buffer, top * sizeof(char));
+  
+  
+  /* Send the message. */
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer + off, top + n);
