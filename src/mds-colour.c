@@ -86,6 +86,32 @@ static size_t send_buffer_size = 0;
  */
 static colour_list_t colours;
 
+/**
+ * Textual list of all colours that can be sent
+ * to clients upon query. This list only includes names.
+ */
+static char* colour_list_buffer_without_values = NULL;
+
+/**
+ * Textual list of all colours that can be sent
+ * to clients upon query. This list include value.
+ */
+static char* colour_list_buffer_with_values = NULL;
+
+/**
+ * The length of the message in `colour_list_buffer_without_values`
+ * assuming it is not `NULL`, if it is `NULL` this variable has no
+ * meaning and is not guaranteed to be zero.
+ */
+static size_t colour_list_buffer_without_values_length = 0;
+
+/**
+ * The length of the message in `colour_list_buffer_with_values`
+ * assuming it is not `NULL`, if it is `NULL` this variable has no
+ * meaning and is not guaranteed to be zero.
+ */
+static size_t colour_list_buffer_with_values_length = 0;
+
 
 
 /**
@@ -290,6 +316,10 @@ int master_loop(void)
 	  free(send_buffer), send_buffer = NULL;
 	  send_buffer_size = 0;
 	  colour_list_pack(&colours);
+	  free(colour_list_buffer_without_values),
+	    colour_list_buffer_without_values = NULL;
+	  free(colour_list_buffer_with_values),
+	    colour_list_buffer_with_values = NULL;
 	}
       
       if (r = mds_message_read(&received, socket_fd), r == 0)
@@ -320,8 +350,13 @@ int master_loop(void)
   xperror(*argv);
  done:
   if (rc || !reexecing)
-    mds_message_destroy(&received);
+    {
+      mds_message_destroy(&received);
+      colour_list_destroy(&colours);
+    }
   free(send_buffer);
+  free(colour_list_buffer_without_values);
+  free(colour_list_buffer_with_values);
   return rc;
 }
 
@@ -390,6 +425,81 @@ int handle_message(void)
 
 
 /**
+ * Create a textual list of all colours that can be sent
+ * to clients upon query. This list will only include names,
+ * and will be stored as `colour_list_buffer_without_values`.
+ * 
+ * @return  Zero on success, -1 on error
+ */
+static int create_colour_list_buffer_without_values(void)
+{
+  size_t i, length = 1;
+  colour_list_entry_t* entry;
+  char* temp;
+  int saved_errno;
+  
+  foreach_hash_list_entry (colours, i, entry)
+    length += strlen(entry->key) + 1;
+  
+  fail_if (yrealloc(temp, colour_list_buffer_without_values, length, char));
+  temp = colour_list_buffer_without_values;
+  colour_list_buffer_without_values_length = length - 1;
+  
+  *temp = '\0';
+  foreach_hash_list_entry (colours, i, entry)
+    temp = stpcpy(temp, entry->key++), *temp++ = '\n';
+  *temp = '\0';
+  
+  return 0;
+ fail:
+  saved_errno = errno;
+  free(colour_list_buffer_without_values);
+  colour_list_buffer_without_values = NULL;
+  return errno = saved_errno, -1;
+}
+
+
+/**
+ * Create a textual list of all colours that can be sent
+ * to clients upon query. This list will include value,
+ * and will be stored as `colour_list_buffer_with_values`.
+ * 
+ * @return  Zero on success, -1 on error
+ */
+static int create_colour_list_buffer_with_values(void)
+{
+  size_t i, length = 1;
+  ssize_t part_length;
+  colour_list_entry_t* entry;
+  char* temp;
+  int saved_errno;
+  
+  foreach_hash_list_entry (colours, i, entry)
+    snprintf(NULL, 0, "%i %"PRIu64" %"PRIu64" %"PRIu64" %s\n%zn",
+	     entry->value.bytes, entry->value.red, entry->value.green,
+	     entry->value.blue, entry->key, &part_length),
+      length += (size_t)part_length;
+  
+  fail_if (yrealloc(temp, colour_list_buffer_with_values, length, char));
+  temp = colour_list_buffer_with_values;
+  colour_list_buffer_with_values_length = length - 1;
+  
+  foreach_hash_list_entry (colours, i, entry)
+    sprintf(temp, "%i %"PRIu64" %"PRIu64" %"PRIu64" %s\n%zn",
+	    entry->value.bytes, entry->value.red, entry->value.green,
+	    entry->value.blue, entry->key, &part_length),
+      temp += (size_t)part_length;
+  
+  return 0;
+ fail:
+  saved_errno = errno;
+  free(colour_list_buffer_with_values);
+  colour_list_buffer_with_values = NULL;
+  return errno = saved_errno, -1;
+}
+
+
+/**
  * Handle the received message after it has been
  * identified to contain `Command: list-colours`
  * 
@@ -410,11 +520,21 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
   else if (strequals(recv_include_values, "yes"))  include_values = 1;
   else if (strequals(recv_include_values, "no"))   include_values = 0;
   else
-    return send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL);
+    {
+      fail_if (send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL));
+      return 0;
+    }
+  
+  if ((colour_list_buffer_without_values == NULL) && !include_values)
+    fail_if (create_colour_list_buffer_without_values());
+  else if ((colour_list_buffer_with_values == NULL) && include_values)
+    fail_if (create_colour_list_buffer_with_values());
   
   /* TODO send list */
   
   return 0;
+ fail:
+  return -1;
 }
 
 
@@ -437,10 +557,16 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
     return eprint("got a query from an anonymous client, ignoring."), 0;
   
   if (recv_name == NULL)
-    return send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL);
+    {
+      fail_if (send_error(recv_client_id, recv_message_id, 0, EPROTO, NULL));
+      return 0;
+    }
   
   if (!colour_list_get(&colours, recv_name, &colour))
-    return send_error(recv_client_id, recv_message_id, 1, -1, "not defined");
+    {
+      fail_if (send_error(recv_client_id, recv_message_id, 1, -1, "not defined"));
+      return 0;
+    }
   
   snprintf(NULL, 0,
 	  "To: %s\n"
@@ -455,8 +581,7 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
   
   if ((size_t)length > send_buffer_size)
     {
-      if (yrealloc(temp, send_buffer, (size_t)length, char))
-	return -1;
+      fail_if (yrealloc(temp, send_buffer, (size_t)length, char));
       send_buffer_size = (size_t)length;
     }
   
@@ -470,8 +595,11 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
 	  "\n",
 	  recv_client_id, recv_message_id, colour.bytes,
 	  colour.red, colour.green, colour.blue);
-  
-  return full_send(send_buffer, (size_t)length);
+
+  fail_if (full_send(send_buffer, (size_t)length));
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -525,10 +653,14 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
       if (strict_atou64(recv_blue, &(colour.blue), 0, limit))
 	return eprint("got an invalid value on the Blue-header, ignoring."), 0;
       
-      return set_colour(recv_name, &colour);
+      fail_if (set_colour(recv_name, &colour));
     }
   else
-    return set_colour(recv_name, NULL);
+    fail_if (set_colour(recv_name, NULL));
+  
+  return 0;
+ fail:
+  return -1;
 }
 
 
@@ -559,9 +691,10 @@ static inline int colourequals(const colour_t* colour_a, const colour_t* colour_
  */
 int set_colour(const char* name, const colour_t* colour)
 {
-  char* name_;
+  char* name_ = NULL;
   int found;
   colour_t old_colour;
+  int saved_errno;
   
   /* Find out whether the colour is already defined,
      and retrieve its value. This is required so we
@@ -582,7 +715,7 @@ int set_colour(const char* name, const colour_t* colour)
       colour_list_remove(&colours, name);
       
       /* Broadcast update event */
-      return broadcast_update("colour-removed", name, NULL, "yes");
+      fail_if (broadcast_update("colour-removed", name, NULL, "yes"));
     }
   else
     {
@@ -590,26 +723,25 @@ int set_colour(const char* name, const colour_t* colour)
       
       /* `colour_list_put` will store the name of the colour,
          so we have to make a copy that will not disappear. */
-      if (xstrdup(name_, name))
-	return -1;
+      fail_if (xstrdup(name_, name));
       
       /* Add or modify the colour */
-      if (colour_list_put(&colours, name_, colour) < 0)
-	{
-	  /* On failure, `colour_list_put` does not
-	     free the colour name we gave it */
-	  free(name_);
-	  return -1;
-	}
+      fail_if (colour_list_put(&colours, name_, colour));
       
       /* Broadcast update event */
       if (found == 0)
-	return broadcast_update("colour-added", name, colour, "yes");
+	fail_if (broadcast_update("colour-added", name, colour, "yes"));
       else if (!colourequals(colour, &old_colour))
-	return broadcast_update("colour-changed", name, colour, "yes");
-      
-      return 0;
+	fail_if (broadcast_update("colour-changed", name, colour, "yes"));
     }
+  
+  return 0;
+ fail:
+  saved_errno = errno;
+  /* On failure, `colour_list_put` does not
+     free the colour name we gave it */
+  free(name_);
+  return errno = saved_errno, -1;
 }
 
 
@@ -627,6 +759,9 @@ int broadcast_update(const char* event, const char* name, const colour_t* colour
   ssize_t part_length;
   size_t length = 0;
   char* temp;
+  
+  free(colour_list_buffer_without_values), colour_list_buffer_without_values = NULL;
+  free(colour_list_buffer_with_values),    colour_list_buffer_with_values = NULL;
   
   snprintf(NULL, 0,
 	   "Command: %s\n"
@@ -648,8 +783,7 @@ int broadcast_update(const char* event, const char* name, const colour_t* colour
   
   if (length > send_buffer_size)
     {
-      if (yrealloc(temp, send_buffer, length, char))
-	return -1;
+      fail_if (yrealloc(temp, send_buffer, length, char));
       send_buffer_size = length;
     }
   
@@ -678,6 +812,8 @@ int broadcast_update(const char* event, const char* name, const colour_t* colour
     length += (size_t)part_length;
   
   return full_send(send_buffer, length);
+ fail:
+  return -1;
 }
 
 
@@ -761,10 +897,11 @@ static inline size_t colour_list_subunmarshal(colour_list_entry_t* entry, char* 
   data += sizeof(colour_t) / sizeof(char);
   while (data[n++]);
   n *= sizeof(char);
-  if (xbmalloc(entry->key, n))
-    return 0;
+  fail_if (xbmalloc(entry->key, n));
   memcpy(entry->key, data, n);
   return sizeof(colour_t) + n;
+ fail:
+  return 0;
 }
 
 
