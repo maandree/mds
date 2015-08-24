@@ -11,8 +11,11 @@ include mk/config.mk
 # Splits of the info manual.
 INFOPARTS = 1 2 3
 
-# Object files for the libary.
-LIBOBJ = linked-list client-list hash-table fd-table mds-message util
+# Object files for the server libary.
+SERVEROBJ = linked-list client-list hash-table fd-table mds-message util
+
+# Object files for the client libary.
+CLIENTOBJ = proto-util
 
 # Servers and utilities.
 SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \

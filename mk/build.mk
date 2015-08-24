@@ -5,7 +5,13 @@
 
 
 .PHONY: libraries
-libraries: bin/libmdsserver.so
+libraries: libmdsserver libmdsclient
+
+.PHONY: libmdsserver
+libmdsserver: bin/libmdsserver.so
+
+.PHONY: libmdsclient
+libmdsclient: bin/libmdsclient.so
 
 .PHONY: servers
 servers: $(foreach S,$(SERVERS),bin/$(S))
@@ -110,14 +116,13 @@ endif
 
 # Build libmdsserver.
 
-bin/libmdsserver.so: $(foreach O,$(LIBOBJ),obj/libmdsserver/$(O).o)
+bin/libmdsserver.so: $(foreach O,$(SERVEROBJ),obj/libmdsserver/$(O).o)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -shared -o $@ $^
 
 obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
-
 
 # sed header files.
 ifneq ($(LIBMDSSERVER_IS_INSTALLED),y)
@@ -149,3 +154,13 @@ src/libmdsserver/config.h: src/libmdsserver/config.h.in
 	sed -i 's:@MDS_STORAGE_ROOT_DIRECTORY@:$(MDS_STORAGE_ROOT_DIRECTORY):g' $@
 endif
 
+
+# Build libmdsclient.
+
+bin/libmdsclient.so: $(foreach O,$(CLIENTOBJ),obj/libmdsclient/$(O).o)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -shared -o $@ $^
+
+obj/libmdsclient/%.o: src/libmdsclient/%.c src/libmdsclient/*.h $(SEDED)
+	mkdir -p $(shell dirname $@)
+	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
