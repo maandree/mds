@@ -525,34 +525,159 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
       if (strict_atou64(recv_blue, &(colour.blue), 0, limit))
 	return eprint("got an invalid value on the Blue-header, ignoring."), 0;
       
-      return set_colour(recv_name, &colour); /* TODO broadcast update */
+      return set_colour(recv_name, &colour);
     }
   else
-    colour_list_remove(&colours, recv_name); /* TODO broadcast update */
-  
-  return 0;
+    return set_colour(recv_name, NULL);
 }
 
 
 /**
- * Add or modify a colour
+ * Check whether two colours are identical
+ * 
+ * @param   colour_a  One of the colours
+ * @param   colour_b  The other colour
+ * @return            1 if the colours are equal, 0 otherwise
+ */
+static inline int colourequals(const colour_t* colour_a, const colour_t* colour_b)
+{
+  size_t rc = (size_t)(colour_a->bytes - colour_b->bytes);
+  rc |= colour_a->red   - colour_b->red;
+  rc |= colour_a->green - colour_b->green;
+  rc |= colour_a->blue  - colour_b->blue;
+  return !rc;
+}
+
+
+/**
+ * Add, remove or modify a colour
  * 
  * @param   name    The name of the colour, must not be `NULL`
- * @param   colour  The colour, must not be `NULL`
+ * @param   colour  The colour, `NULL` to remove
  * @return          Zero on success, -1 on error, removal of
  *                  non-existent colour does not constitute an error
  */
 int set_colour(const char* name, const colour_t* colour)
 {
   char* name_;
-  int r;
+  int found;
+  colour_t old_colour;
   
-  if (xstrdup(name_, name))
-    return -1;
-  r = colour_list_put(&colours, name_, colour);
-  if (r < 0)
-    free(name_);
-  return r;
+  /* Find out whether the colour is already defined,
+     and retrieve its value. This is required so we
+     can broadcast the proper event. */
+  found = colour_list_get(&colours, name, &old_colour);
+  
+  if (colour == NULL)
+    {
+      /* We have been asked to remove the colour */
+      
+      /* If the colour does not exist, there is no
+         point in removing it, and an event should
+         not be broadcasted */
+      if (found == 0)
+	return 0;
+      
+      /* Remove the colour */
+      colour_list_remove(&colours, name);
+      
+      /* Broadcast update event */
+      return broadcast_update("colour-removed", name, NULL, "yes");
+    }
+  else
+    {
+      /* We have been asked to add or modify the colour. */
+      
+      /* `colour_list_put` will store the name of the colour,
+         so we have to make a copy that will not disappear. */
+      if (xstrdup(name_, name))
+	return -1;
+      
+      /* Add or modify the colour */
+      if (colour_list_put(&colours, name_, colour) < 0)
+	{
+	  /* On failure, `colour_list_put` does not
+	     free the colour name we gave it */
+	  free(name_);
+	  return -1;
+	}
+      
+      /* Broadcast update event */
+      if (found == 0)
+	return broadcast_update("colour-added", name, colour, "yes");
+      else if (!colourequals(colour, &old_colour))
+	return broadcast_update("colour-changed", name, colour, "yes");
+      
+      return 0;
+    }
+}
+
+
+/**
+ * Broadcast a colour list update event
+ * 
+ * @param   event        The event, that is, the value for the Command-header, must not be `NULL`
+ * @param   name         The name of the colour, must not be `NULL`
+ * @param   colour       The new colour, `NULL` if and only if removed
+ * @param   last_update  The value on the Last update-header
+ * @return               Zero on success, -1 on error
+ */
+int broadcast_update(const char* event, const char* name, const colour_t* colour, const char* last_update)
+{
+  ssize_t part_length;
+  size_t length = 0;
+  char* temp;
+  
+  snprintf(NULL, 0,
+	   "Command: %s\n"
+	   "Name: %s\n"
+	   "Last update: %s\n"
+	   "\n%zn",
+	   event, name, last_update, &part_length),
+    length += (size_t)part_length;
+  
+  if (colour != NULL)
+    snprintf(NULL, 0,
+	     "Bytes: %i\n"
+	     "Red: %"PRIu64"\n"
+	     "Blue: %"PRIu64"\n"
+	     "Green: %"PRIu64"\n%zn",
+	     colour->bytes, colour->red, colour->green,
+	     colour->blue, &part_length),
+      length += (size_t)part_length;
+  
+  if (length > send_buffer_size)
+    {
+      if (yrealloc(temp, send_buffer, length, char))
+	return -1;
+      send_buffer_size = length;
+    }
+  
+  length = 0;
+  
+  sprintf(send_buffer + length,
+	  "Command: %s\n"
+	  "Name: %s\n%zn",
+	  event, name, &part_length),
+    length += (size_t)part_length;
+  
+  if (colour != NULL)
+    sprintf(send_buffer + length,
+	    "Bytes: %i\n"
+	    "Red: %"PRIu64"\n"
+	    "Blue: %"PRIu64"\n"
+	    "Green: %"PRIu64"\n%zn",
+	    colour->bytes, colour->red, colour->green,
+	    colour->blue, &part_length),
+      length += (size_t)part_length;
+  
+  sprintf(send_buffer + length,
+	  "Last update: %s\n"
+	  "\n%zn",
+	  last_update, &part_length),
+    length += (size_t)part_length;
+  
+  return full_send(send_buffer, length);
 }
 
 

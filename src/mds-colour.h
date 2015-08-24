@@ -102,16 +102,27 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
 int handle_set_colour(const char* recv_name, const char* recv_remove, const char* recv_bytes,
 		      const char* recv_red, const char* recv_green, const char* recv_blue);
 
-
 /**
- * Add or modify a colour
+ * Add, remove or modify a colour
  * 
  * @param   name    The name of the colour, must not be `NULL`
- * @param   colour  The colour, must not be `NULL`
+ * @param   colour  The colour, `NULL` to remove
  * @return          Zero on success, -1 on error, removal of
  *                  non-existent colour does not constitute an error
  */
-int set_colour(const char* name, const colour_t* colour) __attribute__((nonnull));
+int set_colour(const char* name, const colour_t* colour) __attribute__((nonnull(1)));
+
+/**
+ * Broadcast a colour list update event
+ * 
+ * @param   event        The event, that is, the value for the Command-header, must not be `NULL`
+ * @param   name         The name of the colour, must not be `NULL`
+ * @param   colour       The new colour, `NULL` if and only if removed
+ * @param   last_update  The value on the Last update-header
+ * @return               Zero on success, -1 on error
+ */
+int broadcast_update(const char* event, const char* name, const colour_t* colour,
+		     const char* last_update) __attribute__((nonnull(1, 2, 4)));
 
 
 CREATE_HASH_LIST_SUBCLASS(colour_list, char* restrict, const char* restrict, colour_t)
