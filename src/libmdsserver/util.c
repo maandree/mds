@@ -821,7 +821,7 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
   char* temp;
   
   /* Measure the length of mandatory headers and either values,
-     as well as the line to end the headers. The Error-header
+     as well as the line to end the headers. The `Error`-header
      however is currently measure without error number. */
   snprintf(NULL, 0,
 	   "Command: error\n"
@@ -836,22 +836,22 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
   
   /* If the error number is custom and their is a number,
      a blank space is required between the word ‘custom’
-     and the number */
+     and the number. */
   if (custom && (errnum >= 0))
     length++;
-  /* Measure the length of the error number */
+  /* Measure the length of the error number. */
   if (errnum >= 0)
     snprintf(NULL, 0, "%i%zn", errnum, &part_length),
       length += (size_t)part_length;
   
   /* Measure the length of the error description and
-     the length of the header specifying its length */
+     the length of the header specifying its length. */
   if (message != NULL)
     snprintf(NULL, 0, "Length: %zu\n%zn",
 	     strlen(message) + 1, &part_length),
       length += (size_t)part_length + strlen(message) + 1;
   
-  /* Ensure that the send buffer is large enough */
+  /* Ensure that the send buffer is large enough. */
   if (length > *send_buffer_size)
     {
       if (yrealloc(temp, *send_buffer, length, char))
@@ -860,11 +860,11 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
     }
   
   /* Reset `length` to indicate that the currently written
-     message has zero in length */
+     message has zero in length. */
   length = 0;
   
   /* Start writting the error message, begin with required
-     headers, but exclude the error number */
+     headers, but exclude the error number. */
   sprintf((*send_buffer) + length,
 	  "Command: error\n"
 	  "To: %s\n"
@@ -876,28 +876,28 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
     length += (size_t)part_length;
   
   /* If the error is custom and has a number we need
-     blank space before we write the error number */
+     blank space before we write the error number. */
   if (custom && (errnum >= 0))
     (*send_buffer)[length++] = ' ';
   
-  /* Add the error number of there is one */
+  /* Add the error number of there is one. */
   if (errnum >= 0)
     sprintf((*send_buffer) + length, "%i%zn", errnum, &part_length),
       length += (size_t)part_length;
   
-  /* End the Error-header line */
+  /* End the `Error`-header line. */
   (*send_buffer)[length++] = '\n';
   
-  /* Add the Length-header if there is a description  */
+  /* Add the `Length`-header if there is a description. */
   if (message != NULL)
     sprintf((*send_buffer) + length, "Length: %zu\n%zn",
 	    strlen(message) + 1, &part_length),
       length += (size_t)part_length + strlen(message) + 1;
   
-  /* Add an empty line to mark the end of headers */
+  /* Add an empty line to mark the end of headers. */
   (*send_buffer)[length++] = '\n';
   
-  /* Write the description if there is one */
+  /* Write the description if there is one. */
   if (message)
     {
       memcpy((*send_buffer) + length, message, strlen(message) * sizeof(char));
