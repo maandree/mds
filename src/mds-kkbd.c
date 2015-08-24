@@ -756,9 +756,10 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
  * @param   recv_modify_id  The value of the `Modify ID`-header, `NULL` if omitted
  * @return                  Zero on success, -1 on error
  */
-int handle_keyboard_enumeration(const char* recv_modify_id) /* TODO proofread */
+int handle_keyboard_enumeration(const char* recv_modify_id)
 {
-  size_t i, off, top, n = lengthof(KEYBOARD_ID "\n") + 3 * sizeof(size_t);
+  size_t i, off, m, n = lengthof(KEYBOARD_ID "\n") + 3 * sizeof(size_t);
+  ssize_t top;
   uint32_t msgid;
   int r, have_len = 0;
   
@@ -779,7 +780,12 @@ int handle_keyboard_enumeration(const char* recv_modify_id) /* TODO proofread */
   n += received.payload_size;
   
   
-  n += off = 64 + strlen(recv_modify_id) + 3 * sizeof(size_t);
+  /* Calculate an upper bound for the outbound message.
+     `off` is an upper bound for the outbound message's
+     headers plus empty line and thus where we should
+     write the payload to the buffer. */
+  off = sizeof("Modify ID: \nMessage ID: \nLength: \n\n") / sizeof(char) - 1;
+  n += off += strlen(recv_modify_id) + 10 + 3 * sizeof(size_t);
   
   
   /* Make sure the buffer fits the message, add one additional
@@ -793,6 +799,11 @@ int handle_keyboard_enumeration(const char* recv_modify_id) /* TODO proofread */
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
 	      );
   
+  
+  /* Write outbound message payload. */
+  
+  /* Write inbound message's headers to the outbound message,
+     `n` keeps track of were we are. */
   n = off;
   for (i = 0; i < received.header_count; i++)
     {
@@ -807,26 +818,41 @@ int handle_keyboard_enumeration(const char* recv_modify_id) /* TODO proofread */
 	}
       else
 	{
-	  sprintf(send_buffer + n,
-		  "%s\n",
-		  header);
-	  n += strlen(header) + 1;
+	  m = strlen(header);
+	  memcpy(send_buffer + n, header, m * sizeof(char)), n += m;
+	  send_buffer[n++] = '\n';
 	}
     }
+  /* Mark end of inbound headers. */
+  send_buffer[n++] = '\n';
+  /* Write inbound message's payload to the outbound message. */
   memcpy(send_buffer + n, received.payload, received.payload_size * sizeof(char));
   n += received.payload_size;
+  /* Change `n` to tell the length of the outbound message's payload. */
   n -= off;
   
+  
+  /* Complete outbound message. */
+  
+  /* Write the outbound message's headers. */
   sprintf(send_buffer,
 	  "Modify ID: %s\n"
 	  "Message ID: %" PRIu32 "\n"
-	  "Length: %zu\n",
-	  recv_modify_id, msgid, n);
-  top = strlen(send_buffer) + 1;
-  send_buffer[top - 1] = '\n';
-  off -= top;
-  n += top;
-  memmove(send_buffer + off, send_buffer, top * sizeof(char));
+	  "Length: %zu\n%zn",
+	  recv_modify_id, msgid, n, &top);
+  /* Write the empty line. */
+  send_buffer[(size_t)(top++)] = '\n';
+  /* Calculate what the offset in the entire buffer for the
+     message should be, and move the message to that offset.
+     Only the headers and the empty line should be moved, so
+     that it is juxtaposed with the payload. */
+  off -= (size_t)top;
+  memmove(send_buffer + off, send_buffer, ((size_t)top) * sizeof(char));
+  /* Calculate the final length of the message. */
+  n += (size_t)top;
+  
+  
+  /* Send message. */
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer + off, n);
