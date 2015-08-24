@@ -323,7 +323,7 @@ int spawn_and_respawn_server(int fd)
   struct timespec time_start;
   struct timespec time_end;
   char* child_args[ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT + 1];
-  char fdstr[12 /* strlen("--socket-fd=") */ + 64];
+  char fdstr[(sizeof("--socket-fd=") / sizeof(char) - 1) + 64];
   int i;
   pid_t pid;
   int status;
