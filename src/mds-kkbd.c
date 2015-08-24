@@ -737,7 +737,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 	  "\n"
 	  KEYBOARD_ID "\n",
 	  recv_modify_id, msgid,
-	  recv_message_id, recv_client_id, strlen(KEYBOARD_ID) + 1, msgid + 1);
+	  recv_client_id, recv_message_id, strlen(KEYBOARD_ID) + 1, msgid + 1);
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer, strlen(send_buffer));
