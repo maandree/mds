@@ -296,7 +296,7 @@ int postinitialise_server(void)
     else if (strequals(commands_args[i], "--initial-spawn"))
       fail_if (xstrdup(commands_args[i], "--respawn"));
   
-  /* Respawn dead and dead and buried servers.*/
+  /* Respawn dead and dead and buried servers. */
   
   for (i = 0; i < servers; i++)
     if ((states[i].state == DEAD) ||

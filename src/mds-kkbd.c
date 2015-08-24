@@ -77,6 +77,11 @@
 # define PRESENT_LEDS  "num caps scrl"
 #endif
 
+/**
+ * Measure a string literal in compile time
+ */
+#define lengthof(str)  (sizeof(str) / sizeof(char) - 1)
+
 
 
 /**
@@ -155,7 +160,7 @@ static int scancode_ptr = 0;
 /**
  * Message buffer for `send_key`
  */
-static char key_send_buffer[111];
+static char key_send_buffer[80 + 3 * 3 + 5 + lengthof(KEYBOARD_ID) + 10 + 1];
 
 /**
  * Message buffer for the main thread
@@ -692,7 +697,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 		  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
 		  );
       
-      fail_if (ensure_send_buffer_size(48 + strlen(recv_modify_id) + 1) < 0);
+      fail_if (ensure_send_buffer_size(47 + strlen(recv_modify_id) + 1) < 0);
       sprintf(send_buffer,
 	      "Modify: no\n"
 	      "Modify ID: %s\n"
@@ -714,8 +719,8 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
 	      );
   
-  n = 176 + 3 * sizeof(size_t) + strlen(KEYBOARD_ID);
-  n += strlen(recv_modify_id) + strlen(recv_message_id);
+  n = 134 + 3 * sizeof(size_t) + lengthof(KEYBOARD_ID);
+  n += strlen(recv_client_id) + strlen(recv_modify_id) + strlen(recv_message_id);
   fail_if (ensure_send_buffer_size(n + 1) < 0);
   sprintf(send_buffer,
 	  "Modify: yes\n"
@@ -731,7 +736,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
 	  "\n"
 	  KEYBOARD_ID "\n",
 	  recv_modify_id, msgid,
-	  recv_client_id, recv_message_id, strlen(KEYBOARD_ID) + 1, msgid + 1);
+	  recv_client_id, recv_message_id, lengthof(KEYBOARD_ID) + 1, msgid + 1);
   
   with_mutex (send_mutex,
 	      r = full_send(send_buffer, strlen(send_buffer));
@@ -751,24 +756,38 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
  * @param   recv_modify_id  The value of the `Modify ID`-header, `NULL` if omitted
  * @return                  Zero on success, -1 on error
  */
-int handle_keyboard_enumeration(const char* recv_modify_id)
+int handle_keyboard_enumeration(const char* recv_modify_id) /* TODO proofread */
 {
-  size_t i, off, top, n = 1 + strlen(KEYBOARD_ID "\n") + 3 * sizeof(size_t);
+  size_t i, off, top, n = lengthof(KEYBOARD_ID "\n") + 3 * sizeof(size_t);
   uint32_t msgid;
   int r, have_len = 0;
   
   if (recv_modify_id == NULL)
     return eprint("did not get a modify ID, ignoring."), 0;
   
+  
+  /* Calculate length of received message. */
+  
+  /* Measure the length of the headers. */
   for (i = 0; i < received.header_count; i++)
     n += strlen(received.headers[i]);
+  /* Count the line feeds after the headers. */
   n += received.header_count;
+  /* There is an empty line between headers and payload. */
+  n += 1;
+  /* Add the length of the payload. */
   n += received.payload_size;
+  
   
   n += off = 64 + strlen(recv_modify_id) + 3 * sizeof(size_t);
   
+  
+  /* Make sure the buffer fits the message, add one additional
+     character to the allocation so sprintf does not write outside
+     the buffer. */
   fail_if (ensure_send_buffer_size(n + 1) < 0);
   
+  /* Fetch and increment local message ID. */
   with_mutex (send_mutex,
 	      msgid = message_id;
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
@@ -933,7 +952,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
 	      );
   
-  n = 95 + 3 * sizeof(size_t) + 2 * strlen(PRESENT_LEDS);
+  n = 65 + 2 * strlen(PRESENT_LEDS);
   n += strlen(recv_client_id) + strlen(recv_message_id);
   fail_if (ensure_send_buffer_size(n + 1) < 0);
   sprintf(send_buffer,
@@ -1007,7 +1026,10 @@ static void remap_led(const char* name, const char* position)
   char c;
   
   if (led < 0)
-    return eprintf("received invalid LED, %s, to remap, ignoring.", name), 0;
+    {
+      eprintf("received invalid LED, %s, to remap, ignoring.", name);
+      return;
+    }
   
   if (pos >= 0)
     goto done;
@@ -1019,7 +1041,10 @@ static void remap_led(const char* name, const char* position)
       break;
   
   if (i < n)
-    return eprintf("received invalid LED position, %s, ignoring.", position), 0;
+    {
+      eprintf("received invalid LED position, %s, ignoring.", position);
+      return;
+    }
   
   pos = 1 << pos;
   
@@ -1242,7 +1267,7 @@ static int remap(char* table, size_t n)
  * @param   recv_message_id  The value of the `Message ID`-header
  * @return                   Zero on success, -1 on error
  */
-static int mapping_query(const char* recv_client_id, const char* recv_message_id)
+static int mapping_query(const char* recv_client_id, const char* recv_message_id) /* TODO proofread */
 {
   size_t top = 64 + 3 * sizeof(size_t), n = 0, off, i;
   int greatest = (int)mapping_size, r;
@@ -1627,7 +1652,7 @@ int fetch_keys(void)
  */
 int send_errno(int error, const char* recv_client_id, const char* recv_message_id)
 {
-  size_t n = 79 + strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int);
+  size_t n = 69 + strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int);
   int r;
   
   fail_if (ensure_send_buffer_size(n + 1) < 0);
