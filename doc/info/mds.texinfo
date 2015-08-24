@@ -407,7 +407,7 @@ licensed udner the GNU General Public License,
 of @command{mds} do not value open source, however some
 people do.
 
-@item it will compatible
+@item it will be compatible
 @command{mds}'s design makes it easy to make it
 compatile with any display server using a compatibility
 server. When @command{mds} matures, compatibility
