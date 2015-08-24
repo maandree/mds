@@ -517,6 +517,10 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
 			const char* recv_include_values)
 {
   int include_values = 0;
+  char* payload;
+  size_t payload_length;
+  size_t length;
+  char* temp;
   
   if (strequals(recv_client_id, "0:0"))
     return eprint("got a query from an anonymous client, ignoring."), 0;
@@ -530,13 +534,44 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
       return 0;
     }
   
-  if ((colour_list_buffer_without_values == NULL) && !include_values)
-    fail_if (create_colour_list_buffer_without_values());
-  else if ((colour_list_buffer_with_values == NULL) && include_values)
+  if ((colour_list_buffer_with_values == NULL) && include_values)
     fail_if (create_colour_list_buffer_with_values());
+  else if ((colour_list_buffer_without_values == NULL) && !include_values)
+    fail_if (create_colour_list_buffer_without_values());
   
-  /* TODO send list */
+  payload = include_values
+    ? colour_list_buffer_with_values
+    : colour_list_buffer_without_values;
   
+  payload_length = include_values
+    ? colour_list_buffer_with_values_length
+    : colour_list_buffer_without_values_length;
+  
+  length = sizeof("To: \n"
+		  "In response to: \n"
+		  "Message ID: \n"
+		  "Origin command: list-colours\n"
+		  "\n") / sizeof(char);
+  length += strlen(recv_client_id) + strlen(recv_message_id) + 10 + payload_length;
+  
+  if (length > send_buffer_size)
+    {
+      fail_if (yrealloc(temp, send_buffer, length, char));
+      send_buffer_size = length;
+    }
+  
+  sprintf(send_buffer,
+	  "To: %s\n"
+	  "In response to: %s\n"
+	  "Message ID: %"PRIu32"\n"
+	  "Origin command: list-colours\n"
+	  "\n%zn",
+	  recv_client_id, recv_message_id, message_id,
+	  (ssize_t*)&length);
+  memcpy(send_buffer + length, payload, payload_length * sizeof(char));
+  length += payload_length;
+  
+  fail_if (full_send(send_buffer, length));
   return 0;
  fail:
   return -1;
