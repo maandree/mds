@@ -37,6 +37,33 @@
 # define HASH_LIST_DEFAULT_INITIAL_CAPACITY  128
 #endif
 
+/**
+ * It is encourage to run `hash_list_get` before
+ * `hash_list_put` and `hash_list_remove`. This
+ * way, you know exactly what is happening.
+ * There is an optimisation in place to let
+ * `hash_list_put` and `hash_list_remove` skip
+ * the search for the item (unless it is the first
+ * element) if `hash_list_get` was used directly
+ * prior to `hash_list_put` or `hash_list_remove`
+ * to find the element. This macro used to tell
+ * the compiler that position of the element is
+ * most likely already known but is not zero.
+ * 
+ * If you however choose to not call `hash_list_get`
+ * before `hash_list_put` and `hash_list_remove`
+ * you should define this macro before including
+ * this header file, but with the `1` changed to
+ * a `0`. If you on the other hand do not know
+ * if you are going to call `hash_list_get` before
+ * `hash_list_put` and `hash_list_remove` you
+ * should define it to expand to the input verbatim,
+ * that is, have the value `__VA_ARGS__`.
+ */
+#ifndef HASH_LIST_EXPECTED
+# define HASH_LIST_EXPECTED(...)  __builtin_expect((__VA_ARGS__), 1)
+#endif
+
 
 #define HASH_LIST_HASH(key)  (this->hasher != NULL ? this->hasher(key) : (size_t)key)
 
@@ -171,6 +198,15 @@ typedef struct T\
   size_t used;\
   \
   /**
+   * This variable is used for optimisation, any
+   * time `hash_list_get` finds an element, its
+   * will be stored, and it will be the first
+   * inspected element by `hash_list_put` and
+   * `hash_list_remove`
+   */\
+  size_t last;\
+  \
+  /**
    * The slots
    */\
   T##_entry_t* slots;\
@@ -215,6 +251,7 @@ T##_create(T##_t* restrict this, size_t capacity)\
   this->allocated = 0;\
   this->unused = 0;\
   this->used = 0;\
+  this->last = 0;\
   \
   this->slots = malloc(capacity * sizeof(T##_t));\
   if (this->slots == NULL)\
@@ -241,6 +278,7 @@ T##_destroy(T##_t* restrict this)\
   this->used = 0;\
   this->unused = 0;\
   this->allocated = 0;\
+  this->last = 0;\
   free(this->slots);\
   this->slots = NULL;\
 }\
@@ -260,6 +298,7 @@ T##_clone(const T##_t* restrict this, T##_t* restrict out)\
     return -1;\
   out->used = this->used;\
   out->unused = this->unused;\
+  out->last = this->last;\
   memcpy(out->slots, this->slots, this->used * sizeof(T##_entry_t));\
 }\
 \
@@ -289,6 +328,7 @@ T##_pack(T##_t* restrict this)\
       \
       this->used -= this->unused;\
       this->unused = 0;\
+      this->last = 0;\
     }\
   \
   if (this->used < this->allocated)\
@@ -313,14 +353,14 @@ T##_pack(T##_t* restrict this)\
  * @return         Whether the key was found, error is impossible
  */\
 static inline int __attribute__((unused))\
-T##_get(const T##_t* restrict this, CKEY_T key, T##_value_t* restrict value)\
+T##_get(T##_t* restrict this, CKEY_T key, T##_value_t* restrict value)\
 {\
   size_t i, n, hash = HASH_LIST_HASH(key);\
   for (i = 0, n = this->used; i < n; i++)\
     if ((this->slots[i].key_hash == hash) && this->slots[i].key)\
       if (T##_key_comparer(this->slots[i].key, key))\
-	return *value = this->slots[i].value, 1;\
-  return 0;\
+	return *value = this->slots[this->last = i].value, 1;\
+  return this->last = 0, 0;\
 }\
 \
 \
@@ -333,20 +373,37 @@ T##_get(const T##_t* restrict this, CKEY_T key, T##_value_t* restrict value)\
 static inline void __attribute__((unused))\
 T##_remove(T##_t* restrict this, CKEY_T key)\
 {\
-  size_t i, n, hash = HASH_LIST_HASH(key);\
+  size_t i = this->last, n, hash = HASH_LIST_HASH(key);\
   T##_entry_t* slots = this->slots;\
+  \
+  /* First, try cached index */\
+  if (HASH_LIST_EXPECTED(i && (slots[i].key_hash == hash) && (slots[i].key != NULL)))\
+    if (HASH_LIST_EXPECTED(T##_key_comparer(slots[i].key, key)))\
+      goto do_remove;\
+  /* It is discouraged to use put or remove without
+   * doing a get before it, otherwise you do not know
+   * what is happening. So we do not expect to get
+   * get to the next line. However, if do not expect to
+   * run get before put or remove, you should modify the
+   * HASH_LIST_EXPECTED macro. However, this is single
+   * case where will will get to the next line, when the
+   * index of the item is zero. */\
+  \
+  /* Then, search */\
   for (i = 0, n = this->used; i < n; i++)\
     if ((slots[i].key_hash == hash) && (slots[i].key != NULL))\
       if (T##_key_comparer(slots[i].key, key))\
-	{\
-	  if (this->freer != NULL)\
-	    this->freer(slots + i);\
-	  slots[i].key = NULL;\
-	  this->unused++;\
-	  if ((this->unused >> 1) >= this->used)\
-	    T##_pack(this);\
-	  return;\
-	}\
+	goto do_remove;\
+  \
+  return;\
+ do_remove:\
+  if (this->freer != NULL)\
+    this->freer(slots + i);\
+  slots[i].key = NULL;\
+  this->unused++;\
+  if ((this->unused >> 1) >= this->used)\
+    T##_pack(this);\
+  this->last = 0;\
 }\
 \
 \
@@ -362,7 +419,7 @@ T##_remove(T##_t* restrict this, CKEY_T key)\
 static inline int __attribute__((unused))\
 T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
 {\
-  size_t i, n, empty, hash;\
+  size_t i = this->last, n, empty = this->used, hash;\
   T##_entry_t* slots = this->slots;\
   \
   /* Remove entry if no value is passed */\
@@ -372,18 +429,30 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
       return 0;\
     }\
   \
+  /* Hash the input key */\
+  hash = HASH_LIST_HASH(key);\
+  \
+  /* Try cached index */\
+  if (HASH_LIST_EXPECTED(i && (slots[i].key != NULL)))\
+    if (HASH_LIST_EXPECTED(slots[i].key_hash == hash))\
+      if (HASH_LIST_EXPECTED(T##_key_comparer(slots[i].key, key)))\
+	goto put;\
+  /* It is discouraged to use put or remove without
+   * doing a get before it, otherwise you do not know
+   * what is happening. So we do not expect to get
+   * get to the next line. However, if do not expect to
+   * run get before put or remove, you should modify the
+   * HASH_LIST_EXPECTED macro. However, this is single
+   * case where will will get to the next line, when the
+   * index of the item is zero. */\
+  \
   /* Find an unused slot or the current slot */\
-  empty = this->used, hash = HASH_LIST_HASH(key);\
   for (i = 0, n = this->used; i < n; i++)\
     if (slots[i].key == NULL)\
       empty = i;\
     else if (slots[i].key_hash == hash)\
       if (T##_key_comparer(slots[i].key, key))\
-	{\
-	  if (this->freer != NULL)\
-	    this->freer(slots + i);\
-	  goto put;\
-	}\
+	goto put;\
   \
   /* Grow slot allocation is required */\
   if (empty == this->allocated)\
@@ -399,7 +468,11 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
   \
   /* Store entry */\
   i = empty;\
+  goto put_no_free;\
  put:\
+  if (this->freer != NULL)\
+    this->freer(slots + i);\
+ put_no_free:\
   slots[i].key = key;\
   slots[i].key_hash = hash;\
   slots[i].value = *value;\
@@ -417,7 +490,7 @@ static inline size_t __attribute__((unused))\
 T##_marshal_size(const T##_t* restrict this)\
 {\
   size_t i, n = this->used;\
-  size_t rc = sizeof(int) + 3 * sizeof(size_t);\
+  size_t rc = sizeof(int) + 4 * sizeof(size_t);\
   for (i = 0; i < n; i++)\
     if (this->slots[i].key != NULL)\
       rc += T##_submarshal_size(this->slots + i);\
@@ -440,6 +513,7 @@ T##_marshal(const T##_t* restrict this, char* restrict data)\
   buf_set_next(data, size_t, this->allocated);\
   buf_set_next(data, size_t, this->unused);\
   buf_set_next(data, size_t, this->used);\
+  buf_set_next(data, size_t, this->last);\
   \
   for (i = 0; i < n; i++)\
     if (this->slots[i].key != NULL)\
@@ -477,6 +551,7 @@ T##_unmarshal(T##_t* restrict this, char* restrict data)\
   buf_get_next(data, size_t, this->allocated);\
   buf_get_next(data, size_t, this->unused);\
   buf_get_next(data, size_t, this->used);\
+  buf_get_next(data, size_t, this->last);\
   \
   this->slots = calloc(this->allocated, sizeof(T##_entry_t));\
   if (this->slots == NULL)\

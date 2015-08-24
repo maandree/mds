@@ -7800,6 +7800,19 @@ The number of slots that have been used, even if
 no longer used. This element is transparent to the
 user of the class.
 
+@item @code{last} [@code{size_t}]
+@vrindex @code{last}
+@vrindex @code{hash_list_t.last}
+@fnindex @code{hash_list_get}
+@fnindex @code{hash_list_put}
+@fnindex @code{hash_list_remove}
+This variable is used for optimisation, any
+time @code{hash_list_get} finds an element, its
+will be stored, and it will be the first
+inspected element by @code{hash_list_put} and
+@code{hash_list_remove}. This element is
+transparent to the user of the class.
+
 @item @code{slots} [@code{hash_list_entry_t*}]
 @vrindex @code{slots}
 @vrindex @code{hash_list_t.slots}
@@ -7864,13 +7877,15 @@ on error. Errors are however non-fatal and can be ignored,
 it only means that the capacity could not be reduces, because
 a called to @code{realloc} failed.
 
-@item @code{hash_list_get} [(@code{const this, const KEY_T key, VALUE_T* restrict value}) @arrow{} @code{int}]
+@item @code{hash_list_get} [(@code{this, const KEY_T key, VALUE_T* restrict value}) @arrow{} @code{int}]
 @fnindex @code{hash_list_get}
 Look up a value, with the key @code{key}, in the hash list
 @code{this}. The found value will be stored in @code{*value}.
 This method cannot fail, therefore it cannot return a value
 indicating that it failed. Instead it returns one if the
 entry was found and nought if it was not found.
+Note that @code{this} is not specified with @code{const};
+this is because internal caching is done.
 
 @item @code{hash_list_put} [(@code{this, KEY_T key, const VALUE_T* restrict value}) @arrow{} @code{int}]
 @fnindex @code{hash_list_put}
@@ -7954,8 +7969,8 @@ will it would return after the unmarshalling.
 The function shall return zero on error.
 @end table
 
-@file{<libmdsserver/hash-list.h>} also defines a
-macro that is uneffected by @code{CREATE_HASH_LIST_SUBCLASS}.
+@file{<libmdsserver/hash-list.h>} also defines two
+macros that is uneffected by @code{CREATE_HASH_LIST_SUBCLASS}.
 
 @table @asis
 @item @code{foreach_hash_list_entry} [(@code{hash_list_t this, size_t i, hash_list_entry_t* entry})]
@@ -7992,6 +8007,34 @@ void print_hash_list(hash_list_t* table)
 
 Note thay the data type for the parameter @code{this}
 is not a pointer.
+
+@item @code{HASH_LIST_EXPECTED} [(@code{...})]
+This macro is defined as @code{__builtin_expect(__VA_ARGS__, 1)}.
+This means that the input value is evaluated, and may
+contain the sequence-operator (comma-operator), and the
+the value is expected to evaluate to @code{1}.
+
+It is encourage to run @code{hash_list_get} before
+@code{hash_list_put} and @code{hash_list_remove}.
+This way, you know exactly what is happening.
+There is an optimisation in place to let
+@code{hash_list_put} and @code{hash_list_remove}
+skip the search for the item (unless it is the first
+element) if @code{hash_list_get} was used directly
+prior to @code{hash_list_put} or @code{hash_list_remove}
+to find the element. This macro used to tell the
+compiler that position of the element is most likely
+already known but is not zero.
+
+If you however choose to not call @code{hash_list_get}
+before @code{hash_list_put} and @code{hash_list_remove}
+you should define this macro before including the header
+file, but with the @code{1} changed to a @code{0}. If
+you on the other hand do not know if you are going to
+call @code{hash_list_get} before @code{hash_list_put}
+and @code{hash_list_remove} you should define it to
+expand to the input verbatim, that is, have the value
+@code{__VA_ARGS__}.
 @end table
 
 
