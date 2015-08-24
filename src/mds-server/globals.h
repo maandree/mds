@@ -57,12 +57,12 @@ extern pthread_mutex_t slave_mutex;
 extern pthread_cond_t slave_cond;
 
 /**
- * Map from client socket file descriptor to all information (client_t)
+ * Map from client socket file descriptor to all information (`client_t`)
  */
 extern fd_table_t client_map;
 
 /**
- * List of client information (client_t)
+ * List of client information (`client_t`)
  */
 extern linked_list_t client_list;
 

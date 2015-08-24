@@ -120,7 +120,7 @@ static int add_intercept_conditions_from_message(client_t* client, int modifying
   
   fail_if (xmalloc(buf, size + 1, char));
   
-  /* All messages */
+  /* All messages. */
   if (client->message.payload_size == 0)
     {
       *buf = '\0';
@@ -128,7 +128,7 @@ static int add_intercept_conditions_from_message(client_t* client, int modifying
       goto done;
     }
   
-  /* Filtered messages */
+  /* Filtered messages. */
   for (;;)
     {
       char* end = memchr(payload, '\n', payload_size);
@@ -182,8 +182,8 @@ static int assign_and_send_id(client_t* client, const char* message_id)
   int rc = -1;
   
   /* Construct response. */
-  n = 2 * 10 + strlen(message_id) + 1;
-  n += strlen("ID assignment: :\nIn response to: \n\n");
+  n = 2 * 10 + strlen(message_id);
+  n += sizeof("ID assignment: :\nIn response to: \n\n") / sizeof(char);
   fail_if (xmalloc(msgbuf, n, char));
   snprintf(msgbuf, n,
 	   "ID assignment: %" PRIu32 ":%" PRIu32 "\n"
