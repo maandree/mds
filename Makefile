@@ -8,6 +8,22 @@
 include mk/config.mk
 
 
+# The version of the package.
+MAJOR = 0
+MINOR = 1
+VERSION = $(MAJOR).$(MINOR)
+
+# The version of libmdsserver.
+LIBMDSSERVER_MAJOR = $(MAJOR)
+LIBMDSSERVER_MINOR = $(MINOR)
+LIBMDSSERVER_VERSION = $(LIBMDSSERVER_MAJOR).$(LIBMDSSERVER_MINOR)
+
+# The version of libmdsclient.
+LIBMDSCLIENT_MAJOR = $(MAJOR)
+LIBMDSCLIENT_MINOR = $(MINOR)
+LIBMDSCLIENT_VERSION = $(LIBMDSCLIENT_MAJOR).$(LIBMDSCLIENT_MINOR)
+
+
 # Splits of the info manual.
 INFOPARTS = 1 2 3
 

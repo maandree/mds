@@ -12,6 +12,8 @@ BIN ?= /bin
 LIB ?= /lib
 # The executable library path excluding prefix.
 LIBEXEC ?= /libexec
+# The header-file path excluding prefix.
+INCLUDE ?= /include
 # The resource path excluding prefix.
 DATA ?= /share
 # The command path including prefix.
@@ -20,6 +22,8 @@ BINDIR ?= $(PREFIX)$(BIN)
 LIBDIR ?= $(PREFIX)$(LIB)
 # The executable library path including prefix.
 LIBEXECDIR ?= $(PREFIX)$(LIBEXEC)
+# The header-file path including prefix.
+INCLUDEDIR ?= $(PREFIX)$(INCLUDE)
 # The resource path including prefix.
 DATADIR ?= $(PREFIX)$(DATA)
 # The generic documentation path including prefix.
@@ -126,4 +130,17 @@ C_FLAGS = $(OPTIMISE) $(WARN) -std=$(STD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)  \
 
 # Flags to pass into the manual compilers.
 TEXIFLAGS = #--force
+
+
+# Linking flags for libraries required by libmdsserver.
+LIBMDSSERVER_LIBS = 
+
+# C flags for libraries required by libmdsserver.
+LIBMDSSERVER_CFLAGS = 
+
+# Linking flags for libraries required by libmdsclient.
+LIBMDSCLIENT_LIBS = -pthread
+
+# C flags for libraries required by libmdsclient.
+LIBMDSCLIENT_CFLAGS = 
 

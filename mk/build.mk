@@ -8,10 +8,10 @@
 libraries: libmdsserver libmdsclient
 
 .PHONY: libmdsserver
-libmdsserver: bin/libmdsserver.so
+libmdsserver: $(foreach EXT,so so.$(LIBMDSSERVER_MAJOR) so.$(LIBMDSSERVER_VERSION) pc,bin/libmdsserver.$(EXT))
 
 .PHONY: libmdsclient
-libmdsclient: bin/libmdsclient.so
+libmdsclient: $(foreach EXT,so so.$(LIBMDSCLIENT_MAJOR) so.$(LIBMDSCLIENT_VERSION) pc,bin/libmdsclient.$(EXT))
 
 .PHONY: servers
 servers: $(foreach S,$(SERVERS),bin/$(S))
@@ -116,9 +116,15 @@ endif
 
 # Build libmdsserver.
 
-bin/libmdsserver.so: $(foreach O,$(SERVEROBJ),obj/libmdsserver/$(O).o)
+bin/libmdsserver.so.$(LIBMDSSERVER_VERSION): $(foreach O,$(SERVEROBJ),obj/libmdsserver/$(O).o)
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -shared -o $@ $^
+	$(CC) $(C_FLAGS) -shared -Wl,-soname,libmdsclient.so.$(LIBMDSSERVER_MAJOR) -o $@ $^
+
+bin/libmdsserver.so.$(LIBMDSSERVER_MAJOR): bin/libmdsserver.so.$(LIBMDSSERVER_VERSION)
+	ln -sf libmdsserver.so.$(LIBMDSSERVER_VERSION) $@
+
+bin/libmdsserver.so: bin/libmdsserver.so.$(LIBMDSSERVER_VERSION)
+	ln -sf libmdsserver.so.$(LIBMDSSERVER_VERSION) $@
 
 obj/libmdsserver/%.o: src/libmdsserver/%.c src/libmdsserver/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
@@ -154,13 +160,38 @@ src/libmdsserver/config.h: src/libmdsserver/config.h.in
 	sed -i 's:@MDS_STORAGE_ROOT_DIRECTORY@:$(MDS_STORAGE_ROOT_DIRECTORY):g' $@
 endif
 
+bin/libmdsserver.pc: src/libmdsserver/libmdsserver.pc.in
+	mkdir -p $(shell dirname $@)
+	cp $< $@
+	sed -i 's:@LIBDIR@:$(LIBDIR):g' $@
+	sed -i 's:@INCLUDEDIR@:$(INCLUDEDIR):g' $@
+	sed -i 's:@VERSION@:$(LIBMDSSERVER_VERSION):g' $@
+	sed -i 's:@LIBS@:$(LIBMDSSERVER_LIBS):g' $@
+	sed -i 's:@CFLAGS@:$(LIBMDSSERVER_CFLAGS):g' $@
+
 
 # Build libmdsclient.
 
-bin/libmdsclient.so: $(foreach O,$(CLIENTOBJ),obj/libmdsclient/$(O).o)
+bin/libmdsclient.so.$(LIBMDSCLIENT_VERSION): $(foreach O,$(CLIENTOBJ),obj/libmdsclient/$(O).o)
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -shared -o $@ $^
+	$(CC) $(C_FLAGS) -shared -Wl,-soname,libmdsclient.so.$(LIBMDSCLIENT_MAJOR) -o $@ $^
+
+bin/libmdsclient.so.$(LIBMDSCLIENT_MAJOR): bin/libmdsclient.so.$(LIBMDSCLIENT_VERSION)
+	ln -sf libmdsclient.so.$(LIBMDSCLIENT_VERSION) $@
+
+bin/libmdsclient.so: bin/libmdsclient.so.$(LIBMDSCLIENT_VERSION)
+	ln -sf libmdsclient.so.$(LIBMDSCLIENT_VERSION) $@
 
 obj/libmdsclient/%.o: src/libmdsclient/%.c src/libmdsclient/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
+
+bin/libmdsclient.pc: src/libmdsclient/libmdsclient.pc.in
+	mkdir -p $(shell dirname $@)
+	cp $< $@
+	sed -i 's:@LIBDIR@:$(LIBDIR):g' $@
+	sed -i 's:@INCLUDEDIR@:$(INCLUDEDIR):g' $@
+	sed -i 's:@VERSION@:$(LIBMDSCLIENT_VERSION):g' $@
+	sed -i 's:@LIBS@:$(LIBMDSCLIENT_LIBS):g' $@
+	sed -i 's:@CFLAGS@:$(LIBMDSCLIENT_CFLAGS):g' $@
+

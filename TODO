@@ -56,10 +56,6 @@ Need testing:
 	vt
 	colour
 
-Makefile:
-
-	When linking libraries, soname should be specified
-
 
 Full introspection may be useful for debugging.
 

@@ -1,0 +1,9 @@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: libmdsserver
+Description: Library for mds-servers
+Version: @VERSION@
+Libs: -L${libdir} -lmdsserver @LIBS@
+Cflags: -I${includedir} @CFLAGS@
+
