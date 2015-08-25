@@ -1714,23 +1714,12 @@ int fetch_keys(void)
  */
 int send_errno(int error, const char* recv_client_id, const char* recv_message_id)
 {
-  size_t n = 69 + strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(int);
   int r;
-  
-  fail_if (ensure_send_buffer_size(n + 1) < 0);
-  
   with_mutex (send_mutex,
-	      sprintf(send_buffer,
-		      "Command: error\n"
-		      "To: %s\n"
-		      "In response to: %s\n"
-		      "Message ID: %" PRIu32 "\n"
-		      "Error: %i\n"
-		      "\n",
-		      recv_client_id, recv_message_id, message_id, error);
-	      
+	      r = send_error(recv_client_id, recv_message_id, "get-keyboard-leds",
+			     0, error, NULL, &send_buffer, &send_buffer_size,
+			     message_id, socket_fd);
 	      message_id = message_id == INT32_MAX ? 0 : (message_id + 1);
-	      r = full_send(send_buffer, strlen(send_buffer));
 	      if (r)  r = errno ? errno : -1;
 	      );
   fail_if (errno = (r == -1 ? 0 : r), r);
