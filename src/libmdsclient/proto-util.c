@@ -693,6 +693,7 @@ int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_
       
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
       part_len = vasprintf(&part_msg, format, args);
 # pragma GCC diagnostic pop
       if (part_len < 0)
