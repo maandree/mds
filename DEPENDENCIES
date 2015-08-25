@@ -13,6 +13,7 @@ BUILD DEPENDENCIES:
 	gcc
 	make
 	coreutils
+	sed
 	texinfo (opt-out, for manuals: info pdf ps dvi)
 	texlive-core (opt-out, for manuals: pdf ps dvi)
 
