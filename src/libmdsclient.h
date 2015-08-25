@@ -20,6 +20,7 @@
 
 
 #include "libmdsclient/proto-util.h"
+#include "libmdsclient/comm.h"
 
 
 #endif

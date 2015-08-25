@@ -110,6 +110,7 @@ typedef enum libmds_cherrypick_optimisation
  * @throws  ENOMEM        Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                        RLIMIT_DATA limit described in getrlimit(2).
  */
+__attribute__((sentinel))
 int libmds_headers_cherrypick(char** restrict headers, size_t header_count, size_t* restrict found,
 			      libmds_cherrypick_optimisation_t optimisation, ...);
 
@@ -131,6 +132,7 @@ int libmds_headers_cherrypick(char** restrict headers, size_t header_count, size
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
+__attribute__((sentinel))
 size_t libmds_headers_cherrypick_linear_unsorted(char** restrict headers, size_t header_count, ...);
 #define libmds_headers_cherrypick_linear_unsorted  libmds_headers_cherrypick_linear_unsorted
 
@@ -154,6 +156,7 @@ size_t libmds_headers_cherrypick_linear_unsorted(char** restrict headers, size_t
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
+__attribute__((sentinel))
 size_t libmds_headers_cherrypick_linear_sorted(char** restrict headers, size_t header_count, ...);
 #define libmds_headers_cherrypick_linear_sorted  libmds_headers_cherrypick_linear_sorted
 
@@ -175,6 +178,7 @@ size_t libmds_headers_cherrypick_linear_sorted(char** restrict headers, size_t h
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
+__attribute__((sentinel))
 size_t libmds_headers_cherrypick_binary_unsorted(char** restrict headers, size_t header_count, ...);
 #define libmds_headers_cherrypick_binary_unsorted  libmds_headers_cherrypick_binary_unsorted
 
@@ -197,6 +201,7 @@ size_t libmds_headers_cherrypick_binary_unsorted(char** restrict headers, size_t
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
+__attribute__((sentinel))
 size_t libmds_headers_cherrypick_binary_sorted(char** restrict headers, size_t header_count, ...);
 #define libmds_headers_cherrypick_binary_unsorted  libmds_headers_cherrypick_binary_unsorted
 
@@ -365,9 +370,9 @@ void libmds_headers_sort(char** restrict headers, size_t header_count);
  * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                          RLIMIT_DATA limit described in getrlimit(2).
  */
+__attribute__((nonnull(1, 2, 3), sentinel))
 int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
-		   const char* restrict payload, const size_t* restrict payload_length,
-		   ...) __attribute__((nonnull(1, 2, 3)));
+		   const char* restrict payload, const size_t* restrict payload_length, ...);
 
 /**
  * Compose a message
@@ -411,9 +416,9 @@ int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t*
  * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                          RLIMIT_DATA limit described in getrlimit(2).
  */
+__attribute__((nonnull(1, 2, 3)))
 int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
-		     const char* restrict payload, const size_t* restrict payload_length,
-		     va_list args) __attribute__((nonnull(1, 2, 3)));
+		     const char* restrict payload, const size_t* restrict payload_length, va_list args);
 
 /**
  * Increase the message ID counter
@@ -436,8 +441,9 @@ int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_
  *                      there are no free message ID:s.
  * @throws              Any error that `test` may throw.
  */
+__attribute__((nonnull(1)))
 int libmds_next_message_id(uint32_t* restrict message_id, int (*test)(uint32_t message_id, void* data),
-			   void* data) __attribute__((nonnull(1)));
+			   void* data) ;
 
 
 #endif

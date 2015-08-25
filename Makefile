@@ -15,7 +15,7 @@ INFOPARTS = 1 2 3
 SERVEROBJ = linked-list client-list hash-table fd-table mds-message util
 
 # Object files for the client libary.
-CLIENTOBJ = proto-util
+CLIENTOBJ = proto-util comm
 
 # Servers and utilities.
 SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \
