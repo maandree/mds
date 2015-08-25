@@ -61,6 +61,9 @@ Makefile:
 	When linking libraries, soname should be specified
 
 
+Full introspection may be useful for debugging.
+
+
 Fast lanes
 Optimise use of mutexe by replace them with rwlocks (where appropriate)
 Listen for `Command: reregister`

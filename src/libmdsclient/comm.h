@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <errno.h>
+#include <inttypes.h>
 
 
 
@@ -108,7 +109,7 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * Lock the connection descriptor for being modified,
  * or used to send data to the display, by another thread
  * 
- * @param   this:libmds_connection_t*  The connection descriptor
+ * @param   this:libmds_connection_t*  The connection descriptor, must not be `NULL`
  * @return  :int                       Zero on success, -1 on error, `errno`
  *                                     will have been set accordingly on error
  * @throws                             See pthread_mutex_lock(3)
@@ -120,7 +121,7 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * Lock the connection descriptor for being modified,
  * or used to send data to the display, by another thread
  * 
- * @param   this:libmds_connection_t*  The connection descriptor
+ * @param   this:libmds_connection_t*  The connection descriptor, must not be `NULL`
  * @return  :int                       Zero on success, -1 on error, `errno`
  *                                     will have been set accordingly on error
  * @throws                             See pthread_mutex_trylock(3)
@@ -132,8 +133,9 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * Lock the connection descriptor for being modified,
  * or used to send data to the display, by another thread
  * 
- * @param   this:libmds_connection_t*                 The connection descriptor
- * @param   deadline:const struct timespec *restrict  The CLOCK_REALTIME time when the function shall fail
+ * @param   this:libmds_connection_t*                 The connection descriptor, must not be `NULL`
+ * @param   deadline:const struct timespec *restrict  The absolute `CLOCK_REALTIME` time when the
+ *                                                    function shall fail, must not be `NULL`
  * @return  :int                                      Zero on success, -1 on error, `errno`
  *                                                    will have been set accordingly on error
  * @throws                                            See pthread_mutex_timedlock(3)
@@ -145,13 +147,38 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * Undo the action of `libmds_connection_lock`, `libmds_connection_trylock`
  * or `libmds_connection_timedlock`
  * 
- * @param   this:libmds_connection_t*  The connection descriptor
+ * @param   this:libmds_connection_t*  The connection descriptor, must not be `NULL`
  * @return  :int                       Zero on success, -1 on error, `errno`
  *                                     will have been set accordingly on error
  * @throws                             See pthread_mutex_unlock(3)
  */
 #define libmds_connection_unlock(this)  \
   (errno = pthread_mutex_unlock(&((this)->mutex)), (errno ? 0 : -1))
+
+/**
+ * Arguments for `libmds_compose` to compose the `Client ID`-header
+ * 
+ * @param  this: libmds_connection_t*  The connection descriptor, must not be `NULL`
+ */
+#define LIBMDS_HEADER_CLIENT_ID(this)  \
+  "?Client ID: %s", (this)->client_id != NULL, (this)->client_id
+
+/**
+ * Arguments for `libmds_compose` to compose the `Message ID`-header
+ * 
+ * @param  this: libmds_connection_t*  The connection descriptor, must not be `NULL`
+ */
+#define LIBMDS_HEADER_MESSAGE_ID(this)  \
+  "Message ID: %"PRIu32, (this)->message_id
+
+/**
+ * Arguments for `libmds_compose` to compose the standard headers:
+ * `Client ID` and `Message ID`
+ * 
+ * @param  this: libmds_connection_t*  The connection descriptor, must not be `NULL`
+ */
+#define LIBMDS_HEADERS_STANDARD(this)  \
+  LIBMDS_HEADER_CLIENT_ID(this), LIBMDS_HEADER_MESSAGE_ID(this)
 
 
 #endif
