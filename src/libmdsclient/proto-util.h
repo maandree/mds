@@ -351,11 +351,14 @@ void libmds_headers_sort(char** restrict headers, size_t header_count);
  *                          header line, that is, the header name, colon, blank space and then
  *                          the header's value. No LF should be included. The following
  *                          arguments should be the argument to format the header line.
- *                          This may be be iterated any number of this. The last argument
- *                          should be `NULL` to specify that there are no more headers.
- *                          The `Length`-header should not be included, it is added automatically.
- *                          A header may not have a length larger than 2¹⁵, otherwise
- *                          the behaviour of this function is undefined.
+ *                          If a format for a line begins with a question mark, the remainder
+ *                          of the line used, but only if the next argument is non-zero
+ *                          (it should be of type `int`,) that argument will not be used
+ *                          for the formatting. This may be be iterated any number of this.
+ *                          The last argument should be `NULL` to specify that there are no
+ *                          more headers. The `Length`-header should not be included, it is
+ *                          added automatically. A header may not have a length larger than
+ *                          2¹⁵, otherwise the behaviour of this function is undefined.
  * @return                  Zero on success, -1 on error, `errno` will have been set
  *                          accordingly on error.
  * 
@@ -394,11 +397,14 @@ int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t*
  *                          header line, that is, the header name, colon, blank space and then
  *                          the header's value. No LF should be included. The following
  *                          arguments should be the argument to format the header line.
- *                          This may be be iterated any number of this. The last argument
- *                          should be `NULL` to specify that there are no more headers.
- *                          The `Length`-header should not be included, it is added automatically.
- *                          A header may not have a length larger than 2¹⁵, otherwise
- *                          the behaviour of this function is undefined.
+ *                          If a format for a line begins with a question mark, the remainder
+ *                          of the line used, but only if the next argument is non-zero
+ *                          (it should be of type `int`,) that argument will not be used
+ *                          for the formatting. This may be be iterated any number of this.
+ *                          The last argument should be `NULL` to specify that there are no
+ *                          more headers. The `Length`-header should not be included, it is
+ *                          added automatically. A header may not have a length larger than
+ *                          2¹⁵, otherwise the behaviour of this function is undefined.
  * @return                  Zero on success, -1 on error, `errno` will have been set
  *                          accordingly on error.
  * 
