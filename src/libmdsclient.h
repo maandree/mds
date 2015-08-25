@@ -21,6 +21,7 @@
 
 #include "libmdsclient/proto-util.h"
 #include "libmdsclient/comm.h"
+#include "libmdsclient/address.h"
 
 
 #endif

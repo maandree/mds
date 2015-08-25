@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "comm.h"
+#include "address.h"
 
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <string.h>
+
+#include <libmdsserver/config.h>
 
 
 
@@ -119,6 +123,70 @@ void libmds_connection_free(libmds_connection_t* restrict this)
 
 
 /**
+ * Connect to the display server
+ * 
+ * @param   this     The connection descriptor, must not be `NULL`
+ * @param   display  Pointer to `NULL` to select display be looking at
+ *                   the environment. Pointer to a string with the
+ *                   address (formatted as the environment variable
+ *                   MDS_DISPLAY) if manually specified. The pointer
+ *                   itself must not be `NULL`; it will be updated
+ *                   with the address if it points to NULL.
+ * @return           Zero on success, -1 on error. On error, `display`
+ *                   will point to `NULL` if MDS_DISPLAY is not defiend,
+ *                   otherwise, `errno` will have been set to describe
+ *                   the error.
+ * 
+ * @throws  EFAULT   If the display server's address is not properly
+ *                   formatted, or specifies an unsupported protocol,
+ *                   `libmds_parse_display_adress` can be used to
+ *                   figure out what is wrong.
+ * @throws           Any error specified for socket(2)
+ * @throws           Any error specified for connect(2), except EINTR
+ */
+int libmds_connection_establish(libmds_connection_t* restrict this, const char** restrict display)
+{
+  libmds_display_address_t addr;
+  int saved_errno;
+  
+  addr.address = NULL;
+  
+  if (*display == NULL)
+    *display = getenv("MDS_DISPLAY");
+  
+  if ((*display == NULL) || (strchr(*display, ':') == NULL))
+    goto efault;
+  
+  if (libmds_parse_display_adress(*display, &addr) < 0)
+    goto fail;
+  if (addr.domain   < 0)     goto efault;
+  if (addr.type     < 0)     goto efault;
+  if (addr.protocol < 0)     goto efault;
+  if (addr.address == NULL)  goto efault;
+  
+  this->socket_fd = socket(addr.domain, addr.type, addr.protocol);
+  if (this->socket_fd < 0)
+    goto fail;
+  
+  while (connect(this->socket_fd, (struct sockaddr*)(addr.address), addr.address_len))
+    if (errno != EINTR)
+      goto fail;
+  
+  free(addr.address);
+  return 0;
+  
+ efault:
+  free(addr.address);
+  return errno = EFAULT, -1;
+  
+ fail:
+  saved_errno = errno;
+  free(addr.address);
+  return errno = saved_errno, -1;
+}
+
+
+/**
  * Wrapper for `libmds_connection_send_unlocked` that locks
  * the mutex of the connection
  * 
@@ -142,7 +210,7 @@ void libmds_connection_free(libmds_connection_t* restrict this)
  * @throws  EPIPE         See send(2)
  * @throws                See pthread_mutex_lock(3)
  */
-size_t libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length)
+size_t libmds_connection_send(libmds_connection_t* restrict this, const char* restrict message, size_t length)
 {
   int saved_errno;
   size_t r;
@@ -183,7 +251,7 @@ size_t libmds_connection_send(libmds_connection_t* restrict this, const char* me
  * @throws  ENOTSOCK      See send(2)
  * @throws  EPIPE         See send(2)
  */
-size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message,
+size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* restrict message,
 				       size_t length, int continue_on_interrupt)
 {
   size_t block_size = length;

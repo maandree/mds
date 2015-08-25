@@ -184,7 +184,7 @@ bin/libmdsclient.so: bin/libmdsclient.so.$(LIBMDSCLIENT_VERSION)
 
 obj/libmdsclient/%.o: src/libmdsclient/%.c src/libmdsclient/*.h $(SEDED)
 	mkdir -p $(shell dirname $@)
-	$(CC) $(C_FLAGS) -fPIC -c -o $@ $<
+	$(CC) $(C_FLAGS) -fPIC -Isrc -c -o $@ $<
 
 bin/libmdsclient.pc: src/libmdsclient/libmdsclient.pc.in
 	mkdir -p $(shell dirname $@)

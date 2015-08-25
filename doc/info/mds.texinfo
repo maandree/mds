@@ -736,8 +736,10 @@ connect to. @command{X.org} does this by setting the
 environment variable @env{DISPLAY} to
 @code{<host>:<display index>}, where @code{<host>}
 is empty if the display is one the local machine.
-In this tradition @command{mds} does the same thing
+In this tradition, @command{mds} does the same thing
 with the environment variable @env{MDS_DISPLAY}@.
+The display index is the TCP-port if the host is
+non-empty.
 
 @cpindex Environment variables
 @vrindex @env{MDS_PGROUP}
