@@ -18,19 +18,28 @@
 #include "comm.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 
 
 
 /**
- * Initialise a connection descriptor with the the default values
+ * Initialise a connection descriptor
  * 
  * @param  this  The connection descriptor
+ * @return        Zero on success, -1 on error, `ernno`
+ *                will have been set accordingly on error
  */
-void libmds_connection_initialise(libmds_connection_t* restrict this)
+int libmds_connection_initialise(libmds_connection_t* restrict this)
 {
   this->socket_fd = -1;
   this->message_id = UINT32_MAX;
   this->client_id = NULL;
+  this->mutex_initialised = 0;
+  errno = pthread_mutex_init(&(this->mutex), NULL);
+  if (errno)
+    return -1;
+  this->mutex_initialised = 1;
+  return 0;
 }
 
 
@@ -63,7 +72,25 @@ void libmds_connection_destroy(libmds_connection_t* restrict this)
   if (this == NULL)
     return;
   
-  /* TODO */
+  if (this->socket_fd >= 0)
+    {
+      while (close(this->socket_fd))
+	{
+	  if (errno == EINTR)
+	    continue;
+	  break; /* errno may be EBADF or EIO. */
+	}
+      this->socket_fd = -1;
+    }
+  
+  free(this->client_id);
+  this->client_id = NULL;
+  
+  if (this->mutex_initialised)
+    {
+      this->mutex_initialised = 0;
+      pthread_mutex_destroy(&(this->mutex)); /* Can return EBUSY. */
+    }
 }
 
 

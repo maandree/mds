@@ -53,19 +53,29 @@ typedef struct libmds_connection
   /**
    * Mutex used to hinder concurrent modification
    * and concurrent message passing
+   * 
+   * This mutex is a fast mutex, a thread may not
+   * lock it more than once
    */
   pthread_mutex_t mutex;
+  
+  /**
+   * Whether `mutex` is initialised
+   */
+  int mutex_initialised;
   
 } libmds_connection_t;
 
 
 /**
- * Initialise a connection descriptor with the the default values
+ * Initialise a connection descriptor
  * 
- * @param  this  The connection descriptor
+ * @param   this  The connection descriptor
+ * @return        Zero on success, -1 on error, `ernno`
+ *                will have been set accordingly on error
  */
 __attribute__((nonnull))
-void libmds_connection_initialise(libmds_connection_t* restrict this);
+int libmds_connection_initialise(libmds_connection_t* restrict this);
 
 /**
  * Allocate and initialise a connection descriptor
