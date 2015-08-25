@@ -8672,8 +8672,7 @@ To use libmdsclient, include @file{<libmdsclient.h>}
 in your source files. @file{<libmdsclient.h>} includes
 all libmdsclient headers; you may cherrypick them if
 you so choose. When compiling and linking your programs,
-use the @command{pkg-config} package @code{libmdsclient},
-or simply link with the flag @code{-lmdsclient}.
+use the @command{pkg-config} package @code{libmdsclient}.
 
 
 
