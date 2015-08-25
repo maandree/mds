@@ -283,8 +283,10 @@ libraries and concepts.
 * Utilities::                                 About @command{mds} utilities.
 * Servers::                                   About @command{mds} servers.
 * Protocols::                                 @command{mds} procotols.
-* libmdsserver::                              Overview of @command{libmdsserver}.
-* mds-base.o::                                Overview of @file{mds-base.o}.
+* libmdsserver::                              Overview of @command{libmdsserver}, the server library.
+* mds-base.o::                                Overview of @file{mds-base.o}, the common server base.
+* libmdsclient::                              Overview of @command{libmdsclient}, the client library.
+* libmdslltk::                                Overview of @command{libmdslltk}, the toolkit library.
 * Keyboard Codes::                            Scancodes and keycodes.
 * Keyboard Layouts::                          Writing and compiling keyboard layouts.
 * Default Keyboard Layouts::                  The keyboard layouts installed with @command{mds}.
@@ -6052,6 +6054,8 @@ Optional.
 @node libmdsserver
 @chapter libmdsserver
 
+@cpindex Servers, library
+@cpindex Library, Servers
 libmdsserver is a library written for the reference
 implementation of the @command{mds} servers.
 llibmdsserver does not contain support for any
@@ -8192,6 +8196,8 @@ display server message passing system.
 @node mds-base.o
 @chapter @file{mds-base.o}
 
+@cpindex Servers, library
+@cpindex Library, Servers
 @cpindex @file{mds-base}
 @file{mds-base.c} and @file{mds-base.h} as an object
 filepair whose purpose is similar to libmdsserver.
@@ -8647,6 +8653,38 @@ set to non-zero.
 This setting will be treated as set to zero if
 @option{--immortal} is used.
 @end table
+
+
+
+@node libmdsclient
+@chapter libmdsclient
+
+@cpindex Clients, library
+@cpindex Library, clients
+libmdsclient is a library written for @code{mds}
+clients. But can also be used for @code{mds} servers.
+However, reference servers use libmdsserver
+(@pxref{libmdsserver}.)
+
+@cpindex @command{pkg-config}
+@pgindex @command{pkg-config}
+To use libmdsclient, include @file{<libmdsclient.h>}
+in your source files. @file{<libmdsclient.h>} includes
+all libmdsclient headers; you may cherrypick them if
+you so choose. When compiling and linking your programs,
+use the @command{pkg-config} package @code{libmdsclient},
+or simply link with the flag @code{-lmdsclient}.
+
+
+
+@node libmdslltk
+@chapter libmdslltk
+
+@cpindex Toolkits, library
+@cpindex Library, toolkits
+libmdslltk is a planned library. It provides low-level
+toolkit functionallity to facilitate development of
+@code{mds} toolkits.
 
 
 
