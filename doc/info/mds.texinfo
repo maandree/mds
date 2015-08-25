@@ -8674,6 +8674,16 @@ all libmdsclient headers; you may cherrypick them if
 you so choose. When compiling and linking your programs,
 use the @command{pkg-config} package @code{libmdsclient}.
 
+Definitions@footnote{Structures, unions, enumerations,
+type-definitions, functions, macros and variables.} in
+libmdsclients use the prefixes @code{libmds_} and
+@code{LIBMDS_}@footnote{@code{LIBMDS_} is reserved for
+macros, but function-like macros and lvalue-macros use
+@code{libmds_}.}, rather than @code{libmdsclient_} and
+@code{LIBMDSCLIENT_}. This is to make the identifiers
+shorter. Inclusion-guards are formatted
+@code{MDS_LIBMDSCLIENT_*_H}.
+
 
 
 @node libmdslltk
