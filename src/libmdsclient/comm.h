@@ -21,6 +21,9 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <pthread.h>
+#include <time.h>
+#include <errno.h>
 
 
 
@@ -46,6 +49,12 @@ typedef struct libmds_connection
    */
   char* client_id;
   
+  /**
+   * Mutex used to hinder concurrent modification
+   * and concurrent message passing
+   */
+  pthread_mutex_t mutex;
+  
 } libmds_connection_t;
 
 
@@ -60,7 +69,8 @@ void libmds_connection_initialise(libmds_connection_t* restrict this);
 /**
  * Allocate and initialise a connection descriptor
  * 
- * @return  The connection descriptor, `NULL` on error
+ * @return  The connection descriptor, `NULL` on error,
+ *          `errno` will have been set accordingly on error
  * 
  * @throws  ENOMEM  Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
@@ -81,6 +91,67 @@ void libmds_connection_destroy(libmds_connection_t* restrict this);
  * @param  this  The connection descriptor, may be `NULL`
  */
 void libmds_connection_free(libmds_connection_t* restrict this);
+
+/**
+ * TODO doc
+ */
+__attribute__((nonnull))
+int libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length);
+
+/**
+ * TODO doc
+ */
+__attribute__((nonnull))
+int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message, size_t length);
+
+/**
+ * Lock the connection descriptor for being modified,
+ * or used to send data to the display, by another thread
+ * 
+ * @param   this:libmds_connection_t*  The connection descriptor
+ * @return  :int                       Zero on success, -1 on error, `errno`
+ *                                     will have been set accordingly on error
+ * @throws                             See pthread_mutex_lock(3)
+ */
+#define libmds_connection_lock(this) \
+  (errno = pthread_mutex_lock(&((this)->mutex)), (errno ? 0 : -1))
+
+/**
+ * Lock the connection descriptor for being modified,
+ * or used to send data to the display, by another thread
+ * 
+ * @param   this:libmds_connection_t*  The connection descriptor
+ * @return  :int                       Zero on success, -1 on error, `errno`
+ *                                     will have been set accordingly on error
+ * @throws                             See pthread_mutex_trylock(3)
+ */
+#define libmds_connection_trylock(this) \
+  (errno = pthread_mutex_trylock(&((this)->mutex)), (errno ? 0 : -1))
+
+/**
+ * Lock the connection descriptor for being modified,
+ * or used to send data to the display, by another thread
+ * 
+ * @param   this:libmds_connection_t*                 The connection descriptor
+ * @param   deadline:const struct timespec *restrict  The CLOCK_REALTIME time when the function shall fail
+ * @return  :int                                      Zero on success, -1 on error, `errno`
+ *                                                    will have been set accordingly on error
+ * @throws                                            See pthread_mutex_timedlock(3)
+ */
+#define libmds_connection_timedlock(this, deadline)  \
+  (errno = pthread_mutex_timedlock(&((this)->mutex), deadline), (errno ? 0 : -1))
+
+/**
+ * Undo the action of `libmds_connection_lock`, `libmds_connection_trylock`
+ * or `libmds_connection_timedlock`
+ * 
+ * @param   this:libmds_connection_t*  The connection descriptor
+ * @return  :int                       Zero on success, -1 on error, `errno`
+ *                                     will have been set accordingly on error
+ * @throws                             See pthread_mutex_unlock(3)
+ */
+#define libmds_connection_unlock(this)
+  (errno = pthread_mutex_unlock(&((this)->mutex)), (errno ? 0 : -1))
 
 
 #endif

@@ -37,7 +37,8 @@ void libmds_connection_initialise(libmds_connection_t* restrict this)
 /**
  * Allocate and initialise a connection descriptor
  * 
- * @return  The connection descriptor, `NULL` on error
+ * @return  The connection descriptor, `NULL` on error,
+ *          `errno` will have been set accordingly on error
  * 
  * @throws  ENOMEM  Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
@@ -76,5 +77,26 @@ void libmds_connection_free(libmds_connection_t* restrict this)
 {
   libmds_connection_destroy(this);
   free(this);
+}
+
+
+int libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length)
+{
+  int r, saved_errno;
+  
+  if (libmds_connection_lock(this))
+    return -1;
+  
+  r = libmds_connection_send_unlocked(this, message, length);
+  
+  saved_errno = errno;
+  libmds_connection_unlock(this);
+  return errno = saved_errno, r;
+}
+
+
+int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message, size_t length)
+{
+  /* TODO */
 }
 
