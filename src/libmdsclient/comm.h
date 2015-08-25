@@ -73,6 +73,10 @@ typedef struct libmds_connection
  * @param   this  The connection descriptor
  * @return        Zero on success, -1 on error, `ernno`
  *                will have been set accordingly on error
+ * 
+ * @throws  EAGAIN  See pthread_mutex_init(3)
+ * @throws  ENOMEM  See pthread_mutex_init(3)
+ * @throws  EPERM   See pthread_mutex_init(3)
  */
 __attribute__((nonnull))
 int libmds_connection_initialise(libmds_connection_t* restrict this);
@@ -85,6 +89,8 @@ int libmds_connection_initialise(libmds_connection_t* restrict this);
  * 
  * @throws  ENOMEM  Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
+ * @throws  EAGAIN  See pthread_mutex_init(3)
+ * @throws  EPERM   See pthread_mutex_init(3)
  */
 libmds_connection_t* libmds_connection_create(void);
 
@@ -103,8 +109,18 @@ void libmds_connection_destroy(libmds_connection_t* restrict this);
  */
 void libmds_connection_free(libmds_connection_t* restrict this);
 
+
 /**
- * TODO doc
+ * Wrapper for `libmds_connection_send_unlocked` that locks
+ * the mutex of the connection
+ * 
+ * @param   this     The connection descriptor, must not be `NULL`
+ * @param   message  The message to send, must not be `NULL`
+ * @param   length   The length of the message, should be positive
+ * @return           Zero on success, -1 on error, `ernno`
+ *                   will have been set accordingly on error
+ * 
+ * @throws  See pthread_mutex_lock(3)
  */
 __attribute__((nonnull))
 int libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length);
@@ -122,7 +138,8 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * @param   this:libmds_connection_t*  The connection descriptor, must not be `NULL`
  * @return  :int                       Zero on success, -1 on error, `errno`
  *                                     will have been set accordingly on error
- * @throws                             See pthread_mutex_lock(3)
+ * 
+ * @throws  See pthread_mutex_lock(3)
  */
 #define libmds_connection_lock(this) \
   (errno = pthread_mutex_lock(&((this)->mutex)), (errno ? 0 : -1))
@@ -134,7 +151,8 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * @param   this:libmds_connection_t*  The connection descriptor, must not be `NULL`
  * @return  :int                       Zero on success, -1 on error, `errno`
  *                                     will have been set accordingly on error
- * @throws                             See pthread_mutex_trylock(3)
+ * 
+ * @throws  See pthread_mutex_trylock(3)
  */
 #define libmds_connection_trylock(this) \
   (errno = pthread_mutex_trylock(&((this)->mutex)), (errno ? 0 : -1))
@@ -148,7 +166,8 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  *                                                    function shall fail, must not be `NULL`
  * @return  :int                                      Zero on success, -1 on error, `errno`
  *                                                    will have been set accordingly on error
- * @throws                                            See pthread_mutex_timedlock(3)
+ * 
+ * @throws  See pthread_mutex_timedlock(3)
  */
 #define libmds_connection_timedlock(this, deadline)  \
   (errno = pthread_mutex_timedlock(&((this)->mutex), deadline), (errno ? 0 : -1))
@@ -160,7 +179,8 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  * @param   this:libmds_connection_t*  The connection descriptor, must not be `NULL`
  * @return  :int                       Zero on success, -1 on error, `errno`
  *                                     will have been set accordingly on error
- * @throws                             See pthread_mutex_unlock(3)
+ * 
+ * @throws  See pthread_mutex_unlock(3)
  */
 #define libmds_connection_unlock(this)  \
   (errno = pthread_mutex_unlock(&((this)->mutex)), (errno ? 0 : -1))

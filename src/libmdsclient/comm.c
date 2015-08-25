@@ -25,9 +25,13 @@
 /**
  * Initialise a connection descriptor
  * 
- * @param  this  The connection descriptor
+ * @param   this  The connection descriptor
  * @return        Zero on success, -1 on error, `ernno`
  *                will have been set accordingly on error
+ * 
+ * @throws  EAGAIN  See pthread_mutex_init(3)
+ * @throws  ENOMEM  See pthread_mutex_init(3)
+ * @throws  EPERM   See pthread_mutex_init(3)
  */
 int libmds_connection_initialise(libmds_connection_t* restrict this)
 {
@@ -51,14 +55,15 @@ int libmds_connection_initialise(libmds_connection_t* restrict this)
  * 
  * @throws  ENOMEM  Out of memory, Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
+ * @throws  EAGAIN  See pthread_mutex_init(3)
+ * @throws  EPERM   See pthread_mutex_init(3)
  */
 libmds_connection_t* libmds_connection_create(void)
 {
   libmds_connection_t* rc = malloc(sizeof(libmds_connection_t));
   if (rc == NULL)
     return NULL;
-  libmds_connection_initialise(rc);
-  return rc;
+  return libmds_connection_initialise(rc) ? NULL : rc;
 }
 
 
@@ -107,6 +112,18 @@ void libmds_connection_free(libmds_connection_t* restrict this)
 }
 
 
+/**
+ * Wrapper for `libmds_connection_send_unlocked` that locks
+ * the mutex of the connection
+ * 
+ * @param   this     The connection descriptor, must not be `NULL`
+ * @param   message  The message to send, must not be `NULL`
+ * @param   length   The length of the message, should be positive
+ * @return           Zero on success, -1 on error, `ernno`
+ *                   will have been set accordingly on error
+ * 
+ * @throws  See pthread_mutex_lock(3)
+ */
 int libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length)
 {
   int r, saved_errno;
