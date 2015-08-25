@@ -415,7 +415,6 @@ int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_
 		     const char* restrict payload, const size_t* restrict payload_length,
 		     va_list args) __attribute__((nonnull(1, 2, 3)));
 
-
 /**
  * Increase the message ID counter
  * 
