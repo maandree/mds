@@ -131,6 +131,7 @@ int libmds_headers_cherrypick(char** restrict headers, size_t header_count, size
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_linear_unsorted(char** restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_linear_unsorted  libmds_headers_cherrypick_linear_unsorted
 
 /**
  * Cherrypick headers from a message,
@@ -153,6 +154,7 @@ size_t libmds_headers_cherrypick_linear_unsorted(char** restrict headers, size_t
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_linear_sorted(char** restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_linear_sorted  libmds_headers_cherrypick_linear_sorted
 
 /**
  * Cherrypick headers from a message,
@@ -173,6 +175,7 @@ size_t libmds_headers_cherrypick_linear_sorted(char** restrict headers, size_t h
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_binary_unsorted(char** restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_binary_unsorted  libmds_headers_cherrypick_binary_unsorted
 
 /**
  * Cherrypick headers from a message,
@@ -194,6 +197,7 @@ size_t libmds_headers_cherrypick_binary_unsorted(char** restrict headers, size_t
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_binary_sorted(char** restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_binary_unsorted  libmds_headers_cherrypick_binary_unsorted
 
 /**
  * Cherrypick headers from a message
@@ -241,6 +245,7 @@ int libmds_headers_cherrypick_v(char** restrict headers, size_t header_count, si
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_linear_unsorted_v(char** restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_linear_unsorted_v  libmds_headers_cherrypick_linear_unsorted_v
 
 /**
  * Cherrypick headers from a message,
@@ -263,6 +268,7 @@ size_t libmds_headers_cherrypick_linear_unsorted_v(char** restrict headers, size
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_linear_sorted_v(char** restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_linear_sorted_v  libmds_headers_cherrypick_linear_sorted_v
 
 /**
  * Cherrypick headers from a message,
@@ -283,6 +289,7 @@ size_t libmds_headers_cherrypick_linear_sorted_v(char** restrict headers, size_t
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_binary_unsorted_v(char** restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_binary_unsorted_v  libmds_headers_cherrypick_binary_unsorted_v
 
 /**
  * Cherrypick headers from a message,
@@ -304,6 +311,7 @@ size_t libmds_headers_cherrypick_binary_unsorted_v(char** restrict headers, size
  * @return                The number of found headers of those that were requested
  */
 size_t libmds_headers_cherrypick_binary_sorted_v(char** restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_binary_sorted_v  libmds_headers_cherrypick_binary_sorted_v
 
 /**
  * Sort the a header array, this is what `libmds_headers_cherrypick`
