@@ -6052,7 +6052,7 @@ Optional.
 @node libmdsserver
 @chapter libmdsserver
 
-libmdsserver is library written for the reference
+libmdsserver is a library written for the reference
 implementation of the @command{mds} servers.
 llibmdsserver does not contain support for any
 protocols, rather it contains auxiliary functions,
