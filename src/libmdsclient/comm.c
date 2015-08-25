@@ -19,6 +19,12 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+
+
+#define min(a, b)  ((a) < (b) ? (a) : (b))
 
 
 
@@ -119,19 +125,32 @@ void libmds_connection_free(libmds_connection_t* restrict this)
  * @param   this     The connection descriptor, must not be `NULL`
  * @param   message  The message to send, must not be `NULL`
  * @param   length   The length of the message, should be positive
- * @return           Zero on success, -1 on error, `ernno`
- *                   will have been set accordingly on error
+ * @return           The number of sent bytes. Less than `length` on error,
+ *                   `ernno` will have been set accordingly on error
  * 
- * @throws  See pthread_mutex_lock(3)
+ * @throws  EACCES        See send(2)
+ * @throws  EWOULDBLOCK   See send(2), only if the socket has been modified to nonblocking
+ * @throws  EBADF         See send(2)
+ * @throws  ECONNRESET    If connection was lost
+ * @throws  EDESTADDRREQ  See send(2)
+ * @throws  EFAULT        See send(2)
+ * @throws  EINVAL        See send(2)
+ * @throws  ENOBUFS       See send(2)
+ * @throws  ENOMEM        See send(2)
+ * @throws  ENOTCONN      See send(2)
+ * @throws  ENOTSOCK      See send(2)
+ * @throws  EPIPE         See send(2)
+ * @throws                See pthread_mutex_lock(3)
  */
-int libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length)
+size_t libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length)
 {
-  int r, saved_errno;
+  int saved_errno;
+  size_t r;
   
   if (libmds_connection_lock(this))
-    return -1;
+    return 0;
   
-  r = libmds_connection_send_unlocked(this, message, length);
+  r = libmds_connection_send_unlocked(this, message, length, 1);
   
   saved_errno = errno;
   (void) libmds_connection_unlock(this);
@@ -139,8 +158,59 @@ int libmds_connection_send(libmds_connection_t* restrict this, const char* messa
 }
 
 
-int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message, size_t length)
+/**
+ * Send a message to the display server, without locking the
+ * mutex of the conncetion
+ * 
+ * @param   this                   The connection descriptor, must not be `NULL`
+ * @param   message                The message to send, must not be `NULL`
+ * @param   length                 The length of the message, should be positive
+ * @param   continue_on_interrupt  Whether to continue sending if interrupted by a signal
+ * @return                         The number of sent bytes. Less than `length` on error,
+ *                                 `ernno` will have been set accordingly on error
+ * 
+ * @throws  EACCES        See send(2)
+ * @throws  EWOULDBLOCK   See send(2), only if the socket has been modified to nonblocking
+ * @throws  EBADF         See send(2)
+ * @throws  ECONNRESET    If connection was lost
+ * @throws  EDESTADDRREQ  See send(2)
+ * @throws  EFAULT        See send(2)
+ * @throws  EINTR         If interrupted by a signal, only if `continue_on_interrupt' is zero
+ * @throws  EINVAL        See send(2)
+ * @throws  ENOBUFS       See send(2)
+ * @throws  ENOMEM        See send(2)
+ * @throws  ENOTCONN      See send(2)
+ * @throws  ENOTSOCK      See send(2)
+ * @throws  EPIPE         See send(2)
+ */
+size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message,
+				       size_t length, int continue_on_interrupt)
 {
-  return (void) this, (void) message, (void) length, 0; /* TODO */
+  size_t block_size = length;
+  size_t sent = 0;
+  ssize_t just_sent;
+  
+  errno = 0;
+  while (length > 0)
+    if ((just_sent = send(this->socket_fd, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0)
+      {
+	if (errno == EMSGSIZE)
+	  {
+	    block_size >>= 1;
+	    if (block_size == 0)
+	      return sent;
+	  }
+	else if ((errno == EINTR) && continue_on_interrupt)
+	  continue;
+	else
+	  return sent;
+      }
+    else
+      {
+	sent += (size_t)just_sent;
+	length -= (size_t)just_sent;
+      }
+  
+  return sent;
 }
 

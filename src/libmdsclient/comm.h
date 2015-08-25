@@ -117,19 +117,54 @@ void libmds_connection_free(libmds_connection_t* restrict this);
  * @param   this     The connection descriptor, must not be `NULL`
  * @param   message  The message to send, must not be `NULL`
  * @param   length   The length of the message, should be positive
- * @return           Zero on success, -1 on error, `ernno`
- *                   will have been set accordingly on error
+ * @return           The number of sent bytes. Less than `length` on error,
+ *                   `ernno` will have been set accordingly on error
  * 
- * @throws  See pthread_mutex_lock(3)
+ * @throws  EACCES        See send(2)
+ * @throws  EWOULDBLOCK   See send(2), only if the socket has been modified to nonblocking
+ * @throws  EBADF         See send(2)
+ * @throws  ECONNRESET    If connection was lost
+ * @throws  EDESTADDRREQ  See send(2)
+ * @throws  EFAULT        See send(2)
+ * @throws  EINVAL        See send(2)
+ * @throws  ENOBUFS       See send(2)
+ * @throws  ENOMEM        See send(2)
+ * @throws  ENOTCONN      See send(2)
+ * @throws  ENOTSOCK      See send(2)
+ * @throws  EPIPE         See send(2)
+ * @throws                See pthread_mutex_lock(3)
  */
 __attribute__((nonnull))
-int libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length);
+size_t libmds_connection_send(libmds_connection_t* restrict this, const char* message, size_t length);
 
 /**
- * TODO doc
+ * Send a message to the display server, without locking the
+ * mutex of the conncetion
+ * 
+ * @param   this                   The connection descriptor, must not be `NULL`
+ * @param   message                The message to send, must not be `NULL`
+ * @param   length                 The length of the message, should be positive
+ * @param   continue_on_interrupt  Whether to continue sending if interrupted by a signal
+ * @return                         The number of sent bytes. Less than `length` on error,
+ *                                 `ernno` will have been set accordingly on error
+ * 
+ * @throws  EACCES        See send(2)
+ * @throws  EWOULDBLOCK   See send(2), only if the socket has been modified to nonblocking
+ * @throws  EBADF         See send(2)
+ * @throws  ECONNRESET    If connection was lost
+ * @throws  EDESTADDRREQ  See send(2)
+ * @throws  EFAULT        See send(2)
+ * @throws  EINTR         If interrupted by a signal, only if `continue_on_interrupt' is zero
+ * @throws  EINVAL        See send(2)
+ * @throws  ENOBUFS       See send(2)
+ * @throws  ENOMEM        See send(2)
+ * @throws  ENOTCONN      See send(2)
+ * @throws  ENOTSOCK      See send(2)
+ * @throws  EPIPE         See send(2)
  */
 __attribute__((nonnull))
-int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message, size_t length);
+size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message,
+				       size_t length, int continue_on_interrupt);
 
 /**
  * Lock the connection descriptor for being modified,
