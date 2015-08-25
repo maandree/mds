@@ -56,6 +56,11 @@ Need testing:
 	vt
 	colour
 
+Makefile:
+
+	When linking libraries, soname should be specified
+
+
 Fast lanes
 Optimise use of mutexe by replace them with rwlocks (where appropriate)
 Listen for `Command: reregister`
