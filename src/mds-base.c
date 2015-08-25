@@ -179,7 +179,7 @@ int __attribute__((weak)) connect_to_display(void)
   xsnprintf(pathname, "%s/%s.socket", MDS_RUNTIME_ROOT_DIRECTORY, display + 1);
   address.sun_family = AF_UNIX;
   strcpy(address.sun_path, pathname);
-  fail_if ((socket_fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0);
+  fail_if ((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0);
   fail_if (connect(socket_fd, (struct sockaddr*)(&address), sizeof(address)) < 0);
   
   return 0;
