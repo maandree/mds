@@ -90,13 +90,13 @@ int libmds_connection_send(libmds_connection_t* restrict this, const char* messa
   r = libmds_connection_send_unlocked(this, message, length);
   
   saved_errno = errno;
-  libmds_connection_unlock(this);
+  (void) libmds_connection_unlock(this);
   return errno = saved_errno, r;
 }
 
 
 int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* message, size_t length)
 {
-  /* TODO */
+  return (void) this, (void) message, (void) length, 0; /* TODO */
 }
 

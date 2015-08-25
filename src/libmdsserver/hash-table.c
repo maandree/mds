@@ -42,7 +42,8 @@
  * @param   key   The key to hash
  * @return        The hash of the key
  */
-static inline size_t __attribute__((const)) hash(const hash_table_t* restrict this, size_t key)
+__attribute__((pure, nonnull))
+static inline size_t hash(const hash_table_t* restrict this, size_t key)
 {
   return this->hasher ? this->hasher(key) : key;
 }
@@ -55,7 +56,8 @@ static inline size_t __attribute__((const)) hash(const hash_table_t* restrict th
  * @param   key   The key to hash
  * @return        A non-negative value less the the table's capacity
  */
-static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* restrict this, size_t hash)
+__attribute__((pure, nonnull))
+static inline size_t truncate_hash(const hash_table_t* restrict this, size_t hash)
 {
   return hash % this->capacity;
 }
@@ -67,6 +69,7 @@ static inline size_t __attribute__((pure)) truncate_hash(const hash_table_t* res
  * @param   this  The hash table
  * @return        Non-zero on error, `errno` will be set accordingly
  */
+__attribute__((nonnull))
 static int rehash(hash_table_t* restrict this)
 {
   hash_entry_t** old_buckets = this->buckets;

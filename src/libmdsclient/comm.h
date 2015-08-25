@@ -150,7 +150,7 @@ int libmds_connection_send_unlocked(libmds_connection_t* restrict this, const ch
  *                                     will have been set accordingly on error
  * @throws                             See pthread_mutex_unlock(3)
  */
-#define libmds_connection_unlock(this)
+#define libmds_connection_unlock(this)  \
   (errno = pthread_mutex_unlock(&((this)->mutex)), (errno ? 0 : -1))
 
 

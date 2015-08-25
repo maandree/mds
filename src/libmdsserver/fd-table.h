@@ -73,6 +73,7 @@ typedef struct fd_table
  * @param   initial_capacity  The initial capacity of the table
  * @return                    Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
 
 /**
@@ -92,6 +93,7 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
  * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
  * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
+__attribute__((nonnull(1)))
 void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func* value_freer);
 
 /**
@@ -101,7 +103,8 @@ void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func
  * @param   value  The value
  * @return         Whether the value is stored in the table
  */
-int fd_table_contains_value(const fd_table_t* restrict this, size_t value) __attribute__((pure));
+__attribute__((pure, nonnull))
+int fd_table_contains_value(const fd_table_t* restrict this, size_t value);
 
 /**
  * Check whether a key is used in the table
@@ -110,7 +113,8 @@ int fd_table_contains_value(const fd_table_t* restrict this, size_t value) __att
  * @param   key   The key
  * @return        Whether the key is used
  */
-int fd_table_contains_key(const fd_table_t* restrict this, int key) __attribute__((pure));
+__attribute__((pure, nonnull))
+int fd_table_contains_key(const fd_table_t* restrict this, int key);
 
 /**
  * Look up a value in the table
@@ -119,7 +123,8 @@ int fd_table_contains_key(const fd_table_t* restrict this, int key) __attribute_
  * @param   key   The key associated with the value
  * @return        The value associated with the key, 0 if the key was not used
  */
-size_t fd_table_get(const fd_table_t* restrict this, int key) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t fd_table_get(const fd_table_t* restrict this, int key);
 
 /**
  * Add an entry to the table
@@ -130,6 +135,7 @@ size_t fd_table_get(const fd_table_t* restrict this, int key) __attribute__((pur
  * @return         The previous value associated with the key, 0 if the key was not used.
  *                 0 will also be returned on error, check the `errno` variable.
  */
+__attribute__((nonnull))
 size_t fd_table_put(fd_table_t* restrict this, int key, size_t value);
 
 /**
@@ -139,6 +145,7 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value);
  * @param   key   The key of the entry to remove
  * @return        The previous value associated with the key, 0 if the key was not used
  */
+__attribute__((nonnull))
 size_t fd_table_remove(fd_table_t* restrict this, int key);
 
 /**
@@ -146,6 +153,7 @@ size_t fd_table_remove(fd_table_t* restrict this, int key);
  * 
  * @param  this  The fd table
  */
+__attribute__((nonnull))
 void fd_table_clear(fd_table_t* restrict this);
 
 /**
@@ -154,7 +162,8 @@ void fd_table_clear(fd_table_t* restrict this);
  * @param   this  The fd table
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t fd_table_marshal_size(const fd_table_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t fd_table_marshal_size(const fd_table_t* restrict this);
 
 /**
  * Marshals a fd table
@@ -162,6 +171,7 @@ size_t fd_table_marshal_size(const fd_table_t* restrict this) __attribute__((pur
  * @param  this  The fd table
  * @param  data  Output buffer for the marshalled data
  */
+__attribute__((nonnull))
 void fd_table_marshal(const fd_table_t* restrict this, char* restrict data);
 
 /**
@@ -173,6 +183,7 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data);
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
+__attribute__((nonnull))
 int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper);
 
 

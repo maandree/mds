@@ -443,7 +443,7 @@ int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_
  */
 __attribute__((nonnull(1)))
 int libmds_next_message_id(uint32_t* restrict message_id, int (*test)(uint32_t message_id, void* data),
-			   void* data) ;
+			   void* data);
 
 
 #endif

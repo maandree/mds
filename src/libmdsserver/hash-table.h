@@ -125,6 +125,7 @@ typedef struct hash_table
  * @param   load_factor       The load factor of the table, i.e. when to grow the table
  * @return                    Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_capacity, float load_factor);
 
 /**
@@ -154,6 +155,7 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
  * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
  * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
+__attribute__((nonnull(1)))
 void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_func* value_freer);
 
 /**
@@ -163,7 +165,8 @@ void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_
  * @param   value  The value
  * @return         Whether the value is stored in the table
  */
-int hash_table_contains_value(const hash_table_t* restrict this, size_t value) __attribute__((pure));
+__attribute__((pure, nonnull))
+int hash_table_contains_value(const hash_table_t* restrict this, size_t value);
 
 /**
  * Check whether a key is used in the table
@@ -172,7 +175,8 @@ int hash_table_contains_value(const hash_table_t* restrict this, size_t value) _
  * @param   key   The key
  * @return        Whether the key is used
  */
-int hash_table_contains_key(const hash_table_t* restrict this, size_t key) __attribute__((pure));
+__attribute__((pure, nonnull))
+int hash_table_contains_key(const hash_table_t* restrict this, size_t key);
 
 /**
  * Look up a value in the table
@@ -181,6 +185,7 @@ int hash_table_contains_key(const hash_table_t* restrict this, size_t key) __att
  * @param   key   The key associated with the value
  * @return        The value associated with the key, 0 if the key was not used
  */
+__attribute__((pure, nonnull))
 size_t hash_table_get(const hash_table_t* restrict this, size_t key);
 
 /**
@@ -190,6 +195,7 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key);
  * @param   key   The key associated with the value
  * @return        The entry associated with the key, `NULL` if the key was not used
  */
+__attribute__((pure, nonnull))
 hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key);
 
 /**
@@ -201,6 +207,7 @@ hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key
  * @return         The previous value associated with the key, 0 if the key was not used.
  *                 0 will also be returned on error, check the `errno` variable.
  */
+__attribute__((nonnull))
 size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
 
 /**
@@ -210,6 +217,7 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
  * @param   key   The key of the entry to remove
  * @return        The previous value associated with the key, 0 if the key was not used
  */
+__attribute__((nonnull))
 size_t hash_table_remove(hash_table_t* restrict this, size_t key);
 
 /**
@@ -217,6 +225,7 @@ size_t hash_table_remove(hash_table_t* restrict this, size_t key);
  * 
  * @param  this  The hash table
  */
+__attribute__((nonnull))
 void hash_table_clear(hash_table_t* restrict this);
 
 /**
@@ -236,7 +245,8 @@ void hash_table_clear(hash_table_t* restrict this);
  * @param   this  The hash table
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t hash_table_marshal_size(const hash_table_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t hash_table_marshal_size(const hash_table_t* restrict this);
 
 /**
  * Marshals a hash table
@@ -244,6 +254,7 @@ size_t hash_table_marshal_size(const hash_table_t* restrict this) __attribute__(
  * @param  this  The hash table
  * @param  data  Output buffer for the marshalled data
  */
+__attribute__((nonnull))
 void hash_table_marshal(const hash_table_t* restrict this, char* restrict data);
 
 /**
@@ -255,6 +266,7 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data);
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
+__attribute__((nonnull))
 int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper);
 
 

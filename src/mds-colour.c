@@ -911,6 +911,7 @@ static inline size_t colour_list_submarshal_size(const colour_list_entry_t* entr
  * Marshal an entry's key and value
  * 
  * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @param   data   The buffer where the entry's key and value will be stored
  * @return         The marshal-size of the entry's key and value
  */
 static inline size_t colour_list_submarshal(const colour_list_entry_t* entry, char* restrict data)
@@ -927,6 +928,7 @@ static inline size_t colour_list_submarshal(const colour_list_entry_t* entry, ch
  * Unmarshal an entry's key and value
  * 
  * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @param   data   The buffer where the entry's key and value is stored
  * @return         The number of read bytes, zero on error
  */
 static inline size_t colour_list_subunmarshal(colour_list_entry_t* entry, char* restrict data)

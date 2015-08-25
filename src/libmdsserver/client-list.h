@@ -58,6 +58,7 @@ typedef struct client_list
  * @param   capacity  The minimum initial capacity of the client list, 0 for default
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int client_list_create(client_list_t* restrict this, size_t capacity);
 
 /**
@@ -66,6 +67,7 @@ int client_list_create(client_list_t* restrict this, size_t capacity);
  * 
  * @param  this  The client list
  */
+__attribute__((nonnull))
 void client_list_destroy(client_list_t* restrict this);
 
 /**
@@ -75,6 +77,7 @@ void client_list_destroy(client_list_t* restrict this);
  * @param   out   Memory slot in which to store the new client list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int client_list_clone(const client_list_t* restrict this, client_list_t* restrict out);
 
 /**
@@ -84,6 +87,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
  * @param   client  The client to add
  * @return          Non-zero on error, `errno` will be set accordingly
  */
+__attribute__((nonnull))
 int client_list_add(client_list_t* restrict this, uint64_t client);
 
 /**
@@ -92,6 +96,7 @@ int client_list_add(client_list_t* restrict this, uint64_t client);
  * @param  this    The list
  * @param  client  The client to remove
  */
+__attribute__((nonnull))
 void client_list_remove(client_list_t* restrict this, uint64_t client);
 
 /**
@@ -100,7 +105,8 @@ void client_list_remove(client_list_t* restrict this, uint64_t client);
  * @param   this  The list
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t client_list_marshal_size(const client_list_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t client_list_marshal_size(const client_list_t* restrict this);
 
 /**
  * Marshals a client list
@@ -108,6 +114,7 @@ size_t client_list_marshal_size(const client_list_t* restrict this) __attribute_
  * @param  this  The list
  * @param  data  Output buffer for the marshalled data
  */
+__attribute__((nonnull))
 void client_list_marshal(const client_list_t* restrict this, char* restrict data);
 
 /**
@@ -118,6 +125,7 @@ void client_list_marshal(const client_list_t* restrict this, char* restrict data
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the list on error.
  */
+__attribute__((nonnull))
 int client_list_unmarshal(client_list_t* restrict this, char* restrict data);
 
 

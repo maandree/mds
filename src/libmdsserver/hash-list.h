@@ -124,6 +124,7 @@ typedef size_t T##_key_hash_func(CKEY_T key);\
  * @param   key_b  The second key, will never be `NULL`
  * @return         Whether the keys are equal
  */\
+__attribute__((pure, nonnull))\
 static inline int T##_key_comparer(CKEY_T key_a, CKEY_T key_b);\
 \
 /**
@@ -132,22 +133,27 @@ static inline int T##_key_comparer(CKEY_T key_a, CKEY_T key_b);\
  * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
  * @return         The marshal-size of the entry's key and value
  */\
+__attribute__((pure, nonnull))\
 static inline size_t T##_submarshal_size(const struct T##_entry* entry);\
 \
 /**
  * Marshal an entry's key and value
  * 
  * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @param   data   The buffer where the entry's key and value will be stored
  * @return         The marshal-size of the entry's key and value
  */\
+__attribute__((pure, nonnull))\
 static inline size_t T##_submarshal(const struct T##_entry* entry, char* restrict data);\
 \
 /**
  * Unmarshal an entry's key and value
  * 
  * @param   entry  The entry, will never be `NULL`, any only used entries will be passed
+ * @param   data   The buffer where the entry's key and value is stored
  * @return         The number of read bytes, zero on error
  */\
+__attribute__((pure, nonnull))\
 static inline size_t T##_subunmarshal(struct T##_entry* entry, char* restrict data);\
 \
 \
@@ -240,7 +246,7 @@ typedef struct T\
  * @param   capacity  The minimum initial capacity of the hash list, 0 for default
  * @return            Non-zero on error, `errno` will have been set accordingly
  */\
-static inline int __attribute__((unused))\
+static inline int __attribute__((unused, nonnull))\
 T##_create(T##_t* restrict this, size_t capacity)\
 {\
   if (capacity == 0)\
@@ -267,7 +273,7 @@ T##_create(T##_t* restrict this, size_t capacity)\
  * 
  * @param  this  The hash list
  */\
-static inline void __attribute__((unused))\
+static inline void __attribute__((unused, nonnull))\
 T##_destroy(T##_t* restrict this)\
 {\
   size_t i, n;\
@@ -291,7 +297,7 @@ T##_destroy(T##_t* restrict this)\
  * @param   out   Memory slot in which to store the new hash list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */\
-static inline int __attribute__((unused))\
+static inline int __attribute__((unused, nonnull))\
 T##_clone(const T##_t* restrict this, T##_t* restrict out)\
 {\
   if (T##_create(out, this->allocated) < 0)\
@@ -314,7 +320,7 @@ T##_clone(const T##_t* restrict this, T##_t* restrict out)\
  * @return        Non-zero on error, `errno` will have
  *                been set accordingly. Errors are non-fatal.
  */\
-static inline int __attribute__((unused))\
+static inline int __attribute__((unused, nonnull))\
 T##_pack(T##_t* restrict this)\
 {\
   size_t i, j, n;\
@@ -352,7 +358,7 @@ T##_pack(T##_t* restrict this)\
  * @param   value  Output parameter for the value
  * @return         Whether the key was found, error is impossible
  */\
-static inline int __attribute__((unused))\
+static inline int __attribute__((unused, nonnull))\
 T##_get(T##_t* restrict this, CKEY_T key, T##_value_t* restrict value)\
 {\
   size_t i, n, hash = HASH_LIST_HASH(key);\
@@ -370,7 +376,7 @@ T##_get(T##_t* restrict this, CKEY_T key, T##_value_t* restrict value)\
  * @param  this  The hash list
  * @param  key   The key of the entry to remove, must not be `NULL`
  */\
-static inline void __attribute__((unused))\
+static inline void __attribute__((unused, nonnull))\
 T##_remove(T##_t* restrict this, CKEY_T key)\
 {\
   size_t i = this->last, n, hash = HASH_LIST_HASH(key);\
@@ -416,7 +422,7 @@ T##_remove(T##_t* restrict this, CKEY_T key)\
  *                 `NULL` if the entry should be removed instead
  * @return         Non-zero on error, `errno` will have been set accordingly
  */\
-static inline int __attribute__((unused))\
+static inline int __attribute__((unused, nonnull(1, 2)))\
 T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
 {\
   size_t i = this->last, n, empty = this->used, hash;\
@@ -486,7 +492,7 @@ T##_put(T##_t* restrict this, KEY_T key, const T##_value_t* restrict value)\
  * @param   this  The hash table
  * @return        The number of bytes to allocate to the output buffer
  */\
-static inline size_t __attribute__((unused))\
+static inline size_t __attribute__((unused, pure, nonnull))\
 T##_marshal_size(const T##_t* restrict this)\
 {\
   size_t i, n = this->used;\
@@ -504,7 +510,7 @@ T##_marshal_size(const T##_t* restrict this)\
  * @param  this  The hash list
  * @param  data  Output buffer for the marshalled data
  */\
-static inline void __attribute__((unused))\
+static inline void __attribute__((unused, nonnull))\
 T##_marshal(const T##_t* restrict this, char* restrict data)\
 {\
   size_t wrote, i, n = this->used;\
@@ -536,7 +542,7 @@ T##_marshal(const T##_t* restrict this, char* restrict data)\
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */\
-static inline int __attribute__((unused))\
+static inline int __attribute__((unused, nonnull))\
 T##_unmarshal(T##_t* restrict this, char* restrict data)\
 {\
   size_t i, n, got;\

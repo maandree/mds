@@ -90,6 +90,7 @@ typedef struct mds_message
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
  */
+__attribute__((nonnull))
 int mds_message_initialise(mds_message_t* restrict this);
 
 /**
@@ -97,6 +98,7 @@ int mds_message_initialise(mds_message_t* restrict this);
  * 
  * @param  this  Memory slot in which to store the new message
  */
+__attribute__((nonnull))
 void mds_message_zero_initialise(mds_message_t* restrict this);
 
 /**
@@ -105,6 +107,7 @@ void mds_message_zero_initialise(mds_message_t* restrict this);
  * 
  * @param  this  The message
  */
+__attribute__((nonnull))
 void mds_message_destroy(mds_message_t* restrict this);
 
 /**
@@ -114,6 +117,7 @@ void mds_message_destroy(mds_message_t* restrict this);
  * @param   extent  The number of additional entries
  * @return          Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
 
 /**
@@ -129,6 +133,7 @@ int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
  */
+__attribute__((nonnull))
 int mds_message_read(mds_message_t* restrict this, int fd);
 
 /**
@@ -138,7 +143,8 @@ int mds_message_read(mds_message_t* restrict this, int fd);
  * @param   this  The message
  * @return        The size of the message when marshalled
  */
-size_t mds_message_marshal_size(const mds_message_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t mds_message_marshal_size(const mds_message_t* restrict this);
 
 /**
  * Marshal a message for state serialisation
@@ -146,6 +152,7 @@ size_t mds_message_marshal_size(const mds_message_t* restrict this) __attribute_
  * @param  this  The message
  * @param  data  Output buffer for the marshalled data
  */
+__attribute__((nonnull))
 void mds_message_marshal(const mds_message_t* restrict this, char* restrict data);
 
 /**
@@ -156,6 +163,7 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
  */
+__attribute__((nonnull))
 int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
 
 /**
@@ -165,7 +173,8 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
  * @param   this  The message
  * @return        The size of the message when marshalled
  */
-size_t mds_message_compose_size(const mds_message_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t mds_message_compose_size(const mds_message_t* restrict this);
 
 /**
  * Marshal a message for communication
@@ -173,6 +182,7 @@ size_t mds_message_compose_size(const mds_message_t* restrict this) __attribute_
  * @param  this  The message
  * @param  data  Output buffer for the marshalled data
  */
+__attribute__((nonnull))
 void mds_message_compose(const mds_message_t* restrict this, char* restrict data);
 
 

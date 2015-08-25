@@ -115,6 +115,7 @@ int mds_message_extend_headers(mds_message_t* restrict this, size_t extent)
  * @param   this  The message
  * @return        Zero on success, -1 on error
  */
+__attribute__((nonnull))
 static int mds_message_extend_buffer(mds_message_t* restrict this)
 {
   char* new_buf = this->buffer;
@@ -132,6 +133,7 @@ static int mds_message_extend_buffer(mds_message_t* restrict this)
  * 
  * @param  this  The message
  */
+__attribute__((nonnull))
 static void reset_message(mds_message_t* restrict this)
 {
   size_t i;
@@ -152,6 +154,7 @@ static void reset_message(mds_message_t* restrict this)
  * @param   this  The message
  * @return        Zero on success, negative on error (malformated message: unrecoverable state)
  */
+__attribute__((pure, nonnull))
 static int get_payload_length(mds_message_t* restrict this)
 {
   char* header;
@@ -184,7 +187,8 @@ static int get_payload_length(mds_message_t* restrict this)
  * @param   length  The length of the header
  * @return          Zero if valid, negative if invalid (malformated message: unrecoverable state)
  */
-static int __attribute__((pure)) validate_header(const char* header, size_t length)
+__attribute__((pure, nonnull))
+static int validate_header(const char* header, size_t length)
 {
   char* p = memchr(header, ':', length * sizeof(char));
   
@@ -208,6 +212,7 @@ static int __attribute__((pure)) validate_header(const char* header, size_t leng
  * @param  length      The number of characters to remove  
  * @param  update_ptr  Whether to update the buffer pointer
  */
+__attribute__((nonnull))
 static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int update_ptr)
 {
   memmove(this->buffer, this->buffer + length, (this->buffer_ptr - length) * sizeof(char));
@@ -223,6 +228,7 @@ static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int 
  * @param   this  The message
  * @return        The return value follows the rules of `mds_message_read`
  */
+__attribute__((nonnull))
 static int initialise_payload(mds_message_t* restrict this)
 {
   /* Remove the \n (end of empty line) we found from the buffer. */
@@ -249,6 +255,7 @@ static int initialise_payload(mds_message_t* restrict this)
  * @param   length  The length of the header, including LF-termination
  * @return          The return value follows the rules of `mds_message_read`
  */
+__attribute__((nonnull))
 static int store_header(mds_message_t* restrict this, size_t length)
 {
   char* header;
@@ -287,6 +294,7 @@ static int store_header(mds_message_t* restrict this, size_t length)
  * @param   fd    The file descriptor of the socket
  * @return        The return value follows the rules of `mds_message_read`
  */
+__attribute__((nonnull))
 static int continue_read(mds_message_t* restrict this, int fd)
 {
   size_t n;

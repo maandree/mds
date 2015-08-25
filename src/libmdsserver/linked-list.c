@@ -38,6 +38,7 @@
  * @param   value  The value to be rounded up to a power of two
  * @return         The nearest, but not smaller, power of two
  */
+__attribute__((const))
 static size_t to_power_of_two(size_t value)
 {
   value -= 1;
@@ -214,6 +215,7 @@ int linked_list_pack(linked_list_t* restrict this)
  * @return        The next free position,
  *                `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
+__attribute__((nonnull))
 static ssize_t linked_list_get_next(linked_list_t* restrict this)
 {
   size_t* tmp_values;
@@ -246,6 +248,7 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
  * @param   node  The position
  * @return        The position
  */
+__attribute__((nonnull))
 static ssize_t linked_list_unuse(linked_list_t* restrict this, ssize_t node)
 {
   if (node < 0)

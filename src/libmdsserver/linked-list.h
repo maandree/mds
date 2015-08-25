@@ -118,6 +118,7 @@ typedef struct linked_list
  * @param   capacity  The minimum initial capacity of the linked list, 0 for default
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int linked_list_create(linked_list_t* restrict this, size_t capacity);
 
 /**
@@ -126,6 +127,7 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity);
  * 
  * @param  this  The linked list
  */
+__attribute__((nonnull))
 void linked_list_destroy(linked_list_t* restrict this);
 
 /**
@@ -135,6 +137,7 @@ void linked_list_destroy(linked_list_t* restrict this);
  * @param   out   Memory slot in which to store the new linked list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out);
 
 /**
@@ -151,6 +154,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
  * @param   this  The list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
+__attribute__((nonnull))
 int linked_list_pack(linked_list_t* restrict this);
     
 /**
@@ -182,6 +186,7 @@ int linked_list_pack(linked_list_t* restrict this);
  * @return               The node that has been created and inserted,
  *                       `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
+__attribute__((nonnull))
 ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssize_t predecessor);
 
 /**
@@ -191,6 +196,7 @@ ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssi
  * @param   predecessor  The reference node
  * @return               The node that has been removed
  */
+__attribute__((nonnull))
 ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);
 
 /**
@@ -202,6 +208,7 @@ ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecess
  * @return             The node that has been created and inserted,
  *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
+__attribute__((nonnull))
 ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor);
 
 /**
@@ -211,6 +218,7 @@ ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ss
  * @param   successor  The reference node
  * @return             The node that has been removed
  */
+__attribute__((nonnull))
 ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);
 
 /**
@@ -219,6 +227,7 @@ ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successo
  * @param  this  The list
  * @param  node  The node to remove
  */
+__attribute__((nonnull))
 void linked_list_remove(linked_list_t* restrict this, ssize_t node);
 
 /**
@@ -247,7 +256,8 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node);
  * @param   this  The list
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t linked_list_marshal_size(const linked_list_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t linked_list_marshal_size(const linked_list_t* restrict this);
 
 /**
  * Marshals a linked list
@@ -255,6 +265,7 @@ size_t linked_list_marshal_size(const linked_list_t* restrict this) __attribute_
  * @param  this  The list
  * @param  data  Output buffer for the marshalled data
  */
+__attribute__((nonnull))
 void linked_list_marshal(const linked_list_t* restrict this, char* restrict data);
 
 /**
@@ -265,6 +276,7 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the list on error.
  */
+__attribute__((nonnull))
 int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
 
 /**
@@ -282,6 +294,7 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
  * @param  this    The list
  * @param  output  Output file
  */
+__attribute__((nonnull))
 void linked_list_dump(linked_list_t* restrict this, FILE* restrict output);
 
 

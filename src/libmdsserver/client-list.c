@@ -38,6 +38,7 @@
  * @param   value  The value to be rounded up to a power of two
  * @return         The nearest, but not smaller, power of two
  */
+__attribute__((const))
 static size_t to_power_of_two(size_t value)
 {
   value -= 1;
