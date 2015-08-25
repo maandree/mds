@@ -22,6 +22,7 @@
 
 #include <stddef.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 
 
@@ -407,6 +408,31 @@ int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t*
 int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
 		     const char* restrict payload, const size_t* restrict payload_length,
 		     va_list args) __attribute__((nonnull(1, 2, 3)));
+
+
+/**
+ * Increase the message ID counter
+ * 
+ * @param   message_id  Pointer to the current message ID, will be update with
+ *                      the next free message ID. Must not be `NULL`.
+ * @param   test        Function that tests whether an message ID is free,
+ *                      it takes the message ID to test as its first argument,
+ *                      and `data` as its second argument, and returns zero if
+ *                      it is in used, a positive integer if it is free, and a
+ *                      negative integer if an error occurred. `NULL` if there
+ *                      should be no testing.
+ * @param   data        Argument to pass to `test` so that it can deal with
+ *                      threading or any other issues. Unused if `test` is `NULL`.
+ * @return              Zero on success, -1 on error, `errno` will have been set
+ *                      accordingly on error.
+ * 
+ * @throws  EAGAIN      If there are no free message ID to be used.
+ *                      It is advisable to make `test` throw this immediately if
+ *                      there are no free message ID:s.
+ * @throws              Any error that `test` may throw.
+ */
+int libmds_next_message_id(uint32_t* restrict message_id, int (*test)(uint32_t message_id, void* data),
+			   void* data) __attribute__((nonnull(1)));
 
 
 #endif
