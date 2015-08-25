@@ -38,6 +38,7 @@
  * @param   slave  The slave
  * @return         Non-zero, `errno` will be set accordingly
  */
+__attribute__((nonnull))
 static int slave_notify_client(slave_t* slave)
 {
   char buf[sizeof("To: %s\nIn response to: %s\nMessage ID: %" PRIu32 "\nOrigin command: register\n\n")
@@ -167,7 +168,8 @@ int start_created_slave(slave_t* restrict slave)
  * @param   recv_message_id  The ID of the message that triggered the waiting
  * @return                   Non-zero on error
  */
-int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_client_id, const char* restrict recv_message_id)
+int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_client_id,
+		const char* restrict recv_message_id)
 {
   slave_t* slave = slave_create(wait_set, recv_client_id, recv_message_id);
   size_t slave_address, i;
@@ -273,7 +275,8 @@ int advance_slaves(char* command)
  * @param   recv_message_id  The ID of the message that triggered the waiting
  * @return                   The slave, `NULL` on error, `errno` will be set accordingly
  */
-slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv_client_id, const char* restrict recv_message_id)
+slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv_client_id,
+		      const char* restrict recv_message_id)
 {
   slave_t* restrict rc = NULL;
   int saved_errno;

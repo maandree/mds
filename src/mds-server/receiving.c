@@ -39,6 +39,7 @@
  * @param  length   The length of the message
  * @param  sender   The original sender of the message
  */
+__attribute__((nonnull))
 void queue_message_multicast(char* message, size_t length, client_t* sender);
 
 
@@ -50,6 +51,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender);
  * @param   modify_id  The modify ID of the message
  * @return             Normally zero, but 1 if exited because of re-exec or termination
  */
+__attribute__((nonnull))
 static int modifying_notify(client_t* client, mds_message_t message, uint64_t modify_id)
 {
   /* pthread_cond_timedwait is required to handle re-exec and termination because
@@ -110,6 +112,7 @@ static int modifying_notify(client_t* client, mds_message_t message, uint64_t mo
  * @param   stop       Whether to stop listening rather than start or reconfigure
  * @return             Zero on success, -1 on error
  */
+__attribute__((nonnull))
 static int add_intercept_conditions_from_message(client_t* client, int modifying, int64_t priority, int stop)
 {
   int saved_errno;
@@ -174,6 +177,7 @@ static int add_intercept_conditions_from_message(client_t* client, int modifying
  * @param   message_id  The message ID of the ID request
  * @return              Zero on success, -1 on error
  */
+__attribute__((nonnull(1)))
 static int assign_and_send_id(client_t* client, const char* message_id)
 {
   char* msgbuf = NULL;

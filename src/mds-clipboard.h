@@ -109,6 +109,7 @@ int clipboard_danger(void);
  * @param   recv_client_id  The ID of the client
  * @return                  Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int clipboard_death(const char* recv_client_id);
 
 /**
@@ -119,6 +120,7 @@ int clipboard_death(const char* recv_client_id);
  * @param   recv_client_id  The ID of the client
  * @return                  Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int clipboard_add(int level, const char* time_to_live, const char* recv_client_id);
 
 /**
@@ -130,6 +132,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
  * @param   recv_message_id  The message ID of the received message
  * @return                   Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int clipboard_read(int level, size_t index, const char* recv_client_id, const char* recv_message_id);
 
 /**
@@ -157,6 +160,7 @@ int clipboard_set_size(int level, size_t size);
  * @param   recv_message_id  The message ID of the received message
  * @return                   Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int clipboard_get_size(int level, const char* recv_client_id, const char* recv_message_id);
 
 

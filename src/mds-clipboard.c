@@ -505,6 +505,7 @@ int handle_message(void)
  * 
  * @param  entry  The clipboard entry to free
  */
+__attribute__((nonnull))
 static inline void free_clipboard_entry(clipitem_t* entry)
 {
   if (entry->autopurge == CLIPITEM_AUTOPURGE_NEVER)

@@ -62,7 +62,8 @@ typedef struct interception_condition
  * @param   this  The interception condition
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t interception_condition_marshal_size(const interception_condition_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t interception_condition_marshal_size(const interception_condition_t* restrict this);
 
 /**
  * Marshals an interception condition
@@ -71,6 +72,7 @@ size_t interception_condition_marshal_size(const interception_condition_t* restr
  * @param   data  Output buffer for the marshalled data
  * @return        The number of bytes that have been written (everything will be written)
  */
+__attribute__((nonnull))
 size_t interception_condition_marshal(const interception_condition_t* restrict this, char* restrict data);
 
 /**
@@ -81,6 +83,7 @@ size_t interception_condition_marshal(const interception_condition_t* restrict t
  * @return        Zero on error, `errno` will be set accordingly, otherwise the
  *                number of read bytes. Destroy the interception condition on error.
  */
+__attribute__((nonnull))
 size_t interception_condition_unmarshal(interception_condition_t* restrict this, char* restrict data);
 
 /**
@@ -89,7 +92,8 @@ size_t interception_condition_unmarshal(interception_condition_t* restrict this,
  * @param   data  In buffer with the marshalled data
  * @return        The number of read bytes
  */
-size_t interception_condition_unmarshal_skip(char* restrict data) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t interception_condition_unmarshal_skip(char* restrict data);
 
 
 #endif

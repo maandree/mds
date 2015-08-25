@@ -134,6 +134,7 @@ static int handle_close_message(void)
  * @param   client       The ID of the client that implements the server-side of the protocol
  * @return               Non-zero on error
  */
+__attribute__((nonnull))
 static int registry_action_add(int has_key, char* command, size_t command_key, uint64_t client)
 {
   int saved_errno;
@@ -221,6 +222,7 @@ static void registry_action_remove(size_t command_key, uint64_t client)
  * @param   wait_set     Table to fill with missing protocols if `action == 0`
  * @return               Non-zero on error
  */
+__attribute__((nonnull))
 static int registry_action_act(char* command, int action, uint64_t client, hash_table_t* wait_set)
 {
   size_t command_key = (size_t)(void*)command;
@@ -268,6 +270,7 @@ static int registry_action_act(char* command, int action, uint64_t client, hash_
  * @return                   Zero on success -1 on error or interruption,
  *                           `errno` will be set accordingly
  */
+__attribute__((nonnull))
 static int registry_action(size_t length, int action, const char* recv_client_id, const char* recv_message_id)
 {
   char* payload = received.payload;
@@ -343,6 +346,7 @@ static int registry_action(size_t length, int action, const char* recv_client_id
  * @return                   Zero on success, -1 on error or interruption,
  *                           `errno` will be set accordingly
  */
+__attribute__((nonnull))
 static int list_registry(const char* recv_client_id, const char* recv_message_id)
 {
   size_t ptr = 0, i;

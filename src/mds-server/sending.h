@@ -28,6 +28,7 @@
  * 
  * @param  multicast  The multicast message
  */
+__attribute__((nonnull))
 void multicast_message(multicast_t* multicast);
 
 /**
@@ -35,6 +36,7 @@ void multicast_message(multicast_t* multicast);
  * 
  * @param  client  The client
  */
+__attribute__((nonnull))
 void send_multicast_queue(client_t* client);
 
 /**
@@ -42,6 +44,7 @@ void send_multicast_queue(client_t* client);
  * 
  * @param  client  The client
  */
+__attribute__((nonnull))
 void send_reply_queue(client_t* client);
 
 

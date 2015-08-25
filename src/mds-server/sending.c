@@ -57,6 +57,7 @@ static client_t* client_by_socket(int client_fd)
  * @param   modifying  Whether the recipient may modify the message
  * @return             Evaluates to true if and only if the entire message was sent
  */
+__attribute__((nonnull))
 static int send_multicast_to_recipient(multicast_t* multicast, client_t* recipient, int modifying)
 {
   char* msg = multicast->message + multicast->message_ptr;
@@ -93,6 +94,7 @@ static int send_multicast_to_recipient(multicast_t* multicast, client_t* recipie
  * @param  recipient  The recipient
  * @param  modify_id  The modify ID of the multicast
  */
+__attribute__((nonnull))
 static void wait_for_reply(client_t* recipient, uint64_t modify_id)
 {
   /* pthread_cond_timedwait is required to handle re-exec and termination because

@@ -295,6 +295,7 @@ pid_t parse_pid_t(const char* str, size_t n)
  * 
  * @param  child_args  Command line arguments for the new image
  */
+__attribute__((nonnull))
 static void exec_master_server(char** child_args)
 {
   /* Drop privileges. They most not be propagated non-authorised components. */

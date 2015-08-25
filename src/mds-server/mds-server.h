@@ -46,6 +46,7 @@ void* slave_loop(void* data);
  * @param  length   The length of the message
  * @param  sender   The original sender of the message
  */
+__attribute__((nonnull))
 void queue_message_multicast(char* message, size_t length, client_t* sender);
 
 /**
@@ -53,7 +54,8 @@ void queue_message_multicast(char* message, size_t length, client_t* sender);
  * 
  * @param  args  The arguments to the child process
  */
-void run_initrc(char** args) __attribute__((noreturn));
+__attribute__((noreturn, nonnull))
+void run_initrc(char** args);
 
 
 #endif

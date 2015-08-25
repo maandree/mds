@@ -46,6 +46,7 @@ int handle_message(void);
  * @param   recv_modify_id   The value of the `Modify ID`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
+__attribute__((nonnull(1, 2)))
 int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_message_id,
 			       const char* recv_modify_id);
 
@@ -67,8 +68,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id);
  * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
  * @return                 Zero on success, -1 on error
  */
-int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
-			     const char* recv_keyboard);
+int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask, const char* recv_keyboard);
 
 /**
  * Handle the received message after it has been
@@ -79,8 +79,8 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
  * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
-int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
-			     const char* recv_keyboard);
+__attribute__((nonnull(1, 2)))
+int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id, const char* recv_keyboard);
 
 /**
  * Handle the received message after it has been
@@ -101,6 +101,7 @@ int handle_map_keyboard_leds(const char* recv_keyboard);
  * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
+__attribute__((nonnull(1, 2)))
 int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
 		       const char* recv_action, const char* recv_keyboard);
 
@@ -112,6 +113,7 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
  *               that position; delimited by an equals-sign
  * @return       Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int remap_led_cmdline(char* arg);
 
 /**
@@ -160,6 +162,7 @@ void close_input(void);
  * @param   trio      Whether the scancode has three integers rather than one
  * @return            Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int send_key(int* restrict scancode, int trio);
 
 /**
@@ -177,6 +180,7 @@ int fetch_keys(void);
  * @param   recv_message_id  The message ID of the message the client sent
  * @return                   Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int send_errno(int error, const char* recv_client_id, const char* recv_message_id);
 
 /**

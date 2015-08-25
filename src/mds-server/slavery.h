@@ -30,6 +30,7 @@
  * @param   client  The client
  * @return          Zero on success, -2 on failure, otherwise -1
  */
+__attribute__((nonnull))
 int fetch_message(client_t* client);
 
 /**
@@ -39,6 +40,7 @@ int fetch_message(client_t* client);
  * @param   slave_fd  The file descriptor of the slave's socket
  * @return            Zero on success, -1 on error, error message will have been printed
  */
+__attribute__((nonnull))
 int create_slave(pthread_t* thread_slot, int slave_fd);
 
 /**

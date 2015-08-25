@@ -286,7 +286,8 @@ extern int postinitialise_server(void);
  * 
  * @return  The number of bytes that will be stored by `marshal_server`
  */
-extern size_t marshal_server_size(void) __attribute__((pure));
+__attribute__((pure))
+extern size_t marshal_server_size(void);
 
 /**
  * This function should be implemented by the actual server implementation
@@ -296,6 +297,7 @@ extern size_t marshal_server_size(void) __attribute__((pure));
  * @param   state_buf  The buffer for the marshalled data
  * @return             Non-zero on error
  */
+__attribute__((nonnull))
 extern int marshal_server(char* state_buf);
 
 /**
@@ -310,6 +312,7 @@ extern int marshal_server(char* state_buf);
  * @param   state_buf  The marshalled data that as not been read already
  * @return             Non-zero on error
  */
+__attribute__((nonnull))
 extern int unmarshal_server(char* state_buf);
 
 /**

@@ -36,6 +36,7 @@
  * @param  modifying  Whether the client may modify the messages
  * @param  stop       Whether the condition should be removed rather than added
  */
+__attribute__((nonnull))
 void add_intercept_condition(client_t* client, char* condition, int64_t priority, int modifying, int stop);
 
 
@@ -49,8 +50,9 @@ void add_intercept_condition(client_t* client, char* condition, int64_t priority
  * @param   count    The number of accepted patterns
  * @return           Evaluates to true if and only if a matching pattern was found
  */
+__attribute__((pure, nonnull(1)))
 int is_condition_matching(interception_condition_t* cond, size_t* hashes,
-			  char** keys, char** headers, size_t count) __attribute__((pure));
+			  char** keys, char** headers, size_t count);
 
 
 /**
@@ -64,6 +66,7 @@ int is_condition_matching(interception_condition_t* cond, size_t* hashes,
  * @param   interception_out  Storage slot for found interception
  * @return                    -1 on error, otherwise: evalutes to true iff a matching condition was found
  */
+__attribute__((pure, nonnull(1, 6)))
 int find_matching_condition(client_t* client, size_t* hashes, char** keys, char** headers,
 			    size_t count, queued_interception_t* interception_out);
 
@@ -79,6 +82,7 @@ int find_matching_condition(client_t* client, size_t* hashes, char** keys, char*
  * @param   interceptions_count_out  Slot at where to store the number of found interceptors
  * @return                           The found interceptors, `NULL` on error
  */
+__attribute__((pure, nonnull(1, 6)))
 queued_interception_t* get_interceptors(client_t* sender, size_t* hashes, char** keys, char** headers,
 					size_t count, size_t* interceptions_count_out);
 

@@ -38,6 +38,7 @@
  * @param  client  The intercepting client
  * @param  index   The index of the condition
  */
+__attribute__((nonnull))
 static void remove_intercept_condition(client_t* client, size_t index)
 {
   interception_condition_t* conds = client->interception_conditions;

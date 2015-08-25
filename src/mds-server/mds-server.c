@@ -371,6 +371,7 @@ void* slave_loop(void* data)
  * @param   b:const queued_interception_t*  The other of the two interceptors
  * @return                                  Negative if a before b, positive if a after b, otherwise zero
  */
+__attribute__((nonnull))
 static int cmp_queued_interception(const void* a, const void* b)
 {
   const queued_interception_t* p = b; /* Highest first, so swap them. */

@@ -154,6 +154,7 @@ typedef struct client
  * 
  * @param  this  Memory slot in which to store the new client information
  */
+__attribute__((nonnull))
 void client_initialise(client_t* restrict this);
 
 /**
@@ -168,6 +169,7 @@ void client_initialise(client_t* restrict this);
  * @param   this  The client information
  * @return        Zero on success, -1 on error
  */
+__attribute__((nonnull))
 int client_initialise_threading(client_t* restrict this);
 
 /**
@@ -175,6 +177,7 @@ int client_initialise_threading(client_t* restrict this);
  * 
  * @param  this  The client information
  */
+__attribute__((nonnull))
 void client_destroy(client_t* restrict this);
 
 /**
@@ -183,7 +186,8 @@ void client_destroy(client_t* restrict this);
  * @param   this  The client information
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t client_marshal_size(const client_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t client_marshal_size(const client_t* restrict this);
 
 /**
  * Marshals client information
@@ -192,6 +196,7 @@ size_t client_marshal_size(const client_t* restrict this) __attribute__((pure));
  * @param   data  Output buffer for the marshalled data
  * @return        The number of bytes that have been written (everything will be written)
  */
+__attribute__((nonnull))
 size_t client_marshal(const client_t* restrict this, char* restrict data);
 
 /**
@@ -202,6 +207,7 @@ size_t client_marshal(const client_t* restrict this, char* restrict data);
  * @return        Zero on error, `errno` will be set accordingly, otherwise the
  *                number of read bytes. Destroy the client information on error.
  */
+__attribute__((nonnull))
 size_t client_unmarshal(client_t* restrict this, char* restrict data);
 
 /**
@@ -210,7 +216,8 @@ size_t client_unmarshal(client_t* restrict this, char* restrict data);
  * @param   data  In buffer with the marshalled data
  * @return        The number of read bytes
  */
-size_t client_unmarshal_skip(char* restrict data) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t client_unmarshal_skip(char* restrict data);
 
 
 #endif

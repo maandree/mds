@@ -60,7 +60,8 @@ typedef struct queued_interception
  * @param   this  The client information
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t queued_interception_marshal_size(void) __attribute__((const));
+__attribute__((const, nonnull))
+size_t queued_interception_marshal_size(void);
 
 /**
  * Marshals a queued interception
@@ -69,6 +70,7 @@ size_t queued_interception_marshal_size(void) __attribute__((const));
  * @param   data  Output buffer for the marshalled data
  * @return        The number of bytes that have been written (everything will be written)
  */
+__attribute__((nonnull))
 size_t queued_interception_marshal(const queued_interception_t* restrict this, char* restrict data);
 
 /**
@@ -78,6 +80,7 @@ size_t queued_interception_marshal(const queued_interception_t* restrict this, c
  * @param   data  In buffer with the marshalled data
  * @return        Zero on error, `errno` will be set accordingly, otherwise the number of read bytes.
  */
+__attribute__((nonnull))
 size_t queued_interception_unmarshal(queued_interception_t* restrict this, char* restrict data);
 
 /**
@@ -86,7 +89,8 @@ size_t queued_interception_unmarshal(queued_interception_t* restrict this, char*
  * @param   data  In buffer with the marshalled data
  * @return        The number of read bytes
  */
-size_t queued_interception_unmarshal_skip(void) __attribute__((const));
+__attribute__((const, nonnull))
+size_t queued_interception_unmarshal_skip(void);
 
 
 #endif

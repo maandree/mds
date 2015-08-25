@@ -889,8 +889,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id)
  * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
  * @return                 Zero on success, -1 on error
  */
-int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
-			     const char* recv_keyboard)
+int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask, const char* recv_keyboard)
 {
   int active = 0;
   int mask = 0;
@@ -962,8 +961,7 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask,
  * @param   recv_keyboard    The value of the `Keyboard`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
-int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id,
-			     const char* recv_keyboard)
+int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id, const char* recv_keyboard)
 {
   uint32_t msgid;
   size_t n;
@@ -1032,6 +1030,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
  * @param   name  The name of the LED
  * @return        The value of the LED
  */
+__attribute__((nonnull))
 static int parse_led(const char* name)
 {
   if (strequals(name, "num"))      return LED_NUM_LOCK;
@@ -1051,6 +1050,7 @@ static int parse_led(const char* name)
  * @param  position  The new position of the LED, either zero-based index
  *                   or name of the original LED with that position
  */
+__attribute__((nonnull))
 static void remap_led(const char* name, const char* position)
 {
   int* leds[] = { [LED_NUM_LOCK]  = &led_num_lock,
@@ -1188,6 +1188,7 @@ int handle_map_keyboard_leds(const char* recv_keyboard)
  * @param   out    Output parameter for the keycode's new mapping
  * @return         -1 on error, 1 if parsed, 0 if the line is empty
  */
+__attribute__((nonnull(1, 4, 5)))
 static int parse_remap_line(char* begin, char* end, size_t n, int* restrict in, int* restrict out)
 {
   static char buf[3 * sizeof(int) + 1];
@@ -1259,6 +1260,7 @@ static int add_mapping(int in, int out)
  * @param   n      The size of `table`
  * @return         Zero on success, -1 on error
  */
+__attribute__((nonnull))
 static int remap(char* table, size_t n)
 {
   char* begin = table;
@@ -1307,6 +1309,7 @@ static int remap(char* table, size_t n)
  * @param   recv_message_id  The value of the `Message ID`-header
  * @return                   Zero on success, -1 on error
  */
+__attribute__((nonnull))
 static int mapping_query(const char* recv_client_id, const char* recv_message_id)
 {
   size_t top = 64 + 3 * sizeof(size_t), n = 0, off, i;

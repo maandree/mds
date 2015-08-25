@@ -72,6 +72,7 @@ typedef struct multicast
  * 
  * @param  this  The message multicast state
  */
+__attribute__((nonnull))
 void multicast_initialise(multicast_t* restrict this);
 
 /**
@@ -79,6 +80,7 @@ void multicast_initialise(multicast_t* restrict this);
  * 
  * @param  this  The message multicast state
  */
+__attribute__((nonnull))
 void multicast_destroy(multicast_t* restrict this);
 
 /**
@@ -87,7 +89,8 @@ void multicast_destroy(multicast_t* restrict this);
  * @param   this  The client information
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t multicast_marshal_size(const multicast_t* restrict this) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t multicast_marshal_size(const multicast_t* restrict this);
 
 /**
  * Marshals a message multicast state
@@ -96,6 +99,7 @@ size_t multicast_marshal_size(const multicast_t* restrict this) __attribute__((p
  * @param   data  Output buffer for the marshalled data
  * @return        The number of bytes that have been written (everything will be written)
  */
+__attribute__((nonnull))
 size_t multicast_marshal(const multicast_t* restrict this, char* restrict data);
 
 /**
@@ -106,6 +110,7 @@ size_t multicast_marshal(const multicast_t* restrict this, char* restrict data);
  * @return        Zero on error, `errno` will be set accordingly, otherwise the
  *                number of read bytes. Destroy the message multicast state on error.
  */
+__attribute__((nonnull))
 size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data);
 
 /**
@@ -114,7 +119,8 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data);
  * @param   data  In buffer with the marshalled data
  * @return        The number of read bytes
  */
-size_t multicast_unmarshal_skip(char* restrict data) __attribute__((pure));
+__attribute__((pure, nonnull))
+size_t multicast_unmarshal_skip(char* restrict data);
 
 
 

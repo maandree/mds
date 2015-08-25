@@ -29,6 +29,7 @@
  * @param   f  The PID-file
  * @return     Whether the PID-file is not longer used
  */
+__attribute__((nonnull))
 int is_pid_file_reusable(FILE* f);
 
 /**
@@ -38,7 +39,8 @@ int is_pid_file_reusable(FILE* f);
  * @param   n    The length of the string, excluding LF-termination
  * @return       The pid, `(pid_t)-1` if malformated
  */
-pid_t parse_pid_t(const char* str, size_t n) __attribute__((pure));
+__attribute__((pure, nonnull))
+pid_t parse_pid_t(const char* str, size_t n);
 
 /**
  * Start master server and respawn it if it crashes
@@ -54,6 +56,7 @@ int spawn_and_respawn_server(int fd);
  * @param   pathname  The pathname of the directory to create
  * @return            Non-zero on error
  */
+__attribute__((nonnull))
 int create_directory_root(const char* pathname);
 
 /**
@@ -62,6 +65,7 @@ int create_directory_root(const char* pathname);
  * @param   pathname  The pathname of the directory to create
  * @return            Non-zero on error
  */
+__attribute__((nonnull))
 int create_directory_user(const char* pathname);
 
 /**
@@ -70,6 +74,7 @@ int create_directory_user(const char* pathname);
  * @param   pathname  The pathname of the directory to remove
  * @return            Non-zero on error
  */
+__attribute__((nonnull))
 int unlink_recursive(const char* pathname);
 
 
