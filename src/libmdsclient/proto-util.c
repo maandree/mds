@@ -770,11 +770,12 @@ int libmds_next_message_id(uint32_t* restrict message_id,
 			   int (*test)(uint32_t message_id, void* data), void* data)
 {
   uint32_t id = *message_id;
+  uint32_t first_test;
   int r;
   
   id = id == UINT32_MAX ? 0 : (id + 1);
   if (test != NULL)
-    for (;;)
+    for (first_test = id;;)
       {
 	r = test(id, data);
 	if (r < 0)
@@ -782,7 +783,7 @@ int libmds_next_message_id(uint32_t* restrict message_id,
 	if (r)
 	  break;
 	id = id == UINT32_MAX ? 0 : (id + 1);
-	if (id == *message_id)
+	if (id == first_test)
 	  return errno = EAGAIN, -1;
       }
   
