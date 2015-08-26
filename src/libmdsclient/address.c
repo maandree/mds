@@ -20,11 +20,15 @@
 #include <stddef.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
 #include <limits.h>
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <alloca.h>
 
 #include <libmdsserver/config.h>
 
@@ -90,6 +94,36 @@ static int set_af_unix(struct sockaddr** restrict out_address, ssize_t* pathlen,
 
 
 /**
+ * Set the socket address, with either of the address
+ * families `AF_INET` and `AF_INET6`
+ * 
+ * @param   out_address     Output paramter for the socket address
+ * @param   out_domain      Output parameter for the protocol famility,
+ *                          unused unless the address familiy is unknown
+ * @param   address_family  The address family, -1 if unknown
+ * @param   host            The host
+ * @param   port            The address
+ * @return                  Zero on success, -1 on error, `errno`
+ *                          will have been set accordinly on error
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the application hit the
+ *                  RLIMIT_AS or RLIMIT_DATA limit described in getrlimit(2).
+ */
+__attribute__((nonnull))
+static int set_af_inet(struct sockaddr** restrict out_address, int* restrict out_domain,
+		       int address_family, const char* restrict host, const char* restrict port)
+{
+  /* TODO */
+  return 0;
+  (void) out_address;
+  (void) out_domain;
+  (void) address_family;
+  (void) host;
+  (void) port;
+}
+
+
+/**
  * Parse a display address string
  * 
  * @param   display  The address in MDS_DISPLAY-formatting, must not be `NULL`
@@ -103,7 +137,14 @@ static int set_af_unix(struct sockaddr** restrict out_address, ssize_t* pathlen,
  */
 int libmds_parse_display_adress(const char* restrict display, libmds_display_address_t* restrict address)
 {
-  ssize_t pathlen;
+  ssize_t pathlen = 0;
+  char* host;
+  char* port;
+  char* params;
+  size_t i = 0;
+  char c;
+  int esc = 0;
+  int colesc = 0;
   
   address->domain = -1;
   address->type = -1;
@@ -129,6 +170,53 @@ int libmds_parse_display_adress(const char* restrict display, libmds_display_add
       return 0;
     }
   
-  return 0;
+  host = alloca((strlen(display) + 1) * sizeof(char));
+  
+  if (*display == '[')
+    colesc = 1, i++;
+  for (; (c = display[i]); i++)
+    if (esc)             host[pathlen++] = c, esc = 0;
+    else if (c == '\\')  esc = 1;
+    else if (c == ']')
+      if (colesc)        { i++; break; }
+      else               host[pathlen++] = c;
+    else if (c == ':')
+      if (colesc)        host[pathlen++] = c;
+      else               break;
+    else                 host[pathlen++] = c;
+  if (esc || (display[i++] != ':'))
+    return 0;
+  host[pathlen++] = '\0';
+  
+  port = host + pathlen;
+  memcpy(port, display + i, (strlen(display) + 1 - i) * sizeof(char));
+  params = strchr(port, ':');
+  if (params != NULL)
+    *params++ = '\0';
+  
+#define param_test(f, n, a, b, c)			\
+  ((n >= 3) && (!strcasecmp(params, a ":" b ":" c))) ||	\
+  ((n >= 2) && (!strcasecmp(params, a ":" b))) ||	\
+  ((n >= 1) && (!strcasecmp(params, a))) ||		\
+  (f == NULL ? 0 : !strcasecmp(params, f))
+#define set(d, t, p)  \
+  address->domain = (d), address->type = (t), address->protocol = (p)
+
+  if      (params == NULL)                                        set(-1,       SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("ip/tcp",    1, "ip",    "stream", "tcp"))  set(-1,       SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("ipv4/tcp",  1, "ipv4",  "stream", "tcp"))  set(PF_INET,  SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("ipv6/tcp",  1, "ipv6",  "stream", "tcp"))  set(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("inet/tcp",  1, "inet",  "stream", "tcp"))  set(PF_INET,  SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("inet6/tcp", 1, "inet6", "stream", "tcp"))  set(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+  else
+    return 0;
+  
+#undef set
+#undef param_test
+  
+  return set_af_inet(&(address->address), &(address->domain),
+		     address->domain == PF_INET  ? AF_INET  :
+		     address->domain == PF_INET6 ? AF_INET6 :
+		     address->domain, host, port);
 }
 
