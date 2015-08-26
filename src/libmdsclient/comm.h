@@ -124,13 +124,15 @@ void libmds_connection_free(libmds_connection_t* restrict this);
  *                   otherwise, `errno` will have been set to describe
  *                   the error.
  * 
- * @throws  EFAULT   If the display server's address is not properly
- *                   formatted, or specifies an unsupported protocol,
- *                   `libmds_parse_display_adress` can be used to
- *                   figure out what is wrong.
- * @throws           Any error specified for socket(2)
- * @throws           Any error specified for connect(2), except EINTR
- */__attribute__((nonnull))
+ * @throws  EFAULT        If the display server's address is not properly
+ *                        formatted, or specifies an unsupported protocol,
+ *                        `libmds_parse_display_adress` can be used to
+ *                        figure out what is wrong.
+ * @throws  ENAMETOOLONG  The filename of the target socket is too long
+ * @throws                Any error specified for socket(2)
+ * @throws                Any error specified for connect(2), except EINTR
+ */
+__attribute__((nonnull))
 int libmds_connection_establish(libmds_connection_t* restrict this, const char** restrict display);
 
 /**

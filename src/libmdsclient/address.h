@@ -74,8 +74,9 @@ typedef struct libmds_display_address
  * @return           Zero on success, even if parsing failed, -1 on error,
  *                   `errno` will have been set accordinly on error
  * 
- * @throws  ENOMEM  Out of memory. Possibly, the application hit the
- *                  RLIMIT_AS or RLIMIT_DATA limit described in getrlimit(2).
+ * @throws  ENOMEM        Out of memory. Possibly, the application hit the
+ *                        RLIMIT_AS or RLIMIT_DATA limit described in getrlimit(2).
+ * @throws  ENAMETOOLONG  The filename of the target socket is too long
  */
 __attribute__((nonnull))
 int libmds_parse_display_adress(const char* restrict display, libmds_display_address_t* restrict address);
