@@ -741,6 +741,15 @@ with the environment variable @env{MDS_DISPLAY}@.
 The display index is the TCP-port if the host is
 non-empty.
 
+@cpindex Networking
+@pgindex @command{mds-remote}
+Servers (and clients) that depend the display being
+local, should reject any value on @env{MDS_DISPLAY}
+that does not start with a colon. They should instead
+utilise @command{mds-remote}.
+
+@c TODO More on MDS_DISPLAY for remote access, see libmdsclient/address.c
+
 @cpindex Environment variables
 @vrindex @env{MDS_PGROUP}
 @cpindex Display server process group
