@@ -397,7 +397,7 @@ of enticing features:
 Anybody can use, modify, and redistribute it under the
 terms of the GNU General Public License version 3
 (@pxref{GNU General Public License}). Unlike some
-other display server that are licnes under the MIT
+other display server that are license under the MIT
 license, @command{mds} is licensed under a copyleft
 license. Not only that, it is a strong copyleft license
 too.
