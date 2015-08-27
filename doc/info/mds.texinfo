@@ -1,22 +1,27 @@
 \input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@documentencoding UTF-8
+@include macros.texinfo
 @copying
-Copyright @copyright{} 2014, 2015 Mattias Andrée (@email{maandree@@member.fsf.org})
+@c--------------------------------------------------------------------------------
+Copyright @copyright{} 2014, 2015  Mattias Andrée @e{maandree@@member.fsf.org}
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version@tie{}1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
-Texts. A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
+any later version published by the Free Software Foundation; with the
+Invariant Sections being the ``GNU General Public License'', the ``GNU
+Free Documentation License'', with no Front-Cover Texts, and with no
+Back-Cover Texts. A copy of the license is included in the section
+entitled ``GNU Free Documentation License''.
 @end quotation
+@c THIS WAS LAST CHANGED 2015-AUGUST-28
+@c--------------------------------------------------------------------------------
 @end copying
 
 
-@c %**start of header
 @setfilename mds.info
 @settitle mds -- The avant-garde micro-display server
-@documentencoding UTF-8
 @documentlanguage en_GB
 @finalout
 
@@ -51,18 +56,16 @@ Texts. A copy of the license is included in the section entitled
   than one of the paper sizes (USLETTER, AFOURPAPER, AFIVEPAPER
   and SMALLBOOK); if none is uncomment AFOURPAPER will be set
   unless HARDCOPY is set, in which case SMALLBOOK will be set.
-  However, if you do not want to modify this source file, you
-  can run `make` with for example `TEXIFLAGS='-D HARDCOPY'`
-  or `TEXIFLAGS='--texinfo="@set HARDCOPY"'`.
+  However, if you do not want to modify this source file, you can
+  run `make` with for example `TEXIFLAGS='--texinfo="@set HARDCOPY"'`.
 
-  Finally, you can include, on the front page, the version
-  of mds that the manual is up to date with, by setting
-  the value of VERSION to the version of mds, as well as
-  date of the last update by setting DATE, and edition by
-  setting EDITION. This is intended for printed manuals.
-  The date is recommended to not be more accurate, or less
-  accurate, than to the month. The edition should be
-  formated as, for example, "1@sup{st}".
+  Finally, you can include, on the front page, the version of mds
+  that the manual is up to date with, by setting the value of VERSION
+  to the version of mds, as well as date of the last update by
+  setting DATE, and edition by setting EDITION. This is intended for
+  printed manuals. The date is recommended to not be more accurate,
+  or less accurate, than to the month. The edition should be formatted
+  as, for example, "1@sup{st}".
 
 @end ignore
 
@@ -264,16 +267,21 @@ libraries and concepts.
 @author by Mattias Andrée (maandree)
 
 @page
+@ifset HARDCOPY
+@vskip 0pt plus 1filll
+@insertcopying
+@page
+@end ifset
 @center `To me, writing a monolithic system in 1991 is a truly poor idea.'
 @c  Well, here we are 23 years later, and we are still
 @c  doing it, but where it is even easier not to.
+@ifclear HARDCOPY
 @vskip 0pt plus 1filll
-@c @ifclear HARDCOPY
 @c If you prefer a dead tree edition, you can order one from
 @c ...
 @c @*
-@c @end ifclear
 @insertcopying
+@end ifclear
 @end titlepage
 
 @ifset DOUBLE_HEADINGS
