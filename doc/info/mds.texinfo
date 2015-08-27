@@ -22,6 +22,7 @@ Texts. A copy of the license is included in the section entitled
 
 @iftex
 @c @set USLETTER
+@c @set AFOURPAPER
 @c @set AFIVEPAPER
 @c @set SMALLBOOK
 
@@ -37,20 +38,21 @@ Texts. A copy of the license is included in the section entitled
 
 @ignore
 
-  This document does not look too good on A5-paper.
-  This document looks best on A4-paper, but smallbook
-  format and US Letter is acceptable.
+  This document does not look too good on A5-paper. This
+  document looks best on A4-paper, but smallbook format and
+  US Letter is acceptable.
 
-  CROPMARKS has no effect unless HARDCOPY is set.
-  CROPMARKS and AFIVEPAPER (or actually @cropmarks
-  and @afivepaper) does not play well together.
+  CROPMARKS has no effect unless HARDCOPY is set. CROPMARKS
+  and AFIVEPAPER (or actually @cropmarks and @afivepaper) does
+  not play well together.
 
   You can configure how TeX output files should look by
   uncommenting @set commands above. Do not uncomment more
-  than one of the paper sizes (USLETTER, AFIVEPAPER and
-  SMALLBOOK); if none is uncomment AFOURPAPER will be set.
-  However, if you do not want to modify this source file,
-  you can run `make` with for example `TEXIFLAGS='-D HARDCOPY'`
+  than one of the paper sizes (USLETTER, AFOURPAPER, AFIVEPAPER
+  and SMALLBOOK); if none is uncomment AFOURPAPER will be set
+  unless HARDCOPY is set, in which case SMALLBOOK will be set.
+  However, if you do not want to modify this source file, you
+  can run `make` with for example `TEXIFLAGS='-D HARDCOPY'`
   or `TEXIFLAGS='--texinfo="@set HARDCOPY"'`.
 
   Finally, you can include, on the front page, the version
@@ -63,6 +65,18 @@ Texts. A copy of the license is included in the section entitled
   formated as, for example, "1@sup{st}".
 
 @end ignore
+
+@ifset HARDCOPY
+@ifclear USLETTER
+@ifclear AFOURPAPER
+@ifclear AFIVEPAPER
+@ifclear SMALLBOOK
+@set SMALLBOOK
+@end ifclear
+@end ifclear
+@end ifclear
+@end ifclear
+@end ifset
 
 @ifclear SINGLE_HEADINGS
 @ifclear DOUBLE_HEADINGS
