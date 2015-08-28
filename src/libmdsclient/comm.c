@@ -167,7 +167,7 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
   if (this->socket_fd < 0)
     goto fail;
   
-  while (connect(this->socket_fd, (struct sockaddr*)(addr.address), addr.address_len))
+  while (connect(this->socket_fd, addr.address, addr.address_len))
     if (errno != EINTR)
       goto fail;
   
