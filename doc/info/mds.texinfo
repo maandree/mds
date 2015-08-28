@@ -3,7 +3,7 @@
 @documentencoding UTF-8
 @include macros.texinfo
 @copying
-@c--------------------------------------------------------------------------------
+@c --------------------------------------------------------------------------------
 Copyright @copyright{} 2014, 2015  Mattias Andrée @e{maandree@@member.fsf.org}
 
 @quotation
@@ -16,7 +16,7 @@ Back-Cover Texts. A copy of the license is included in the section
 entitled ``GNU Free Documentation License''.
 @end quotation
 @c THIS WAS LAST CHANGED 2015-AUGUST-28
-@c--------------------------------------------------------------------------------
+@c --------------------------------------------------------------------------------
 @end copying
 
 
