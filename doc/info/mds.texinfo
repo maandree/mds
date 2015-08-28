@@ -8703,6 +8703,329 @@ macros, but function-like macros and lvalue-macros use
 shorter. Inclusion-guards are formatted
 @code{MDS_LIBMDSCLIENT_*_H}.
 
+@menu
+* Protocol Utilties::                         Low-level functions for implementing protocols.
+@end menu
+
+
+
+@node Protocol Utilties
+@section Protocol Utilties
+
+@cpindex Implementing protocols
+@cpindex Protocols, implementing
+The header file @file{<libmdsclient/proto-util.h>}
+provides functions that can be used in implementing
+protocols. Using these functions will make it easy
+to implement the protocol, the implementing may
+however be more efficient if you implement everything
+by hand. In particular, protocols that are expected
+to be used very often with similar data may be faster
+if implemented using caching techniques.
+
+The header file provides a function for retrieving
+header files of interest:
+
+@table @asis
+@item @code{libmds_headers_cherrypick} [(@code{char** restrict headers, size_t header_count, size_t* restrict found, libmds_cherrypick_optimisation_t optimisation, ...}) @arrow{} @code{int}]
+@fnindex @code{libmds_headers_cherrypick}
+@cpindex Headers, cherrypicking
+@cpindex Cherrypicking headers
+@cpindex Headers, reading
+@cpindex Reading headers
+This function takes an list of headers as input. The
+headers are provided by the parameter @code{headers},
+and the number of headers is specified by the parameter
+@code{header_count}. These headers must include both
+the names and values. For example:
+@example
+headers = (char[][]) @{
+  "Client ID: 0:1",
+  "Message ID: 12",
+  @};
+@end example
+
+The function will store the number headers it found
+to @code{*found}, unless @code{found} is @code{NULL}.
+Only requested headers are counted.
+
+The function can use optimisations based on the input
+The parameter @code{optimisation} is used to provide
+hints required for optimal optimisation.
+
+@tpindex @code{libmds_cherrypick_optimisation_t}
+@tpindex @code{enum libmds_cherrypick_optimisation}
+@code{optimisation} is defined with the type
+@code{libmds_cherrypick_optimisation_t} @{also known as
+@code{enum libmds_cherrypick_optimisation}@}. Values of
+@code{optimisation} should combine, using bit-wise OR,
+two values defined in @code{libmds_cherrypick_optimisation_t}.
+One of the values should be from the header input
+optimisation group:
+
+@table @code
+@item DO_NOT_SORT = 0
+@code{headers} is neither sorted nor may it its
+elements be reordered. However, the function may
+choose to create a copy of @code{headers} and
+sort that copy, if it sees it as beneficial.
+@item SORT
+@code{headers} is not sorted, but the function
+may sort it without copying it, if it sees it as
+beneficial.
+@item SORTED
+@code{headers} is already sorted in ascending
+order. This means that the function will not
+reorder its elements.
+@end table
+
+The other value should be from the header request
+optimisation group:
+
+@table @code
+@item ARGS_UNSORTED = 0
+The header request list is not sorted.
+@item ARGS_SORTED
+The header request list is sorted in ascending order.
+@end table
+
+Note that @code{DO_NOT_SORT} and @code{ARGS_UNSORTED}
+are both guaranteed to have the value 0. The other
+definitions do not have a guaranteed value, but they
+are guaranteed to be unique and only consist of one
+set bit.
+
+The variadic arguments are used for the header request
+list. The first argument in the variadic argument list
+should be a @code{const char*} that names a requested
+header. It should only contain the name of the header.
+The follow argument should be of the type @code{char**}.
+The first element in this argument will be set the
+the value of the header named by the previous argument,
+or @code{NULL} if not found. This, pair of arguments,
+is repeated once for every requested header. The end
+of the variadic argument list must be marked with a
+@code{NULL}. For example:
+
+@example
+char* recv_client_id;
+char* recv_message_id;
+char* recv_command_id;
+r = libmds_headers_cherrypick(headers, n, NULL, 0,
+  /* Header request starts here */
+  "Client ID", &recv_client_id,
+  "Message ID", &recv_message_id,
+  "Command", &recv_command,
+  NULL);
+@end example
+
+The functions behaviour is undefined for if a header
+is requested more than once, or in an order contrary
+to the specifications provided by @code{optimisation}.
+The functions behaviour is also undefined if the input
+headers are in an order contrary to the specifications
+provided by @code{optimisation}.
+
+Upon successful completion, even if no requested headers
+are found, this function returned zero. On error, @code{-1}
+is returned and @code{errno} is set to indicate the error.
+
+This function can fail with errno set to @code{ENOMEM},
+if the process cannot allocate required memory.
+
+The call must not free returned header values. They are
+freed automatically when corresponding element in the
+header input list is freed. The input headers are returned
+with an offset. This also means that the returned values
+will be modified if the value part of the input headers are
+modified.
+@end table
+
+The header file also provides four pre-optimised version
+of @code{libmds_headers_cherrypick}. These functionf behaves
+like @code{libmds_headers_cherrypick}, except they does not
+have the optimisation parameter, and return the number of
+found headers rather than storing it using a pointer.
+Additionally these function cannot fail.
+
+@table @asis
+@item @code{libmds_headers_cherrypick_linear_unsorted} [(@code{char** restrict headers, size_t header_count, ...}) @arrow{} @code{size_t}]
+@fnindex @code{libmds_headers_cherrypick_linear_unsorted}
+This function is not optimised. Because of its low overhead
+it can still be the fastest choice.
+@item @code{libmds_headers_cherrypick_linear_sorted} [(@code{char** restrict headers, size_t header_count, ...}) @arrow{} @code{size_t}]
+@fnindex @code{libmds_headers_cherrypick_linear_sorted}
+This function uses linear search, but uses an optimised based
+on the assumption that both the input header list and the
+header request list are sorted in ascending order. Because of
+its low overhead it can still be faster than
+@code{libmds_headers_cherrypick_binary_sorted}.
+@item @code{libmds_headers_cherrypick_binary_unsorted} [(@code{char** restrict headers, size_t header_count, ...}) @arrow{} @code{size_t}]
+@fnindex @code{libmds_headers_cherrypick_binary_unsorted}
+This function uses binary search. It assumes that the
+header input list sorted in ascending order, header request
+list is unsorted.
+@item @code{libmds_headers_cherrypick_binary_sorted} [(@code{char** restrict headers, size_t header_count, ...}) @arrow{} @code{size_t}]
+@fnindex @code{libmds_headers_cherrypick_binary_sorted}
+This function uses binary search. It assumes that the
+both the header input list and header request list are
+sorted in ascending order. It seeks for the headers in
+the order the are provided in the header request list,
+and adjusts the lower bound on the binary search each
+time it founds a header.
+@end table
+
+Currently it is assumed that these are the only useful
+optimisations. This may however change in the future,
+and some optimisations may even be removed. Therefore
+the user of the library can check at compile time weather
+the functions are still available. This is done by checking
+that a macro with exactly the same name as the function
+is defined.
+
+@cpindex Sorting headers
+@cpindex Headers, sorting
+If you want to sort a list of headers. You need to be
+aware that the header should treated as ending at the
+first occurrence of a colon followed by a blank space.
+Because of this, @file{<libmdsclient/proto-util.h>}
+provides a function for sorting a list of headers.
+
+@table @asis
+@item @code{libmds_headers_sort} [(@code{char** restrict headers, size_t header_count}) @arrow{} @code{void}]
+@fnindex @code{libmds_headers_sort}
+This function takes the list of headers in the parameter
+@code{headers} and the number of headers in the parameter
+@code{header_count}. It cannot fail, and thus does not
+return a value.
+
+This function sorts the headers in ascending order,
+and is used internally by @code{libmds_headers_cherrypick}
+if it chooses to sort headers.
+@end table
+
+@file{<libmdsclient/proto-util.h>} also provides a function
+for composing messages:
+
+@table @asis
+@item @code{libmds_compose} [(@code{char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length, const char* restrict payload, const size_t* restrict payload_length, ...}) @arrow{} @code{int}]
+@fnindex @code{libmds_compose}
+@cpindex Messages, composing
+@cpindex Composing messages
+@cpindex Messages, writting
+@cpindex Writting messages
+This function provides a simple way for writting message
+that can be send to the display server. The function writes
+the message on a buffer provides by the caller. This buffer
+is reallocationed by the function if necessary.
+
+The buffer is provided by a pointer, @code{buffer} to the
+buffer. @code{*buffer} is changed to the new buffer pointer
+if it is reallocated. The current size of @code{*buffer}
+should be stored @code{*buffer_size}. @code{*buffer_size}
+will be updated with the new allocation size if the buffer
+is reallocated. Neither if these pointers may be @code{NULL}.
+However, @code{*buffer} should be @code{NULL} if
+@code{*buffer_size} is zero, and vice versa.
+
+The length of the written message will be saved to
+@code{length}. @code{length} must not be @code{NULL}.
+
+If the message should include a payload. It should be
+provided using the parameter @code{payload}. If the message
+should not have a payload @code{payload} should be @code{NULL}.
+The argument @code{payload_length} should point to a value
+with the length of the message, or be @code{NULL} if the
+function should measure the @code{payload} by searching for
+a NUL bytes which must exists in such a cass. If
+@code{payload_length} is not @code{NULL}, there is not
+requirement for a NUL byte. If @code{payload} is @code{NULL},
+@code{payload_length} is unused and may have any value.
+
+The function uses variadic arguments for header input.
+The first argument in the variadic argument list should
+be an @code{printf}-formatted format-string that describes
+a header line (header name, colon, blank space, header value.)
+The following arguments are the formatting-arguments for that
+format string. At the end of the list of formatting-arguments,
+this is begin anew for the next header, and so on. After the
+last header, a @code{NULL} should be used to mark the end of
+the list. The header formatting string, may include any
+extensions provided by your C library. Nut is has one additional
+extension: if the formatting-string begins with a question mark,
+the first formatting-argument is if type @code{int} and the
+header is only included if that argument is non-zero.
+This is no way to escape a question mark at the beginning of
+the formatting-string, because headers should never begin
+with a question mark.
+
+Upon successful completion, this function returns zero.
+On error, this function returns @code{-1} and sets @code{errno}
+to indicate the error.
+
+This function may fail with @code{errno} set to @code{ENOMEM}
+if the process cannot allocate more memory.
+
+The functions behaviour is undefined if a header is longer than
+@iftex
+2@sup{15}
+@end iftex
+@ifnottex
+2 to the power of 15
+@end ifnottex
+bytes.
+
+This function shall not be used if there must be a guarantee
+that the written data can be securely erased.
+@end table
+
+The header file also provides a function for finding the
+next unused message ID:
+
+@table @asis
+@item @code{libmds_next_message_id} [(@code{uint32_t* restrict message_id, int (*test)(uint32_t message_id, void* data), void* data}) @arrow{} @code{int}]
+The parameter @code{message_id} is a pointer to the message
+ID counter. It should contain the ID of the previous
+message,@footnote{For the first message, it is preferred
+that this value is @code{UINT32_MAX}, so the first message
+is the ID 0, but it is not a requirement, it should however
+be initialised.} it will be updated with the message ID
+for the new message upon successful completion.
+@code{message_id} must not be @code{NULL}.
+
+The parameter @code{test} can either point to a function
+that is used to test if a message ID is unused, or be
+@code{NULL} if no testing should be done. @code{*test}
+tests whether the message ID provided as the first
+argument is free to be used. The second argument in
+@code{*test} will be the value of the parameter @code{data}
+in the call to the function @code{libmds_next_message_id}.
+@code{data} can e used to deal with threading or any other issues.
+@code{data} may be @code{NULL}. @code{data} is unused if
+@code{test} is @code{NULL}.
+
+Upon successful completion zero is returned. On error
+@code{-1} is returned and @code{errno} is set the indicate
+the error.
+
+This function can fail with errno set to any error thrown
+by @code{*test}, as well as @code{EAGAIN}. @code{EAGAIN}
+is thrown if the function cannot find any free message ID
+to use. It is advisable to make @code{*test} throw this
+immediately if there are no free message ID:s.
+The function cannot fail if @code{test} is @code{NULL}.
+@end table
+
+@fnindex @code{libmds_headers_cherrypick_v}
+@fnindex @code{libmds_headers_cherrypick_linear_unsorted_v}
+@fnindex @code{libmds_headers_cherrypick_linear_sorted_v}
+@fnindex @code{libmds_headers_cherrypick_binary_unsorted_v}
+@fnindex @code{libmds_headers_cherrypick_binary_sorted_v}
+@fnindex @code{libmds_compose_v}
+All functions that uses variadic arguments, have a variant
+that uses @code{va_list} instead. These functions are suffixed
+@code{_v}.
+
 
 
 @node libmdslltk
