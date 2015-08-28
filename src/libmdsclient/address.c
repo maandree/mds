@@ -20,7 +20,7 @@
 #include <stddef.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/ip.h>
 #include <limits.h>
 #include <string.h>
@@ -53,7 +53,7 @@ static int is_pzinteger(const char* restrict str)
 /**
  * Set the socket adress, with the address family `AF_UNIX`
  * 
- * @param   out_address  Output paramter for the socket address
+ * @param   out_address  Output parameter for the socket address
  * @param   pathlen      Pointer to a variable where the length of the pathname will be stored
  * @param   format       Formatting string for the pathname (should end with "%zn")
  * @param   ...          Formatting arguments for the pathname (should end with `pathlen`)
@@ -97,29 +97,51 @@ static int set_af_unix(struct sockaddr** restrict out_address, ssize_t* pathlen,
  * Set the socket address, with either of the address
  * families `AF_INET` and `AF_INET6`
  * 
- * @param   out_address     Output paramter for the socket address
- * @param   out_domain      Output parameter for the protocol famility,
- *                          unused unless the address familiy is unknown
- * @param   address_family  The address family, -1 if unknown
- * @param   host            The host
- * @param   port            The address
- * @return                  Zero on success, -1 on error, `errno`
- *                          will have been set accordinly on error
+ * @param   out_address      Output parameter for the socket address
+ * @param   out_address_len  Output parameter for the socket address's allocation size
+ * @param   out_gai_error    Output parameter for error at `getaddrinfo`
+ * @param   out_domain       Output parameter for the protocol famility,
+ *                           unused unless the address familiy is unknown
+ * @param   address_family   The address family, `AF_UNSPEC` if unknown
+ * @param   host             The host
+ * @param   port             The address
+ * @return                   Zero on success, -1 on error, `errno` will have been
+ *                           set accordinly on error, `*out_gai_error` may be set
+ *                           on error and zero returned
  * 
  * @throws  ENOMEM  Out of memory. Possibly, the application hit the
  *                  RLIMIT_AS or RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull))
-static int set_af_inet(struct sockaddr** restrict out_address, int* restrict out_domain,
-		       int address_family, const char* restrict host, const char* restrict port)
+static int set_af_inet(struct sockaddr** restrict out_address, socklen_t* restrict out_address_len,
+		       int* restrict out_gai_error, int* restrict out_domain, int address_family,
+		       const char* restrict host, const char* restrict port)
 {
-  /* TODO */
+  struct addrinfo hints;
+  struct addrinfo* result;
+  int saved_errno;
+  
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = address_family;
+  
+  *out_gai_error = getaddrinfo(host, port, &hints, &result);
+  if (*out_gai_error)
+    return 0;
+  
+  *out_address = malloc(result->ai_addrlen);
+  if (*out_address == NULL)
+    return saved_errno = errno, freeaddrinfo(result), errno = saved_errno, -1;
+  memcpy(*out_address, result->ai_addr, result->ai_addrlen);
+  
+  *out_address_len = result->ai_addrlen;
+  *out_domain =
+    result->ai_family == AF_UNSPEC ? PF_UNSPEC :
+    result->ai_family == AF_INET   ? PF_INET   :
+    result->ai_family == AF_INET6  ? PF_INET6  :
+    result->ai_family;
+  
+  freeaddrinfo(result);
   return 0;
-  (void) out_address;
-  (void) out_domain;
-  (void) address_family;
-  (void) host;
-  (void) port;
 }
 
 
@@ -151,6 +173,7 @@ int libmds_parse_display_adress(const char* restrict display, libmds_display_add
   address->protocol = -1;
   address->address = NULL;
   address->address_len = 0;
+  address->gai_error = 0;
   
   if (strchr(display, ':') == NULL)
     return 0;
@@ -202,21 +225,23 @@ int libmds_parse_display_adress(const char* restrict display, libmds_display_add
 #define set(d, t, p)  \
   address->domain = (d), address->type = (t), address->protocol = (p)
 
-  if      (params == NULL)                                        set(-1,       SOCK_STREAM, IPPROTO_TCP);
-  else if (param_test("ip/tcp",    1, "ip",    "stream", "tcp"))  set(-1,       SOCK_STREAM, IPPROTO_TCP);
-  else if (param_test("ipv4/tcp",  1, "ipv4",  "stream", "tcp"))  set(PF_INET,  SOCK_STREAM, IPPROTO_TCP);
-  else if (param_test("ipv6/tcp",  1, "ipv6",  "stream", "tcp"))  set(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
-  else if (param_test("inet/tcp",  1, "inet",  "stream", "tcp"))  set(PF_INET,  SOCK_STREAM, IPPROTO_TCP);
-  else if (param_test("inet6/tcp", 1, "inet6", "stream", "tcp"))  set(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+  if      (params == NULL)                                        set(PF_UNSPEC, SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("ip/tcp",    1, "ip",    "stream", "tcp"))  set(PF_UNSPEC, SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("ipv4/tcp",  1, "ipv4",  "stream", "tcp"))  set(PF_INET,   SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("ipv6/tcp",  1, "ipv6",  "stream", "tcp"))  set(PF_INET6,  SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("inet/tcp",  1, "inet",  "stream", "tcp"))  set(PF_INET,   SOCK_STREAM, IPPROTO_TCP);
+  else if (param_test("inet6/tcp", 1, "inet6", "stream", "tcp"))  set(PF_INET6,  SOCK_STREAM, IPPROTO_TCP);
   else
     return 0;
   
 #undef set
 #undef param_test
   
-  return set_af_inet(&(address->address), &(address->domain),
-		     address->domain == PF_INET  ? AF_INET  :
-		     address->domain == PF_INET6 ? AF_INET6 :
+  return set_af_inet(&(address->address), &(address->address_len),
+		     &(address->gai_error), &(address->domain),
+		     address->domain == PF_UNSPEC ? AF_UNSPEC :
+		     address->domain == PF_INET   ? AF_INET   :
+		     address->domain == PF_INET6  ? AF_INET6  :
 		     address->domain, host, port);
 }
 

@@ -63,6 +63,14 @@ typedef struct libmds_display_address
    */
   socklen_t address_len;
   
+  /**
+   * Code for an error that has occured
+   * when parsing the address, whose
+   * description can be retrieved using
+   * `gia_strerror`, zero if none
+   */
+  int gai_error;
+  
 } libmds_display_address_t;
 
 
