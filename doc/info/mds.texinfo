@@ -4512,11 +4512,11 @@ The name of the package to which the program
 announced the icon belongs.
 
 @item Required header: @code{Icon ID}
-An ID of the icon that can be used identify the icon,
-icon ID:s are not unique, but the combination of a
-package and a icon ID should be unque and can be used
-to ignore already added icons and hide icons that the
-user has been configured to be hidden.
+An ID of the icon that can be used to identify the
+icon, icon ID:s are not unique, but the combination
+of a package and a icon ID should be unique and can
+be used to ignore already added icons and hide icons
+that the user has been configured to be hidden.
 
 @item Required header: @code{Title}
 A title describing the icon for the user, used to

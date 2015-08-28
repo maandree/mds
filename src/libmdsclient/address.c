@@ -224,7 +224,7 @@ int libmds_parse_display_adress(const char* restrict display, libmds_display_add
   (f == NULL ? 0 : !strcasecmp(params, f))
 #define set(d, t, p)  \
   address->domain = (d), address->type = (t), address->protocol = (p)
-
+  
   if      (params == NULL)                                        set(PF_UNSPEC, SOCK_STREAM, IPPROTO_TCP);
   else if (param_test("ip/tcp",    1, "ip",    "stream", "tcp"))  set(PF_UNSPEC, SOCK_STREAM, IPPROTO_TCP);
   else if (param_test("ipv4/tcp",  1, "ipv4",  "stream", "tcp"))  set(PF_INET,   SOCK_STREAM, IPPROTO_TCP);
