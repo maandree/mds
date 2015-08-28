@@ -8882,7 +8882,7 @@ time it founds a header.
 Currently it is assumed that these are the only useful
 optimisations. This may however change in the future,
 and some optimisations may even be removed. Therefore
-the user of the library can check at compile time weather
+the user of the library can check at compile time whether
 the functions are still available. This is done by checking
 that a macro with exactly the same name as the function
 is defined.
