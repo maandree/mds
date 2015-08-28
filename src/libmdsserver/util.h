@@ -24,6 +24,20 @@
 #include <sys/types.h>
 
 
+
+#ifndef __USE_GNU
+__attribute__((pure, nonnull))
+static inline void* rawmemchr(const void* str, int chr)
+{
+  intptr_t str_address = (intptr_t)str;
+  void* str_nonconst = (void*)str_address;
+  char* s = str_nonconst;
+  while ((int)*s++ != chr);
+  return s - 1;
+}
+#endif
+
+
 /**
  * Convert a client ID string into a client ID integer
  * 

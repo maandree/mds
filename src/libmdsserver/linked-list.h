@@ -46,11 +46,7 @@
 /**
  * Sentinel value indicating that the position is unused
  */
-#if __WORDSIZE == 64
-# define LINKED_LIST_UNUSED  (-__INT64_C(9223372036854775807) - 1)
-#else
-# define LINKED_LIST_UNUSED  (-2147483647 - 1)
-#endif
+#define LINKED_LIST_UNUSED  (-((ssize_t)(SIZE_MAX >> 1)) - 1)
 
 
 

@@ -7053,6 +7053,10 @@ Also, instead of returning the length of the message, it returns zero
 on success and @code{-1} on error.
 @end table
 
+@fnindex @code{rawmemchr}.
+@file{<libmdsserver/util.h>} also defines @code{rawmemchr}
+if not already defined.
+
 
 
 @node Data Structures
