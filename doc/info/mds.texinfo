@@ -1349,7 +1349,7 @@ on protocols.
 @cpindex Integers, minimum value restriction
 @cpindex Minimum value restriction on integers
 @cpindex Restrictions on minimum value for integers
-Because C allows unsigned integers to be encoded as
+Because C allows signed integers to be encoded as
 either sign and magnitude, one's complement or two's
 complement@footnote{GCC only allows two's complement},
 the minimum value of any signed value with a fixed
