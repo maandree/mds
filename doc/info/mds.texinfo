@@ -1346,20 +1346,6 @@ on protocols.
 
 @itemize @bullet{}
 @item
-@cpindex Integers, minimum value restriction
-@cpindex Minimum value restriction on integers
-@cpindex Restrictions on minimum value for integers
-Because C allows signed integers to be encoded as
-either sign and magnitude, one's complement or two's
-complement@footnote{GCC only allows two's complement},
-the minimum value of any signed value with a fixed
-bit-size is the negative of its maximum value, that
-is, the minimum value @code{int16_t} is to be assumed
-to be @code{-INT16_MAX} (@math{-32767}) rather than
-@code{INT16_MIN} (@math{-32768} with two's
-complement.)
-
-@item
 Integers that are not especially encoded must not be
 larger than 64-bits if they use fixed bit-size. If,
 for example, @code{size_t} is 128-bits on your
