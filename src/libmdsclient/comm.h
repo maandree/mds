@@ -19,6 +19,8 @@
 #define MDS_LIBMDSCLIENT_COMM_H
 
 
+#include "address.h"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <pthread.h>
@@ -134,6 +136,25 @@ void libmds_connection_free(libmds_connection_t* restrict this);
  */
 __attribute__((nonnull))
 int libmds_connection_establish(libmds_connection_t* restrict this, const char** restrict display);
+
+/**
+ * Connect to the display server
+ * 
+ * @param   this     The connection descriptor, must not be `NULL`
+ * @param   address  The address to connect to, must not be `NULL`,
+ *                   and must be the result of a successful call to
+ *                   `libmds_parse_display_adress`
+ * @return           Zero on success, -1 on error. On error, `display`
+ *                   will point to `NULL` if MDS_DISPLAY is not defiend,
+ *                   otherwise, `errno` will have been set to describe
+ *                   the error.
+ * 
+ * @throws  Any error specified for socket(2)
+ * @throws  Any error specified for connect(2), except EINTR
+ */
+__attribute__((nonnull))
+int libmds_connection_establish_address(libmds_connection_t* restrict this,
+					const libmds_display_address_t* restrict address);
 
 /**
  * Wrapper for `libmds_connection_send_unlocked` that locks

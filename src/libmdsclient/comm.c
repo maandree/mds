@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "comm.h"
-#include "address.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -158,18 +157,9 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
   
   if (libmds_parse_display_adress(*display, &addr) < 0)
     goto fail;
-  if (addr.domain   < 0)     goto efault;
-  if (addr.type     < 0)     goto efault;
-  if (addr.protocol < 0)     goto efault;
-  if (addr.address == NULL)  goto efault;
   
-  this->socket_fd = socket(addr.domain, addr.type, addr.protocol);
-  if (this->socket_fd < 0)
+  if (libmds_connection_establish_address(this, &addr) < 0)
     goto fail;
-  
-  while (connect(this->socket_fd, addr.address, addr.address_len))
-    if (errno != EINTR)
-      goto fail;
   
   free(addr.address);
   return 0;
@@ -182,6 +172,47 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
   saved_errno = errno;
   free(addr.address);
   return errno = saved_errno, -1;
+}
+
+
+/**
+ * Connect to the display server
+ * 
+ * @param   this     The connection descriptor, must not be `NULL`
+ * @param   address  The address to connect to, must not be `NULL`,
+ *                   and must be the result of a successful call to
+ *                   `libmds_parse_display_adress`
+ * @return           Zero on success, -1 on error. On error, `display`
+ *                   will point to `NULL` if MDS_DISPLAY is not defiend,
+ *                   otherwise, `errno` will have been set to describe
+ *                   the error.
+ * 
+ * @throws  EFAULT  `libmds_display_address_t` contains unset parameters.
+ * @throws           Any error specified for socket(2)
+ * @throws           Any error specified for connect(2), except EINTR
+ */
+int libmds_connection_establish_address(libmds_connection_t* restrict this,
+					const libmds_display_address_t* restrict address)
+{
+  if (address->domain   < 0)     goto efault;
+  if (address->type     < 0)     goto efault;
+  if (address->protocol < 0)     goto efault;
+  if (address->address == NULL)  goto efault;
+  
+  this->socket_fd = socket(address->domain, address->type, address->protocol);
+  if (this->socket_fd < 0)
+    goto fail;
+  
+  while (connect(this->socket_fd, address->address, address->address_len))
+    if (errno != EINTR)
+      goto fail;
+  
+  return 0;
+  
+ efault:
+  errno = EFAULT;
+ fail:
+  return -1;
 }
 
 
