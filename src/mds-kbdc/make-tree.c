@@ -192,7 +192,7 @@
 
 
 /**
- * Suppress the next `line += strlen(line)`
+ * Suppress the next `line = STREND(line)`
  */
 #define NO_JUMP			\
   (*end = prev_end_char,	\
@@ -580,12 +580,12 @@ static int check_whether_file_is_empty(void)
  */
 static int no_parameters(const char* restrict keyword)
 {
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char, prev_end_char = '\0';
   SKIP_SPACES(line);
   if (*line)
     {
-      end = line + strlen(line);
+      end = STREND(line);
       NEW_ERROR(1, ERROR, "extra token after ‘%s’", keyword);
     }
   
@@ -611,12 +611,12 @@ static int names_1(char** restrict var)
   int stray_char = 0;
   char* end_end;
   
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char, prev_end_char = '\0';
   SKIP_SPACES(line);
   if (*line == '\0')
     {
-      line = original, end = line + strlen(line);
+      line = original, end = STREND(line);
       NEW_ERROR(1, ERROR, "a name is expected");
     }
   else
@@ -668,12 +668,12 @@ static int chars(char** restrict var)
 {
   if (too_few)
     return 0;
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char, prev_end_char = '\0';
   SKIP_SPACES(line);
   if (*line == '\0')
     {
-      line = original, end = line + strlen(line);
+      line = original, end = STREND(line);
       NEW_ERROR(1, ERROR, "too few parameters");
       line = end, too_few = 1;
     }
@@ -715,7 +715,7 @@ static int chars(char** restrict var)
 static int quotes(void)
 {
   char* line_ = line;
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char;
   SKIP_SPACES(line);
   if (*line && (*line != '"'))
@@ -743,12 +743,12 @@ static int have_more_parameters(void)
 {
   if (too_few)
     return 0;
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char, prev_end_char = '\0';
   SKIP_SPACES(line);
   if (*line == '\0')
     {
-      line = original, end = line + strlen(line);
+      line = original, end = STREND(line);
       NEW_ERROR(1, ERROR, "too few parameters");
       line = end, too_few = 1;
       return 0;
@@ -1010,9 +1010,9 @@ static int parse_else(void)
       NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
       return 0;
     }
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char, prev_end_char = '\0';
-  end = line + strlen(line);
+  end = STREND(line);
   SKIP_SPACES(line);
   i = stack_ptr - 1;
   while (keyword_stack[i] == NULL)
@@ -1020,7 +1020,7 @@ static int parse_else(void)
   if (strcmp(keyword_stack[i], "if"))
     {
       stack_ptr--;
-      line = original, end = line + strlen(line);
+      line = original, end = STREND(line);
       NEW_ERROR(1, ERROR, "runaway ‘else’ statement");
     }
   else if (*line == '\0')
@@ -1103,7 +1103,7 @@ static int parse_let(void)
     LEAF;
   if (*line == '\0')
     {
-      line = original, end = line + strlen(line), prev_end_char = '\0';
+      line = original, end = STREND(line), prev_end_char = '\0';
       NEW_ERROR(1, ERROR, "too few parameters");
     }
   else if (*line != '{')
@@ -1149,13 +1149,13 @@ static int parse_end(void)
       NEW_ERROR(1, ERROR, "runaway ‘end’ statement");
       return 0;
     }
-  line += strlen(line);
+  line = STREND(line);
   *end = prev_end_char, prev_end_char = '\0';
   SKIP_SPACES(line);
   while (keyword_stack[--stack_ptr] == NULL);
   if (*line == '\0')
     {
-      line = original, end = line + strlen(line);
+      line = original, end = STREND(line);
       NEW_ERROR(1, ERROR, "expecting a keyword after ‘end’");
     }
   else if (strcmp(line, keyword_stack[stack_ptr]))
@@ -1218,7 +1218,7 @@ static int parse_map(void)
     }
   if (*line == '\0')
     return prev_end_char = *end, 0;
-  end = line + strlen(line), prev_end_char = *end;
+  end = STREND(line), prev_end_char = *end;
   NEW_ERROR(1, ERROR, "too many parameters");
   
   return 0;
@@ -1307,7 +1307,7 @@ static int parse_array_elements(void)
       else if (*line == '}')
 	{
 	  line++;
-	  end = line + strlen(line);
+	  end = STREND(line);
 	  END;
 	  line = end, prev_end_char = '\0';
 	  goto done;

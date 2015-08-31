@@ -726,6 +726,19 @@
 
 
 /**
+ * The way to get a pointer to the end of a string
+ * 
+ * `strchr(str, '\0')` is faster than `str + strlen(str)`,
+ * at least in the GNU C Library. If this is not true for
+ * the compiler you are using, you may want to edit this
+ * macro.
+ */
+#define STREND(str)  \
+  (strchr(str, '\0'))
+/* TODO Document STREND in the texinfo manual. */
+
+
+/**
  * The system is running out of memory.
  * Quick, free up all your unused memory or kill yourself!
  */
