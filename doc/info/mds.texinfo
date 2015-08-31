@@ -8823,10 +8823,10 @@ r = libmds_headers_cherrypick(headers, n, NULL, 0,
   NULL);
 @end example
 
-The functions behaviour is undefined for if a header
+The function's behaviour is undefined for if a header
 is requested more than once, or in an order contrary
 to the specifications provided by @code{optimisation}.
-The functions behaviour is also undefined if the input
+The function's behaviour is also undefined if the input
 headers are in an order contrary to the specifications
 provided by @code{optimisation}.
 
@@ -8970,7 +8970,7 @@ to indicate the error.
 This function may fail with @code{errno} set to @code{ENOMEM}
 if the process cannot allocate more memory.
 
-The functions behaviour is undefined if a header is longer than
+The function's behaviour is undefined if a header is longer than
 @iftex
 2@sup{15}
 @end iftex
