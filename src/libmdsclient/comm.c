@@ -136,7 +136,7 @@ void libmds_connection_free(libmds_connection_t* restrict this)
  * 
  * @throws  EFAULT        If the display server's address is not properly
  *                        formatted, or specifies an unsupported protocol,
- *                        `libmds_parse_display_adress` can be used to
+ *                        `libmds_parse_display_address` can be used to
  *                        figure out what is wrong.
  * @throws  ENAMETOOLONG  The filename of the target socket is too long
  * @throws                Any error specified for socket(2)
@@ -155,7 +155,7 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
   if ((*display == NULL) || (strchr(*display, ':') == NULL))
     goto efault;
   
-  if (libmds_parse_display_adress(*display, &addr) < 0)
+  if (libmds_parse_display_address(*display, &addr) < 0)
     goto fail;
   
   if (libmds_connection_establish_address(this, &addr) < 0)
@@ -181,7 +181,7 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
  * @param   this     The connection descriptor, must not be `NULL`
  * @param   address  The address to connect to, must not be `NULL`,
  *                   and must be the result of a successful call to
- *                   `libmds_parse_display_adress`
+ *                   `libmds_parse_display_address`
  * @return           Zero on success, -1 on error. On error, `display`
  *                   will point to `NULL` if MDS_DISPLAY is not defiend,
  *                   otherwise, `errno` will have been set to describe

@@ -87,7 +87,7 @@ typedef struct libmds_display_address
  * @throws  ENAMETOOLONG  The filename of the target socket is too long
  */
 __attribute__((nonnull))
-int libmds_parse_display_adress(const char* restrict display, libmds_display_address_t* restrict address);
+int libmds_parse_display_address(const char* restrict display, libmds_display_address_t* restrict address);
 
 
 #endif

@@ -51,7 +51,7 @@ static int is_pzinteger(const char* restrict str)
 
 
 /**
- * Set the socket adress, with the address family `AF_UNIX`
+ * Set the socket address, with the address family `AF_UNIX`
  * 
  * @param   out_address  Output parameter for the socket address
  * @param   pathlen      Pointer to a variable where the length of the pathname will be stored
@@ -157,7 +157,7 @@ static int set_af_inet(struct sockaddr** restrict out_address, socklen_t* restri
  *                        RLIMIT_AS or RLIMIT_DATA limit described in getrlimit(2).
  * @throws  ENAMETOOLONG  The filename of the target socket is too long
  */
-int libmds_parse_display_adress(const char* restrict display, libmds_display_address_t* restrict address)
+int libmds_parse_display_address(const char* restrict display, libmds_display_address_t* restrict address)
 {
   ssize_t pathlen = 0;
   char* host;

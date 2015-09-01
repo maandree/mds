@@ -143,7 +143,7 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
  * @param   this     The connection descriptor, must not be `NULL`
  * @param   address  The address to connect to, must not be `NULL`,
  *                   and must be the result of a successful call to
- *                   `libmds_parse_display_adress`
+ *                   `libmds_parse_display_address`
  * @return           Zero on success, -1 on error. On error, `display`
  *                   will point to `NULL` if MDS_DISPLAY is not defiend,
  *                   otherwise, `errno` will have been set to describe
