@@ -107,7 +107,7 @@ typedef enum libmds_cherrypick_optimisation
  * @return                Zero on success, -1 on error, `errno` will have been set
  *                        accordingly on error.
  * 
- * @throws  ENOMEM        Out of memory, Possibly, the process hit the RLIMIT_AS or
+ * @throws  ENOMEM        Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                        RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((sentinel))
@@ -226,7 +226,7 @@ size_t libmds_headers_cherrypick_binary_sorted(char** restrict headers, size_t h
  * @return                Zero on success, -1 on error, `errno` will have been set
  *                        accordingly on error.
  * 
- * @throws  ENOMEM        Out of memory, Possibly, the process hit the RLIMIT_AS or
+ * @throws  ENOMEM        Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                        RLIMIT_DATA limit described in getrlimit(2).
  */
 int libmds_headers_cherrypick_v(char** restrict headers, size_t header_count, size_t* restrict found,
@@ -367,7 +367,7 @@ void libmds_headers_sort(char** restrict headers, size_t header_count);
  * @return                  Zero on success, -1 on error, `errno` will have been set
  *                          accordingly on error.
  * 
- * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
+ * @throws  ENOMEM          Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                          RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull(1, 2, 3), sentinel))
@@ -413,7 +413,7 @@ int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t*
  * @return                  Zero on success, -1 on error, `errno` will have been set
  *                          accordingly on error.
  * 
- * @throws  ENOMEM          Out of memory, Possibly, the process hit the RLIMIT_AS or
+ * @throws  ENOMEM          Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                          RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull(1, 2, 3)))

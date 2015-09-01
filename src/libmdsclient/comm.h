@@ -89,7 +89,7 @@ int libmds_connection_initialise(libmds_connection_t* restrict this);
  * @return  The connection descriptor, `NULL` on error,
  *          `errno` will have been set accordingly on error
  * 
- * @throws  ENOMEM  Out of memory, Possibly, the process hit the RLIMIT_AS or
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
  * @throws  EAGAIN  See pthread_mutex_init(3)
  * @throws  EPERM   See pthread_mutex_init(3)
