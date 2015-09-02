@@ -8707,8 +8707,13 @@ macros, but function-like macros and lvalue-macros use
 shorter. Inclusion-guards are formatted
 @code{MDS_LIBMDSCLIENT_*_H}.
 
+libmdsclient is not yet capable of state marshalling
+which is required for online updating to newer versions
+of the client.
+
 @menu
 * Protocol Utilties::                         Low-level functions for implementing protocols.
+* Communication Utilties::                    Low-level communication functions.
 @end menu
 
 
@@ -9009,7 +9014,7 @@ in the call to the function @code{libmds_next_message_id}.
 @code{test} is @code{NULL}.
 
 Upon successful completion zero is returned. On error
-@code{-1} is returned and @code{errno} is set the indicate
+@code{-1} is returned and @code{errno} is set to indicate
 the error.
 
 This function can fail with errno set to any error thrown
@@ -9029,6 +9034,314 @@ The function cannot fail if @code{test} is @code{NULL}.
 All functions that uses variadic arguments, have a variant
 that uses @code{va_list} instead. These functions are suffixed
 @code{_v}.
+
+
+
+@node Communication Utilties
+@section Communication Utilties
+
+@cpindex Communication foundation
+The header file @file{<libmdsclient/comm.h>} provides
+functions for connecting to the display server and
+performing thread-safe communication.
+
+@cpindex Descriptor, connection
+@cpindex Connection descriptor
+@tpindex @code{libmds_connection_t}
+@tpindex @code{struct libmds_connection}
+These functions use the structured @code{libmds_connection_t}.
+@{also known as @code{struct libmds_connection}@}. Instances
+of this structure are referred to as connection descriptors.
+This structure should be considered opaque.
+
+For these functions, the @code{this} parameter has the
+type @code{libmds_connection_initialise* restrict}.
+
+@table @asis
+@item @code{libmds_connection_initialise} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_initialise}
+Initialises a connection descriptor, but does not connect
+it to the display server.
+
+Upon successful completion, zero is returned. On error,
+@code{-1} is returned and @code{errno} is set to indicate
+the error.
+
+This function may fail with @code{errno} set to
+@code{EAGAIN}, @code{ENOMEM} or @code{EPERM}, as
+specified for @code{pthread_mutex_init(3)}.
+
+@item @code{libmds_connection_create} [(@code{void}) @arrow{} @code{libmds_connection_t*}]
+@fnindex @code{libmds_connection_create}
+Wrapper for @code{libmds_connection_initialise} that
+also allocates the connection descriptor.
+
+Upon successful completion, the descriptor is returned.
+On error, @code{NULL} is returned and @code{errno} is
+set to indicate the error.
+
+This function may fail for any reason, with @code{errno}
+is to the same value, as @code{libmds_connection_initialise}.
+It may also fail with @code{errno} set to @code{ENOMEM} if
+the descriptor cannot be allocated. This is, on memory
+exhaustion.
+
+@item @code{libmds_connection_destroy} [(@code{this}) @arrow{} @code{void}]
+@fnindex @code{libmds_connection_destroy}
+Release all resources held by a connection descriptor.
+This also means that the connection to the display
+server will close. Nothing will happen if @code{this}
+is @code{NULL}.
+
+@item @code{libmds_connection_free} [(@code{this}) @arrow{} @code{void}]
+@fnindex @code{libmds_connection_free}
+Wrapper for @code{libmds_connection_destroy} that also
+calls @code{free} on the descriptor to deallocate the
+descriptor itself.
+
+@item @code{libmds_connection_establish} [(@code{this, const char** restrict display}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_establish}
+Establishes a connection to the display server.
+It is preferred to use @code{libmds_connection_establish_address},
+over using @code{libmds_connection_establish}.
+
+@code{display} must either be a pointer to a string,
+or a pointer to @code{NULL}. It pointer @code{display}
+itself must not be @code{NULL}. If @code{display} points
+to @code{NULL}, it will be update with the value of
+the environment variable @env{MDS_DISPLAY}, or left
+@code{NULL} if not set.
+
+This function will parse value @code{display} points
+to (after it has been updated if it points to @code{NULL},)
+and attempt to connect to the display server it addresses.
+
+Upon successful completetion, zero is returned. On error,
+@code{-1} is returned and @code{errno} is set to indicate
+the error.
+
+This function may fail with @code{errno} set to @code{EFAULT}
+if @env{MDS_DISPLAY} is not set (if @code{display} pointed
+to, and will in such case still point to, @code{NULL}, or
+if the display server's address is not properly formatted,
+or specifies an unsupported protocol. It may also fail with
+@code{errno} set to @code{ENAMETOOLONG} if the pathname of
+the display server's socket is too long. The function may
+also fail with any value on @code{errno} specified for
+@code{socket(2)} or @code{connect(2)}, except @code{EINTR}.
+
+@item @code{libmds_connection_establish_address} [(@code{this, const libmds_display_address_t* restrict address}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_establish_address}
+This function is an alternative to @code{libmds_connection_establish},
+which is preferred because it is easier to find out
+why it potentially failed. And it can be done reliably.
+
+Instead of a pointer to a string formated as @env{MDS_DISPLAY},
+or a pointer to @code{NULL}. This function takes a, by
+@code{libmds_parse_display_address}, preparsed address.
+
+Upon successful completetion, zero is returned. On error,
+@code{-1} is returned and @code{errno} is set to indicate
+the error.
+
+This function may fail with @code{errno} set to @code{EFAULT}
+if the address is not full set, this can happen even if
+@code{libmds_parse_display_address} returns successfully;
+it means that the display server address is not properly
+formatted or specifies an unsupported protocol. This function
+may also fail with any value on @code{errno} specified for
+@code{socket(2)} or @code{connect(2)}, except @code{EINTR}.
+
+@item @code{libmds_connection_send} [(@code{this, const char* restrict message, size_t length}) @arrow{} @code{size_t}]
+@fnindex @code{libmds_connection_send}
+This function locks a connection descriptor and --- when
+it is entered the lock --- it will send a message to the
+display server over the connection, and ignores all
+interrupts.
+
+The message is specified by the parameter @code{message},
+and this length is specified by the parameter @code{length}.
+Note that this function treats @code{message} as a raw
+memory segment rather than as a NUL-terminated string.
+
+Undefined behaviour is invoked if @code{message} is
+@code{NULL} or if @code{length} is zero.
+
+Upon successful completeion, the number of sent bytes
+are returned. On error, zero is returned and @code{errno}
+is set to indicate the error.
+
+This function may fail with errno set to any error
+specified for @code{pthread_mutex_lock(3)}, or any
+of the errors @code{EACCES}, @code{EWOULDBLOCK} (but
+only if the socket has been modified to be nonblocking,)
+@code{EBADF}, @code{ECONNRESET} --- if connection to
+the display server is lost, --- @code{EDESTADDRREQ},
+@code{EFAULT}, @code{EINVAL}, @code{ENOBUFS}, @code{ENOMEM},
+@code{ENOTCONN}, @code{ENOTSOCK} or @code{EPIPE}, as
+specified for @code{send(2)}.
+
+@item @code{libmds_connection_send_unlocked} [(@code{this, const char* restrict message, size_t length, int continue_on_interrupt}) @arrow{} @code{size_t}]
+@fnindex @code{libmds_connection_send_unlocked}
+Variant of @code{libmds_connection_send} that does
+not perform a lock on the connection descriptor.
+This is not intended for single-threaded programs,
+rather, it is intended to be used instead of
+@code{libmds_connection_send} if the thread already
+holds a lock on the connection descriptor.
+
+This function is otherwise identical to
+@code{libmds_connection_send}, except it has one
+additional parameter: @code{continue_on_interrupt},
+and cannot fail because of failure to call
+@code{pthread_mutex_lock}. It can however also fail
+with @code{errno} set to @code{EINTR} if
+@code{continue_on_interrupt} is zero.
+
+The function will continue sending the message
+if it gets interrupted by a signal only if
+@code{continue_on_interrupt} is non-zero.
+@end table
+
+@file{<libmdsclient/comm.h>} also provides a few
+macros for use with connection descriptors.
+For these macros, the @code{this} parameter has the
+type @code{libmds_connection_initialise* restrict}.
+
+@table @asis
+@item @code{libmds_connection_lock} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_lock}
+Wrapper for @code{pthread_mutex_lock} that locks
+@code{this}'s mutex. One difference from the wrapped
+function, is that rather than returning a value for
+@code{errno}, it sets @code{errno} and returns zero
+on success and @code{-1} on failure.@footnote{POSIX
+threading and reenterant functions has a weird
+property of returning an error code rather than
+setting it on @code{errno}, despite that all other
+C functions sets @code{errno} (provided that they
+have error codes specified in @file{<errno.h>}.)}
+
+@item @code{libmds_connection_trylock} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_trylock}
+Wrapper for @code{pthread_mutex_trylock} that locks
+@code{this}'s mutex. One difference from the wrapped
+function, is that rather than returning a value for
+@code{errno}, it sets @code{errno} and returns zero
+on success and @code{-1} on failure.
+
+@item @code{libmds_connection_timedlock} [(@code{this, const struct timespec *restrict deadline}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_timedlock}
+Wrapper for @code{pthread_mutex_timedlock} that locks
+@code{this}'s mutex. One difference from the wrapped
+function, is that rather than returning a value for
+@code{errno}, it sets @code{errno} and returns zero
+on success and @code{-1} on failure.
+Neither parameter may be @code{NULL}.
+
+@item @code{libmds_connection_unlock} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{libmds_connection_unlock}
+Wrapper for @code{pthread_mutex_unlock} that unlocks
+@code{this}'s mutex. One difference from the wrapped
+function, is that rather than returning a value for
+@code{errno}, it sets @code{errno} and returns zero
+on success and @code{-1} on failure.
+
+@item @code{LIBMDS_HEADER_CLIENT_ID} [(@code{this})]
+@fnindex @code{LIBMDS_HEADER_CLIENT_ID}
+@fnindex @code{libmds_compose}
+Macro to be used with @code{libmds_compose}, to
+add the connection's client ID to a message.
+
+@item @code{LIBMDS_HEADER_MESSAGE_ID} [(@code{this})]
+@fnindex @code{LIBMDS_HEADER_MESSAGE_ID}
+@fnindex @code{libmds_next_message_id}
+Macro to be used with @code{libmds_compose}, to
+add the connection's next message ID to a message.
+@code{libmds_next_message_id} shall have been called
+prior to using this macro.
+
+@item @code{LIBMDS_HEADERS_STANDARD} [(@code{this})]
+@fnindex @code{LIBMDS_HEADERS_STANDARD}
+Macro that can be used in place of using both
+@code{LIBMDS_HEADER_CLIENT_ID} and
+@code{LIBMDS_HEADER_MESSAGE_ID}.
+@end table
+
+@file{<libmdsclient/comm.h>} includes @file{<libmdsclient/address.h>},
+with defines the structure @code{libmds_display_address_t}
+@{also known as @code{struct libmds_display_address}@},
+and the function @code{libmds_parse_display_address}.
+
+@tpindex @code{libmds_display_address_t}
+@tpindex @code{struct libmds_display_address}
+@code{libmds_display_address_t} holds parsing results
+from @code{libmds_parse_display_address}. Its members
+are:
+
+@table @asis
+@item @code{domain} [@code{int}]
+The domain (protocol family), that is the first
+argument for @code{socket(2)}. This is a value
+whose constant is prefixed @code{PF_}.@footnote{It
+is common to use @code{AF_}-constants instead,
+however this practice is not portable.}
+@code{-1} if not detected.
+
+@item @code{type} [@code{int}]
+The socket type, that is the second argument
+for @code{socket(2)}. This is a value
+whose constant is prefixed @code{SOCK_}.
+@code{-1} if not detected.
+
+@item @code{protocol} [@code{int}]
+The protocol, that is the third argument
+for @code{socket(2)}. This is a value
+whose constant is affixed @code{PROTO_}.
+Zero can be used for the default protocol.
+For example, for stream IP sockets, the protocol
+can only be TCP, thus zero would indicate
+@code{IPPROTO_TCP}.
+@code{-1} if not detected.
+
+@item @code{address} [@code{struct sockaddr*}]
+The address. @code{NULL} if not detected.
+You are responsible for freeing this.
+
+@item @code{address_len} [@code{socklen_t}]
+The allocation size of @code{.address}.
+This value may be set even if @code{address}
+is @code{NULL}.
+
+@item @code{gai_error} [@code{int}]
+Code for an error that has occured when parsing
+the address, whose description can be retrieved
+using @code{gia_strerror}, zero if none.
+@end table
+
+@fnindex @code{libmds_parse_display_address}
+The function @code{libmds_parse_display_address}
+is used to parse the a display address string:
+
+@table @asis
+@item @code{libmds_parse_display_address} [(@code{const char* restrict display, libmds_display_address_t* restrict address}) @arrow{} @code{int}]
+@code{display} should be the address of the display
+server, formatted as a value for @env{MDS_DISPLAY}.
+
+The address of the display will be stored in @code{*address}.
+
+Neither parameter may be @code{NULL}.
+
+Upon successful completion, zero is returned. On error,
+@code{-1} is returned and errno is set to indicate the
+error. Parsing-failure is not considered an error,
+instead data that could not retrieved from the address
+string will be set to @code{-1} or @code{NULL}.
+
+This function may fail with @code{errno} set to
+@code{ENOMEM} on memory exhaustion, or @code{ENAMETOOLONG}
+if the addressed socket's filename is too long.
+@end table
 
 
 

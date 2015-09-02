@@ -46,7 +46,7 @@ typedef struct libmds_display_address
   /**
    * The protocol, that is the third
    * argument for socket(2), a value whose
-   * constant is prefixed IPPROTO_ (zero
+   * constant is affixed PROTO_ (zero
    * for the default); -1 if not detected
    */
   int protocol;
