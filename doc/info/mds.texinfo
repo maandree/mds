@@ -8713,7 +8713,7 @@ of the client.
 
 @menu
 * Protocol Utilties::                         Low-level functions for implementing protocols.
-* Communication Utilties::                    Low-level communication functions.
+* Communication Utilities::                   Low-level communication functions.
 @end menu
 
 
@@ -9037,8 +9037,8 @@ that uses @code{va_list} instead. These functions are suffixed
 
 
 
-@node Communication Utilties
-@section Communication Utilties
+@node Communication Utilities
+@section Communication Utilities
 
 @cpindex Communication foundation
 The header file @file{<libmdsclient/comm.h>} provides
