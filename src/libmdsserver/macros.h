@@ -79,7 +79,7 @@
 # define AF_FILE AF_LOCAL
 #endif
 
-x/* Ensure that all aliases for PF_UNIX are defined */
+/* Ensure that all aliases for PF_UNIX are defined */
 #if !defined(PF_LOCAL) && !defined(PF_UNIX) && defined(PF_FILE)
 # define PF_LOCAL PF_FILE
 # define PF_UNIX PF_FILE
