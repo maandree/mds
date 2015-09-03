@@ -79,7 +79,7 @@
 # define AF_FILE AF_LOCAL
 #endif
 
-/* Ensure that all aliases for PF_UNIX are defined */
+x/* Ensure that all aliases for PF_UNIX are defined */
 #if !defined(PF_LOCAL) && !defined(PF_UNIX) && defined(PF_FILE)
 # define PF_LOCAL PF_FILE
 # define PF_UNIX PF_FILE
@@ -735,7 +735,6 @@
  */
 #define STREND(str)  \
   (strchr(str, '\0'))
-/* TODO Document STREND in the texinfo manual. */
 
 
 /**

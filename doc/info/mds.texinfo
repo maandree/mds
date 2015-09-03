@@ -6486,6 +6486,13 @@ failure will be printed to standard error.
 @cpindex Terminating
 If @code{condition} is satisfied, @code{instructions}
 is invoked and @code{1} is @code{return}:ed.
+
+@item @code{STREND} [(@code{const char* str}) @arrow{} @code{char*}]
+@fnindex @code{STREND}
+@cpindex Optimisations
+Expands to @code{(strchr(str, '\0'))}. It is here to
+remain us that @code{str = strchr(str, '\0')} is faster
+than @code{str += strlen(str)}.
 @end table
 
 @cpindex Signals
