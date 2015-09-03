@@ -84,8 +84,10 @@ include mk/build-doc.mk
 
 .PHONY: perms
 perms: all
+	@printf '\e[00;01;34m%s\e[00m\n' "$@"
 	sudo chown 'root:root' $(foreach S,$(SETUID_SERVERS),bin/$(S))
 	sudo chmod 4755 $(foreach S,$(SETUID_SERVERS),bin/$(S))
+	@echo
 
 # Clean rules.
 
