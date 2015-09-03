@@ -709,9 +709,7 @@ int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_
 # pragma GCC diagnostic ignored "-Wformat-nonliteral"
 # pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
       part_len = vasprintf(&part_msg, format, args);
-      /* TODO we need a version of vasprintf that can
-       *      write to a buffer with an offset, but
-       *      reallocate the buffer on will. */
+      /* XXX vbprintf in slibc will be a nice replacement for this horror. */
 # pragma GCC diagnostic pop
       
       if (include == 0)
