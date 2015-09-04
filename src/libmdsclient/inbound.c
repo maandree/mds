@@ -52,6 +52,7 @@ int libmds_message_initialise(libmds_message_t* restrict this)
   this->buffer_ptr = 0;
   this->stage = 0;
   this->buffer = malloc(this->buffer_size * sizeof(char));
+  this->flattened = 0;
   return this->buffer == NULL ? -1 : 0;
 }
 
@@ -64,8 +65,45 @@ int libmds_message_initialise(libmds_message_t* restrict this)
  */
 void libmds_message_destroy(libmds_message_t* restrict this)
 {
-  free(this->headers), this->headers = NULL;
-  free(this->buffer),  this->buffer  = NULL;
+  if (this->flattened == 0)
+    {
+      free(this->headers), this->headers = NULL;
+      free(this->buffer),  this->buffer  = NULL;
+    }
+}
+
+
+/**
+ * Release all resources in a message, should
+ * be done even if initialisation fails
+ * 
+ * @param   this  The message
+ * @return        The duplicate, you do not need to call `libmds_message_destroy`
+ *                on it before you call `free` on it. However, you cannot use
+ *                this is an `libmds_message_t` array (libmds_message_t*), only
+ *                in an `libmds_message_t*` array (libmds_message_t**).
+ */
+libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this)
+{
+  size_t flattened_size, i, n = this->header_count;
+  libmds_message_t* rc;
+  
+  flattened_size = sizeof(libmds_message_t) + this->buffer_off * sizeof(char) + n * sizeof(void*);
+  if (rc = malloc(flattened_size), rc == NULL)
+    return NULL;
+  
+  *rc = *this;
+  rc->flattened   = flattened_size;
+  rc->buffer_size = this->buffer_off;
+  
+  rc->buffer  = ((char*)rc) + sizeof(libmds_message_t) / sizeof(char);
+  rc->headers = (char**)(void*)(rc->buffer + this->buffer_off);
+  rc->payload = rc->buffer + (size_t)(this->payload - this->buffer);
+  for (i = 0; i < n; i++)
+    rc->headers[i] = rc->buffer + (size_t)(this->headers[i] - this->buffer);
+  
+  memcpy(rc->buffer, this->buffer, this->buffer_off * sizeof(char));
+  return rc;
 }
 
 

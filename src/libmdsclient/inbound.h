@@ -76,6 +76,15 @@ typedef struct libmds_message
   size_t buffer_off;
   
   /**
+   * Zero unless the structure is flattend, otherwise
+   * the size of the object (semiinternal data)
+   * 
+   * Flattened means that all pointers are subpointers
+   * of the object itself
+   */
+  size_t flattened;
+  
+  /**
    * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
    */
   int stage;
@@ -106,6 +115,19 @@ int libmds_message_initialise(libmds_message_t* restrict this);
  */
 __attribute__((nonnull))
 void libmds_message_destroy(libmds_message_t* restrict this);
+
+/**
+ * Release all resources in a message, should
+ * be done even if initialisation fails
+ * 
+ * @param   this  The message
+ * @return        The duplicate, you do not need to call `libmds_message_destroy`
+ *                on it before you call `free` on it. However, you cannot use
+ *                this is an `libmds_message_t` array (libmds_message_t*), only
+ *                in an `libmds_message_t*` array (libmds_message_t**).
+ */
+__attribute__((nonnull, malloc, warn_unused_result))
+libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this);
 
 /**
  * Read the next message from a file descriptor
