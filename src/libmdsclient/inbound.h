@@ -22,6 +22,7 @@
 
 
 #include <stddef.h>
+#include <semaphore.h>
 
 
 
@@ -90,6 +91,100 @@ typedef struct libmds_message
   int stage;
   
 } libmds_message_t;
+
+
+/**
+ * Queue of spooled messages
+ */
+typedef struct libmds_mspool
+{
+  /**
+   * Array of messages
+   */
+  libmds_message_t** messages;
+  
+  /**
+   * The number of elements the current
+   * allocation of `messages` can hold
+   */
+  size_t size;
+  
+  /**
+   * Push end
+   */
+  size_t head;
+  
+  /**
+   * Poll end
+   */
+  size_t tail;
+  
+  /**
+   * The total size of all spooled messages
+   */
+  size_t spooled_bytes;
+  
+  /**
+   * Do not spool additional messages if
+   * `spooled_bytes` is equal to or exceeds
+   * to value
+   */
+  size_t spool_limit_bytes;
+  
+  /**
+   * Do not spool more than this amount
+   * of messages
+   */
+  size_t spool_limit_messages;
+  
+  /* POSIX semaphores are lighter weight than XSI semaphores, so we use POSIX here. */
+  
+  /**
+   * Binary semaphore used to lock the spool whilst
+   * manipulating it
+   */
+  sem_t lock;
+  
+  /**
+   * Seamphore used to signal addition of messages,
+   * each time a message is spooled, this semaphore
+   * in increased, the polling thread decreases the
+   * the semaphore before despooling a message,
+   * causing it to block when the spool is empty
+   */
+  sem_t semaphore;
+  
+} libmds_mspool_t;
+
+
+/**
+ * Message pool for reusable message allocations
+ */
+typedef struct libmds_mpool
+{
+  /**
+   * Array of messages
+   */
+  libmds_message_t** messages;
+  
+  /**
+   * The number of elements the current
+   * allocation of 'messages` can hold
+   */
+  size_t size;
+  
+  /**
+   * The tip of the stack
+   */
+  size_t tip;
+  
+  /**
+   * Binary semaphore used to lock the pool
+   * whilst manipulating it
+   */
+  sem_t lock;
+  
+} libmds_mpool_t;
 
 
 
