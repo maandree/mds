@@ -237,6 +237,9 @@ void libmds_message_destroy(libmds_message_t* restrict this);
  *                on it before you call `free` on it. However, you cannot use
  *                this is an `libmds_message_t` array (libmds_message_t*), only
  *                in an `libmds_message_t*` array (libmds_message_t**).
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull(1), malloc, warn_unused_result))
 libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this, libmds_mpool_t* restrict pool);
