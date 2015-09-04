@@ -210,7 +210,7 @@ typedef struct libmds_mpool
  * 
  * @param   this  Memory slot in which to store the new message
  * @return        Zero on success, -1 error, `errno` will be set
- *                accordingly. Destroy the message on error.
+ *                accordingly
  * 
  * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
@@ -267,6 +267,9 @@ int libmds_message_read(libmds_message_t* restrict this, int fd);
  * 
  * @param   this  The message spool
  * @return        Zero on success, -1 on error, `errno` will be set accordingly
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull, warn_unused_result))
 int libmds_mspool_initialise(libmds_mspool_t* restrict this);
@@ -283,8 +286,12 @@ void libmds_mspool_destroy(libmds_mspool_t* restrict this);
  * Spool a message
  * 
  * @param   this     The message spool
- * @param   message  The message to spool
+ * @param   message  The message to spool, must be flat (created with `libmds_message_duplicate`)
  * @return           Zero on success, -1 on error, `errno` will be set accordingly
+ * 
+ * @throws  EINTR   If interrupted
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull, warn_unused_result))
 int libmds_mspool_spool(libmds_mspool_t* restrict this, libmds_message_t* restrict message);
@@ -294,6 +301,8 @@ int libmds_mspool_spool(libmds_mspool_t* restrict this, libmds_message_t* restri
  * 
  * @param   this  The message spool
  * @return        A spooled message, `NULL`on error, `errno` will be set accordingly
+ * 
+ * @throws  EINTR  If interrupted
  */
 __attribute__((nonnull, warn_unused_result, malloc))
 libmds_message_t* libmds_mspool_poll(libmds_mspool_t* restrict this);
@@ -306,9 +315,15 @@ libmds_message_t* libmds_mspool_poll(libmds_mspool_t* restrict this);
  * @param   deadline  The CLOCK_REALTIME time the function must return,
  *                    `NULL` to return immediately if it would block
  * @return            A spooled message, `NULL`on error, `errno` will be set accordingly
+ * 
+ * @throws  EINTR      If interrupted
+ * @throws  EAGAIN     If `deadline` is `NULL` and the spool is empty
+ * @throws  EINVAL     If `deadline->tv_nsecs` is outside [0, 1 milliard[
+ * @throws  ETIMEDOUT  If the time specified `deadline` passed and the spool was till empty
  */
 __attribute__((nonnull(1), warn_unused_result, malloc))
-libmds_message_t* libmds_mspool_poll_try(libmds_mspool_t* restrict this, const struct timespec* deadline);
+libmds_message_t* libmds_mspool_poll_try(libmds_mspool_t* restrict this,
+					 const struct timespec* restrict deadline);
 
 
 
@@ -335,7 +350,9 @@ void libmds_mpool_destroy(libmds_mpool_t* restrict this);
  * Add a message allocation to a pool
  * 
  * @param   this     The message allocation pool
- * @param   message  Message allocation to pool
+ * @param   message  Message allocation to pool, must be flat (created with
+ *                   `libmds_message_duplicate` or fetched with `libmds_mspool_poll`
+ *                   or `libmds_mspool_poll_try`)
  * @return           Zero on success, -1 on error, `errno` will be set accordingly
  */
 __attribute__((nonnull, warn_unused_result))
