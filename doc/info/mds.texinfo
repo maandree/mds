@@ -9559,7 +9559,7 @@ internal use only.
 
 These semaphores, and the one in @code{libmds_mpool_t},
 a process-private@footnote{Thread-shared, rather
-the process-shared, meaning child processes
+than process-shared, meaning child processes
 cannot use them.} POSIX semaphores. POSIX semaphores
 are not as functional as XSI (System V) semaphore
 arrays, they are however much lighter weight can
