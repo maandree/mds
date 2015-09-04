@@ -8721,6 +8721,7 @@ of the client.
 @menu
 * Protocol Utilties::                         Low-level functions for implementing protocols.
 * Communication Utilities::                   Low-level communication functions.
+* Receiving Messages::                        Low-level functions for receiving messages.
 @end menu
 
 
@@ -9348,6 +9349,245 @@ string will be set to @code{-1} or @code{NULL}.
 This function may fail with @code{errno} set to
 @code{ENOMEM} on memory exhaustion, or @code{ENAMETOOLONG}
 if the addressed socket's filename is too long.
+@end table
+
+
+
+@node Receiving Messages
+@section Receiving Messages
+
+@cpindex Communication foundation
+@cpindex Messages, receiving
+@cpindex Messages, inbound
+@cpindex Receiving messages
+@cpindex Inbound messages
+libmdsclient's low-level facilities for receiving
+messages are found in the header file
+@file{<libmdsclient/inbound.h>}. These facilites
+are thread-safe.
+
+The header file defines three structures:
+
+@table @asis
+@item @code{libmds_message_t} @{also known as @code{struct libmds_message}@}
+@tpindex @code{libmds_message_t}
+@tpindex @code{struct libmds_message}
+Messages sent between clients@footnote{Including
+servers.}, are stored in this format when received.
+It holds information pointers to the headers and
+the payload in a message.
+
+@item @code{libmds_mspool_t} @{also known as @code{struct libmds_mspool}@}
+@tpindex @code{libmds_mspool_t}
+@tpindex @code{struct libmds_mspool}
+@cpindex Message spools
+@cpindex Spools, messages
+@cpindex Communication, multithreaded
+@cpindex Multithreaded communication
+@cpindex Threaded communication
+A queue structured spool of received messages, to
+be parsed and acted upon by other threads. Although
+a stack structure would be more efficient, this
+must be a queue. The reason for this is that it
+sometimes is important the mesages are parsed in
+the order they were sent.
+
+@item @code{libmds_mpool_t} @{also known as @code{struct libmds_mpool}@}
+@tpindex @code{libmds_mpool_t}
+@tpindex @code{struct libmds_mpool}
+@cpindex Message allocation pools
+@cpindex Pools, message allocations
+@cpindex Memory allocation resue
+@cpindex Reuse of allocations
+This structures provides an efficient way to
+reuse allocations of messages, so that the
+process does not need to perform the costly
+procedure of allocating memory. This is
+referred to as an allocation pool. This
+structures implements a specialision for
+messages: a message allocation pool, or
+message pool for short. The pool is stack-based.
+@end table
+
+@tpindex @code{libmds_message_t}
+@tpindex @code{struct libmds_message}
+The members of the structure @code{libmds_message_t} are:
+
+@table @asis
+@item @code{headers} [@code{char**}]
+Array of all headers in the messages, include
+the @code{Length}-header. The headers are never
+@code{NULL}, and are unparsed. Unparsed means
+that the name of the header and its value is
+stored as one string: the header's name, a colon,
+a blank space, the header's value, and a NUL
+byte that terminates the header.
+This member is @code{NULL} if there are no
+headers. This member's elements must not be
+freed, they are subpointers of @code{.buffer}.
+
+@item @code{header_count} [@code{size_t}]
+The number of headers, that is, the number
+of elements in @code{.headers}.
+
+@item @code{payload} [@code{char*}]
+The payload in the message. This member is
+@code{NULL} if there is no payload in the message.
+This is a raw memory segment, it is not terminated
+by a NUL byte. This member must not be freed,
+it is a subpointer of @code{.buffer}.
+
+@item @code{payload_size} [@code{size_t}]
+The length of @code{payload}. Zero if there
+is no payload. This value holds the value
+of the @code{Length}-header.
+
+@item @code{buffer} [@code{char*}]
+Read buffer, for the message. The entire
+message is stored in this buffer. The member
+is intended for internal use only.
+
+@item @code{buffer_size} [@code{size_t}]
+The allocation size of @code{.buffer}.
+The member is intended for internal use only.
+
+@item @code{buffer_ptr} [@code{size_t}]
+The number of bytes written to @code{.buffer}.
+The member is intended for internal use only.
+
+@item @code{buffer_off} [@code{size_t}]
+The number of parsed by from @code{.buffer}.
+The member is intended for internal use only.
+
+@item @code{flattened} [@code{size_t}]
+If zero, @code{.headers} and @code{.buffer}
+pointers that can be freed. Otherwise,
+@code{.headers} and @code{.buffer} are
+subpointers of the instance of the structure
+itself, which means the the object is actually
+larger than @code{sizeof(libmds_message_t)},
+which arrays of such objects must@footnote{Lest
+you want to make really ugly code.} be arrays
+of pointer. If this member is non-zero, it
+specifies the allocation size of the message
+object. The member is intended for internal
+use only.
+
+@item @code{stage} [@code{int}]
+Specifies the state of the message parsing.
+The member is intended for internal use only.
+@end table
+
+@tpindex @code{libmds_mspool_t}
+@tpindex @code{struct libmds_mspool}
+The members of the structure @code{libmds_mspool_t} are:
+
+@table @asis
+@item @code{message} [@code{libmds_message_t**}]
+Array of spooled message. The member is intended
+for internal use only.
+
+@item @code{size} [@code{size_t}]
+The number of elements @code{.message} is allocated
+to hold. The member is intended for internal use only.
+
+@item @code{head} [@code{size_t}]
+The index of the next message to be pushed to
+the queue. The member is intended for internal
+use only.
+
+@item @code{tail} [@code{size_t}]
+The index of the next message to be polled from
+the queue. The member is intended for internal
+use only.
+
+@item @code{spooled_bytes} [@code{size_t}]
+The sum of the sizes of all spooled messages.
+The member is intended for internal use only.
+
+@item @code{spool_limit_bytes} [@code{size_t}]
+The spooler may only spool message when this
+value is larger than @code{.spooled_bytes}.
+It is a restriction on the amount of memory
+can be spooled in form of messages.
+The spooling function blocks until this
+limit is not longer reached. It should be
+noted that the limit can be exceeded by one
+message, but only if the limit has not already
+been reached, this is because it would otherwise
+not be possible to spool messages larger than
+the limit, causing a deadlock.
+
+@item @code{spool_limit_messages} [@code{size_t}]
+This is similar to @code{.spool_limit_bytes},
+but it measures the number of message rather
+than their size.
+
+@item @code{please_post} [@code{int}]
+The spooling function increases this number
+by one, if enters an blocked state, and the
+pooler decreases it when it has signaled the
+spooler to stop waiting and try again. It
+counts the number of blocked spoolers.
+The member is intended for internal use only.
+
+@item @code{lock} [@code{sem_t}]
+This is a binary semaphore, with 1 as its
+initial value, that is used to lock the spool
+when it is being used. It is a non-reenterant
+mutex. The member is intended for internal use
+only.
+
+@item @code{semaphore} [@code{sem_t}]
+Semaphore used to signal addition of messages.
+Each time a message is spooled, this semaphore
+is increased, the polling thread decreases the
+semaphore before despooling a message,
+causing it to block when the spool is empty
+The member is intended for internal use only.
+
+@item @code{wait_semaphore} [@code{sem_t}]
+The spooling function acquires this semaphore
+when the spool is full. When it does so it
+also increases @code{.please_post}. The poller
+will post this semaphore if @code{.please_post}
+is non-zero, causing one blocked spooler to
+continue when the poller unlocks @code{.lock},
+and the decrease it. The member is intended for
+internal use only.
+@end table
+
+These semaphores, and the one in @code{libmds_mpool_t},
+a process-private@footnote{Thread-shared, rather
+the process-shared, meaning child processes
+cannot use them.} POSIX semaphores. POSIX semaphores
+are not as functional as XSI (System V) semaphore
+arrays, they are however much lighter weight can
+offers the few functions needed by the library.
+
+@tpindex @code{libmds_mpool_t}
+@tpindex @code{struct libmds_mpool}
+The members of the structure @code{libmds_mpool_t} are:
+
+@table @asis
+@item @code{messages} [@code{libmds_message_t**}]
+Array of allocations stored in the pool
+The member is intended for internal use only.
+
+@item @code{size} [@code{size_t size}]
+The number of allocations the pool can contain.
+The member is intended for internal use only.
+
+@item @code{tip} [@code{volatile size_t}]
+The number of available allocations. The member
+is intended for internal use only.
+
+@item @code{lock} [@code{sem_t}]
+This is a binary semaphore, with 1 as its
+initial value, that is used to lock the pool
+when it is being used. It is a non-reenterant
+mutex. The member is intended for internal use
+only.
 @end table
 
 
