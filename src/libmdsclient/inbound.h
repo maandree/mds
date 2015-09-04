@@ -35,9 +35,8 @@ typedef struct libmds_message
    * The headers in the message, each element in this list
    * as an unparsed header, it consists of both the header
    * name and its associated value, joined by ": ". A header
-   * cannot be `NULL` (unless its memory allocation failed,)
-   * but `headers` itself is `NULL` if there are no headers.
-   * The "Length" header should be included in this list.
+   * cannot be `NULL` but `headers` itself is `NULL` if there
+   * are no headers. The "Length" header is included in this list.
    */
   char** headers;
   
@@ -121,6 +120,7 @@ typedef struct libmds_mspool
   
   /**
    * The total size of all spooled messages
+   * (internal data)
    */
   size_t spooled_bytes;
   
@@ -153,11 +153,11 @@ typedef struct libmds_mspool
   sem_t lock;
   
   /**
-   * Semaphore used to signal addition of messages,
-   * each time a message is spooled, this semaphore
-   * in increased, the polling thread decreases the
-   * the semaphore before despooling a message,
-   * causing it to block when the spool is empty
+   * Semaphore used to signal addition of messages.
+   * Each time a message is spooled, this semaphore
+   * is increased, the polling thread decreases the
+   * semaphore before despooling a message, causing
+   * it to block when the spool is empty
    * (internal data)
    */
   sem_t semaphore;
