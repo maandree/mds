@@ -158,7 +158,7 @@ typedef struct libmds_mspool
 
 
 /**
- * Message pool for reusable message allocations
+ * Message pool (stack) for reusable message allocations
  */
 typedef struct libmds_mpool
 {
