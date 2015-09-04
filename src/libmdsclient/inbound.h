@@ -232,13 +232,14 @@ void libmds_message_destroy(libmds_message_t* restrict this);
  * be done even if initialisation fails
  * 
  * @param   this  The message
+ * @param   pool  Message allocation pool, may be `NULL`
  * @return        The duplicate, you do not need to call `libmds_message_destroy`
  *                on it before you call `free` on it. However, you cannot use
  *                this is an `libmds_message_t` array (libmds_message_t*), only
  *                in an `libmds_message_t*` array (libmds_message_t**).
  */
-__attribute__((nonnull, malloc, warn_unused_result))
-libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this);
+__attribute__((nonnull(1), malloc, warn_unused_result))
+libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this, libmds_mpool_t* restrict pool);
 
 /**
  * Read the next message from a file descriptor

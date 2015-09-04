@@ -80,22 +80,32 @@ void libmds_message_destroy(libmds_message_t* restrict this)
  * be done even if initialisation fails
 * 
  * @param   this  The message
+ * @param   pool  Message allocation pool, may be `NULL`
  * @return        The duplicate, you do not need to call `libmds_message_destroy`
  *                on it before you call `free` on it. However, you cannot use
  *                this is an `libmds_message_t` array (libmds_message_t*), only
  *                in an `libmds_message_t*` array (libmds_message_t**).
  */
-libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this)
+libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this, libmds_mpool_t* restrict pool)
 {
-  size_t flattened_size, i, n = this->header_count;
+  size_t flattened_size, reused, i, n = this->header_count;
   libmds_message_t* rc;
   
   flattened_size = sizeof(libmds_message_t) + this->buffer_off * sizeof(char) + n * sizeof(void*);
-  if (rc = malloc(flattened_size), rc == NULL)
+ repoll:
+  reused = 0;
+  rc = pool == NULL ? NULL : libmds_mpool_poll(pool);
+  if (rc != NULL)
+    if ((reused = rc->flattened) < flattened_size)
+      {
+	free(rc);
+	goto repoll;
+      }
+  if ((rc == NULL) && (rc = malloc(flattened_size), rc == NULL))
     return NULL;
   
   *rc = *this;
-  rc->flattened   = flattened_size;
+  rc->flattened   = reused ? reused : flattened_size;
   rc->buffer_size = this->buffer_off;
   
   rc->buffer  = ((char*)rc) + sizeof(libmds_message_t) / sizeof(char);
