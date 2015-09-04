@@ -15,10 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "mds-message.h"
-
-#include "macros.h"
-#include "util.h"
+#include "inbound.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +27,7 @@
 #define try(INSTRUCTION)   if ((r = INSTRUCTION) < 0)  return r
 
 
+
 /**
  * Initialise a message slot so that it can
  * be used by `mds_message_read`
@@ -38,7 +36,7 @@
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
  */
-int mds_message_initialise(mds_message_t* restrict this)
+int libmds_message_initialise(libmds_message_t* restrict this)
 {
   this->headers = NULL;
   this->header_count = 0;
@@ -48,29 +46,8 @@ int mds_message_initialise(mds_message_t* restrict this)
   this->buffer_size = 128;
   this->buffer_ptr = 0;
   this->stage = 0;
-  fail_if (xmalloc(this->buffer, this->buffer_size, char));
-  return 0;
- fail:
-  return -1;
-}
-
-
-/**
- * Zero initialise a message slot
- * 
- * @param  this  Memory slot in which to store the new message
- */
-void mds_message_zero_initialise(mds_message_t* restrict this)
-{
-  this->headers = NULL;
-  this->header_count = 0;
-  this->payload = NULL;
-  this->payload_size = 0;
-  this->payload_ptr = 0;
-  this->buffer = NULL;
-  this->buffer_size = 0;
-  this->buffer_ptr = 0;
-  this->stage = 0;
+  this->buffer = malloc(this->buffer_size * sizeof(char));
+  return this->buffer == NULL ? -1 : 0;
 }
 
 
@@ -80,15 +57,95 @@ void mds_message_zero_initialise(mds_message_t* restrict this)
  * 
  * @param  this  The message
  */
-void mds_message_destroy(mds_message_t* restrict this)
+void libmds_message_destroy(libmds_message_t* restrict this)
 {
-  size_t i;
+  size_t i, n = this->header_count;
   if (this->headers != NULL)
-    xfree(this->headers, this->header_count);
+    for (i = 0; i < n; i++)
+      free(this->headers[i]);
   
+  free(this->headers), this->headers = NULL;
   free(this->payload), this->payload = NULL;
   free(this->buffer),  this->buffer  = NULL;
 }
+
+
+/**
+ * Check whether a NUL-terminated string is encoded in UTF-8
+ * 
+ * @param   string              The string
+ * @param   allow_modified_nul  Whether Modified UTF-8 is allowed, which allows a two-byte encoding for NUL
+ * @return                      Zero if good, -1 on encoding error
+ */
+__attribute__((nonnull))
+static int verify_utf8(const char* string, int allow_modified_nul) /* Cannibalised from <libmdsserver/util.h> */
+{
+  static long BYTES_TO_MIN_BITS[] = {0, 0,  8, 12, 17, 22, 37};
+  static long BYTES_TO_MAX_BITS[] = {0, 7, 11, 16, 21, 26, 31};
+  long bytes = 0, read_bytes = 0, bits = 0, c, character;
+  
+  /*                                                      min bits  max bits
+    0.......                                                 0         7
+    110..... 10......                                        8        11
+    1110.... 10...... 10......                              12        16
+    11110... 10...... 10...... 10......                     17        21
+    111110.. 10...... 10...... 10...... 10......            22        26
+    1111110. 10...... 10...... 10...... 10...... 10......   27        31
+   */
+  
+  while ((c = (long)(*string++)))
+    if (read_bytes == 0)
+      {
+	/* First byte of the character. */
+	
+	if ((c & 0x80) == 0x00)
+	  /* Single-byte character. */
+	  continue;
+	
+	if ((c & 0xC0) == 0x80)
+	  /* Single-byte character marked as multibyte, or
+	     a non-first byte in a multibyte character. */
+	  return -1;
+	
+	/* Multibyte character. */
+	while ((c & 0x80))
+	  bytes++, c <<= 1;
+	read_bytes = 1;
+	character = c & 0x7F;
+	if (bytes > 6)
+	  /* 31-bit characters can be encoded with 6-bytes,
+	     and UTF-8 does not cover higher code points. */
+	  return -1;
+      }
+    else
+      {
+	/* Not first byte of the character. */
+	
+	if ((c & 0xC0) != 0x80)
+	  /* Beginning of new character before a
+	     multibyte character has ended. */
+	  return -1;
+	
+	character = (character << 6) | (c & 0x7F);
+	
+	if (++read_bytes < bytes)
+	  /* Not at last byte yet. */
+	  continue;
+	
+	/* Check that the character is not unnecessarily long. */
+	while (character)
+	  character >>= 1, bits++;
+	bits = ((bits == 0) && (bytes == 2) && allow_modified_nul) ? 8 : bits;
+	if ((bits < BYTES_TO_MIN_BITS[bytes]) || (BYTES_TO_MAX_BITS[bytes] < bits))
+	  return -1;
+	
+	read_bytes = bytes = bits = 0;
+      }
+  
+  /* Make sure we did not stop at the middle of a multibyte character. */
+  return read_bytes == 0 ? 0 : -1;
+}
+
 
 
 /**
@@ -98,14 +155,14 @@ void mds_message_destroy(mds_message_t* restrict this)
  * @param   extent  The number of additional entries
  * @return          Zero on success, -1 on error
  */
-int mds_message_extend_headers(mds_message_t* restrict this, size_t extent)
+__attribute__((nonnull))
+static int extend_headers(libmds_message_t* restrict this, size_t extent)
 {
-  char** new_headers = this->headers;
-  fail_if (xrealloc(new_headers, this->header_count + extent, char*));
+  char** new_headers = realloc(this->headers, (this->header_count + extent) * sizeof(char*));
+  if (new_headers == NULL)
+    return -1;
   this->headers = new_headers;
   return 0;
- fail:
-  return -1;
 }
 
 
@@ -116,17 +173,15 @@ int mds_message_extend_headers(mds_message_t* restrict this, size_t extent)
  * @return        Zero on success, -1 on error
  */
 __attribute__((nonnull))
-static int mds_message_extend_buffer(mds_message_t* restrict this)
+static int extend_buffer(libmds_message_t* restrict this)
 {
-  char* new_buf = this->buffer;
-  fail_if (xrealloc(new_buf, this->buffer_size << 1, char));
+  char* new_buf = realloc(this->buffer, (this->buffer_size << 1) * sizeof(char));
+  if (new_buf == NULL)
+    return -1;
   this->buffer = new_buf;
   this->buffer_size <<= 1;
   return 0;
- fail:
-  return -1;
 }
-
 
 /**
  * Reset the header list and the payload
@@ -134,11 +189,16 @@ static int mds_message_extend_buffer(mds_message_t* restrict this)
  * @param  this  The message
  */
 __attribute__((nonnull))
-static void reset_message(mds_message_t* restrict this)
+static void reset_message(libmds_message_t* restrict this)
 {
-  size_t i;
+  size_t i, n = this->header_count;
   if (this->headers != NULL)
-    xfree(this->headers, this->header_count);
+    {
+      for (i = 0; i < n; i++)
+	free(this->headers[i]);
+      free(this->headers);
+      this->headers = NULL;
+    }
   this->header_count = 0;
   
   free(this->payload);
@@ -155,7 +215,7 @@ static void reset_message(mds_message_t* restrict this)
  * @return        Zero on success, negative on error (malformated message: unrecoverable state)
  */
 __attribute__((pure, nonnull))
-static int get_payload_length(mds_message_t* restrict this)
+static int get_payload_length(libmds_message_t* restrict this)
 {
   char* header;
   size_t i;
@@ -165,7 +225,7 @@ static int get_payload_length(mds_message_t* restrict this)
       {
 	/* Store the message length. */
 	header = this->headers[i] + strlen("Length: ");
-	this->payload_size = atoz(header);
+	this->payload_size = (size_t)atoll(header);
 	
 	/* Do not except a length that is not correctly formated. */
 	for (; *header; header++)
@@ -213,7 +273,7 @@ static int validate_header(const char* header, size_t length)
  * @param  update_ptr  Whether to update the buffer pointer
  */
 __attribute__((nonnull))
-static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int update_ptr)
+static void unbuffer_beginning(libmds_message_t* restrict this, size_t length, int update_ptr)
 {
   memmove(this->buffer, this->buffer + length, (this->buffer_ptr - length) * sizeof(char));
   if (update_ptr)
@@ -229,7 +289,7 @@ static void unbuffer_beginning(mds_message_t* restrict this, size_t length, int 
  * @return        The return value follows the rules of `mds_message_read`
  */
 __attribute__((nonnull))
-static int initialise_payload(mds_message_t* restrict this)
+static int initialise_payload(libmds_message_t* restrict this)
 {
   /* Remove the \n (end of empty line) we found from the buffer. */
   unbuffer_beginning(this, 1, 1);
@@ -240,11 +300,10 @@ static int initialise_payload(mds_message_t* restrict this)
   
   /* Allocate the payload buffer. */
   if (this->payload_size > 0)
-    fail_if (xmalloc(this->payload, this->payload_size, char));
+    if ((this->payload = malloc(this->payload_size * sizeof(char))) == NULL)
+      return -1;
   
   return 0;
- fail:
-  return -1;
 }
 
 
@@ -256,12 +315,14 @@ static int initialise_payload(mds_message_t* restrict this)
  * @return          The return value follows the rules of `mds_message_read`
  */
 __attribute__((nonnull))
-static int store_header(mds_message_t* restrict this, size_t length)
+static int store_header(libmds_message_t* restrict this, size_t length)
 {
   char* header;
   
   /* Allocate the header. */
-  fail_if (xmalloc(header, length, char)); /* Last char is a LF, which is substituted with NUL. */
+  header = malloc(length * sizeof(char));  /* Last char is a LF, which is substituted with NUL. */
+  if (header == NULL)
+    return -1;
   /* Copy the header data into the allocated header, */
   memcpy(header, this->buffer, length * sizeof(char));
   /* and NUL-terminate it. */
@@ -282,8 +343,6 @@ static int store_header(mds_message_t* restrict this, size_t length)
   this->headers[this->header_count++] = header;
   
   return 0;
- fail:
-  return -1;
 }
 
 
@@ -295,7 +354,7 @@ static int store_header(mds_message_t* restrict this, size_t length)
  * @return        The return value follows the rules of `mds_message_read`
  */
 __attribute__((nonnull))
-static int continue_read(mds_message_t* restrict this, int fd)
+static int continue_read(libmds_message_t* restrict this, int fd)
 {
   size_t n;
   ssize_t got;
@@ -308,7 +367,7 @@ static int continue_read(mds_message_t* restrict this, int fd)
   if (n < 128)
     {
       /* grow the buffer, */
-      try (mds_message_extend_buffer(this));
+      try (extend_buffer(this));
       
       /* and recalculate how much space we have left. */
       n = this->buffer_size - this->buffer_ptr;
@@ -318,21 +377,20 @@ static int continue_read(mds_message_t* restrict this, int fd)
   errno = 0;
   got = recv(fd, this->buffer + this->buffer_ptr, n, 0);
   this->buffer_ptr += (size_t)(got < 0 ? 0 : got);
-  fail_if (errno);
+  if (errno)
+    return -1;
   if (got == 0)
-    fail_if ((errno = ECONNRESET));
+    return errno = ECONNRESET, -1;
   
   return 0;
- fail:
-  return -1;
 }
 
 
 /**
- * Read the next message from a file descriptor of the socket
+ * Read the next message from a file descriptor
  * 
  * @param   this  Memory slot in which to store the new message
- * @param   fd    The file descriptor of the socket
+ * @param   fd    The file descriptor
  * @return        Non-zero on error or interruption, `errno` will be
  *                set accordingly. Destroy the message on error,
  *                be aware that the reading could have been
@@ -341,7 +399,7 @@ static int continue_read(mds_message_t* restrict this, int fd)
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
  */
-int mds_message_read(mds_message_t* restrict this, int fd)
+int libmds_message_read(libmds_message_t* restrict this, int fd)
 {
   size_t header_commit_buffer = 0;
   int r;
@@ -372,7 +430,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	       we prepare the header list for eight more headers so
 	       that it does not need to be reallocated again and again. */
 	    if (header_commit_buffer == 0)
-	      try (mds_message_extend_headers(this, header_commit_buffer = 8));
+	      try (extend_headers(this, header_commit_buffer = 8));
 	    
 	    /* Create and store header. */
 	    try (store_header(this, length + 1));
@@ -397,7 +455,7 @@ int mds_message_read(mds_message_t* restrict this, int fd)
 	  /* How much of the payload that has not yet been filled. */
 	  size_t need = this->payload_size - this->payload_ptr;
 	  /* How much we have of that what is needed. */
-	  size_t move = min(this->buffer_ptr, need);
+	  size_t move = this->buffer_ptr < need ? this->buffer_ptr : need;
 	  
 	  /* Copy what we have, and remove it from the the read buffer. */
 	  memcpy(this->payload + this->payload_ptr, this->buffer, move * sizeof(char));
@@ -422,179 +480,4 @@ int mds_message_read(mds_message_t* restrict this, int fd)
       try (continue_read(this, fd));
     }
 }
-
-
-/**
- * Get the required allocation size for `data` of the
- * function `mds_message_marshal`
- * 
- * @param   this  The message
- * @return        The size of the message when marshalled
- */
-size_t mds_message_marshal_size(const mds_message_t* restrict this)
-{
-  size_t rc = this->header_count + this->payload_size;
-  size_t i;
-  for (i = 0; i < this->header_count; i++)
-    rc += strlen(this->headers[i]);
-  rc *= sizeof(char);
-  rc += 4 * sizeof(size_t) + 2 * sizeof(int);
-  return rc;
-}
-
-
-/**
- * Marshal a message for state serialisation
- * 
- * @param  this  The message
- * @param  data  Output buffer for the marshalled data
- */
-void mds_message_marshal(const mds_message_t* restrict this, char* restrict data)
-{
-  size_t i, n;
-  
-  buf_set_next(data, int, MDS_MESSAGE_T_VERSION);
-  
-  buf_set_next(data, size_t, this->header_count);
-  buf_set_next(data, size_t, this->payload_size);
-  buf_set_next(data, size_t, this->payload_ptr);
-  buf_set_next(data, size_t, this->buffer_ptr);
-  buf_set_next(data, int, this->stage);
-  
-  for (i = 0; i < this->header_count; i++)
-    {
-      n = strlen(this->headers[i]) + 1;
-      memcpy(data, this->headers[i], n * sizeof(char));
-      buf_next(data, char, n);
-    }
-  
-  memcpy(data, this->payload, this->payload_size * sizeof(char));
-  
-  buf_next(data, char, this->payload_size);
-  memcpy(data, this->buffer, this->buffer_ptr * sizeof(char));
-}
-
-
-/**
- * Unmarshal a message for state deserialisation
- * 
- * @param  this  Memory slot in which to store the new message
- * @param  data  In buffer with the marshalled data
- * @return       Non-zero on error, `errno` will be set accordingly.
- *               Destroy the message on error.
- */
-int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
-{
-  size_t i, n, header_count;
-  
-  /* buf_get(data, int, 0, MDS_MESSAGE_T_VERSION); */
-  buf_next(data, int, 1);
-  
-  this->header_count = 0;
-  buf_get_next(data, size_t, header_count);
-  buf_get_next(data, size_t, this->payload_size);
-  buf_get_next(data, size_t, this->payload_ptr);
-  buf_get_next(data, size_t, this->buffer_size = this->buffer_ptr);
-  buf_get_next(data, int, this->stage);
-  
-  /* Make sure that the pointers are NULL so that they are
-     not freed without being allocated when the message is
-     destroyed if this function fails. */
-  this->headers = NULL;
-  this->payload = NULL;
-  this->buffer  = NULL;
-  
-  /* To 2-power-multiple of 128 bytes. */
-  this->buffer_size >>= 7;
-  if (this->buffer_size == 0)
-    this->buffer_size = 1;
-  else
-    {
-      this->buffer_size -= 1;
-      this->buffer_size |= this->buffer_size >> 1;
-      this->buffer_size |= this->buffer_size >> 2;
-      this->buffer_size |= this->buffer_size >> 4;
-      this->buffer_size |= this->buffer_size >> 8;
-      this->buffer_size |= this->buffer_size >> 16;
-#if __WORDSIZE == 64
-      this->buffer_size |= this->buffer_size >> 32;
-#endif
-      this->buffer_size += 1;
-    }
-  this->buffer_size <<= 7;
-  
-  /* Allocate header list, payload and read buffer. */
-  
-  if (header_count > 0)
-    fail_if (xmalloc(this->headers, header_count, char*));
-  
-  if (this->payload_size > 0)
-    fail_if (xmalloc(this->payload, this->payload_size, char));
-  
-  fail_if (xmalloc(this->buffer, this->buffer_size, char));
-  
-  /* Fill the header list, payload and read buffer. */
-  
-  for (i = 0; i < this->header_count; i++)
-    {
-      n = strlen(data) + 1;
-      fail_if (xmemdup(this->headers[i], data, n, char));
-      buf_next(data, char, n);
-      this->header_count++;
-    }
-  
-  memcpy(this->payload, data, this->payload_size * sizeof(char));
-  buf_next(data, char, this->payload_size);
-  
-  memcpy(this->buffer, data, this->buffer_ptr * sizeof(char));
-  
-  return 0;
-  
- fail:
-  return -1;
-}
-
-
-/**
- * Get the required allocation size for `data` of the
- * function `mds_message_compose`
- * 
- * @param   this  The message
- * @return        The size of the message when marshalled
- */
-size_t mds_message_compose_size(const mds_message_t* restrict this)
-{
-  size_t rc = 1 + this->payload_size;
-  size_t i;
-  for (i = 0; i < this->header_count; i++)
-    rc += strlen(this->headers[i]) + 1;
-  return rc * sizeof(char);
-}
-
-
-/**
- * Marshal a message for communication
- * 
- * @param  this  The message
- * @param  data  Output buffer for the marshalled data
- */
-void mds_message_compose(const mds_message_t* restrict this, char* restrict data)
-{
-  size_t i, n;
-  
-  for (i = 0; i < this->header_count; i++)
-    {
-      n = strlen(this->headers[i]);
-      memcpy(data, this->headers[i], n * sizeof(char));
-      data += n;
-      buf_set_next(data, char, '\n');
-    }
-  buf_set_next(data, char, '\n');
-  
-  if (this->payload_size > 0)
-    memcpy(data, this->payload, this->payload_size * sizeof(char));
-}
-
-  
-#undef try
 
