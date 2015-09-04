@@ -114,8 +114,8 @@ libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this)
  * @param   allow_modified_nul  Whether Modified UTF-8 is allowed, which allows a two-byte encoding for NUL
  * @return                      Zero if good, -1 on encoding error
  */
-__attribute__((nonnull, warn_unused_result))
-static int verify_utf8(const char* string, int allow_modified_nul) /* Cannibalised from <libmdsserver/util.h> */
+__attribute__((nonnull, warn_unused_result)) /* Cannibalised from <libmdsserver/util.h>. */
+static int verify_utf8(const char* string, int allow_modified_nul)
 {
   static long BYTES_TO_MIN_BITS[] = {0, 0,  8, 12, 17, 22, 37};
   static long BYTES_TO_MAX_BITS[] = {0, 7, 11, 16, 21, 26, 31};
