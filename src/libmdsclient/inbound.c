@@ -60,8 +60,7 @@ int libmds_message_initialise(libmds_message_t* restrict this)
 
 
 /**
- * Release all resources in a message, should
- * be done even if initialisation fails
+ * Release all resources in a message
  * 
  * @param  this  The message
  */
@@ -577,6 +576,8 @@ void libmds_mspool_destroy(libmds_mspool_t* restrict this)
 {
   if (this->messages == NULL)
     return;
+  while (this->tail < this->head)
+    free(this->messages[this->tail++]);
   sem_destroy(&(this->lock));
   sem_destroy(&(this->semaphore));
   sem_destroy(&(this->wait_semaphore));
@@ -776,6 +777,8 @@ void libmds_mpool_destroy(libmds_mpool_t* restrict this)
 {
   if (this->messages == NULL)
     return;
+  while (this->tip--)
+    free(this->messages[this->tip]);
   sem_destroy(&(this->lock));
   free(this->messages);
   this->messages = NULL;

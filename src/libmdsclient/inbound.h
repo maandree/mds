@@ -219,8 +219,7 @@ __attribute__((nonnull, warn_unused_result))
 int libmds_message_initialise(libmds_message_t* restrict this);
 
 /**
- * Release all resources in a message, should
- * be done even if initialisation fails
+ * Release all resources in a message
  * 
  * @param  this  The message
  */
