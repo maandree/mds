@@ -56,11 +56,6 @@ typedef struct libmds_message
   size_t payload_size;
   
   /**
-   * How much of the payload that has been stored (internal data)
-   */
-  size_t payload_ptr;
-  
-  /**
    * Internal buffer for the reading function (internal data)
    */
   char* buffer;
@@ -74,6 +69,11 @@ typedef struct libmds_message
    * The number of bytes used in `buffer` (internal data)
    */
   size_t buffer_ptr;
+  
+  /**
+   * The number of bytes read from `buffer` (internal data)
+   */
+  size_t buffer_off;
   
   /**
    * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)

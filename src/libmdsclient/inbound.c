@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "inbound.h"
+/* Some optimisations have been attempted. Verify that this implementation
+ * works, then update the implementation in libmdsserver. */
 
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +26,8 @@
 #include <sys/socket.h>
 
 
-#define try(INSTRUCTION)   if ((r = INSTRUCTION) < 0)  return r
+#define try(INSTRUCTION)    if ((r = INSTRUCTION) < 0)  return r
+#define static_strlen(str)  (sizeof(str) / sizeof(char) - 1)
 
 
 
@@ -45,7 +48,6 @@ int libmds_message_initialise(libmds_message_t* restrict this)
   this->header_count = 0;
   this->payload = NULL;
   this->payload_size = 0;
-  this->payload_ptr = 0;
   this->buffer_size = 128;
   this->buffer_ptr = 0;
   this->stage = 0;
@@ -62,13 +64,7 @@ int libmds_message_initialise(libmds_message_t* restrict this)
  */
 void libmds_message_destroy(libmds_message_t* restrict this)
 {
-  size_t i, n = this->header_count;
-  if (this->headers != NULL)
-    for (i = 0; i < n; i++)
-      free(this->headers[i]);
-  
   free(this->headers), this->headers = NULL;
-  free(this->payload), this->payload = NULL;
   free(this->buffer),  this->buffer  = NULL;
 }
 
@@ -80,7 +76,7 @@ void libmds_message_destroy(libmds_message_t* restrict this)
  * @param   allow_modified_nul  Whether Modified UTF-8 is allowed, which allows a two-byte encoding for NUL
  * @return                      Zero if good, -1 on encoding error
  */
-__attribute__((nonnull))
+__attribute__((nonnull, warn_unused_result))
 static int verify_utf8(const char* string, int allow_modified_nul) /* Cannibalised from <libmdsserver/util.h> */
 {
   static long BYTES_TO_MIN_BITS[] = {0, 0,  8, 12, 17, 22, 37};
@@ -161,7 +157,7 @@ static int verify_utf8(const char* string, int allow_modified_nul) /* Cannibalis
  * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
-__attribute__((nonnull))
+__attribute__((nonnull, warn_unused_result))
 static int extend_headers(libmds_message_t* restrict this, size_t extent)
 {
   char** new_headers = realloc(this->headers, (this->header_count + extent) * sizeof(char*));
@@ -175,20 +171,25 @@ static int extend_headers(libmds_message_t* restrict this, size_t extent)
 /**
  * Extend the read buffer by way of doubling
  * 
- * @param   this  The message
- * @return        Zero on success, -1 on error
+ * @param   this   The message
+ * @param   shift  The number of bits to shift buffer size
+ * @return         Zero on success, -1 on error
  * 
  * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
-__attribute__((nonnull))
-static int extend_buffer(libmds_message_t* restrict this)
+__attribute__((nonnull, warn_unused_result))
+static int extend_buffer(libmds_message_t* restrict this, int shift)
 {
-  char* new_buf = realloc(this->buffer, (this->buffer_size << 1) * sizeof(char));
+  size_t i, n = this->header_count;
+  char* new_buf = realloc(this->buffer, (this->buffer_size << shift) * sizeof(char));
   if (new_buf == NULL)
     return -1;
+  if (new_buf != this->buffer)
+    for (i = 0; i < n; i++)
+      this->headers[i] = new_buf + (size_t)(this->headers[i] - this->buffer);
   this->buffer = new_buf;
-  this->buffer_size <<= 1;
+  this->buffer_size <<= shift;
   return 0;
 }
 
@@ -200,20 +201,19 @@ static int extend_buffer(libmds_message_t* restrict this)
 __attribute__((nonnull))
 static void reset_message(libmds_message_t* restrict this)
 {
-  size_t i, n = this->header_count;
-  if (this->headers != NULL)
-    {
-      for (i = 0; i < n; i++)
-	free(this->headers[i]);
-      free(this->headers);
-      this->headers = NULL;
-    }
+  size_t overrun = this->buffer_ptr - this->buffer_off;
+  
+  if (overrun)
+    memmove(this->buffer, this->buffer + this->buffer_off, overrun * sizeof(char));
+  this->buffer_ptr -= this->buffer_off;
+  this->buffer_off = 0;
+  
+  free(this->headers);
+  this->headers = NULL;
   this->header_count = 0;
   
-  free(this->payload);
   this->payload = NULL;
   this->payload_size = 0;
-  this->payload_ptr = 0;
 }
 
 
@@ -223,7 +223,7 @@ static void reset_message(libmds_message_t* restrict this)
  * @param   this  The message
  * @return        Zero on success, negative on error (malformated message: unrecoverable state)
  */
-__attribute__((pure, nonnull))
+__attribute__((pure, nonnull, warn_unused_result))
 static int get_payload_length(libmds_message_t* restrict this)
 {
   char* header;
@@ -233,7 +233,7 @@ static int get_payload_length(libmds_message_t* restrict this)
     if (strstr(this->headers[i], "Length: ") == this->headers[i])
       {
 	/* Store the message length. */
-	header = this->headers[i] + strlen("Length: ");
+	header = this->headers[i] + static_strlen("Length: ");
 	this->payload_size = (size_t)atoll(header);
 	
 	/* Do not except a length that is not correctly formated. */
@@ -256,7 +256,7 @@ static int get_payload_length(libmds_message_t* restrict this)
  * @param   length  The length of the header
  * @return          Zero if valid, negative if invalid (malformated message: unrecoverable state)
  */
-__attribute__((pure, nonnull))
+__attribute__((pure, nonnull, warn_unused_result))
 static int validate_header(const char* header, size_t length)
 {
   char* p = memchr(header, ':', length * sizeof(char));
@@ -275,22 +275,6 @@ static int validate_header(const char* header, size_t length)
 
 
 /**
- * Remove the beginning of the read buffer
- * 
- * @param  this        The message
- * @param  length      The number of characters to remove  
- * @param  update_ptr  Whether to update the buffer pointer
- */
-__attribute__((nonnull))
-static void unbuffer_beginning(libmds_message_t* restrict this, size_t length, int update_ptr)
-{
-  memmove(this->buffer, this->buffer + length, (this->buffer_ptr - length) * sizeof(char));
-  if (update_ptr)
-    this->buffer_ptr -= length;
-}
-
-
-/**
  * Remove the header–payload delimiter from the buffer,
  * get the payload's size and allocate the payload
  * 
@@ -303,24 +287,30 @@ static void unbuffer_beginning(libmds_message_t* restrict this, size_t length, i
 __attribute__((nonnull))
 static int initialise_payload(libmds_message_t* restrict this)
 {
-  /* Remove the \n (end of empty line) we found from the buffer. */
-  unbuffer_beginning(this, 1, 1);
+  int shift = 0;
+  
+  /* Skip over the \n (end of empty line) we found from the buffer. */
+  this->buffer_off++;
   
   /* Get the length of the payload. */
   if (get_payload_length(this) < 0)
     return -2; /* Malformated value, enters unrecoverable state. */
   
-  /* Allocate the payload buffer. */
-  if (this->payload_size > 0)
-    if ((this->payload = malloc(this->payload_size * sizeof(char))) == NULL)
-      return -1;
+  /* Reallocate the buffer if it is too small. */
+  while (this->buffer_off + this->payload_size > this->buffer_size << shift)
+    shift++;
+  if (shift ? (extend_buffer(this, shift) < 0) : 0)
+    return -1;
+  
+  /* Set pointer to payload. */
+  this->payload = this->buffer + this->buffer_off;
   
   return 0;
 }
 
 
 /**
- * Create a header from the buffer and store it
+ * Store a header
  * 
  * @param   this    The message
  * @param   length  The length of the header, including LF-termination
@@ -329,30 +319,23 @@ static int initialise_payload(libmds_message_t* restrict this)
  * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
-__attribute__((nonnull))
+__attribute__((nonnull, warn_unused_result))
 static int store_header(libmds_message_t* restrict this, size_t length)
 {
   char* header;
   
-  /* Allocate the header. */
-  header = malloc(length * sizeof(char));  /* Last char is a LF, which is substituted with NUL. */
-  if (header == NULL)
-    return -1;
-  /* Copy the header data into the allocated header, */
-  memcpy(header, this->buffer, length * sizeof(char));
-  /* and NUL-terminate it. */
+  /* Get pointer to header in buffer. */
+  header = this->buffer + this->buffer_off;
+  /* NUL-terminate the header. */
   header[length - 1] = '\0';
   
-  /* Remove the header data from the read buffer. */
-  unbuffer_beginning(this, length, 1);
+  /* Update read offset. */
+  this->buffer += length;
   
   /* Make sure the the header syntax is correct so that
      the program does not need to care about it. */
   if (validate_header(header, length))
-    {
-      free(header);
-      return -2;
-    }
+    return -2;
   
   /* Store the header in the header list. */
   this->headers[this->header_count++] = header;
@@ -386,7 +369,7 @@ static int continue_read(libmds_message_t* restrict this, int fd)
   if (n < 128)
     {
       /* grow the buffer, */
-      try (extend_buffer(this));
+      try (extend_buffer(this, 1));
       
       /* and recalculate how much space we have left. */
       n = this->buffer_size - this->buffer_ptr;
@@ -444,8 +427,9 @@ int libmds_message_read(libmds_message_t* restrict this, int fd)
       /* Stage 0: headers. */
       /* Read all headers that we have stored into the read buffer. */
       while ((this->stage == 0) &&
-	     ((p = memchr(this->buffer, '\n', this->buffer_ptr * sizeof(char))) != NULL))
-	if ((length = (size_t)(p - this->buffer)))
+	     ((p = memchr(this->buffer + this->buffer_off, '\n',
+			  (this->buffer_ptr - this->buffer_off) * sizeof(char))) != NULL))
+	if ((length = (size_t)(p - (this->buffer + this->buffer_off))))
 	  {
 	    /* We have found a header. */
 	    
@@ -455,7 +439,7 @@ int libmds_message_read(libmds_message_t* restrict this, int fd)
 	    if (header_commit_buffer == 0)
 	      try (extend_headers(this, header_commit_buffer = 8));
 	    
-	    /* Create and store header. */
+	    /* Store header. */
 	    try (store_header(this, length + 1));
 	    header_commit_buffer -= 1;
 	  }
@@ -463,8 +447,8 @@ int libmds_message_read(libmds_message_t* restrict this, int fd)
 	  {
 	    /* We have found an empty line, i.e. the end of the headers. */
 	    
-	    /* Remove the header–payload delimiter from the buffer,
-	       get the payload's size and allocate the payload. */
+	    /* Make sure the full payload fits the buffer, and set
+	     * the payload buffer pointer. */
 	    try (initialise_payload(this));
 	    
 	    /* Mark end of stage, next stage is getting the payload. */
@@ -473,26 +457,16 @@ int libmds_message_read(libmds_message_t* restrict this, int fd)
       
       
       /* Stage 1: payload. */
-      if ((this->stage == 1) && (this->payload_size > 0))
-	{
-	  /* How much of the payload that has not yet been filled. */
-	  size_t need = this->payload_size - this->payload_ptr;
-	  /* How much we have of that what is needed. */
-	  size_t move = this->buffer_ptr < need ? this->buffer_ptr : need;
-	  
-	  /* Copy what we have, and remove it from the the read buffer. */
-	  memcpy(this->payload + this->payload_ptr, this->buffer, move * sizeof(char));
-	  unbuffer_beginning(this, move, 1);
-	  
-	  /* Keep track of how much we have read. */
-	  this->payload_ptr += move;
-	}
-      if ((this->stage == 1) && (this->payload_ptr == this->payload_size))
+      if ((this->stage == 1) && (this->buffer_ptr - this->buffer_off >= this->payload_size))
 	{
 	  /* If we have filled the payload (or there was no payload),
 	     mark the end of this stage, i.e. that the message is
 	     complete, and return with success. */
 	  this->stage = 2;
+	  
+	  /* Mark the end of the message. */
+	  this->buffer_off += this->payload_size;
+	  
 	  return 0;
 	}
       
