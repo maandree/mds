@@ -112,8 +112,8 @@ libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this, libm
   rc->buffer_size = this->buffer_off;
   
   rc->buffer  = ((char*)rc) + sizeof(libmds_message_t) / sizeof(char);
-  rc->headers = (char**)(void*)(rc->buffer + this->buffer_off);
-  rc->payload = rc->buffer + (size_t)(this->payload - this->buffer);
+  rc->headers = rc->header_count ? (char**)(void*)(rc->buffer + this->buffer_off)        : NULL;
+  rc->payload = rc->payload_size ? (rc->buffer + (size_t)(this->payload - this->buffer)) : NULL;
   for (i = 0; i < n; i++)
     rc->headers[i] = rc->buffer + (size_t)(this->headers[i] - this->buffer);
   
@@ -671,8 +671,9 @@ static inline libmds_message_t* mspool_poll(libmds_mspool_t* restrict this)
   /* Fetch message. */
   assert(this->tail < this->head);
   msg = this->messages[this->tail++];
+  this->spooled_bytes -= msg->flattened;
   
-  /* Unblock spooler. */
+  /* Unblock spooler, takes effect when this->lock is unlocked. */
   if (this->please_post)
     {
       if (sem_post(&(this->wait_semaphore)) < 0)
@@ -683,9 +684,14 @@ static inline libmds_message_t* mspool_poll(libmds_mspool_t* restrict this)
   
   /* Unlock. */
   if (sem_post(&(this->lock)) < 0)
-    return sem_post(&(this->semaphore)), this->messages[--(this->tail)] = msg, NULL;
+    goto fail;
   
   return msg;
+ fail:
+  sem_post(&(this->semaphore));
+  this->messages[--(this->tail)] = msg;
+  this->spooled_bytes += msg->flattened;
+  return NULL;
 }
 
 
