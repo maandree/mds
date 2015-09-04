@@ -91,8 +91,11 @@ typedef struct libmds_message
  * @param   this  Memory slot in which to store the new message
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
-__attribute__((nonnull))
+__attribute__((nonnull, warn_unused_result))
 int libmds_message_initialise(libmds_message_t* restrict this);
 
 /**
@@ -116,8 +119,12 @@ void libmds_message_destroy(libmds_message_t* restrict this);
  *                If -2 is returned `errno` will not have been set,
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
+ * @throws          Any error specified for recv(3)
  */
-__attribute__((nonnull))
+__attribute__((nonnull, warn_unused_result))
 int libmds_message_read(libmds_message_t* restrict this, int fd);
 
 

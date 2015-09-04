@@ -35,6 +35,9 @@
  * @param   this  Memory slot in which to store the new message
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the message on error.
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 int libmds_message_initialise(libmds_message_t* restrict this)
 {
@@ -154,6 +157,9 @@ static int verify_utf8(const char* string, int allow_modified_nul) /* Cannibalis
  * @param   this    The message
  * @param   extent  The number of additional entries
  * @return          Zero on success, -1 on error
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull))
 static int extend_headers(libmds_message_t* restrict this, size_t extent)
@@ -171,6 +177,9 @@ static int extend_headers(libmds_message_t* restrict this, size_t extent)
  * 
  * @param   this  The message
  * @return        Zero on success, -1 on error
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull))
 static int extend_buffer(libmds_message_t* restrict this)
@@ -287,6 +296,9 @@ static void unbuffer_beginning(libmds_message_t* restrict this, size_t length, i
  * 
  * @param   this  The message
  * @return        The return value follows the rules of `mds_message_read`
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull))
 static int initialise_payload(libmds_message_t* restrict this)
@@ -313,6 +325,9 @@ static int initialise_payload(libmds_message_t* restrict this)
  * @param   this    The message
  * @param   length  The length of the header, including LF-termination
  * @return          The return value follows the rules of `mds_message_read`
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull))
 static int store_header(libmds_message_t* restrict this, size_t length)
@@ -352,6 +367,10 @@ static int store_header(libmds_message_t* restrict this, size_t length)
  * @param   this  The message
  * @param   fd    The file descriptor of the socket
  * @return        The return value follows the rules of `mds_message_read`
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
+ * @throws          Any error specified for recv(3)
  */
 __attribute__((nonnull))
 static int continue_read(libmds_message_t* restrict this, int fd)
@@ -398,6 +417,10 @@ static int continue_read(libmds_message_t* restrict this, int fd)
  *                If -2 is returned `errno` will not have been set,
  *                -2 indicates that the message is malformated,
  *                which is a state that cannot be recovered from.
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
+ * @throws          Any error specified for recv(3)
  */
 int libmds_message_read(libmds_message_t* restrict this, int fd)
 {
