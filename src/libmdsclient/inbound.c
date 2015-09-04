@@ -36,8 +36,8 @@
  * be used by `mds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
- * @return        Non-zero on error, `errno` will be set accordingly.
- *                Destroy the message on error.
+ * @return        Zero on success, -1 error, `errno` will be set
+ *                accordingly. Destroy the message on error.
  * 
  * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
@@ -431,8 +431,8 @@ static int continue_read(libmds_message_t* restrict this, int fd)
  * 
  * @param   this  Memory slot in which to store the new message
  * @param   fd    The file descriptor
- * @return        Non-zero on error or interruption, `errno` will be
- *                set accordingly. Destroy the message on error,
+ * @return        Zero on success, -1 on error or interruption, `errno`
+ *                will be set accordingly. Destroy the message on error,
  *                be aware that the reading could have been
  *                interrupted by a signal rather than canonical error.
  *                If -2 is returned `errno` will not have been set,

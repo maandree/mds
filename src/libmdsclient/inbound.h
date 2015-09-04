@@ -78,7 +78,7 @@ typedef struct libmds_message
   
   /**
    * Zero unless the structure is flattend, otherwise
-   * the size of the object (semiinternal data)
+   * the size of the object (internal data)
    * 
    * Flattened means that all pointers are subpointers
    * of the object itself
@@ -99,23 +99,23 @@ typedef struct libmds_message
 typedef struct libmds_mspool
 {
   /**
-   * Array of messages
+   * Array of messages (internal data)
    */
   libmds_message_t** messages;
   
   /**
    * The number of elements the current
-   * allocation of `messages` can hold
+   * allocation of `messages` can hold (internal data)
    */
   size_t size;
   
   /**
-   * Push end
+   * Push end (internal data)
    */
   size_t head;
   
   /**
-   * Poll end
+   * Poll end (internal data)
    */
   size_t tail;
   
@@ -137,22 +137,38 @@ typedef struct libmds_mspool
    */
   size_t spool_limit_messages;
   
+  /**
+   * If non-zero, `wait_semaphore` shall
+   * be incremented when a message is
+   * polled (internal data)
+   */
+  int please_post;
+  
   /* POSIX semaphores are lighter weight than XSI semaphores, so we use POSIX here. */
   
   /**
    * Binary semaphore used to lock the spool whilst
-   * manipulating it
+   * manipulating it (internal data)
    */
   sem_t lock;
   
   /**
-   * Seamphore used to signal addition of messages,
+   * Semaphore used to signal addition of messages,
    * each time a message is spooled, this semaphore
    * in increased, the polling thread decreases the
    * the semaphore before despooling a message,
    * causing it to block when the spool is empty
+   * (internal data)
    */
   sem_t semaphore;
+  
+  /**
+   * If the spool is full, the semaphore is acquired
+   * so that the spool function blocks, it is then
+   * posted when a message is polled so that the
+   * spool function may try again (internal data)
+   */
+  sem_t wait_semaphore;
   
 } libmds_mspool_t;
 
@@ -163,24 +179,24 @@ typedef struct libmds_mspool
 typedef struct libmds_mpool
 {
   /**
-   * Array of messages
+   * Array of messages (internal data)
    */
   libmds_message_t** messages;
   
   /**
    * The number of elements the current
-   * allocation of 'messages` can hold
+   * allocation of 'messages` can hold (internal data)
    */
   size_t size;
   
   /**
-   * The tip of the stack
+   * The tip of the stack (internal data)
    */
-  size_t tip;
+  volatile size_t tip;
   
   /**
    * Binary semaphore used to lock the pool
-   * whilst manipulating it
+   * whilst manipulating it (internal data)
    */
   sem_t lock;
   
@@ -193,8 +209,8 @@ typedef struct libmds_mpool
  * be used by `libmds_message_read`
  * 
  * @param   this  Memory slot in which to store the new message
- * @return        Non-zero on error, `errno` will be set accordingly.
- *                Destroy the message on error.
+ * @return        Zero on success, -1 error, `errno` will be set
+ *                accordingly. Destroy the message on error.
  * 
  * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                  RLIMIT_DATA limit described in getrlimit(2).
@@ -229,8 +245,8 @@ libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this);
  * 
  * @param   this  Memory slot in which to store the new message
  * @param   fd    The file descriptor
- * @return        Non-zero on error or interruption, `errno` will be
- *                set accordingly. Destroy the message on error,
+ * @return        Zero on success, -1 on error or interruption, `errno`
+ *                will be set accordingly. Destroy the message on error,
  *                be aware that the reading could have been
  *                interrupted by a signal rather than canonical error.
  *                If -2 is returned `errno` will not have been set,
@@ -243,6 +259,98 @@ libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this);
  */
 __attribute__((nonnull, warn_unused_result))
 int libmds_message_read(libmds_message_t* restrict this, int fd);
+
+
+
+/**
+ * Initialise a message spool
+ * 
+ * @param   this  The message spool
+ * @return        Zero on success, -1 on error, `errno` will be set accordingly
+ */
+__attribute__((nonnull, warn_unused_result))
+int libmds_mspool_initialise(libmds_mspool_t* restrict this);
+
+/**
+ * Destroy a message spool, deallocate its resources
+ * 
+ * @param  this  The message spool
+ */
+__attribute__((nonnull))
+void libmds_mspool_destroy(libmds_mspool_t* restrict this);
+
+/**
+ * Spool a message
+ * 
+ * @param   this     The message spool
+ * @param   message  The message to spool
+ * @return           Zero on success, -1 on error, `errno` will be set accordingly
+ */
+__attribute__((nonnull, warn_unused_result))
+int libmds_mspool_spool(libmds_mspool_t* restrict this, libmds_message_t* restrict message);
+
+/**
+ * Poll a message from a spool, wait if empty
+ * 
+ * @param   this  The message spool
+ * @return        A spooled message, `NULL`on error, `errno` will be set accordingly
+ */
+__attribute__((nonnull, warn_unused_result, malloc))
+libmds_message_t* libmds_mspool_poll(libmds_mspool_t* restrict this);
+
+/**
+ * Poll a message from a spool, wait for a limited time
+ * or return unsuccessfully if empty
+ * 
+ * @param   this      The message spool
+ * @param   deadline  The CLOCK_REALTIME time the function must return,
+ *                    `NULL` to return immediately if it would block
+ * @return            A spooled message, `NULL`on error, `errno` will be set accordingly
+ */
+__attribute__((nonnull(1), warn_unused_result, malloc))
+libmds_message_t* libmds_mspool_poll_try(libmds_mspool_t* restrict this, const struct timespec* deadline);
+
+
+
+/**
+ * Initialise a pool of reusable message allocations
+ * 
+ * @param   this  The message allocation pool
+ * @param   size  The number of allocations that may be pooled
+ * @return        Zero on success, -1 on error, `errno` will be set accordingly
+ */
+__attribute__((nonnull, warn_unused_result))
+int libmds_mpool_initialise(libmds_mpool_t* restrict this, size_t size);
+
+/**
+ * Destroy a pool of reusable message allocations,
+ * deallocate its resources and pooled allocations
+ * 
+ * @param  this  The message allocation pool
+ */
+__attribute__((nonnull))
+void libmds_mpool_destroy(libmds_mpool_t* restrict this);
+
+/**
+ * Add a message allocation to a pool
+ * 
+ * @param   this     The message allocation pool
+ * @param   message  Message allocation to pool
+ * @return           Zero on success, -1 on error, `errno` will be set accordingly
+ */
+__attribute__((nonnull, warn_unused_result))
+int libmds_mpool_offer(libmds_mpool_t* restrict this, libmds_message_t* restrict message);
+
+/**
+ * Fetch a message allocation from a pool
+ * 
+ * @param   this  The message allocation pool
+ * @return        An offered message allocation, `NULL` on error or if none
+ *                are available. If `NULL` is returned, `errno` is set to zero,
+ *                if the pool was empty, otherwise `errno` will describe the error.
+ */
+__attribute__((nonnull, warn_unused_result, malloc))
+libmds_message_t* libmds_mpool_poll(libmds_mpool_t* restrict this);
 
 
 
