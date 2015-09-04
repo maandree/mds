@@ -7677,7 +7677,8 @@ Note that the data type for the parameter @code{this}
 is not a pointer.
 @end table
 
-@vrindex @code{value_comparator}
+@vrindex @code{value_comparator}, @code{hash_table_t}
+@vrindex @code{value_comparator}, @code{hash_table_t}
 @vrindex @code{hash_table_t.value_comparator}
 @vrindex @code{fd_table_t.value_comparator}
 The structures @code{hash_table_t} and
@@ -7696,13 +7697,13 @@ is @code{compare_func*}.
 
 @table @asis
 @item @code{key_comparator} [@code{compare_func*}]
-@vrindex @code{key_comparator}
+@vrindex @code{key_comparator}, @code{hash_table_t}
 @vrindex @code{hash_table_t.key_comparator}
 Identical to @code{value_comparator}, except it is
 used for keys rather the values.
 
 @item @code{hasher} [@code{hash_func*}]
-@vrindex @code{hasher}
+@vrindex @code{hasher}, @code{hash_table_t}
 @vrindex @code{hash_table_t.hasher}
 By default, the hash value for key is identical to
 the key itself. However, if this variable is not
@@ -7716,16 +7717,22 @@ There is a secondary data structure defined for hash
 tables: @code{hash_entry_t} @{also known as
 @code{struct hash_entry}@}. It is the data structure
 used for entries in a hash table. @code{hash_entry_t}
-contain three variables you may be interested in:
+contains three variables you may be interested in:
 
 @table @asis
 @item @code{key} [@code{size_t}]
+@tpindex @code{key}, @code{hash_entry_t}
+@tpindex @code{hash_entry_t.key}
 The key.
 
 @item @code{value} [@code{size_t}]
+@tpindex @code{value}, @code{hash_entry_t}
+@tpindex @code{hash_entry_t.value}
 The value associated with the key.
 
 @item @code{hash} [@code{size_t}]
+@tpindex @code{hash}, @code{hash_entry_t}
+@tpindex @code{hash_entry_t.hash}
 The hash value of the key.
 @end table
 
@@ -7851,7 +7858,7 @@ it contains three elements:
 
 @table @asis
 @item @code{key} [@code{KEY_T}]
-@vrindex @code{key}
+@vrindex @code{key}, @code{hash_list_entry_t}
 @vrindex @code{hash_list_entry_t.key}
 The key of the entry. Will be @code{NULL} if the slot
 is unused; a @code{NULL} on a key is disallowed.
@@ -7859,13 +7866,13 @@ Note that @code{NULL} is equivalent to zero if the
 data type is numeral primitively.
 
 @item @code{key_hash} [@code{size_t}]
-@vrindex @code{key_hash}
+@vrindex @code{key_hash}, @code{hash_list_entry_t}
 @vrindex @code{hash_list_entry_t.key_hash}
 The hash of the key. This element is transparent to the
 user of the class.
 
 @item @code{value} [@code{VALUE_T}]
-@vrindex @code{value}
+@vrindex @code{value}, @code{hash_list_entry_t}
 @vrindex @code{hash_list_entry_t.value}
 The value.
 @end table
@@ -7879,26 +7886,26 @@ six elements:
 
 @table @asis
 @item @code{allocated} [@code{size_t}]
-@vrindex @code{allocated}
+@vrindex @code{allocated}, @code{hash_list_t}
 @vrindex @code{hash_list_t.allocated}
 The number of allocated slots. This element is
 transparent to the user of the class.
 
 @item @code{unused} [@code{size_t}]
-@vrindex @code{unused}
+@vrindex @code{unused}, @code{hash_list_t}
 @vrindex @code{hash_list_t.unused}
 The number of unused slot that has previously be used.
 This element is transparent to the user of the class.
 
 @item @code{used} [@code{size_t}]
-@vrindex @code{used}
+@vrindex @code{used}, @code{hash_list_t}
 @vrindex @code{hash_list_t.used}
 The number of slots that have been used, even if
 no longer used. This element is transparent to the
 user of the class.
 
 @item @code{last} [@code{size_t}]
-@vrindex @code{last}
+@vrindex @code{last}, @code{hash_list_t}
 @vrindex @code{hash_list_t.last}
 @fnindex @code{hash_list_get}
 @fnindex @code{hash_list_put}
@@ -7911,13 +7918,13 @@ inspected element by @code{hash_list_put} and
 transparent to the user of the class.
 
 @item @code{slots} [@code{hash_list_entry_t*}]
-@vrindex @code{slots}
+@vrindex @code{slots}, @code{hash_list_t}
 @vrindex @code{hash_list_t.slots}
 The allocation for the slots. This element is
 transparent to the user of the class.
 
 @item @code{freer} [@code{hash_list_entry_free_func*}]
-@vrindex @code{freer}
+@vrindex @code{freer}, @code{hash_list_t}
 @vrindex @code{hash_list_t.freer}
 @tpindex @code{hash_list_entry_free_func}
 Method used to free keys and values of entries.
@@ -7926,7 +7933,7 @@ This value must be set after @code{hash_list_create}
 or @code{hash_list_unmarshal} is called, not before.
 
 @item @code{hasher} [@code{hash_list_key_hash_func*}]
-@vrindex @code{hasher}
+@vrindex @code{hasher}, @code{hash_list_t}
 @vrindex @code{hash_list_t.hasher}
 @tpindex @code{hash_list_key_hash_func}
 method used to calculate the hash of a key.
@@ -8147,6 +8154,8 @@ contains four variables:
 
 @table @asis
 @item @code{headers} [@code{char**}]
+@vrindex @code{headers}, @code{mds_message_t}
+@vrindex @code{mds_message_t.headers}
 The headers in the message, each element in this list
 as an unparsed header, it consists of both the header
 name and its associated value, joined by @w{`: '}. A
@@ -8156,13 +8165,19 @@ allocation failed,) but @code{headers} itself is
 @code{Length}-header should be included in this list.
 
 @item @code{header_count} [@code{size_t}]
+@vrindex @code{header_count}, @code{mds_message_t}
+@vrindex @code{mds_message_t.header_count}
 The number of headers in the message.
 
 @item @code{payload} [@code{char*}]
+@vrindex @code{payload}, @code{mds_message_t}
+@vrindex @code{mds_message_t.payload}
 The payload of the message, @code{NULL} if none (of
 zero-length).
 
 @item @code{payload_size} [@code{size_t}]
+@vrindex @code{payload_size}, @code{mds_message_t}
+@vrindex @code{mds_message_t.payload_size}
 The length of the message's payload. This value will
 be the same as the value of the @code{Length}-header.
 @end table
@@ -8329,7 +8344,7 @@ except the current thread.
 @fnindex @code{received_danger}
 @sgindex @code{SIGDANGER}
 @vrindex @code{server_characteristics.danger_is_deadly}
-@vrindex @code{danger_is_deadly}
+@vrindex @code{danger_is_deadly}, @code{server_characteristics}
 @cpindex Memory release, automatic
 @cpindex Memory release, forced
 @cpindex Automated memory release
@@ -8389,7 +8404,7 @@ by the parameter @code{signo}.
 @item @code{fork_cleanup} [(@code{int status}) @arrow{} @code{void}]
 @fnindex @code{fork_cleanup}
 @vrindex @code{server_characteristics.fork_for_safety}
-@vrindex @code{fork_for_safety}
+@vrindex @code{fork_for_safety}, @code{server_characteristics}
 @cpindex Initialisation
 This function should be implemented by the actual
 server implementation if the server has set
@@ -9289,6 +9304,8 @@ are:
 
 @table @asis
 @item @code{domain} [@code{int}]
+@vrindex @code{domain}, @code{libmds_display_address_t}
+@vrindex @code{libmds_display_address_t.domain}
 The domain (protocol family), that is the first
 argument for @code{socket(2)}. This is a value
 whose constant is prefixed @code{PF_}.@footnote{It
@@ -9297,12 +9314,16 @@ however this practice is not portable.}
 @code{-1} if not detected.
 
 @item @code{type} [@code{int}]
+@vrindex @code{type}, @code{libmds_display_address_t}
+@vrindex @code{libmds_display_address_t.type}
 The socket type, that is the second argument
 for @code{socket(2)}. This is a value
 whose constant is prefixed @code{SOCK_}.
 @code{-1} if not detected.
 
 @item @code{protocol} [@code{int}]
+@vrindex @code{protocol}, @code{libmds_display_address_t}
+@vrindex @code{libmds_display_address_t.protocol}
 The protocol, that is the third argument
 for @code{socket(2)}. This is a value
 whose constant is affixed @code{PROTO_}.
@@ -9313,15 +9334,21 @@ can only be TCP, thus zero would indicate
 @code{-1} if not detected.
 
 @item @code{address} [@code{struct sockaddr*}]
+@vrindex @code{address}, @code{libmds_display_address_t}
+@vrindex @code{libmds_display_address_t.address}
 The address. @code{NULL} if not detected.
 You are responsible for freeing this.
 
 @item @code{address_len} [@code{socklen_t}]
+@vrindex @code{address_len}, @code{libmds_display_address_t}
+@vrindex @code{libmds_display_address_t.address_len}
 The allocation size of @code{.address}.
 This value may be set even if @code{address}
 is @code{NULL}.
 
 @item @code{gai_error} [@code{int}]
+@vrindex @code{gai_error}, @code{libmds_display_address_t}
+@vrindex @code{libmds_display_address_t.gai_error}
 Code for an error that has occured when parsing
 the address, whose description can be retrieved
 using @code{gia_strerror}, zero if none.
@@ -9415,6 +9442,8 @@ The members of the structure @code{libmds_message_t} are:
 
 @table @asis
 @item @code{headers} [@code{char**}]
+@vrindex @code{headers}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.headers}
 Array of all headers in the messages, include
 the @code{Length}-header. The headers are never
 @code{NULL}, and are unparsed. Unparsed means
@@ -9427,10 +9456,14 @@ headers. This member's elements must not be
 freed, they are subpointers of @code{.buffer}.
 
 @item @code{header_count} [@code{size_t}]
+@vrindex @code{header_count}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.header_count}
 The number of headers, that is, the number
 of elements in @code{.headers}.
 
 @item @code{payload} [@code{char*}]
+@vrindex @code{payload}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.payload}
 The payload in the message. This member is
 @code{NULL} if there is no payload in the message.
 This is a raw memory segment, it is not terminated
@@ -9438,28 +9471,40 @@ by a NUL byte. This member must not be freed,
 it is a subpointer of @code{.buffer}.
 
 @item @code{payload_size} [@code{size_t}]
+@vrindex @code{payload_size}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.payload_size}
 The length of @code{payload}. Zero if there
 is no payload. This value holds the value
 of the @code{Length}-header.
 
 @item @code{buffer} [@code{char*}]
+@vrindex @code{buffer}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.buffer}
 Read buffer, for the message. The entire
 message is stored in this buffer. The member
 is intended for internal use only.
 
 @item @code{buffer_size} [@code{size_t}]
+@vrindex @code{buffer_size}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.buffer_size}
 The allocation size of @code{.buffer}.
 The member is intended for internal use only.
 
 @item @code{buffer_ptr} [@code{size_t}]
+@vrindex @code{buffer_ptr}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.buffer_ptr}
 The number of bytes written to @code{.buffer}.
 The member is intended for internal use only.
 
 @item @code{buffer_off} [@code{size_t}]
+@vrindex @code{buffer_off}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.buffer_off}
 The number of parsed by from @code{.buffer}.
 The member is intended for internal use only.
 
 @item @code{flattened} [@code{size_t}]
+@vrindex @code{flattened}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.flattened}
 If zero, @code{.headers} and @code{.buffer}
 pointers that can be freed. Otherwise,
 @code{.headers} and @code{.buffer} are
@@ -9474,6 +9519,8 @@ object. The member is intended for internal
 use only.
 
 @item @code{stage} [@code{int}]
+@vrindex @code{stage}, @code{libmds_message_t}
+@vrindex @code{libmds_message_t.stage}
 Specifies the state of the message parsing.
 The member is intended for internal use only.
 @end table
@@ -9484,28 +9531,40 @@ The members of the structure @code{libmds_mspool_t} are:
 
 @table @asis
 @item @code{message} [@code{libmds_message_t**}]
+@vrindex @code{message}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.message}
 Array of spooled message. The member is intended
 for internal use only.
 
 @item @code{size} [@code{size_t}]
+@vrindex @code{size}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.size}
 The number of elements @code{.message} is allocated
 to hold. The member is intended for internal use only.
 
 @item @code{head} [@code{size_t}]
+@vrindex @code{head}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.head}
 The index of the next message to be pushed to
 the queue. The member is intended for internal
 use only.
 
 @item @code{tail} [@code{size_t}]
+@vrindex @code{tail}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.tail}
 The index of the next message to be polled from
 the queue. The member is intended for internal
 use only.
 
 @item @code{spooled_bytes} [@code{size_t}]
+@vrindex @code{spooled_bytes}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.spooled_bytes}
 The sum of the sizes of all spooled messages.
 The member is intended for internal use only.
 
 @item @code{spool_limit_bytes} [@code{size_t}]
+@vrindex @code{spooled_limit_bytes}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.spooled_limit_bytes}
 The spooler may only spool message when this
 value is larger than @code{.spooled_bytes}.
 It is a restriction on the amount of memory
@@ -9519,11 +9578,15 @@ not be possible to spool messages larger than
 the limit, causing a deadlock.
 
 @item @code{spool_limit_messages} [@code{size_t}]
+@vrindex @code{spooled_limit_messages}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.spooled_limit_messages}
 This is similar to @code{.spool_limit_bytes},
 but it measures the number of message rather
 than their size.
 
 @item @code{please_post} [@code{int}]
+@vrindex @code{please_post}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.please_post}
 The spooling function increases this number
 by one, if enters an blocked state, and the
 pooler decreases it when it has signaled the
@@ -9532,6 +9595,8 @@ counts the number of blocked spoolers.
 The member is intended for internal use only.
 
 @item @code{lock} [@code{sem_t}]
+@vrindex @code{lock}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.lock}
 This is a binary semaphore, with 1 as its
 initial value, that is used to lock the spool
 when it is being used. It is a non-reenterant
@@ -9539,6 +9604,8 @@ mutex. The member is intended for internal use
 only.
 
 @item @code{semaphore} [@code{sem_t}]
+@vrindex @code{semaphore}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.semaphore}
 Semaphore used to signal addition of messages.
 Each time a message is spooled, this semaphore
 is increased, the polling thread decreases the
@@ -9547,6 +9614,8 @@ causing it to block when the spool is empty
 The member is intended for internal use only.
 
 @item @code{wait_semaphore} [@code{sem_t}]
+@vrindex @code{wait_semaphore}, @code{libmds_mspool_t}
+@vrindex @code{libmds_mspool_t.wait_semaphore}
 The spooling function acquires this semaphore
 when the spool is full. When it does so it
 also increases @code{.please_post}. The poller
@@ -9571,18 +9640,26 @@ The members of the structure @code{libmds_mpool_t} are:
 
 @table @asis
 @item @code{messages} [@code{libmds_message_t**}]
+@vrindex @code{messages}, @code{libmds_mpool_t}
+@vrindex @code{libmds_mpool_t.messages}
 Array of allocations stored in the pool
 The member is intended for internal use only.
 
 @item @code{size} [@code{size_t size}]
+@vrindex @code{size}, @code{libmds_mpool_t}
+@vrindex @code{libmds_mpool_t.size}
 The number of allocations the pool can contain.
 The member is intended for internal use only.
 
 @item @code{tip} [@code{volatile size_t}]
+@vrindex @code{tip}, @code{libmds_mpool_t}
+@vrindex @code{libmds_mpool_t.tip}
 The number of available allocations. The member
 is intended for internal use only.
 
 @item @code{lock} [@code{sem_t}]
+@vrindex @code{lock}, @code{libmds_mpool_t}
+@vrindex @code{libmds_mpool_t.lock}
 This is a binary semaphore, with 1 as its
 initial value, that is used to lock the pool
 when it is being used. It is a non-reenterant
