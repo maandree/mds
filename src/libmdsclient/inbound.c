@@ -748,6 +748,9 @@ libmds_message_t* libmds_mspool_poll_try(libmds_mspool_t* restrict this,
  * @param   this  The message allocation pool
  * @param   size  The number of allocations that may be pooled
  * @return        Zero on success, -1 on error, `errno` will be set accordingly
+ * 
+ * @throws  ENOMEM  Out of memory. Possibly, the process hit the RLIMIT_AS or
+ *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 int libmds_mpool_initialise(libmds_mpool_t* restrict this, size_t size)
 {

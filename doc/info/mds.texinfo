@@ -9773,10 +9773,12 @@ message spool.
 
 @item @code{libmds_mspool_spool} [(@code{this, libmds_message_t* restrict message}) @arrow{} @code{int}]
 @fnindex @code{libmds_mspool_spool}
-Spool a message. Upon successful completion,
-zero is returned. On error, @code{-1} is
-returned and @code{errno} is set to describe
-the error.
+Spool a message. The message must have been
+returned from @code{libmds_message_duplicate}.
+
+Upon successful completion, zero is returned.
+On error, @code{-1} is returned and @code{errno}
+is set to describe the error.
 
 This function may fail with @code{errno} set
 to @code{ENOMEM} if the process cannot allocate
@@ -9819,6 +9821,49 @@ equal to or greater than a milliard.
 
 @code{deadline} shall be specified in an absolute
 time measured with the @code{CLOCK_REALTIME} clock.
+@end table
+
+@tpindex @code{libmds_mpool_t}
+@tpindex @code{struct libmds_mpool}
+@code{libmds_mpool_t} have four associated
+functions. The parameters @code{this} have
+the type @code{libmds_mpool_t* restrict}.
+
+@table @asis
+@item @code{libmds_mpool_initialise} [(@code{this, size_t size}) @arrow{} @code{int}]
+Initialise a pool of reusable message allocations.
+The pool will be able to hold @code{size} allocations.
+
+Upon successful completion, zero is returned.
+On error, @code{-1} is returned and @code{errno}
+is set to describe the error.
+
+This function may fail with @code{errno} set
+to @code{ENOMEM} if the process cannot allocate
+enough memory.
+
+@item @code{libmds_mpool_destroy} [(@code{this}) @arrow{} @code{void}]
+Release all resources stored in a
+message allocation pool.
+
+@item @code{libmds_mpool_offer} [(@code{this, libmds_message_t* restrict message}) @arrow{} @code{int}]
+Adds a message allocation to a pool. The message
+must have been returned from @code{libmds_message_duplicate},
+@code{libmds_mspool_poll} or @code{libmds_mspool_poll_try}.
+If the pool is full, the function will free the
+allocation, and return with a success status.
+
+Upon successful completion, zero is returned.
+On error @code{-1} is returned and @code{errno}
+is set to describe the error.
+
+@item @code{libmds_mpool_poll} [(@code{this}) @arrow{} @code{libmds_message_t*}]
+Fetches a message allocation from a pool.
+If the pool is empty, @code{NULL} is returned
+and @code{errno} is set to zero. On error
+@code{NULL} is returned and @code{errno} is set
+describe teh error, the value of @code{errno}
+will not be zero in this case.
 @end table
 
 
