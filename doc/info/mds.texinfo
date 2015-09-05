@@ -9667,6 +9667,160 @@ mutex. The member is intended for internal use
 only.
 @end table
 
+The idea behind these structures is to, per
+connection, have one thread that reads messages
+as fast as possible and then delegate the
+handling of the message, minimising congestion.
+The feature optimise the performance of the
+receiving thread a pool use used for allocation
+of messages to minimise the time the thread
+spends performing memory allocations, which
+is costly.
+
+@tpindex @code{libmds_message_t}
+@tpindex @code{struct libmds_message}
+@code{libmds_message_t} have four associated
+functions. The parameters @code{this} have
+the type @code{libmds_message_t* restrict}.
+
+@table @asis
+@item @code{libmds_message_initialise} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{libmds_message_initialise}
+Initialise a @code{libmds_message_t} so it can
+be used to read messages from a socket.
+
+Upon successful completion, zero is returned.
+On error, @code{-1} is returned and @code{errno}
+is set to describe the error.
+
+This function may fail with @code{errno} set
+to @code{ENOMEM} if the process cannot allocate
+enough memory.
+
+@item @code{libmds_message_destroy} [(@code{this}) @arrow{} @code{void}]
+@fnindex @code{libmds_message_destroy}
+Release all resource in a @code{libmds_message_t}.
+This is only required if the object was
+initialised by @code{libmds_message_initialise}.
+Objects returned by @code{libmds_message_duplicate}
+or polled from a spool or pool does not need
+to be destroy with this function.
+
+@item @code{libmds_message_duplicate} [(@code{this, libmds_mpool_t* restrict pool}) @arrow{} @code{libmds_message_t*}]
+@fnindex @code{libmds_message_duplicate}
+Creates duplicate of a message, and returns it.
+On error @code{NULL} is returned and @code{errno}
+is set to describe the error.
+
+This function may fail with @code{errno} set
+to @code{ENOMEM} if the process cannot allocate
+enough memory.
+
+If @code{pool} is not @code{NULL}, the function
+will try to reuse an allocation from @code{pool}
+before it creates a new allocation.
+
+@item @code{libmds_message_read} [(@code{this, int fd}) @arrow{} @code{int}]
+@fnindex @code{libmds_message_read}
+Read the next message from the socket with the
+file descriptor @code{fd}.
+
+Upon successful completion, zero is returned.
+On error, either @code{-1} or @code{-2} is
+returned. If @code{-1} is returned, @code{errno}
+is set to indicate the error. If @code{-2}
+is returned, a corrupt message has been received
+and you have no other choice than resetting
+the connection or exit.
+
+This function may fail with @code{errno} set
+to: @code{ENOMEM} if the process cannot allocate
+the resources required to store the message;
+@code{EINTR} if the process was interrupted by
+a signal, in which case it is safe to simply
+call the funtion again with the sama arguments;
+@code{ECONNRESET} if the connection was closed;
+or any other error specified for @code{recv(3)}.
+
+Both @code{this} and @code{fd} must be unique
+for all threads that uses this function concurrently.
+Additionally, @code{this} to @code{fd} must be
+a bijective mapping.
+@end table
+
+@tpindex @code{libmds_mspool_t}
+@tpindex @code{struct libmds_mspool}
+@code{libmds_mspool_t} have five associated
+functions. The parameters @code{this} have
+the type @code{libmds_mspool_t* restrict}.
+
+@table @asis
+@item @code{libmds_mspool_initialise} [(@code{this}) @arrow{} @code{int}]
+@fnindex @code{libmds_mspool_initialise}
+Initialises a message spool. Upon successful
+completion, zero is returned. On error
+@code{-1} is returned and @code{errno} is
+set to describe the error.
+
+This function may fail with @code{errno} set
+to @code{ENOMEM} if the process cannot allocate
+enough memory.
+
+@item @code{libmds_mspool_destroy} [(@code{this}) @arrow{} @code{void}]
+@fnindex @code{libmds_mspool_destroy}
+Release all resources stored in a
+message spool.
+
+@item @code{libmds_mspool_spool} [(@code{this, libmds_message_t* restrict message}) @arrow{} @code{int}]
+@fnindex @code{libmds_mspool_spool}
+Spool a message. Upon successful completion,
+zero is returned. On error, @code{-1} is
+returned and @code{errno} is set to describe
+the error.
+
+This function may fail with @code{errno} set
+to @code{ENOMEM} if the process cannot allocate
+enough memory, @code{EINTR} if the call was
+interrupted by a signal, in which case it is
+safe to simply recall the function with the
+same arguments.
+
+@item @code{libmds_mspool_poll} [(@code{this}) @arrow{} @code{libmds_message_t*}]
+@fnindex @code{libmds_mspool_poll}
+Fetch the next message from a message spool.
+Upon successful completion a message is returned,
+on error @code{NULL} is returned and @code{errno}
+is set to describe the errror. If the spool
+is empty, the function will wait until a message
+is added.
+
+This function may fail with @code{errno} set to
+@code{EINTR} if the call was interrupted by a
+signal, in which case it is safe to simply recall
+the function with the same argument.
+
+@item @code{libmds_mspool_poll_try} [(@code{this, const struct timespec* restrict deadline}) @arrow{} @code{libmds_message_t*}]
+@fnindex @code{libmds_mspool_poll_try}
+This function is similar to @code{libmds_mspool_poll}.
+However, if @code{deadline} is @code{NULL} the
+funtion will return immediately if the spool
+is empty, and set @code{errno} to @code{EAGAIN}.
+If the spool is empty, but @code{deadline} is not
+@code{NULL}, the function will wait until a
+message is added, but if the timepoint specified
+by @code{deadline} is passed without a message
+being added, the function will return and set
+@code{errno} to @code{ETIMEDOUT}. The function
+may also fail with @code{errno} to @code{EINTR}
+as described for @code{libmds_mspool_poll},
+and with @code{errno} to @code{EINVAL} if
+@code{deadline->tv_necs} is less than zero or is
+equal to or greater than a milliard.
+
+@code{deadline} shall be specified in an absolute
+time measured with the @code{CLOCK_REALTIME} clock.
+@end table
+
 
 
 @node libmdslltk
