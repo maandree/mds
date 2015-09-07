@@ -91,3 +91,6 @@ gamma ramps' convergence to help ensure that the screen is
 always readable (optional feature). Soft limits are set
 in argv, hard limits are set via #define:s at compile-time.
 
+Perhaps (at least later):  rewrite multithreaded servers to use epoll,
+                           especially mds-server
+
