@@ -191,7 +191,7 @@ int main(int argc_, char** argv_)
   fail_if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0);
   fail_if (fchmod(fd, S_IRWXU) < 0);
   fail_if (bind(fd, (struct sockaddr*)(&address), sizeof(address)) < 0);
-  fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0);
+  fail_if (chown(pathname, getuid(), NOBODY_GROUP_GID) < 0); /* XXX Isn't fchmod one line earlier better? */
   
   /* Start listening on socket. */
   fail_if (listen(fd, SOMAXCONN) < 0);
