@@ -184,6 +184,8 @@ int main(int argc_, char** argv_)
   /* Create display socket. */
   xsnprintf(pathname, "%s/%u.socket", MDS_RUNTIME_ROOT_DIRECTORY, display);
   address.sun_family = AF_UNIX;
+  if (strlen(pathname) >= sizeof(address.sun_path))
+    fail_if ((errno = ENAMETOOLONG));
   strcpy(address.sun_path, pathname);
   unlink(pathname);
   fail_if ((fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0);
