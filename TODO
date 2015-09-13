@@ -40,6 +40,8 @@ Extra servers:
 	ratrot: rotate input of pointer device. Should be able do be
 		monitor dependent and be able to follow the rotation
 		of that monitor's output.
+	converge: displace subpixels to correct for bad colour
+		  convergence on CRT:s
 
 Missing commands:
 
