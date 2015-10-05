@@ -12100,10 +12100,10 @@ master icon. @code{X-press} is an animation from
 @code{X} to @code{X-hold} and is used when the cursor
 should transition from @code{X} to @code{X-hold}.
 @code{X-hold} is the version of @code{X} that should
-be used if any rat button is held down. @code{X} is
-an animation from @code{X-release} to @code{X} and is
+be used if any rat button is held down. @code{X-release}
+is an animation from @code{X-hold} to @code{X} and is
 used when the cursor should transition from
-@code{X-release} to @code{X}@. Clients should not set
+@code{X-hold} to @code{X}@. Clients should not set
 the cursor to either of them, it is up to the server
 to do this based on events from the rat device.
 
