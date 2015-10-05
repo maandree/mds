@@ -13587,8 +13587,8 @@ optionally with a corner at the arrow heads.
 
 @cpindex Cell selection
 @cpindex Tables, selection
-In addition, it is advised to @code{nwse-select} and
-@code{nesw-select} that are rendered in the same
+In addition, it is advised that @code{nwse-select}
+and @code{nesw-select} are rendered in the same
 mannar as the other @code{*-select} cursors and
 analogously to @code{nwse-resize} and
 @code{nesw-resize}, respectively.
