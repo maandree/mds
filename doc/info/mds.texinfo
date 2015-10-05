@@ -13595,7 +13595,7 @@ analogously to @code{nwse-resize} and
 
 @cpindex Text, rotated
 @cpindex Rotated text
-It is also advisd to a cursors intermediate to
+It is also advised to make cursors intermediate to
 @code{text} and @code{vertical-text}. These are named
 with the pattern @code{text-*}, where @code{*} is
 replaced by the number of degrees the text is rotated
