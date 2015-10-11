@@ -86,12 +86,7 @@ void libmds_connection_destroy(libmds_connection_t* restrict this)
   
   if (this->socket_fd >= 0)
     {
-      while (close(this->socket_fd))
-	{
-	  if (errno == EINTR)
-	    continue;
-	  break; /* errno may be EBADF or EIO. */
-	}
+      close(this->socket_fd); /* TODO Linux closes the filedescriptor on EINTR, but POSIX does not require that. */
       this->socket_fd = -1;
     }
   

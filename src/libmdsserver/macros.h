@@ -396,12 +396,16 @@
  * 
  * @param  fd:int  The file descriptor
  */
-#ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
-# define xclose(fd)  \
+#if 1 /* For kernels that ensure that close(2) always closes valid file descriptors. */
+# define xclose(fd)  close(fd)
+#else /* For kernels that ensure that close(2) never closes valid file descriptors on interruption. */
+# ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
+#  define xclose(fd)  \
   TEMP_FAILURE_RETRY(close(fd))
-#else
-# define xclose(fd)  \
+# else
+#  define xclose(fd)  \
   (TEMP_FAILURE_RETRY(close(fd)) < 0 ? 0 : (errno = 0))
+# endif
 #endif
 
 
@@ -411,12 +415,16 @@
  * 
  * @param  f:FILE*  The stream
  */
-#ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
-# define xfclose(f)  \
+#if 1 /* For kernels that ensure that close(2) always closes valid file descriptors. */
+# define xfclose(f)  fclose(f)
+#else /* For kernels that ensure that close(2) never closes valid file descriptors on interruption. */
+# ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
+#  define xfclose(f)  \
   TEMP_FAILURE_RETRY(fclose(f))
-#else
-# define xfclose(f)  \
+# else
+#  define xfclose(f)  \
   (TEMP_FAILURE_RETRY(fclose(f)) < 0 ? 0 : (errno = 0))
+# endif
 #endif
 
 
