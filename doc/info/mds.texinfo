@@ -328,7 +328,7 @@ libraries and concepts.
 * Protocol index::                            Index of @command{mds} protocols.
 * Signal index::                              Index of signals.
 * Unicode block index::                       Index of Unicode block.
-* Variable index::                            Index of environment variables.
+* Variable index::                            Index of variables and environment variables.
 @end menu
 @c TODO @detailmenu (`C-c C-u m`)
 
