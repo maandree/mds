@@ -397,7 +397,8 @@
  * @param  fd:int  The file descriptor
  */
 #if 1 /* For kernels that ensure that close(2) always closes valid file descriptors. */
-# define xclose(fd)  close(fd)
+# define xclose(fd)  \
+  close(fd)
 #else /* For kernels that ensure that close(2) never closes valid file descriptors on interruption. */
 # ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
 #  define xclose(fd)  \
@@ -416,7 +417,8 @@
  * @param  f:FILE*  The stream
  */
 #if 1 /* For kernels that ensure that close(2) always closes valid file descriptors. */
-# define xfclose(f)  fclose(f)
+# define xfclose(f)  \
+  fclose(f)
 #else /* For kernels that ensure that close(2) never closes valid file descriptors on interruption. */
 # ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
 #  define xfclose(f)  \
