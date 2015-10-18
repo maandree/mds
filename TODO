@@ -96,3 +96,5 @@ in argv, hard limits are set via #define:s at compile-time.
 Perhaps (at least later):  rewrite multithreaded servers to use epoll,
                            especially mds-server
 
+Non-sRGB support, we need to take a step towards wider gamuts.
+
