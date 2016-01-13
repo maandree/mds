@@ -42,6 +42,9 @@ Extra servers:
 		of that monitor's output.
 	converge: displace subpixels to correct for bad colour
 		  convergence on CRT:s
+	ratautohide: automatically hide the rat when it has not been in use
+		     for a few seconds.
+	pinkeye: translate everything to sRGB red.
 
 Missing commands:
 
