@@ -45,6 +45,8 @@ Extra servers:
 	ratautohide: automatically hide the rat when it has not been in use
 		     for a few seconds.
 	pinkeye: translate everything to sRGB red.
+	gamut: sRGB to screen specific RGB converter.
+	       (not all modern monitors actually use sRGB.)
 
 Missing commands:
 
