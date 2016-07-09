@@ -35,13 +35,13 @@ CLIENTOBJ = proto-util comm address inbound
 
 # Servers and utilities.
 SERVERS = mds mds-respawn mds-server mds-echo mds-registry mds-clipboard  \
-          mds-kkbd mds-vt mds-colour
+          mds-kkbd mds-vt mds-colour mds-libinput
 
 # Utilities that do not utilise mds-base.
 TOOLS = mds-kbdc
 
 # Servers that need setuid and root owner.
-SETUID_SERVERS = mds mds-kkbd mds-vt
+SETUID_SERVERS = mds mds-kkbd mds-vt mds-libinput
 
 
 # Object files for multi-object file binaries.
