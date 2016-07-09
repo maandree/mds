@@ -446,7 +446,7 @@ int marshal_server(char* state_buf)
  */
 int unmarshal_server(char* state_buf)
 {
-  /* buf_get_next(state_buf, int, MDS_KKBDOARD_VARS_VERSION); */
+  /* buf_get_next(state_buf, int, MDS_KKBD_VARS_VERSION); */
   buf_next(state_buf, int, 1);
   buf_get_next(state_buf, int, connected);
   buf_get_next(state_buf, uint32_t, message_id);
