@@ -16,14 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mds-libinput.h"
-/* TODO: This server should wait for `Command: get-vt` to be available,
-         query the active VT and connect to that TTY instead of stdin. */
 
 #include <libmdsserver/macros.h>
 #include <libmdsserver/util.h>
 #include <libmdsserver/mds-message.h>
 
+#include <linux/input.h>
+#include <sys/select.h>
 #include <inttypes.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 #define reconnect_to_display() -1
 
 
@@ -65,6 +69,61 @@ static mds_message_t received;
  */
 static int connected = 1;
 
+/**
+ * The seat for libinput
+ */
+static const char* seat = "seat0";
+
+/**
+ * libinput context
+ */
+static struct libinput* li = NULL;
+
+/**
+ * udev context
+ */
+static struct udev* udev = NULL;
+
+/**
+ * List of all opened devices
+ */
+static struct libinput_device **devices = NULL;
+
+/**
+ * The number of element slots allocated for `devices`
+ */
+static size_t devices_size = 0;
+
+/**
+ * The last element slot used in `devices`
+ */
+static size_t devices_used = 0;
+
+/**
+ * The index of the first free slot in `devices`
+ */
+static size_t devices_ptr = 0;
+
+/**
+ * The input event listener thread
+ */
+static pthread_t ev_thread;
+
+/**
+ * Whether `ev_thread` has started
+ */
+static int ev_thread_started = 0;
+
+/**
+ * Message buffer for the main thread
+ */
+static char* send_buffer = NULL;
+
+/**
+ * The size of `send_buffer`
+ */
+static size_t send_buffer_size = 0;
+
 
 
 /**
@@ -76,6 +135,56 @@ static int connected = 1;
  */
 #define full_send(message, length)  \
   ((full_send)(socket_fd, message, length))
+
+
+/**
+ * Parse command line arguments
+ * 
+ * @return  Non-zero on error
+ */
+int parse_cmdline(void)
+{
+  int i;
+  
+  /* Parse command line arguments. */
+  for (i = 1; i < argc; i++)
+    {
+      char* arg = argv[i];
+      int v;
+      if ((v = strequals(arg, "--initial-spawn")) || /* Initial spawn? */
+	  strequals(arg, "--respawn"))               /* Respawning after crash? */
+	{
+	  exit_if (is_respawn == v,
+		   eprintf("conflicting arguments %s and %s cannot be combined.",
+			   "--initial-spawn", "--respawn"););
+	  is_respawn = !v;
+	}
+      else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
+	is_reexec = 1;
+      else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
+	alarm(min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+      else if (strequals(arg, "--on-init-fork")) /* Fork process when initialised. */
+	on_init_fork = 1;
+      else if (startswith(arg, "--on-init-sh=")) /* Run a command when initialised. */
+	on_init_sh = arg + strlen("--on-init-sh=");
+      else if (strequals(arg, "--immortal")) /* I return to serve. */
+	is_immortal = 1;
+      else if (startswith(arg, "--seat=")) /* Seat to pass to libinput. */
+	seat = arg + strlen("--seat=");
+    }
+  if (is_reexec)
+    {
+      is_respawn = 1;
+      eprint("re-exec performed.");
+    }
+  
+  /* Check that mandatory arguments have been specified. */
+  if (server_characteristics.require_respawn_info)
+    exit_if (is_respawn < 0,
+	     eprintf("missing state argument, require either %s or %s.",
+		     "--initial-spawn", "--respawn"););
+  return 0;
+}
 
 
 /**
@@ -98,16 +207,14 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
-  int stage = 0;
-  
-  fail_if (server_initialised());  stage++;
+  fail_if (server_initialised());
   fail_if (mds_message_initialise(&received));
   
   return 0;
   
  fail:
   xperror(*argv);
-  if (stage >= 1)  mds_message_destroy(&received);
+  mds_message_destroy(&received);
   return 1;
 }
 
@@ -120,6 +227,8 @@ int initialise_server(void)
  */
 int postinitialise_server(void)
 {
+  fail_if (initialise_libinput());
+  
   if (connected)
     return 0;
   
@@ -127,6 +236,7 @@ int postinitialise_server(void)
   connected = 1;
   return 0;
  fail:
+  terminate_libinput();
   mds_message_destroy(&received);
   return 1;
 }
@@ -193,6 +303,70 @@ int unmarshal_server(char* state_buf)
 
 
 /**
+ * Perform the server's mission
+ * 
+ * @return  Non-zero on error
+ */
+int master_loop(void)
+{
+  int rc = 1, joined = 0, r;
+  void* ev_ret;
+  
+  /* Start thread that reads input events. */
+  fail_if ((errno = pthread_create(&ev_thread, NULL, event_loop, NULL)));
+  
+  /* Listen for messages. */
+  while (!reexecing && !terminating)
+    {
+      if (danger)
+	{
+	  danger = 0;
+	  free(send_buffer), send_buffer = NULL;
+	  send_buffer_size = 0;
+	  pack_devices();
+	}
+      
+      if (r = mds_message_read(&received, socket_fd), r == 0)
+	if (r = handle_message(), r == 0)
+	  continue;
+      
+      if (r == -2)
+	{
+	  eprint("corrupt message received, aborting.");
+	  goto done;
+	}
+      else if (errno == EINTR)
+	continue;
+      else
+	fail_if (errno != ECONNRESET);
+      
+      eprint("lost connection to server.");
+      mds_message_destroy(&received);
+      mds_message_initialise(&received);
+      connected = 0;
+      fail_if (reconnect_to_display());
+      connected = 1;
+    }
+  
+  joined = 1;
+  fail_if ((errno = pthread_join(ev_thread, &ev_ret)));
+  rc = ev_ret == NULL ? 0 : 1;
+  goto done;
+ fail:
+  xperror(*argv);
+ done:
+  free(send_buffer);
+  if (!joined && (errno = pthread_join(ev_thread, NULL)))
+    xperror(*argv);
+  if (!rc && reexecing)
+    return 0;
+  mds_message_destroy(&received);
+  terminate_libinput();
+  return rc;
+}
+
+
+/**
  * Attempt to recover from a re-exec failure that has been
  * detected after the server successfully updated it execution image
  * 
@@ -201,6 +375,163 @@ int unmarshal_server(char* state_buf)
 int __attribute__((const)) reexec_failure_recover(void)
 {
   return -1;
+}
+
+
+/**
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo)
+{
+  pthread_t current_thread = pthread_self();
+  
+  if (pthread_equal(current_thread, master_thread) == 0)
+    pthread_kill(master_thread, signo);
+  
+  if (ev_thread_started)
+    if (pthread_equal(current_thread, ev_thread) == 0)
+      pthread_kill(ev_thread, signo);
+}
+
+
+/**
+ * Used by libinput to open a device
+ * 
+ * @param   path      The filename of the device
+ * @param   flags     The flags to open(3)
+ * @param   userdata  Not used
+ * @return            The file descriptor, or `-errno` on error
+ */
+int open_restricted(const char *path, int flags, void *userdata)
+{
+  int fd = open(path, flags);
+  if (fd < 0)
+    return perror(*argv), -errno;
+  return fd;
+  (void) userdata;
+}
+
+
+/**
+ * Used by libinput to close device
+ * 
+ * @param  fd        The file descriptor of the device
+ * @param  userdata  Not used
+ */
+void close_restricted(int fd, void *userdata)
+{
+  close(fd);
+  (void) userdata;
+}
+
+
+/**
+ * Acquire access of input devices
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int initialise_libinput(void)
+{
+  const struct libinput_interface interface = {
+    .open_restricted  = open_restricted,
+    .close_restricted = close_restricted
+  };
+  if (!(udev = udev_new()))
+    return eprint("failed to initialize udev."), errno = 0, -1;
+  if (!(li = libinput_udev_create_context(&interface, NULL, udev)))
+    return eprint("failed to initialize context from udev."), errno = 0, -1;
+  if (libinput_udev_assign_seat(li, seat))
+    return eprintf("failed to set seat: %s", seat), errno = 0, -1;
+  return 0;
+}
+
+
+/**
+ * Release access of input devices
+ */
+void terminate_libinput(void)
+{
+  while (devices_used--)
+    if (devices[devices_used])
+      libinput_device_unref(devices[devices_used]);
+  if (li)    libinput_unref(li);
+  if (udev)  udev_unref(udev);
+}
+
+
+/**
+ * Add a device to the device list
+ * 
+ * @param   dev  The device
+ * @return       Zero on success, -1 on error
+ */
+int add_device(struct libinput_device* dev)
+{
+  if (devices_ptr == devices_size)
+    {
+      struct libinput_device** tmp;
+      if (yrealloc(tmp, devices, devices_size + 10, struct libinput_device*))
+	return -1;
+      devices_size += 10;
+    }
+  
+  devices[devices_ptr++] = libinput_device_ref(dev);
+  while ((devices_ptr < devices_used) && devices[devices_ptr])
+    devices_ptr++;
+  
+  return 0;
+}
+
+
+/**
+ * Remove a device from the device list
+ * 
+ * @param  dev  The device
+ */
+void remove_device(struct libinput_device* dev)
+{
+  size_t i;
+  
+  for (i = 0; i < devices_used; i++)
+    if (devices[i] == dev)
+      {
+	libinput_device_unref(dev);
+	devices[i] = NULL;
+	if (i < devices_ptr)
+	  devices_ptr = i;
+	if (i + 1 == devices_used)
+	  devices_used -= 1;
+	break;
+      }
+}
+
+
+/**
+ * Pack the device list
+ */
+void pack_devices(void)
+{
+  size_t i;
+  
+  for (i = devices_ptr = 0; i < devices_used; i++)
+    if (devices[i])
+      devices[devices_ptr++] = devices[i];
+  devices_used = devices_ptr;
+  
+  if (devices_used)
+    {
+      struct libinput_device** tmp;
+      if (yrealloc(tmp, devices, devices_used, struct libinput_device*))
+	return;
+      devices_size = devices_used;
+    }
+  else
+    {
+      free(devices), devices = NULL;
+      devices_size = 0;
+    }
 }
 
 
@@ -217,6 +548,10 @@ void received_info(int signo)
   (void) signo;
   iprintf("next message ID: %" PRIu32, message_id);
   iprintf("connected: %s", connected ? "yes" : "no");
+  iprintf("libinput seat: %s", seat);
+  iprintf("sigdanger pending: %s", danger ? "yes" : "no");
+  iprintf("send buffer size: %zu bytes", send_buffer_size);
+  /* TODO list devices */
   SIGHANDLER_END;
 }
 

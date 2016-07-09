@@ -21,6 +21,61 @@
 
 #include "mds-base.h"
 
+#include <libinput.h>
+#include <libudev.h>
+
+
+
+/**
+ * Used by libinput to open a device
+ * 
+ * @param   path      The filename of the device
+ * @param   flags     The flags to open(3)
+ * @param   userdata  Not used
+ * @return            The file descriptor, or `-errno` on error
+ */
+int open_restricted(const char *path, int flags, void *userdata);
+
+/**
+ * Used by libinput to close device
+ * 
+ * @param  fd        The file descriptor of the device
+ * @param  userdata  Not used
+ */
+void close_restricted(int fd, void *userdata);
+
+/**
+ * Acquire access of input devices
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int initialise_libinput(void);
+
+/**
+ * Release access of input devices
+ */
+void terminate_libinput(void);
+
+/**
+ * Add a device to the device list
+ * 
+ * @param   dev  The device
+ * @return       Zero on success, -1 on error
+ */
+int add_device(struct libinput_device* dev);
+
+/**
+ * Remove a device from the device list
+ * 
+ * @param  dev  The device
+ */
+void remove_device(struct libinput_device* dev);
+
+/**
+ * Pack the device list
+ */
+void pack_devices(void);
+
 
 #endif
 
