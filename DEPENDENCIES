@@ -1,6 +1,8 @@
 RUNTIME DEPENDENCIES:
 
 	glibc
+	libinput (for mds-libinput)
+	libudev (for mds-libinput)
 
 	Under linux and linux-libre:
 		linux
@@ -16,6 +18,8 @@ BUILD DEPENDENCIES:
 	sed
 	texinfo (opt-out, for manuals: info pdf ps dvi)
 	texlive-core (opt-out, for manuals: pdf ps dvi)
+	libinput (for mds-libinput)
+	libudev (for mds-libinput)
 
 	Under linux and linux-libre:
 		linux-api-headers
