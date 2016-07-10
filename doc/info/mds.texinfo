@@ -5060,7 +5060,7 @@ The output name for the CRTC of interest.
 
 @item Required header: @code{Priority}
 A signed 64-bit integer of the priority for the
-filter. gamma correction should use zero priority. It
+filter. Gamma correction should use zero priority. It
 is preferable that search logical adjustment is sent
 with different priorities so other programs can insert
 filters between them.
