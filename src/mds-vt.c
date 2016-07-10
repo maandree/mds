@@ -115,7 +115,7 @@ static int secondary_socket_fd;
 /**
  * Whether the secondary thread has been started
  */
-static int secondary_thread_started = 0;
+static volatile sig_atomic_t secondary_thread_started = 0;
 
 /**
  * The secondary thread

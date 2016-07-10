@@ -180,7 +180,7 @@ static pthread_t kbd_thread;
 /**
  * Whether `kbd_thread` has started
  */
-static int kbd_thread_started = 0;
+static volatile sig_atomic_t kbd_thread_started = 0;
 
 /**
  * Mutex that should be used when sending message
@@ -1784,7 +1784,7 @@ void received_info(int signo)
   iprintf("scancode buffer pointer: %i", scancode_ptr);
   iprintf("saved keyboard mode: %i", saved_kbd_mode);
   iprintf("send buffer size: %zu bytes", send_buffer_size);
-  iprintf("keyboard thread started: %s", connected ? "yes" : "no");
+  iprintf("keyboard thread started: %s", kbd_thread_started ? "yes" : "no");
   iprintf("keycode remapping tabel size: %zu", mapping_size);
   iprint("keycode remapping tabel:");
   for (i = 0; i < mapping_size; i++)
