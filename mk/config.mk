@@ -113,6 +113,7 @@ LDS = -pthread -Lbin -lmdsserver -lrt
 else
 LDS = -pthread -lmdsserver -lrt
 endif
+LDS_mds-libinput = -linput -ludev
 
 # C compiler debug flags.
 DEBUG_FLAGS =
