@@ -183,7 +183,7 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data);
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
-__attribute__((nonnull))
+__attribute__((nonnull(1, 2)))
 int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper);
 
 

@@ -554,8 +554,8 @@ int libmds_mspool_initialise(libmds_mspool_t* restrict this)
   this->messages = malloc(sizeof(libmds_message_t*));
   if (this->messages == NULL)
     return -1;
-  if (sem_init(&(this->lock),           0, 1) < 0)  goto fail;  stage++;
-  if (sem_init(&(this->semaphore),      0, 0) < 0)  goto fail;  stage++;
+  if (sem_init(&(this->lock),           0, 1) < 0)  goto fail;  else  stage++;
+  if (sem_init(&(this->semaphore),      0, 0) < 0)  goto fail;  else  stage++;
   if (sem_init(&(this->wait_semaphore), 0, 0) < 0)  goto fail;
   return 0;
  fail:

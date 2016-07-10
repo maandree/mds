@@ -287,8 +287,8 @@ slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv
   rc->wait_set = wait_set;
   rc->client = parse_client_id(recv_client_id);
   
-  fail_if (xstrdup(rc->client_id,  recv_client_id));
-  fail_if (xstrdup(rc->message_id, recv_message_id));
+  fail_if (xstrdup_nn(rc->client_id,  recv_client_id));
+  fail_if (xstrdup_nn(rc->message_id, recv_message_id));
   
   return rc;
   

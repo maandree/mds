@@ -298,6 +298,13 @@ int strict_atoj(const char* str, intmax_t* value, intmax_t min, intmax_t max)
 }
 
 
+#if defined(__GNUC__)
+/* GCC says strict_atouj is a candidate for the attribute ‘pure’,
+ * however the line `*value = r` means that it is not, at least
+ * if you only consider what GCC's manuals says about the attribute. */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsuggest-attribute=pure"
+#endif
 /**
  * A version of `atouj` that is strict about the syntax and bounds
  * 
@@ -334,6 +341,9 @@ int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max
   *value = r;
   return 0;
 }
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 
 
 #define __strict_y(Y, TYPE, PARA_TYPE, HYPER_Y, HYPER_TYPE)					\

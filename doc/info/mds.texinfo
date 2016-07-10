@@ -6454,6 +6454,16 @@ duplicate is stored in the variable @code{var}. If
 @code{original} is @code{NULL}, @code{var} is set to
 @code{NULL} and zero is returned.
 
+@item @code{xstrdup_nn} [(@code{char* var, const char* original}) @arrow{} @code{int}]
+@fnindex @code{xstrdup}
+@cpindex Memory management
+Wrapper for @code{strdup} that returns zero on and
+only on success. @code{original} is duplicate and the
+duplicate is stored in the variable @code{var}.
+@code{original} must not be @code{NULL}. This macro
+was added because GCC 6.1.1 warns if @code{xstrdup}
+is used and @code{original} is known not to be @code{NULL}.
+
 @item @code{xmemdup} [(@code{void* var, const void* original, size_t elements, type}) @arrow{} @code{int}]
 @fnindex @code{xmemdup}
 @cpindex Memory management

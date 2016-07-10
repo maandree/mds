@@ -656,7 +656,7 @@
  * `strdup` wrapper that returns whether the allocation was not successful
  *  
  * @param   var:char*             The variable to which to assign the duplicate
- * @param   original:const char*  The string to duplicate
+ * @param   original:const char*  The string to duplicate, may be `NULL`
  * @return  :int                  Evaluates to true if an only if the allocation failed
  */
 #define xstrdup(var, original)  \
@@ -668,6 +668,29 @@
     fprintf(stderr, "xstrdup(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",				\
 	    #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__); 	\
     (original ? ((var = strdup(original)) == NULL) : (var = NULL, 0));				\
+  })
+*/
+
+
+/**
+ * `strdup` wrapper that returns whether the allocation was not successful
+ *  
+ * This macro was added because GCC 6.1.1 warns of `original` is known to
+ * be nonnull, when using `xstrdup`.
+ * 
+ * @param   var:char*             The variable to which to assign the duplicate
+ * @param   original:const char*  The string to duplicate, must not be `NULL`
+ * @return  :int                  Evaluates to true if an only if the allocation failed
+ */
+#define xstrdup_nn(var, original)  \
+  ((var = strdup(original)) == NULL)
+/*
+#define xstrdup_nn(var, original)								\
+  ({												\
+    size_t _x_size = strlen(original);								\
+    fprintf(stderr, "xstrdup_nn(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",				\
+	    #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__); 	\
+    (var = strdup(original)) == NULL;								\
   })
 */
 

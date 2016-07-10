@@ -767,7 +767,7 @@ int set_colour(const char* name, const colour_t* colour)
       
       /* `colour_list_put` will store the name of the colour,
          so we have to make a copy that will not disappear. */
-      fail_if (xstrdup(name_, name));
+      fail_if (xstrdup_nn(name_, name));
       
       /* Add or modify the colour. */
       fail_if (colour_list_put(&colours, name_, colour));

@@ -648,7 +648,7 @@ int clipboard_death(const char* recv_client_id)
 int clipboard_add(int level, const char* time_to_live, const char* recv_client_id)
 {
   int autopurge = CLIPITEM_AUTOPURGE_UPON_CLOCK;
-  uint64_t client = recv_client_id ? parse_client_id(recv_client_id) : 0;
+  uint64_t client = parse_client_id(recv_client_id);
   clipitem_t new_clip;
   
   fail_if (clipboard_purge(level, NULL));

@@ -266,7 +266,7 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data);
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
-__attribute__((nonnull))
+__attribute__((nonnull(1, 2)))
 int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper);
 
 

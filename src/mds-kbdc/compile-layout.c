@@ -2563,7 +2563,8 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     case C(FUNCTION):               c (function);     break;
     case C(MACRO):                  c (macro);        break;
     case C(ASSUMPTION):
-      t ((includes_ptr == 0) && compile_subtree(tree->assumption.inner));
+      if (includes_ptr == 0)
+	fail_if (compile_subtree(tree->assumption.inner));
       break;
     case C(ASSUMPTION_HAVE):        c (have);         break;
     case C(ASSUMPTION_HAVE_CHARS):  c (have_chars);   break;
