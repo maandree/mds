@@ -4887,7 +4887,7 @@ It is known that gamma ramps are supported.
 @item no
 It is known that gamma ramps are not supported.
 @item maybe
-It is now known whether gamma ramps are supported.
+It is not known whether gamma ramps are supported.
 @end table
 @end table
 If @code{Gamma support: no} is send in the response,
