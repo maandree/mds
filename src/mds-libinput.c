@@ -112,17 +112,60 @@ static pthread_t ev_thread;
 /**
  * Whether `ev_thread` has started
  */
-static int ev_thread_started = 0;
+static volatile sig_atomic_t ev_thread_started = 0;
 
 /**
  * Message buffer for the main thread
  */
-static char* send_buffer = NULL;
+static char* resp_send_buffer = NULL;
 
 /**
- * The size of `send_buffer`
+ * The size of `resp_send_buffer`
  */
-static size_t send_buffer_size = 0;
+static size_t resp_send_buffer_size = 0;
+
+/**
+ * Message buffer for the event thread
+ */
+static char* anno_send_buffer = NULL;
+
+/**
+ * The size of `anno_send_buffer`
+ */
+static size_t anno_send_buffer_size = 0;
+
+/**
+ * File descriptor for the libinput events
+ */
+static int event_fd = -1;
+
+/**
+ * File descriptor set for select(3):ing
+ * the libinput events
+ */
+static fd_set event_fd_set;
+
+/**
+ * Whether the server has been signaled to
+ * free unneeded memory
+ * 
+ * For event thread
+ */
+static volatile sig_atomic_t ev_danger = 0;
+
+/**
+ * Whether the server has been signaled to
+ * output runtime information
+ * 
+ * For event thread
+ */
+static volatile sig_atomic_t info = 0;
+
+/**
+ * Mutex that should be used when accessing
+ * the device list
+ */
+static pthread_mutex_t dev_mutex;
 
 
 
@@ -207,14 +250,15 @@ int __attribute__((const)) preinitialise_server(void)
  */
 int initialise_server(void)
 {
+  int stage = 0;
   fail_if (server_initialised());
-  fail_if (mds_message_initialise(&received));
+  fail_if (mds_message_initialise(&received));  stage++;
   
   return 0;
   
  fail:
   xperror(*argv);
-  mds_message_destroy(&received);
+  if (stage >= 1)  mds_message_destroy(&received);
   return 1;
 }
 
@@ -227,7 +271,9 @@ int initialise_server(void)
  */
 int postinitialise_server(void)
 {
+  int stage = 0;
   fail_if (initialise_libinput());
+  fail_if (pthread_mutex_init(&dev_mutex, NULL));  stage++;
   
   if (connected)
     return 0;
@@ -238,6 +284,7 @@ int postinitialise_server(void)
  fail:
   terminate_libinput();
   mds_message_destroy(&received);
+  if (stage >= 1)  pthread_mutex_destroy(&dev_mutex);
   return 1;
 }
 
@@ -303,6 +350,57 @@ int unmarshal_server(char* state_buf)
 
 
 /**
+ * Attempt to recover from a re-exec failure that has been
+ * detected after the server successfully updated it execution image
+ * 
+ * @return  Non-zero on error
+ */
+int __attribute__((const)) reexec_failure_recover(void)
+{
+  return -1;
+}
+
+
+/**
+ * Send a singal to all threads except the current thread
+ * 
+ * @param  signo  The signal
+ */
+void signal_all(int signo)
+{
+  pthread_t current_thread = pthread_self();
+  
+  if (pthread_equal(current_thread, master_thread) == 0)
+    pthread_kill(master_thread, signo);
+  
+  if (ev_thread_started)
+    if (pthread_equal(current_thread, ev_thread) == 0)
+      pthread_kill(ev_thread, signo);
+}
+
+
+/**
+ * This function is called when a signal that
+ * signals that the system is running out of memory
+ * has been received
+ * 
+ * @param  signo  The signal that has been received
+ */
+void received_danger(int signo)
+{
+  SIGHANDLER_START;
+  (void) signo;
+  if ((danger == 0) || (ev_danger == 0))
+    {
+      danger = 1;
+      ev_danger = 1;
+      eprint("danger signal received.");
+    }
+  SIGHANDLER_END;
+}
+
+
+/**
  * Perform the server's mission
  * 
  * @return  Non-zero on error
@@ -318,11 +416,13 @@ int master_loop(void)
   /* Listen for messages. */
   while (!reexecing && !terminating)
     {
+      if (info)
+	dump_info();
       if (danger)
 	{
 	  danger = 0;
-	  free(send_buffer), send_buffer = NULL;
-	  send_buffer_size = 0;
+	  free(resp_send_buffer), resp_send_buffer = NULL;
+	  resp_send_buffer_size = 0;
 	  pack_devices();
 	}
       
@@ -355,7 +455,7 @@ int master_loop(void)
  fail:
   xperror(*argv);
  done:
-  free(send_buffer);
+  free(resp_send_buffer);
   if (!joined && (errno = pthread_join(ev_thread, NULL)))
     xperror(*argv);
   if (!rc && reexecing)
@@ -367,32 +467,80 @@ int master_loop(void)
 
 
 /**
- * Attempt to recover from a re-exec failure that has been
- * detected after the server successfully updated it execution image
+ * The event listener thread's main function
  * 
- * @return  Non-zero on error
+ * @param   data  Input data
+ * @return        Output data
  */
-int __attribute__((const)) reexec_failure_recover(void)
+void* event_loop(void* data)
 {
-  return -1;
+  (void) data;
+  
+  ev_thread_started = 1;
+  
+  if (handle_event() < 0)
+    fail_if (errno != EINTR);
+  while (!reexecing && !terminating)
+    {
+      if (ev_danger)
+	{
+	  ev_danger = 0;
+	  free(anno_send_buffer), anno_send_buffer = NULL;
+	  anno_send_buffer_size = 0;
+	}
+      
+      FD_SET(event_fd, &event_fd_set);
+      if (select(event_fd + 1, &event_fd_set, &event_fd_set, &event_fd_set, NULL) < 0)
+	{
+	  fail_if (errno != EINTR);
+	  continue;
+	}
+      if (handle_event() < 0)
+	fail_if (errno != EINTR);
+    }
+  
+  return NULL;
+  
+ fail:
+  xperror(*argv);
+  raise(SIGTERM);
+  return (void*)1024;
 }
 
 
 /**
- * Send a singal to all threads except the current thread
+ * Handle an event from libinput
  * 
- * @param  signo  The signal
+ * @return  Zero on success, -1 on error
  */
-void signal_all(int signo)
+int handle_event(void)
 {
-  pthread_t current_thread = pthread_self();
-  
-  if (pthread_equal(current_thread, master_thread) == 0)
-    pthread_kill(master_thread, signo);
-  
-  if (ev_thread_started)
-    if (pthread_equal(current_thread, ev_thread) == 0)
-      pthread_kill(ev_thread, signo);
+  struct libinput_event *ev;
+  if ((errno = -libinput_dispatch(li)))
+    return -1;
+  while ((ev = libinput_get_event(li))) {
+    switch (libinput_event_get_type(ev)) {
+      /* TODO */
+    default:
+      break;
+    }
+    libinput_event_destroy(ev);
+    if ((errno = -libinput_dispatch(li)))
+      return -1;
+  }
+  return 0;
+}
+
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void)
+{
+  /* TODO */
+  return 0;
 }
 
 
@@ -438,12 +586,17 @@ int initialise_libinput(void)
     .open_restricted  = open_restricted,
     .close_restricted = close_restricted
   };
+  
   if (!(udev = udev_new()))
     return eprint("failed to initialize udev."), errno = 0, -1;
   if (!(li = libinput_udev_create_context(&interface, NULL, udev)))
     return eprint("failed to initialize context from udev."), errno = 0, -1;
   if (libinput_udev_assign_seat(li, seat))
     return eprintf("failed to set seat: %s", seat), errno = 0, -1;
+  
+  event_fd = libinput_get_fd(li);
+  FD_ZERO(&event_fd_set);
+  
   return 0;
 }
 
@@ -546,12 +699,26 @@ void received_info(int signo)
 {
   SIGHANDLER_START;
   (void) signo;
+  info = 1;
+  SIGHANDLER_END;
+}
+
+
+/**
+ * The the state of the server
+ */
+void dump_info(void)
+{
+  info = 1;
   iprintf("next message ID: %" PRIu32, message_id);
   iprintf("connected: %s", connected ? "yes" : "no");
   iprintf("libinput seat: %s", seat);
-  iprintf("sigdanger pending: %s", danger ? "yes" : "no");
-  iprintf("send buffer size: %zu bytes", send_buffer_size);
-  /* TODO list devices */
-  SIGHANDLER_END;
+  iprintf("sigdanger pending (main): %s", danger ? "yes" : "no");
+  iprintf("sigdanger pending (event): %s", ev_danger ? "yes" : "no");
+  iprintf("response send buffer size: %zu bytes", resp_send_buffer_size);
+  iprintf("announce send buffer size: %zu bytes", anno_send_buffer_size);
+  iprintf("event file descriptor: %i", event_fd);
+  iprintf("event thread started: %s", ev_thread_started ? "yes" : "no");
+  /* TODO list devices -- with_mutex(dev_mutex, ); */
 }
 

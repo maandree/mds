@@ -27,6 +27,28 @@
 
 
 /**
+ * The event listener thread's main function
+ * 
+ * @param   data  Input data
+ * @return        Output data
+ */
+void* event_loop(void* data);
+
+/**
+ * Handle an event from libinput
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_event(void);
+
+/**
+ * Handle the received message
+ * 
+ * @return  Zero on success, -1 on error
+ */
+int handle_message(void);
+
+/**
  * Used by libinput to open a device
  * 
  * @param   path      The filename of the device
@@ -75,6 +97,11 @@ void remove_device(struct libinput_device* dev);
  * Pack the device list
  */
 void pack_devices(void);
+
+/**
+ * The the state of the server
+ */
+void dump_info(void);
 
 
 #endif
