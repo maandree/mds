@@ -4940,8 +4940,8 @@ The output name for the CRTC of interest.
 
 @item Required header: @code{Coalesce}
 Whether the received the full gamma ramp filter list,
-of the value is @code{yes}, rather than the result of
-them, of the value is @code{no}.
+if the value is @code{yes}, rather than the result of
+them, if the value is @code{no}.
 
 @item Required header: @code{High priority}
 The upper bound of the priority range of the gamma
