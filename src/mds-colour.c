@@ -412,7 +412,7 @@ int handle_message(void)
     }
   
   if (recv_command == NULL)
-    return 0; /* How did that get here, not matter, just ignore it? */
+    return 0; /* How did that get here, no matter, just ignore it? */
 
 #define t(expr)  do { fail_if (expr); return 0; } while (0)
   if (strequals(recv_command, "list-colours"))
@@ -423,7 +423,7 @@ int handle_message(void)
     t (handle_set_colour(recv_name, recv_remove, recv_bytes, recv_red, recv_green, recv_blue));
 #undef t
   
-  return 0; /* How did that get here, not matter, just ignore it? */
+  return 0; /* How did that get here, no matter, just ignore it? */
  fail:
   return -1;
 }

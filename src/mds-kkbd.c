@@ -619,7 +619,7 @@ int handle_message(void)
     return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
   
   if (recv_command == NULL)
-    return 0; /* How did that get here, not matter, just ignore it? */
+    return 0; /* How did that get here, no matter, just ignore it? */
 
 #define t(expr)  do { fail_if (expr); return 0; } while (0)
   if (strequals(recv_command, "enumerate-keyboards"))
@@ -639,7 +639,7 @@ int handle_message(void)
     t (handle_map_keyboard_leds(recv_keyboard));
 #undef t
   
-  return 0; /* How did that get here, not matter, just ignore it? */
+  return 0; /* How did that get here, no matter, just ignore it? */
  fail:
   return -1;
 }

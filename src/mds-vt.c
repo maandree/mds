@@ -588,7 +588,7 @@ int handle_message(void)
   /* Take appropriate action. */
   
   if (recv_command == NULL)
-    return 0; /* How did that get here, not matter, just ignore it? */
+    return 0; /* How did that get here, no matter, just ignore it? */
   
   if (strequals(recv_command, "get-vt"))
     fail_if (handle_get_vt(recv_client_id, recv_message_id));
@@ -596,7 +596,7 @@ int handle_message(void)
   if (strequals(recv_command, "configure-vt"))
     fail_if (handle_configure_vt(recv_client_id, recv_message_id, recv_graphical, recv_exclusive));
   
-  return 0; /* How did that get here, not matter, just ignore it? */
+  return 0; /* How did that get here, no matter, just ignore it? */
  fail:
   return -1;
 }
