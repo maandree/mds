@@ -535,7 +535,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
   
   /* Fill the header list, payload and read buffer. */
   
-  for (i = 0; i < this->header_count; i++)
+  for (i = 0; i < header_count; i++)
     {
       n = strlen(data) + 1;
       fail_if (xmemdup(this->headers[i], data, n, char));
