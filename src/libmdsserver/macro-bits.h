@@ -19,17 +19,10 @@
 #define MDS_LIBMDSSERVER_MACRO_BITS_H
 
 
+#include <limits.h>
 #include <stdint.h>
 #include <stddef.h>
 
-
-#ifndef __WORDSIZE
-# if defined(__x86_64__) && !defined(__ILP32__)
-#  define __WORDSIZE  64
-# else
-#  define __WORDSIZE  32
-# endif
-#endif
 
 
 /**
@@ -120,7 +113,7 @@
  */
 # define atou16(str)  ((uint16_t)atou(str))
 
-#if __WORDSIZE == 64
+#if UINT_MAX == UINT32_MAX
 /**
  * Convert the beginning of a `const char*` to an `int32_t`
  * 
@@ -136,22 +129,6 @@
  * @return                   The integer at the beginning of the string
  */
 # define atou32(str)  ((uint32_t)atou(str))
-
-/**
- * Convert the beginning of a `const char*` to an `int64_t`
- * 
- * @param   str:const char*  The string that begins with an integer
- * @return                   The integer at the beginning of the string
- */
-# define ato64(str)   ((int64_t)atol(str))
-
-/**
- * Convert the beginning of a `const char*` to an `uint64_t`
- * 
- * @param   str:const char*  The string that begins with an integer
- * @return                   The integer at the beginning of the string
- */
-# define atou64(str)  ((uint64_t)atoul(str))
 #else
 /**
  * Convert the beginning of a `const char*` to an `int32_t`
@@ -168,7 +145,25 @@
  * @return                   The integer at the beginning of the string
  */
 # define atou32(str)  ((uint32_t)atoul(str))
+#endif
 
+#if ULONG_MAX == UINT64_MAX
+/**
+ * Convert the beginning of a `const char*` to an `int64_t`
+ * 
+ * @param   str:const char*  The string that begins with an integer
+ * @return                   The integer at the beginning of the string
+ */
+# define ato64(str)   ((int64_t)atol(str))
+
+/**
+ * Convert the beginning of a `const char*` to an `uint64_t`
+ * 
+ * @param   str:const char*  The string that begins with an integer
+ * @return                   The integer at the beginning of the string
+ */
+# define atou64(str)  ((uint64_t)atoul(str))
+#else
 /**
  * Convert the beginning of a `const char*` to an `int64_t`
  * 

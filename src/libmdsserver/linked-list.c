@@ -47,7 +47,7 @@ static size_t to_power_of_two(size_t value)
   value |= value >> 4;
   value |= value >> 8;
   value |= value >> 16;
-#if __WORDSIZE == 64
+#if SIZE_MAX == UINT64_MAX
   value |= value >> 32;
 #endif
   return value + 1;

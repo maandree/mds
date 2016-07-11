@@ -516,7 +516,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
       this->buffer_size |= this->buffer_size >> 4;
       this->buffer_size |= this->buffer_size >> 8;
       this->buffer_size |= this->buffer_size >> 16;
-#if __WORDSIZE == 64
+#if SIZE_MAX == UINT64_MAX
       this->buffer_size |= this->buffer_size >> 32;
 #endif
       this->buffer_size += 1;
