@@ -468,9 +468,9 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
       buf_next(data, char, n);
     }
   
-  memcpy(data, this->payload, this->payload_size * sizeof(char));
+  memcpy(data, this->payload, this->payload_ptr * sizeof(char));
+  buf_next(data, char, this->payload_ptr);
   
-  buf_next(data, char, this->payload_size);
   memcpy(data, this->buffer, this->buffer_ptr * sizeof(char));
 }
 
@@ -543,8 +543,8 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data)
       this->header_count++;
     }
   
-  memcpy(this->payload, data, this->payload_size * sizeof(char));
-  buf_next(data, char, this->payload_size);
+  memcpy(this->payload, data, this->payload_ptr * sizeof(char));
+  buf_next(data, char, this->payload_ptr);
   
   memcpy(this->buffer, data, this->buffer_ptr * sizeof(char));
   
