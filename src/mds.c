@@ -168,7 +168,7 @@ int main(int argc_, char** argv_)
   fail_if (create_directory_root(MDS_STORAGE_ROOT_DIRECTORY));
   fail_if (unlink_recursive(pathname));
   fail_if (create_directory_user(pathname));
-    
+  
   
   /* Save MDS_DISPLAY environment variable. */
   xsnprintf(pathname, /* Excuse the reuse without renaming. */
