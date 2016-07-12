@@ -490,7 +490,7 @@ void* event_loop(void* data)
 	}
       
       FD_SET(event_fd, &event_fd_set);
-      if (select(event_fd + 1, &event_fd_set, &event_fd_set, &event_fd_set, NULL) < 0)
+      if (select(event_fd + 1, &event_fd_set, NULL, NULL, NULL) < 0)
 	{
 	  fail_if (errno != EINTR);
 	  continue;
