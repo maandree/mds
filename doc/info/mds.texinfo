@@ -5058,13 +5058,6 @@ in response to a @code{Command: assign-id}-header.
 @item Required header: @code{CRTC}
 The output name for the CRTC of interest.
 
-@item Required header: @code{Priority}
-A signed 64-bit integer of the priority for the
-filter. Gamma correction should use zero priority. It
-is preferable that search logical adjustment is sent
-with different priorities so other programs can insert
-filters between them.
-
 @item Required header: @code{Class}
 A UTF-8 string that identifies the filter. It should
 be formatted as @code{pkg::cmd::role}. @code{pkg}
@@ -5083,6 +5076,15 @@ Remove the filter when the client dies.
 @item remove
 Remove the filter now.
 @end table
+
+@item Conditionally required header: @code{Priority}
+A signed 64-bit integer of the priority for the
+filter. Gamma correction should use zero priority. It
+is preferable that logical adjustment are sent with
+different priorities so other programs can insert
+filters between them.
+Available and required if @code{Lifespan: remove} is
+not included in the message.
 
 @item Conditionally required header: @code{Length}
 The length of the message.
