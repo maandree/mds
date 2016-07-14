@@ -3241,9 +3241,8 @@ question but rather it must be a statement. The
 message shall end with a line feed.
 
 @item Purpose:
-Enable keyboard layout servers to automatically set
-active locks when the server starts based on
-currently active LED:s.
+Let clients know whether a command is successful
+or failed, and why it failed.
 
 @item Compulsivity:
 Optional.
