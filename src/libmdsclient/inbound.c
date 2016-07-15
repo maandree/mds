@@ -315,7 +315,7 @@ static int validate_header(const char* header, size_t length)
   
   if (verify_utf8(header, 0) < 0)
     /* Either the string is not UTF-8, or your are under an UTF-8 attack,
-       lets just call this unrecoverable because the client will not correct. */
+       let's just call this unrecoverable because the client will not correct. */
     return -2;
   
   if ((p == NULL) || /* Buck you, rawmemchr should not segfault the program. */

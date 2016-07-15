@@ -2547,7 +2547,7 @@ static int compile_subtree(mds_kbdc_tree_t* restrict tree)
     return 0;
   
   if (tree->processed == PROCESS_LEVEL)
-    /* An error has occurred here before, lets skip it so
+    /* An error has occurred here before, let's skip it so
      * we do not deluge the user with errors. */
     goto next;
   
