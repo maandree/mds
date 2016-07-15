@@ -4967,7 +4967,7 @@ The number of stops in the green gamma ramp.
 The number of stops in the blue gamma ramp.
 @item Tables
 The number of gamma ramp lookup tables that is
-included in the respone's message. This header will
+included in the response's message. This header will
 not necessarily be included if @code{Coalesce: yes}
 was used in the query, rather reference
 implementations will exclude it.
