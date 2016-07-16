@@ -2468,7 +2468,7 @@ can be used to enable multiple clients to manipulate
 the gamma ramps without stepping on each others toes.
 It does this by letting clients tell which priority
 their corrections has and use this data to chain
-together there modifications. For example if one
+their modifications together. For example if one
 program wants to apply a red filter to the display
 and another program wants to correct the monitors'
 gamma, the red filter program will send lookup tables
