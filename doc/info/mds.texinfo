@@ -4888,10 +4888,70 @@ It is known that gamma ramps are not supported.
 @item maybe
 It is not known whether gamma ramps are supported.
 @end table
+@item Red x
+@itemx Red y
+The `x' and `y' values, respectively, of the
+colour of the monitor's red channel, measured
+in CIE xyY, and multipled by 1024. The values
+must be an integer in the range [0, 1023].
+Omitted if unknown or inapplicable. On a proper
+sRGB monitor, these values should be integers
+close to (655.36; 337.92), including
+multiplication by 1024.
+@item Green x
+@itemx Green y
+The `x' and `y' values, respectively, of the
+colour of the monitor's green channel, measured
+in CIE xyY, and multipled by 1024. The values
+must be an integer in the range [0, 1023].
+Omitted if unknown or inapplicable. On a proper
+sRGB monitor, these values should be integers
+close to (307.2; 614.4), including multiplication
+by 1024.
+@item Blue x
+@itemx Blue y
+The `x' and `y' values, respectively, of the
+colour of the monitor's blue channel, measured
+in CIE xyY, and multipled by 1024. The values
+must be an integer in the range [0, 1023].
+Omitted if unknown or inapplicable. On a proper
+sRGB monitor, these values should be integers
+close to (153.6; 61.44), including multiplication
+by 1024.
+@item White x
+@itemx White y
+The `x' and `y' values, respectively, of the
+monitor's default white point, measured
+in CIE xyY, and multipled by 1024. The values
+must be an integer in the range [0, 1023].
+Omitted if unknown or inapplicable. On a proper
+sRGB monitor, these values should be integers
+close to (320.2048; 336.896), including
+multiplication by 1024.
+@item Colour space
+@table @code
+@item sRGB
+The monitor uses the standard RGB colour space.
+This is uncommon in practice. Although many
+monitors have a similar colour space.
+@item RGB
+A RGB colour space other than the standard RGB
+colour space is used by the monitor. This is
+the most common.
+@item Non-RGB
+The monitor uses a Non-RGB colour space.
+@item Grey
+The monitor is monochrome or uses greyscale
+colour space.
+@end table
+Omitted if unknown.
 @end table
 If @code{Gamma support: no} is send in the response,
 the headers @code{Depth}, @code{Red size},
 @code{Green size} and @code{Blue size} may be omitted.
+@c It is indeed correct that the range for the
+@c chromaticity values is [0, 1023], but the
+@c value is multipled by 1024 and not 1023.
 
 @item Purpose:
 Enable performance optimisation when manipulating
