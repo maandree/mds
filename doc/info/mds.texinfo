@@ -4938,9 +4938,9 @@ monitors have a similar colour space.
 A RGB colour space other than the standard RGB
 colour space is used by the monitor. This is
 the most common.
-@item Non-RGB
+@item non-RGB
 The monitor uses a Non-RGB colour space.
-@item Grey
+@item grey
 The monitor is monochrome or uses greyscale
 colour space.
 @end table
