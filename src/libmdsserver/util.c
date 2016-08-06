@@ -196,6 +196,8 @@ size_t send_message(int socket, const char* message, size_t length)
   while (length > 0)
     if ((just_sent = send(socket, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0)
       {
+	if (errno == EPIPE)
+	  errno = ECONNRESET;
 	if (errno == EMSGSIZE)
 	  {
 	    block_size >>= 1;

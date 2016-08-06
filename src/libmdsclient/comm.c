@@ -232,7 +232,6 @@ int libmds_connection_establish_address(libmds_connection_t* restrict this,
  * @throws  ENOMEM        See send(2)
  * @throws  ENOTCONN      See send(2)
  * @throws  ENOTSOCK      See send(2)
- * @throws  EPIPE         See send(2)
  * @throws                See pthread_mutex_lock(3)
  */
 size_t libmds_connection_send(libmds_connection_t* restrict this, const char* restrict message, size_t length)
@@ -274,7 +273,6 @@ size_t libmds_connection_send(libmds_connection_t* restrict this, const char* re
  * @throws  ENOMEM        See send(2)
  * @throws  ENOTCONN      See send(2)
  * @throws  ENOTSOCK      See send(2)
- * @throws  EPIPE         See send(2)
  */
 size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* restrict message,
 				       size_t length, int continue_on_interrupt)
@@ -287,6 +285,8 @@ size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const
   while (length > 0)
     if ((just_sent = send(this->socket_fd, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0)
       {
+	if (errno == EPIPE)
+	  errno = ECONNRESET;
 	if (errno == EMSGSIZE)
 	  {
 	    block_size >>= 1;

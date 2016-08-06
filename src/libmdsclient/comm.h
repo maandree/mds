@@ -177,7 +177,6 @@ int libmds_connection_establish_address(libmds_connection_t* restrict this,
  * @throws  ENOMEM        See send(2)
  * @throws  ENOTCONN      See send(2)
  * @throws  ENOTSOCK      See send(2)
- * @throws  EPIPE         See send(2)
  * @throws                See pthread_mutex_lock(3)
  */
 __attribute__((nonnull))
@@ -206,7 +205,6 @@ size_t libmds_connection_send(libmds_connection_t* restrict this, const char* re
  * @throws  ENOMEM        See send(2)
  * @throws  ENOTCONN      See send(2)
  * @throws  ENOTSOCK      See send(2)
- * @throws  EPIPE         See send(2)
  */
 __attribute__((nonnull))
 size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* restrict message,
