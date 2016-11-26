@@ -87,7 +87,7 @@ static struct udev* udev = NULL;
 /**
  * List of all opened devices
  */
-static struct libinput_device **devices = NULL;
+static struct libinput_device** devices = NULL;
 
 /**
  * The number of element slots allocated for `devices`
@@ -515,7 +515,7 @@ void* event_loop(void* data)
  */
 int handle_event(void)
 {
-  struct libinput_event *ev;
+  struct libinput_event* ev;
   if ((errno = -libinput_dispatch(li)))
     return -1;
   while ((ev = libinput_get_event(li))) {
@@ -552,7 +552,7 @@ int handle_message(void)
  * @param   userdata  Not used
  * @return            The file descriptor, or `-errno` on error
  */
-int open_restricted(const char *path, int flags, void *userdata)
+int open_restricted(const char* path, int flags, void* userdata)
 {
   int fd = open(path, flags);
   if (fd < 0)
@@ -568,7 +568,7 @@ int open_restricted(const char *path, int flags, void *userdata)
  * @param  fd        The file descriptor of the device
  * @param  userdata  Not used
  */
-void close_restricted(int fd, void *userdata)
+void close_restricted(int fd, void* userdata)
 {
   close(fd);
   (void) userdata;
