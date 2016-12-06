@@ -4939,7 +4939,7 @@ A RGB colour space other than the standard RGB
 colour space is used by the monitor. This is
 the most common.
 @item non-RGB
-The monitor uses a Non-RGB colour space.
+The monitor uses a non-RGB colour space.
 @item grey
 The monitor is monochrome or uses greyscale
 colour space.
