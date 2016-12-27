@@ -50,6 +50,9 @@ Extra servers:
 	pinkeye: translate everything to sRGB red.
 	gamut: sRGB to screen specific RGB converter.
 	       (not all modern monitors actually use sRGB.)
+	change colors to make it easier for people with defective
+	  colour vision to distinguished between certain (selectable)
+	  colours.
 
 Missing commands:
 
