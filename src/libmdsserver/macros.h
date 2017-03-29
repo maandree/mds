@@ -444,15 +444,18 @@
       if (dir == NULL)										\
 	perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */	\
       else											\
-	while ((file = readdir(dir)) != NULL)							\
-	  if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))				\
-	    {											\
-	      int fd = atoi(file->d_name);							\
-	      if (condition)									\
-		xclose(fd);									\
-	    }											\
-												\
-      closedir(dir);										\
+	{											\
+          int dfd = dirfd(dir);									\
+	  while ((file = readdir(dir)) != NULL)							\
+	    if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))			\
+	      {											\
+		int fd = atoi(file->d_name);							\
+		if (fd != dfd)									\
+		  if (condition)								\
+		    xclose(fd);									\
+	      }											\
+	  closedir(dir);									\
+	}											\
     }												\
   while (0)
 
