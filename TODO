@@ -69,6 +69,31 @@ Need testing:
 	vt
 	colour
 
+Security features:
+	The server should authenticate itself for the clients
+		This will require that the display server is not
+		identified by an index by instead by the PID
+		of the kernel, and that the master server passes
+		file descriptors to the kernel and let the kernel
+		sent its credentials to the client to prove that
+		it is the correct server. Sockets cannot be hijacked
+		so the server does not need to send its credentials
+		to the kernel
+
+	Clients should send their credentials upon connection.
+		Sockets cannot be hijacked so the credentials are
+		valid forever.
+
+	The server should insert the credentials of each client
+	a message pass through and why the the message passed
+	through that client, and whether the message was modified.
+
+	Clients should be able to tell the server who is allowed
+	to see a message (all that can see are allowed to modify)
+	based on PID, UID, GID, the permissions, owner and
+	group of the executable, and the path of the executable,
+	and possibly other attributes.
+
 
 Full introspection may be useful for debugging.
 
