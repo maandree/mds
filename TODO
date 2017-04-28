@@ -96,7 +96,7 @@ Security features:
 
 Stability features:
 	On failed re-execution, execute back to the old version.
-	This is done by opening /proc/self/exec before preexecuting
+	This is done by opening /proc/self/exe before preexecuting
 	and execute back to that file descriptor on upgrade failure
 	and close that file descriptor on successful upgrade
 
