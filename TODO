@@ -94,6 +94,12 @@ Security features:
 	group of the executable, and the path of the executable,
 	and possibly other attributes.
 
+Stability features:
+	On failed re-execution, execute back to the old version.
+	This is done by opening /proc/self/exec before preexecuting
+	and execute back to that file descriptor on upgrade failure
+	and close that file descriptor on successful upgrade
+
 
 Full introspection may be useful for debugging.
 
