@@ -28,8 +28,7 @@
 #include <pthread.h>
 
 
-#define MDS_REGISTRY_VARS_VERSION  0
-
+#define MDS_REGISTRY_VARS_VERSION 0
 
 
 /**
@@ -55,7 +54,7 @@ extern hash_table_t reg_table;
 /**
  * Reusable buffer for data to send
  */
-extern char* send_buffer;
+extern char *send_buffer;
 
 /**
  * The size of `send_buffer`
@@ -65,7 +64,7 @@ extern size_t send_buffer_size;
 /**
  * Used to temporarily store the old value when reallocating heap-allocations
  */
-extern char* old;
+extern char *old;
 
 /**
  * The number of running slaves
@@ -89,4 +88,3 @@ extern pthread_cond_t slave_cond;
 
 
 #endif
-

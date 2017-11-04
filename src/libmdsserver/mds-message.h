@@ -22,63 +22,63 @@
 #include <stddef.h>
 
 
-#define MDS_MESSAGE_T_VERSION  0
+#define MDS_MESSAGE_T_VERSION 0
 
 /**
  * Message passed between a server and a client or between two of either
  */
 typedef struct mds_message
 {
-  /**
-   * The headers in the message, each element in this list
-   * as an unparsed header, it consists of both the header
-   * name and its associated value, joined by ": ". A header
-   * cannot be `NULL` (unless its memory allocation failed,)
-   * but `headers` itself is `NULL` if there are no headers.
-   * The "Length" header should be included in this list.
-   */
-  char** headers;
-  
-  /**
-   * The number of headers in the message
-   */
-  size_t header_count;
-  
-  /**
-   * The payload of the message, `NULL` if none (of zero-length)
-   */
-  char* payload;
-  
-  /**
-   * The size of the payload
-   */
-  size_t payload_size;
-  
-  /**
-   * How much of the payload that has been stored (internal data)
-   */
-  size_t payload_ptr;
-  
-  /**
-   * Internal buffer for the reading function (internal data)
-   */
-  char* buffer;
-  
-  /**
-   * The size allocated to `buffer` (internal data)
-   */
-  size_t buffer_size;
-  
-  /**
-   * The number of bytes used in `buffer` (internal data)
-   */
-  size_t buffer_ptr;
-  
-  /**
-   * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
-   */
-  int stage;
-  
+	/**
+	 * The headers in the message, each element in this list
+	 * as an unparsed header, it consists of both the header
+	 * name and its associated value, joined by ": ". A header
+	 * cannot be `NULL` (unless its memory allocation failed,)
+	 * but `headers` itself is `NULL` if there are no headers.
+	 * The "Length" header should be included in this list.
+	 */
+	char **headers;
+
+	/**
+	 * The number of headers in the message
+	 */
+	size_t header_count;
+
+	/**
+	 * The payload of the message, `NULL` if none (of zero-length)
+	 */
+	char *payload;
+
+	/**
+	 * The size of the payload
+	 */
+	size_t payload_size;
+
+	/**
+	 * How much of the payload that has been stored (internal data)
+	 */
+	size_t payload_ptr;
+
+	/**
+	 * Internal buffer for the reading function (internal data)
+	 */
+	char *buffer;
+
+	/**
+	 * The size allocated to `buffer` (internal data)
+	 */
+	size_t buffer_size;
+
+	/**
+	 * The number of bytes used in `buffer` (internal data)
+	 */
+	size_t buffer_ptr;
+
+	/**
+	 * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
+	 */
+	int stage;
+
 } mds_message_t;
 
 
@@ -91,7 +91,7 @@ typedef struct mds_message
  *                Destroy the message on error.
  */
 __attribute__((nonnull))
-int mds_message_initialise(mds_message_t* restrict this);
+int mds_message_initialise(mds_message_t *restrict this);
 
 /**
  * Zero initialise a message slot
@@ -99,7 +99,7 @@ int mds_message_initialise(mds_message_t* restrict this);
  * @param  this  Memory slot in which to store the new message
  */
 __attribute__((nonnull))
-void mds_message_zero_initialise(mds_message_t* restrict this);
+void mds_message_zero_initialise(mds_message_t *restrict this);
 
 /**
  * Release all resources in a message, should
@@ -108,7 +108,7 @@ void mds_message_zero_initialise(mds_message_t* restrict this);
  * @param  this  The message
  */
 __attribute__((nonnull))
-void mds_message_destroy(mds_message_t* restrict this);
+void mds_message_destroy(mds_message_t *restrict this);
 
 /**
  * Extend the header list's allocation
@@ -118,7 +118,7 @@ void mds_message_destroy(mds_message_t* restrict this);
  * @return          Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
+int mds_message_extend_headers(mds_message_t *restrict this, size_t extent);
 
 /**
  * Read the next message from a file descriptor
@@ -134,7 +134,7 @@ int mds_message_extend_headers(mds_message_t* restrict this, size_t extent);
  *                which is a state that cannot be recovered from.
  */
 __attribute__((nonnull))
-int mds_message_read(mds_message_t* restrict this, int fd);
+int mds_message_read(mds_message_t *restrict this, int fd);
 
 /**
  * Get the required allocation size for `data` of the
@@ -144,7 +144,7 @@ int mds_message_read(mds_message_t* restrict this, int fd);
  * @return        The size of the message when marshalled
  */
 __attribute__((pure, nonnull))
-size_t mds_message_marshal_size(const mds_message_t* restrict this);
+size_t mds_message_marshal_size(const mds_message_t *restrict this);
 
 /**
  * Marshal a message for state serialisation
@@ -153,7 +153,7 @@ size_t mds_message_marshal_size(const mds_message_t* restrict this);
  * @param  data  Output buffer for the marshalled data
  */
 __attribute__((nonnull))
-void mds_message_marshal(const mds_message_t* restrict this, char* restrict data);
+void mds_message_marshal(const mds_message_t *restrict this, char *restrict data);
 
 /**
  * Unmarshal a message for state deserialisation
@@ -164,7 +164,7 @@ void mds_message_marshal(const mds_message_t* restrict this, char* restrict data
  *                Destroy the message on error.
  */
 __attribute__((nonnull))
-int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
+int mds_message_unmarshal(mds_message_t *restrict this, char *restrict data);
 
 /**
  * Get the required allocation size for `data` of the
@@ -174,7 +174,7 @@ int mds_message_unmarshal(mds_message_t* restrict this, char* restrict data);
  * @return        The size of the message when marshalled
  */
 __attribute__((pure, nonnull))
-size_t mds_message_compose_size(const mds_message_t* restrict this);
+size_t mds_message_compose_size(const mds_message_t *restrict this);
 
 /**
  * Marshal a message for communication
@@ -183,8 +183,7 @@ size_t mds_message_compose_size(const mds_message_t* restrict this);
  * @param  data  Output buffer for the marshalled data
  */
 __attribute__((nonnull))
-void mds_message_compose(const mds_message_t* restrict this, char* restrict data);
+void mds_message_compose(const mds_message_t *restrict this, char *restrict data);
 
 
 #endif
-

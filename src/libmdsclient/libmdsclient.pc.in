@@ -6,4 +6,3 @@ Description: Library for mds-clients
 Version: @VERSION@
 Libs: -L${libdir} -lmdsclient @LIBS@
 Cflags: -I${includedir} @CFLAGS@
-

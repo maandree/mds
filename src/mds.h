@@ -30,7 +30,7 @@
  * @return     Whether the PID-file is not longer used
  */
 __attribute__((nonnull))
-int is_pid_file_reusable(FILE* f);
+int is_pid_file_reusable(FILE *f);
 
 /**
  * Parse an LF-terminated string as a non-negative `pid_t`
@@ -40,7 +40,7 @@ int is_pid_file_reusable(FILE* f);
  * @return       The pid, `(pid_t)-1` if malformated
  */
 __attribute__((pure, nonnull))
-pid_t parse_pid_t(const char* str, size_t n);
+pid_t parse_pid_t(const char *str, size_t n);
 
 /**
  * Start master server and respawn it if it crashes

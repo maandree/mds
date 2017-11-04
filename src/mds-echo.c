@@ -40,15 +40,14 @@
  * 
  * This tells the server-base how to behave
  */
-server_characteristics_t server_characteristics =
-  {
-    .require_privileges = 0,
-    .require_display = 1,
-    .require_respawn_info = 0,
-    .sanity_check_argc = 1,
-    .fork_for_safety = 0,
-    .danger_is_deadly = 1
-  };
+server_characteristics_t server_characteristics = {
+	.require_privileges = 0,
+	.require_display = 1,
+	.require_respawn_info = 0,
+	.sanity_check_argc = 1,
+	.fork_for_safety = 0,
+	.danger_is_deadly = 1
+};
 
 
 
@@ -70,7 +69,7 @@ static int connected = 1;
 /**
  * Buffer for message echoing
  */
-static char* echo_buffer = NULL;
+static char *echo_buffer = NULL;
 
 /**
  * The size allocated to `echo_buffer` divided by `sizeof(char)`
@@ -86,8 +85,8 @@ static size_t echo_buffer_size = 0;
  * @param   length:size_t        The length of the message
  * @return  :int                 Zero on success, -1 on error
  */
-#define full_send(message, length)  \
-  ((full_send)(socket_fd, message, length))
+#define full_send(message, length)\
+	((full_send)(socket_fd, message, length))
 
 
 /**
@@ -96,9 +95,10 @@ static size_t echo_buffer_size = 0;
  * 
  * @return  Non-zero on error
  */
-int __attribute__((const)) preinitialise_server(void)
+int __attribute__((const))
+preinitialise_server(void)
 {
-  return 0;
+	return 0;
 }
 
 
@@ -108,26 +108,27 @@ int __attribute__((const)) preinitialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int initialise_server(void)
+int
+initialise_server(void)
 {
-  int stage = 0;
-  const char* const message =
-    "Command: intercept\n"
-    "Message ID: 0\n"
-    "Length: 14\n"
-    "\n"
-    "Command: echo\n";
-  
-  fail_if (full_send(message, strlen(message)));
-  fail_if (server_initialised() < 0);  stage++;
-  fail_if (mds_message_initialise(&received));
-  
-  return 0;
- fail:
-  xperror(*argv);
-  if (stage == 1)
-    mds_message_destroy(&received);
-  return 1;
+	int stage = 0;
+	const char* const message =
+		"Command: intercept\n"
+		"Message ID: 0\n"
+		"Length: 14\n"
+		"\n"
+		"Command: echo\n";
+
+	fail_if (full_send(message, strlen(message)));
+	fail_if (server_initialised() < 0); stage++;
+	fail_if (mds_message_initialise(&received));
+
+	return 0;
+fail:
+	xperror(*argv);
+	if (stage == 1)
+		mds_message_destroy(&received);
+	return 1;
 }
 
 
@@ -137,17 +138,18 @@ int initialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int postinitialise_server(void)
+int
+postinitialise_server(void)
 {
-  if (connected)
-    return 0;
-  
-  fail_if (reconnect_to_display());
-  connected = 1;
-  return 0;
- fail:
-  mds_message_destroy(&received);
-  return 1;
+	if (connected)
+		return 0;
+
+	fail_if (reconnect_to_display());
+	connected = 1;
+	return 0;
+fail:
+	mds_message_destroy(&received);
+	return 1;
 }
 
 
@@ -159,9 +161,10 @@ int postinitialise_server(void)
  * 
  * @return  The number of bytes that will be stored by `marshal_server`
  */
-size_t marshal_server_size(void)
+size_t
+marshal_server_size(void)
 {
-  return 2 * sizeof(int) + sizeof(uint32_t) + mds_message_marshal_size(&received);
+	return 2 * sizeof(int) + sizeof(uint32_t) + mds_message_marshal_size(&received);
 }
 
 
@@ -171,15 +174,16 @@ size_t marshal_server_size(void)
  * @param   state_buf  The buffer for the marshalled data
  * @return             Non-zero on error
  */
-int marshal_server(char* state_buf)
+int
+marshal_server(char *state_buf)
 {
-  buf_set_next(state_buf, int, MDS_ECHO_VARS_VERSION);
-  buf_set_next(state_buf, int, connected);
-  buf_set_next(state_buf, uint32_t, message_id);
-  mds_message_marshal(&received, state_buf);
-  
-  mds_message_destroy(&received);
-  return 0;
+	buf_set_next(state_buf, int, MDS_ECHO_VARS_VERSION);
+	buf_set_next(state_buf, int, connected);
+	buf_set_next(state_buf, uint32_t, message_id);
+	mds_message_marshal(&received, state_buf);
+
+	mds_message_destroy(&received);
+	return 0;
 }
 
 
@@ -193,18 +197,19 @@ int marshal_server(char* state_buf)
  * @param   state_buf  The marshalled data that as not been read already
  * @return             Non-zero on error
  */
-int unmarshal_server(char* state_buf)
+int
+unmarshal_server(char *state_buf)
 {
-  /* buf_get_next(state_buf, int, MDS_ECHO_VARS_VERSION); */
-  buf_next(state_buf, int, 1);
-  buf_get_next(state_buf, int, connected);
-  buf_get_next(state_buf, uint32_t, message_id);
-  fail_if (mds_message_unmarshal(&received, state_buf));
-  return 0;
- fail:
-  xperror(*argv);
-  mds_message_destroy(&received);
-  return -1;
+	/* buf_get_next(state_buf, int, MDS_ECHO_VARS_VERSION); */
+	buf_next(state_buf, int, 1);
+	buf_get_next(state_buf, int, connected);
+	buf_get_next(state_buf, uint32_t, message_id);
+	fail_if (mds_message_unmarshal(&received, state_buf));
+	return 0;
+fail:
+	xperror(*argv);
+	mds_message_destroy(&received);
+	return -1;
 }
 
 
@@ -214,9 +219,10 @@ int unmarshal_server(char* state_buf)
  * 
  * @return  Non-zero on error
  */
-int __attribute__((const)) reexec_failure_recover(void)
+int __attribute__((const))
+reexec_failure_recover(void)
 {
-  return -1;
+	return -1;
 }
 
 
@@ -225,43 +231,42 @@ int __attribute__((const)) reexec_failure_recover(void)
  * 
  * @return  Non-zero on error
  */
-int master_loop(void)
+int
+master_loop(void)
 {
-  int rc = 1, r;
-  
-  while (!reexecing && !terminating)
-    {
-      if (r = mds_message_read(&received, socket_fd), r == 0)
-	if (r = echo_message(), r == 0)
-	  continue;
-      
-      if (r == -2)
-	{
-	  eprint("corrupt message received, aborting.");
-	  goto done;
+	int rc = 1, r;
+
+	while (!reexecing && !terminating) {
+		if (!(r = mds_message_read(&received, socket_fd)))
+			if (!(r = echo_message()))
+				continue;
+
+		if (r == -2) {
+			eprint("corrupt message received, aborting.");
+			goto done;
+		} else if (errno == EINTR) {
+			continue;
+		} else {
+			fail_if (errno != ECONNRESET);
+		}
+
+		eprint("lost connection to server.");
+		mds_message_destroy(&received);
+		mds_message_initialise(&received);
+		connected = 0;
+		fail_if (reconnect_to_display());
+		connected = 1;
 	}
-      else if (errno == EINTR)
-	continue;
-      else
-	fail_if (errno != ECONNRESET);
-      
-      eprint("lost connection to server.");
-      mds_message_destroy(&received);
-      mds_message_initialise(&received);
-      connected = 0;
-      fail_if (reconnect_to_display());
-      connected = 1;
-    }
-  
-  rc = 0;
-  goto done;
- fail:
-  xperror(*argv);
- done:
-  if (rc || !reexecing)
-    mds_message_destroy(&received);
-  free(echo_buffer);
-  return rc;
+
+	rc = 0;
+	goto done;
+fail:
+	xperror(*argv);
+done:
+	if (rc || !reexecing)
+		mds_message_destroy(&received);
+	free(echo_buffer);
+	return rc;
 }
 
 
@@ -271,74 +276,73 @@ int master_loop(void)
  * @return  Zero on success -1 on error or interruption,
  *          errno will be set accordingly
  */
-int echo_message(void)
+int
+echo_message(void)
 {
-  char* old_buffer = NULL;
-  const char* recv_client_id = NULL;
-  const char* recv_message_id = NULL;
-  const char* recv_length = NULL;
-  size_t i, n;
-  int saved_errno;
-  
-  /* Fetch headers. */
-  
-#define __get_header(storage, header, skip)  \
-  (startswith(received.headers[i], header))  \
-    storage = received.headers[i] + skip * strlen(header)
-  
-  for (i = 0; i < received.header_count; i++)
-    {
-      if      __get_header(recv_client_id,  "Client ID: ",  1);
-      else if __get_header(recv_message_id, "Message ID: ", 1);
-      else if __get_header(recv_length,     "Length: ",     0);
-      else
-	continue;
-      
-      /* Stop fetch headers if we have found everything we want. */
-      if (recv_client_id && recv_message_id && recv_length)
-	break;
-    }
-  
+	char *old_buffer = NULL;
+	const char *recv_client_id = NULL;
+	const char *recv_message_id = NULL;
+	const char *recv_length = NULL;
+	size_t i, n;
+	int saved_errno;
+
+	/* Fetch headers. */
+
+#define __get_header(storage, header, skip)\
+	(startswith(received.headers[i], header))\
+		storage = received.headers[i] + skip * strlen(header)
+
+	for (i = 0; i < received.header_count; i++) {
+		if      __get_header(recv_client_id,  "Client ID: ",  1);
+		else if __get_header(recv_message_id, "Message ID: ", 1);
+		else if __get_header(recv_length,     "Length: ",     0);
+		else
+			continue;
+
+		/* Stop fetch headers if we have found everything we want. */
+		if (recv_client_id && recv_message_id && recv_length)
+			break;
+	}
+
 #undef __get_header
+
+	/* Validate headers. */
+	if (!recv_client_id || strequals(recv_client_id, "0:0"))
+		return eprint("received message from anonymous sender, ignoring."), 0;
+	else if (!recv_message_id)
+		return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
+
+	/* Construct echo message headers. */
+
+	n = sizeof("To: \nIn response to: \nMessage ID: \nOrigin command: echo\n\n") / sizeof(char);
+	n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(uint32_t);
+	if (recv_length)
+		n += strlen(recv_length) + 1;
+
+	if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
+		fail_if (xxrealloc(old_buffer, echo_buffer, echo_buffer_size = n, char));
+
+	sprintf(echo_buffer,
+	        "To: %s\n"
+	        "In response to: %s\n"
+	        "Message ID: %" PRIu32 "\n"
+	        "Origin command: echo\n"
+	        "%s%s"
+	        "\n",
+	        recv_client_id, recv_message_id, message_id,
+	        !recv_length ? "" : recv_length,
+	        !recv_length ? "" : "\n");
+
+	/* Increase message ID. */
+	message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
   
-  
-  /* Validate headers. */
-  if ((recv_client_id == NULL) || (strequals(recv_client_id, "0:0")))
-      return eprint("received message from anonymous sender, ignoring."), 0;
-  else if (recv_message_id == NULL)
-    return eprint("received message without ID, ignoring, master server is misbehaving."), 0;
-  
-  /* Construct echo message headers. */
-  
-  n = sizeof("To: \nIn response to: \nMessage ID: \nOrigin command: echo\n\n") / sizeof(char);
-  n += strlen(recv_client_id) + strlen(recv_message_id) + 3 * sizeof(uint32_t);
-  if (recv_length != NULL)
-    n += strlen(recv_length) + 1;
-  
-  if ((echo_buffer_size < n) || (echo_buffer_size * 4 > n))
-    fail_if (xxrealloc(old_buffer, echo_buffer, echo_buffer_size = n, char));
-  
-  sprintf(echo_buffer,
-	  "To: %s\n"
-	  "In response to: %s\n"
-	  "Message ID: %" PRIu32 "\n"
-	  "Origin command: echo\n"
-	  "%s%s"
-	  "\n",
-	  recv_client_id, recv_message_id, message_id,
-	  recv_length == NULL ? "" : recv_length,
-	  recv_length == NULL ? "" : "\n");
-  
-  /* Increase message ID. */
-  message_id = message_id == UINT32_MAX ? 0 : (message_id + 1);
-  
-  /* Send echo. */
-  fail_if (full_send(echo_buffer, strlen(echo_buffer)));
-  return full_send(received.payload, received.payload_size);
- fail:
-  saved_errno = errno;
-  free(old_buffer);
-  return errno = saved_errno, -1;
+	/* Send echo. */
+	fail_if (full_send(echo_buffer, strlen(echo_buffer)));
+	return full_send(received.payload, received.payload_size);
+fail:
+	saved_errno = errno;
+	free(old_buffer);
+	return errno = saved_errno, -1;
 }
 
 
@@ -349,13 +353,14 @@ int echo_message(void)
  * 
  * @param  signo  The signal that has been received
  */
-void received_info(int signo)
+void
+received_info(int signo)
 {
-  SIGHANDLER_START;
-  (void) signo;
-  iprintf("next message ID: %" PRIu32, message_id);
-  iprintf("connected: %s", connected ? "yes" : "no");
-  iprintf("echo buffer size: %zu bytes", echo_buffer_size);
-  SIGHANDLER_END;
+	SIGHANDLER_START;
+	(void) signo;
+	iprintf("next message ID: %" PRIu32, message_id);
+	iprintf("connected: %s", connected ? "yes" : "no");
+	iprintf("echo buffer size: %zu bytes", echo_buffer_size);
+	SIGHANDLER_END;
 }
 

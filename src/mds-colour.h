@@ -32,27 +32,27 @@
  */
 typedef struct colour
 {
-  /**
-   * The value of the red channel
-   */
-  uint64_t red;
-  
-  /**
-   * The value of the green channel
-   */
-  uint64_t green;
-  
-  /**
-   * The value of the blue channel
-   */
-  uint64_t blue;
-  
-  /**
-   * The number of bytes with which
-   * each channel is encoded
-   */
-  int bytes;
-  
+	/**
+	 * The value of the red channel
+	 */
+	uint64_t red;
+
+	/**
+	 * The value of the green channel
+	 */
+	uint64_t green;
+
+	/**
+	 * The value of the blue channel
+	 */
+	uint64_t blue;
+
+	/**
+	 * The number of bytes with which
+	 * each channel is encoded
+	 */
+	int bytes;
+
 } colour_t;
 
 
@@ -73,8 +73,8 @@ int handle_message(void);
  * @param   recv_include_values  The value of the `Include values`-header, `NULL` if omitted
  * @return                       Zero on success, -1 on error
  */
-int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
-			const char* recv_include_values);
+int handle_list_colours(const char *recv_client_id, const char *recv_message_id,
+                        const char *recv_include_values);
 
 /**
  * Handle the received message after it has been
@@ -85,7 +85,7 @@ int handle_list_colours(const char* recv_client_id, const char* recv_message_id,
  * @param   recv_name        The value of the `Name`-header, `NULL` if omitted
  * @return                   Zero on success, -1 on error
  */
-int handle_get_colour(const char* recv_client_id, const char* recv_message_id, const char* recv_name);
+int handle_get_colour(const char *recv_client_id, const char *recv_message_id, const char *recv_name);
 
 /**
  * Handle the received message after it has been
@@ -99,8 +99,8 @@ int handle_get_colour(const char* recv_client_id, const char* recv_message_id, c
  * @param   recv_blue    The value of the `Blue`-header, `NULL` if omitted
  * @return               Zero on success, -1 on error
  */
-int handle_set_colour(const char* recv_name, const char* recv_remove, const char* recv_bytes,
-		      const char* recv_red, const char* recv_green, const char* recv_blue);
+int handle_set_colour(const char *recv_name, const char *recv_remove, const char *recv_bytes,
+                      const char *recv_red, const char *recv_green, const char *recv_blue);
 
 /**
  * Add, remove or modify a colour
@@ -110,7 +110,8 @@ int handle_set_colour(const char* recv_name, const char* recv_remove, const char
  * @return          Zero on success, -1 on error, removal of
  *                  non-existent colour does not constitute an error
  */
-int set_colour(const char* name, const colour_t* colour) __attribute__((nonnull(1)));
+__attribute__((nonnull(1)))
+int set_colour(const char* name, const colour_t *colour);
 
 /**
  * Broadcast a colour list update event
@@ -121,11 +122,12 @@ int set_colour(const char* name, const colour_t* colour) __attribute__((nonnull(
  * @param   last_update  The value on the `Last update`-header
  * @return               Zero on success, -1 on error
  */
-int broadcast_update(const char* event, const char* name, const colour_t* colour,
-		     const char* last_update) __attribute__((nonnull(1, 2, 4)));
+__attribute__((nonnull(1, 2, 4)))
+int broadcast_update(const char *event, const char *name, const colour_t *colour,
+                     const char *last_update);
 
 
-CREATE_HASH_LIST_SUBCLASS(colour_list, char* restrict, const char* restrict, colour_t)
+CREATE_HASH_LIST_SUBCLASS(colour_list, char *restrict, const char *restrict, colour_t)
 
 
 /**
@@ -133,7 +135,7 @@ CREATE_HASH_LIST_SUBCLASS(colour_list, char* restrict, const char* restrict, col
  * 
  * @param  entry  The entry
  */
-void colour_list_entry_free(colour_list_entry_t* entry);
+void colour_list_entry_free(colour_list_entry_t *entry);
 
 
 #endif

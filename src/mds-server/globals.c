@@ -73,4 +73,3 @@ pthread_cond_t modify_cond;
  * Map from modification ID to waiting client
  */
 hash_table_t modify_map;
-

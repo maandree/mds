@@ -35,7 +35,7 @@
  * @param   data  Input data
  * @return        Outout data
  */
-void* slave_loop(void*);
+void *slave_loop(void *);
 
 
 /**
@@ -44,34 +44,29 @@ void* slave_loop(void*);
  * @param   client  The client
  * @return          Zero on success, -2 on failure, otherwise -1
  */
-int fetch_message(client_t* client)
+int
+fetch_message(client_t *client)
 {
-  int r = mds_message_read(&(client->message), client->socket_fd);
-  
-  if (r == 0)
-    return 0;
-  
-  if (r == -2)
-    {
-      eprint("corrupt message received.");
-      fail_if (1);
-    }
-  else if (errno == ECONNRESET)
-    {
-      r = mds_message_read(&(client->message), client->socket_fd);
-      client->open = 0;
-      /* Connection closed. */
-    }
-  else if (errno != EINTR)
-    {
-      xperror(*argv);
-      fail_if (1);
-    }
-  
-  fail_if (r == -2);
-  return r;
- fail:
-  return -2;
+	int r = mds_message_read(&(client->message), client->socket_fd);
+
+	if (!r) {
+		return 0;
+	} else if (r == -2) {
+		eprint("corrupt message received.");
+		fail_if (1);
+	} else if (errno == ECONNRESET) {
+		r = mds_message_read(&(client->message), client->socket_fd);
+		client->open = 0;
+		/* Connection closed. */
+	} else if (errno != EINTR) {
+		xperror(*argv);
+		fail_if (1);
+	}
+
+	fail_if (r == -2);
+	return r;
+fail:
+	return -2;
 }
 
 
@@ -82,22 +77,21 @@ int fetch_message(client_t* client)
  * @param   slave_fd  The file descriptor of the slave's socket
  * @return            Zero on success, -1 on error, error message will have been printed
  */
-int create_slave(pthread_t* thread_slot, int slave_fd)
+int
+create_slave(pthread_t *thread_slot, int slave_fd)
 {
-  if ((errno = pthread_create(thread_slot, NULL, slave_loop, (void*)(intptr_t)slave_fd)))
-    {
-      xperror(*argv);
-      with_mutex (slave_mutex, running_slaves--;);
-      fail_if (1);
-    }
-  if ((errno = pthread_detach(*thread_slot)))
-    {
-      xperror(*argv);
-      fail_if (1);
-    }
-  return 0;
- fail:
-  return -1;
+	if ((errno = pthread_create(thread_slot, NULL, slave_loop, (void *)(intptr_t)slave_fd))) {
+		xperror(*argv);
+		with_mutex (slave_mutex, running_slaves--;);
+		fail_if (1);
+	}
+	if ((errno = pthread_detach(*thread_slot))) {
+		xperror(*argv);
+			fail_if (1);
+	}
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -107,45 +101,44 @@ int create_slave(pthread_t* thread_slot, int slave_fd)
  * @param   client_fd  The file descriptor of the client's socket
  * @return             The client information, `NULL` on error
  */
-client_t* initialise_client(int client_fd)
+client_t *
+initialise_client(int client_fd)
 {
-  ssize_t entry = LINKED_LIST_UNUSED;
-  client_t* information;
-  int locked = 0, saved_errno;
-  size_t tmp;
-  
-  /* Create information table. */
-  fail_if (xmalloc(information, 1, client_t));
-  client_initialise(information);
-  
-  /* Add to list of clients. */
-  fail_if ((errno = pthread_mutex_lock(&slave_mutex)));
-  locked = 1;
-  entry = linked_list_insert_end(&client_list, (size_t)(void*)information);
-  fail_if (entry == LINKED_LIST_UNUSED);
-  
-  /* Add client to table. */
-  tmp = fd_table_put(&client_map, client_fd, (size_t)(void*)information);
-  fail_if ((tmp == 0) && errno);
-  pthread_mutex_unlock(&slave_mutex);
-  locked = 0;
-  
-  /* Fill information table. */
-  information->list_entry = entry;
-  information->socket_fd = client_fd;
-  information->open = 1;
-  fail_if (mds_message_initialise(&(information->message)));
-  
-  return information;
-  
-  
- fail:
-  saved_errno = errno;
-  if (locked)
-    pthread_mutex_unlock(&slave_mutex);
-  free(information);
-  if (entry != LINKED_LIST_UNUSED)
-    with_mutex (slave_mutex, linked_list_remove(&client_list, entry););
-  return errno = saved_errno, NULL;
-}
+	ssize_t entry = LINKED_LIST_UNUSED;
+	client_t *information;
+	int locked = 0, saved_errno;
+	size_t tmp;
 
+	/* Create information table. */
+	fail_if (xmalloc(information, 1, client_t));
+	client_initialise(information);
+
+	/* Add to list of clients. */
+	fail_if ((errno = pthread_mutex_lock(&slave_mutex)));
+	locked = 1;
+	entry = linked_list_insert_end(&client_list, (size_t)(void *)information);
+	fail_if (entry == LINKED_LIST_UNUSED);
+
+	/* Add client to table. */
+	tmp = fd_table_put(&client_map, client_fd, (size_t)(void *)information);
+	fail_if (!tmp && errno);
+	pthread_mutex_unlock(&slave_mutex);
+	locked = 0;
+
+	/* Fill information table. */
+	information->list_entry = entry;
+	information->socket_fd = client_fd;
+	information->open = 1;
+	fail_if (mds_message_initialise(&(information->message)));
+
+	return information;
+
+fail:
+	saved_errno = errno;
+	if (locked)
+		pthread_mutex_unlock(&slave_mutex);
+	free(information);
+	if (entry != LINKED_LIST_UNUSED)
+		with_mutex (slave_mutex, linked_list_remove(&client_list, entry););
+	return errno = saved_errno, NULL;
+}

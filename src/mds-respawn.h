@@ -29,27 +29,27 @@
 /**
  * The server has not started yet
  */
-#define UNBORN  0
+#define UNBORN 0
 
 /**
  * The server is up and running
  */
-#define ALIVE  1
+#define ALIVE 1
 
 /**
  * The server has crashed and will be respawn momentarily
  */
-#define DEAD  2
+#define DEAD 2
 
 /**
  * The server crashed too fast, it will only respawn if SIGUSR2 is received
  */
-#define DEAD_AND_BURIED  3
+#define DEAD_AND_BURIED 3
 
 /**
  * The server has exited successfully, it will never be respawn again
  */
-#define CREMATED  4
+#define CREMATED 4
 
 
 
@@ -59,7 +59,7 @@
  * @param   VALUE:int  The state
  * @return  :int       Whether the state is value
  */
-#define validate_state(VALUE)  ((UNBORN <= VALUE) && (VALUE <= CREMATED))
+#define validate_state(VALUE) (UNBORN <= (VALUE) && (VALUE) <= CREMATED)
 
 
 
@@ -68,21 +68,21 @@
  */
 typedef struct server_state
 {
-  /**
-   * The server's process ID
-   */
-  pid_t pid;
-  
-  /**
-   * The server's state
-   */
-  int state;
-  
-  /**
-   * The time (monotonic) the server started
-   */
-  struct timespec started;
-  
+	/**
+	 * The server's process ID
+	 */
+	pid_t pid;
+
+	/**
+	 * The server's state
+	 */
+	int state;
+
+	/**
+	 * The time (monotonic) the server started
+	 */
+	struct timespec started;
+
 } server_state_t;
 
 

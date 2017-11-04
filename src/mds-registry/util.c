@@ -39,8 +39,8 @@
  */
 void reg_table_free_key(size_t obj)
 {
-  char* command = (char*)(void*)obj;
-  free(command);
+	char *command = (void *)obj;
+	free(command);
 }
 
 
@@ -51,8 +51,7 @@ void reg_table_free_key(size_t obj)
  */
 void reg_table_free_value(size_t obj)
 {
-  client_list_t* list = (client_list_t*)(void*)obj;
-  client_list_destroy(list);
-  free(list);
+	client_list_t *list = (void *)obj;
+	client_list_destroy(list);
+	free(list);
 }
-

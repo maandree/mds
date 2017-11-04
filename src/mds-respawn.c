@@ -31,7 +31,7 @@
 
 
 
-#define MDS_RESPAWN_VARS_VERSION  0
+#define MDS_RESPAWN_VARS_VERSION 0
 
 
 
@@ -41,15 +41,14 @@
  * 
  * This tells the server-base how to behave
  */
-server_characteristics_t server_characteristics =
-  {
-    .require_privileges = 0,
-    .require_display = 0,
-    .require_respawn_info = 1,
-    .sanity_check_argc = 0,
-    .fork_for_safety = 0,
-    .danger_is_deadly = 0
-  };
+server_characteristics_t server_characteristics = {
+	.require_privileges = 0,
+	.require_display = 0,
+	.require_respawn_info = 1,
+	.sanity_check_argc = 0,
+	.fork_for_safety = 0,
+	.danger_is_deadly = 0
+};
 
 
 
@@ -66,18 +65,18 @@ static size_t servers = 0;
 /**
  * Command line arguments, for each server — concatenated, with NULL-termination
  */
-static char** commands_args = NULL;
+static char **commands_args = NULL;
 
 /**
  * Mapping elements in `commands_args` that are the first
  * argument for each server to run
  */
-static char*** commands = NULL;
+static char ***commands = NULL;
 
 /**
  * States of managed servers
  */
-static server_state_t* states = NULL;
+static server_state_t *states = NULL;
 
 /**
  * Whether a revive request has been received but not processed
@@ -98,68 +97,60 @@ static size_t live_count = 0;
  */
 int parse_cmdline(void)
 {
-  /* Parse command line arguments. */
-  
-  int i;
-  size_t j, args = 0, stack = 0;
-  for (i = 1; i < argc; i++)
-    {
-      char* arg = argv[i];
-      if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
-	alarm((unsigned)min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
-      else if (startswith(arg, "--interval="))
-	interval = min(atoi(arg + strlen("--interval=")), 60); /* At most 1 minute. */
-      else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
-	is_reexec = 1;
-      else if (strequals(arg, "{"))
-	servers += stack++ == 0 ? 1 : 0;
-      else if (strequals(arg, "}"))
-	{
-	  exit_if (stack-- == 0, eprint("Terminating non-started command, aborting."););
-	  exit_if (stack == 0 && strequals(argv[i - 1], "{"),
-		   eprint("Zero argument command specified, aborting."););
+	/* Parse command line arguments. */
+	int i;
+	size_t j, args = 0, stack = 0;
+	char* arg;
+
+	for (i = 1; i < argc; i++) {
+		arg = argv[i];
+		if (startswith(arg, "--alarm=")) { /* Schedule an alarm signal for forced abort. */
+			alarm((unsigned)min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+		} else if (startswith(arg, "--interval=")) {
+			interval = min(atoi(arg + strlen("--interval=")), 60); /* At most 1 minute. */
+		} else if (strequals(arg, "--re-exec")) { /* Re-exec state-marshal. */
+			is_reexec = 1;
+		} else if (strequals(arg, "{")) {
+			servers += stack++ == 0 ? 1 : 0;
+		} else if (strequals(arg, "}")) {
+			exit_if (!stack--, eprint("Terminating non-started command, aborting."););
+			exit_if (!stack && strequals(argv[i - 1], "{"),
+			         eprint("Zero argument command specified, aborting."););
+		} else if (!stack) {
+			eprintf("Unrecognised option: %s, did you forget `='?", arg);
+		} else {
+			args++;
+		}
 	}
-      else if (stack == 0)
-	eprintf("Unrecognised option: %s, did you forget `='?", arg);
-      else
-	args++;
-    }
-  if (is_reexec)
-    {
-      is_respawn = 1;
-      eprint("re-exec performed.");
-    }
-  
-  
-  /* Validate command line arguments. */
-  
-  exit_if (stack > 0, eprint("Non-terminated command specified, aborting."););
-  exit_if (servers == 0, eprint("No programs to spawn, aborting."););
-  
-  
-  /* Allocate arrays. */
-  
-  fail_if (xmalloc(commands_args, args + servers, char*));
-  fail_if (xmalloc(commands, servers, char**));
-  fail_if (xmalloc(states, servers, server_state_t));
-  
-  
-  /* Fill command arrays. */
-  
-  for (i = 1, args = j = 0; i < argc; i++)
-    {
-      char* arg = argv[i];
-      if (strequals(arg, "}"))  commands_args[args++] = --stack == 0 ? NULL : arg;
-      else if (stack > 0)       commands_args[args++] = arg;
-      else if (strequals(arg, "{") && (stack++ == 0))
-	commands[j++] = commands_args + args;
-    }
-  
-  return 0;
-  
- fail:
-  xperror(*argv);
-  return 1;
+	if (is_reexec) {
+		is_respawn = 1;
+		eprint("re-exec performed.");
+	}
+
+	/* Validate command line arguments. */
+	exit_if (stack > 0, eprint("Non-terminated command specified, aborting."););
+	exit_if (servers == 0, eprint("No programs to spawn, aborting."););
+
+	/* Allocate arrays. */
+	fail_if (xmalloc(commands_args, args + servers, char*));
+	fail_if (xmalloc(commands, servers, char**));
+	fail_if (xmalloc(states, servers, server_state_t));
+
+	/* Fill command arrays. */
+	for (i = 1, args = j = 0; i < argc; i++) {
+		arg = argv[i];
+		if (strequals(arg, "}"))
+			commands_args[args++] = --stack == 0 ? NULL : arg;
+		else if (stack > 0)
+			commands_args[args++] = arg;
+		else if (strequals(arg, "{") && !stack++)
+			commands[j++] = commands_args + args;
+	}
+
+	return 0;
+fail:
+	xperror(*argv);
+	return 1;
 }
 
 
@@ -168,51 +159,43 @@ int parse_cmdline(void)
  * 
  * @param  index  The index of the server
  */
-static void spawn_server(size_t index)
+static void
+spawn_server(size_t index)
 {
-  struct timespec started;
-  pid_t pid;
-  
-  /* When did the spawned server start? */
-  
-  if (monotone(&started) < 0)
-    {
-      xperror(*argv);
-      eprintf("cannot read clock when starting %s, burying.", commands[index][0]);
-      states[index].state = DEAD_AND_BURIED;
-      return;
-    }
-  states[index].started = started;
-  
-  
-  /* Fork process to spawn the server. */
-  
-  pid = fork();
-  if (pid == (pid_t)-1)
-    {
-      xperror(*argv);
-      eprintf("cannot fork in order to start %s, burying.", commands[index][0]);
-      states[index].state = DEAD_AND_BURIED;
-      return;
-    }
-  
-  
-  /* In the parent process (respawner): store spawned server information.  */
- 
-  if (pid)
-    {
-      states[index].pid = pid;
-      states[index].state = ALIVE;
-      live_count++;
-      return;
-    }
-  
-  /* In the child process (server): remove the alarm and change execution image to the server..  */
-  
-  alarm(0);
-  execvp(commands[index][0], commands[index]);
-  xperror(commands[index][0]);
-  _exit(1);
+	struct timespec started;
+	pid_t pid;
+
+	/* When did the spawned server start? */
+	if (monotone(&started) < 0) {
+		xperror(*argv);
+		eprintf("cannot read clock when starting %s, burying.", commands[index][0]);
+		states[index].state = DEAD_AND_BURIED;
+		return;
+	}
+	states[index].started = started;
+
+	/* Fork process to spawn the server. */
+	pid = fork();
+	if (pid == (pid_t)-1) {
+		xperror(*argv);
+		eprintf("cannot fork in order to start %s, burying.", commands[index][0]);
+		states[index].state = DEAD_AND_BURIED;
+		return;
+	}
+
+	/* In the parent process (respawner): store spawned server information.  */
+	if (pid) {
+		states[index].pid = pid;
+		states[index].state = ALIVE;
+		live_count++;
+		return;
+	}
+
+	/* In the child process (server): remove the alarm and change execution image to the server..  */
+	alarm(0);
+	execvp(commands[index][0], commands[index]);
+	xperror(commands[index][0]);
+	_exit(1);
 }
 
 
@@ -223,13 +206,14 @@ static void spawn_server(size_t index)
  * 
  * @param  signo  The signal that has been received
  */
-static void received_revive(int signo)
+static void
+received_revive(int signo)
 {
-  SIGHANDLER_START;
-  (void) signo;
-  reviving = 1;
-  eprint("revive signal received.");
-  SIGHANDLER_END;
+	SIGHANDLER_START;
+	(void) signo;
+	reviving = 1;
+	eprint("revive signal received.");
+	SIGHANDLER_END;
 }
 
 
@@ -239,15 +223,16 @@ static void received_revive(int signo)
  * 
  * @return  Non-zero on error
  */
-int preinitialise_server(void)
+int
+preinitialise_server(void)
 {
-  /* Make the server revive all `DEAD_AND_BURIED` servers on SIGUSR2. */
-  fail_if (xsigaction(SIGUSR2, received_revive) < 0);
-  
-  return 0;
- fail:
-  xperror(*argv);
-  return 1;
+	/* Make the server revive all `DEAD_AND_BURIED` servers on SIGUSR2. */
+	fail_if (xsigaction(SIGUSR2, received_revive) < 0);
+
+	return 0;
+fail:
+	xperror(*argv);
+	return 1;
 }
 
 
@@ -257,17 +242,18 @@ int preinitialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int initialise_server(void)
+int
+initialise_server(void)
 {
 #if UNBORN != 0
-  size_t i;
+	size_t i;
 #endif
-  memset(states, 0, servers * sizeof(server_state_t));
+	memset(states, 0, servers * sizeof(server_state_t));
 #if UNBORN != 0
-  for (i = 0; i < servers; i++)
-    states[i].state = UNBORN;
+	for (i = 0; i < servers; i++)
+		states[i].state = UNBORN;
 #endif
-  return 0;
+	return 0;
 }
 
 
@@ -277,36 +263,33 @@ int initialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int postinitialise_server(void)
+int
+postinitialise_server(void)
 {
-  size_t i, j;
-  
-  /* Spawn servers that has not been spawned yet. */
-  
-  for (i = 0; i < servers; i++)
-    if (states[i].state == UNBORN)
-      spawn_server(i);
-  
-  /* Forever mark newly spawned services (after this point in time)
-     as respawned. */
-  
-  for (i = j = 0; j < servers; i++)
-    if (commands_args[i] == NULL)
-      j++;
-    else if (strequals(commands_args[i], "--initial-spawn"))
-      fail_if (xstrdup(commands_args[i], "--respawn"));
-  
-  /* Respawn dead and dead and buried servers. */
-  
-  for (i = 0; i < servers; i++)
-    if ((states[i].state == DEAD) ||
-	(states[i].state == DEAD_AND_BURIED))
-      spawn_server(i);
-  
-  return 0;
- fail:
-  xperror(*argv);
-  return 1;
+	size_t i, j;
+
+	/* Spawn servers that has not been spawned yet. */
+	for (i = 0; i < servers; i++)
+		if (states[i].state == UNBORN)
+			spawn_server(i);
+
+	/* Forever mark newly spawned services (after this point in time) as respawned. */
+  	for (i = j = 0; j < servers; i++) {
+		if (!commands_args[i])
+			j++;
+		else if (strequals(commands_args[i], "--initial-spawn"))
+			fail_if (xstrdup(commands_args[i], "--respawn"));
+	}
+
+	/* Respawn dead and dead and buried servers. */
+	for (i = 0; i < servers; i++)
+		if (states[i].state == DEAD || states[i].state == DEAD_AND_BURIED)
+			spawn_server(i);
+
+	return 0;
+fail:
+	xperror(*argv);
+	return 1;
 }
 
 
@@ -318,12 +301,13 @@ int postinitialise_server(void)
  * 
  * @return  The number of bytes that will be stored by `marshal_server`
  */
-size_t marshal_server_size(void)
+size_t
+marshal_server_size(void)
 {
-  size_t rc = sizeof(int) + sizeof(sig_atomic_t);
-  rc += sizeof(time_t) + sizeof(long);
-  rc += servers * sizeof(server_state_t);
-  return rc;
+	size_t rc = sizeof(int) + sizeof(sig_atomic_t);
+	rc += sizeof(time_t) + sizeof(long);
+	rc += servers * sizeof(server_state_t);
+	return rc;
 }
 
 
@@ -333,26 +317,26 @@ size_t marshal_server_size(void)
  * @param   state_buf  The buffer for the marshalled data
  * @return             Non-zero on error
  */
-int marshal_server(char* state_buf)
+int
+marshal_server(char *state_buf)
 {
-  size_t i;
-  struct timespec antiepoch;
-  antiepoch.tv_sec = 0;
-  antiepoch.tv_nsec = 0;
-  (void) monotone(&antiepoch);
-  buf_set_next(state_buf, int, MDS_RESPAWN_VARS_VERSION);
-  buf_set_next(state_buf, sig_atomic_t, reviving);
-  buf_set_next(state_buf, time_t, antiepoch.tv_sec);
-  buf_set_next(state_buf, long, antiepoch.tv_nsec);
-  for (i = 0; i < servers; i++)
-    {
-      buf_set_next(state_buf, pid_t, states[i].pid);
-      buf_set_next(state_buf, int, states[i].state);
-      buf_set_next(state_buf, time_t, states[i].started.tv_sec);
-      buf_set_next(state_buf, long, states[i].started.tv_nsec);
-    }
-  free(states);
-  return 0;
+	size_t i;
+	struct timespec antiepoch;
+	antiepoch.tv_sec = 0;
+	antiepoch.tv_nsec = 0;
+	(void) monotone(&antiepoch);
+	buf_set_next(state_buf, int, MDS_RESPAWN_VARS_VERSION);
+	buf_set_next(state_buf, sig_atomic_t, reviving);
+	buf_set_next(state_buf, time_t, antiepoch.tv_sec);
+	buf_set_next(state_buf, long, antiepoch.tv_nsec);
+	for (i = 0; i < servers; i++) {
+		buf_set_next(state_buf, pid_t, states[i].pid);
+		buf_set_next(state_buf, int, states[i].state);
+		buf_set_next(state_buf, time_t, states[i].started.tv_sec);
+		buf_set_next(state_buf, long, states[i].started.tv_nsec);
+	}
+	free(states);
+	return 0;
 }
 
 
@@ -366,53 +350,47 @@ int marshal_server(char* state_buf)
  * @param   state_buf  The marshalled data that as not been read already
  * @return             Non-zero on error
  */
-int unmarshal_server(char* state_buf)
+int
+unmarshal_server(char *state_buf)
 {
-  size_t i;
-  struct timespec antiepoch;
-  struct timespec epoch;
-  epoch.tv_sec = 0;
-  epoch.tv_nsec = 0;
-  (void) monotone(&epoch);
-  /* buf_get_next(state_buf, int, MDS_RESPAWN_VARS_VERSION); */
-  buf_next(state_buf, int, 1);
-  buf_get_next(state_buf, sig_atomic_t, reviving);
-  buf_get_next(state_buf, time_t, antiepoch.tv_sec);
-  buf_get_next(state_buf, long, antiepoch.tv_nsec);
-  epoch.tv_sec -= antiepoch.tv_sec;
-  epoch.tv_nsec -= antiepoch.tv_nsec;
-  for (i = 0; i < servers; i++)
-    {
-      buf_get_next(state_buf, pid_t, states[i].pid);
-      buf_get_next(state_buf, int, states[i].state);
-      buf_get_next(state_buf, time_t, states[i].started.tv_sec);
-      buf_get_next(state_buf, long, states[i].started.tv_nsec);
-      if (validate_state(states[i].state) == 0)
-	{
-	  states[i].state = CREMATED;
-	  eprintf("invalid state unmarshallaed for `%s', cremating.", commands[i][0]);
+	size_t i;
+	struct timespec antiepoch;
+	struct timespec epoch;
+	epoch.tv_sec = 0;
+	epoch.tv_nsec = 0;
+	(void) monotone(&epoch);
+	/* buf_get_next(state_buf, int, MDS_RESPAWN_VARS_VERSION); */
+	buf_next(state_buf, int, 1);
+	buf_get_next(state_buf, sig_atomic_t, reviving);
+	buf_get_next(state_buf, time_t, antiepoch.tv_sec);
+	buf_get_next(state_buf, long, antiepoch.tv_nsec);
+	epoch.tv_sec -= antiepoch.tv_sec;
+	epoch.tv_nsec -= antiepoch.tv_nsec;
+	for (i = 0; i < servers; i++) {
+		buf_get_next(state_buf, pid_t, states[i].pid);
+		buf_get_next(state_buf, int, states[i].state);
+		buf_get_next(state_buf, time_t, states[i].started.tv_sec);
+		buf_get_next(state_buf, long, states[i].started.tv_nsec);
+		if (validate_state(states[i].state) == 0) {
+			states[i].state = CREMATED;
+			eprintf("invalid state unmarshallaed for `%s', cremating.", commands[i][0]);
+		} else if (states[i].state == ALIVE) {
+			live_count++;
+			/* Monotonic time epoch adjusment, the epoch of the monotonic
+			   clock is unspecified, so we cannot know whether an exec
+			   with cause a time jump. */
+			states[i].started.tv_sec -= epoch.tv_sec;
+			states[i].started.tv_nsec -= epoch.tv_nsec;
+			if (states[i].started.tv_nsec < 0) {
+				states[i].started.tv_sec -= 1;
+				states[i].started.tv_nsec += 1000000000;
+			} else if (states[i].started.tv_nsec > 0) {
+				states[i].started.tv_sec += 1;
+				states[i].started.tv_nsec -= 1000000000;
+			}
+		}
 	}
-      else if (states[i].state == ALIVE)
-	{
-	  live_count++;
-	  /* Monotonic time epoch adjusment, the epoch of the monotonic
-	     clock is unspecified, so we cannot know whether an exec
-	     with cause a time jump. */
-	  states[i].started.tv_sec -= epoch.tv_sec;
-	  states[i].started.tv_nsec -= epoch.tv_nsec;
-	  if (states[i].started.tv_nsec < 0)
-	    {
-	      states[i].started.tv_sec -= 1;
-	      states[i].started.tv_nsec += 1000000000;
-	    }
-	  else if (states[i].started.tv_nsec > 0)
-	    {
-	      states[i].started.tv_sec += 1;
-	      states[i].started.tv_nsec -= 1000000000;
-	    }
-	}
-    }
-  return 0;
+	return 0;
 }
 
 
@@ -422,10 +400,11 @@ int unmarshal_server(char* state_buf)
  * 
  * @return  Non-zero on error
  */
-int __attribute__((cold, const)) reexec_failure_recover(void)
+int __attribute__((cold, const))
+reexec_failure_recover(void)
 {
-  /* Re-exec cannot fail. */
-  return 0;
+	/* Re-exec cannot fail. */
+	return 0;
 }
 
 
@@ -435,68 +414,64 @@ int __attribute__((cold, const)) reexec_failure_recover(void)
  * @param  pid     The process ID of the server that has exited
  * @param  status  The server's death status
  */
-static void joined_with_server(pid_t pid, int status)
+static void
+joined_with_server(pid_t pid, int status)
 {
-  struct timespec ended;
-  size_t i;
-  
-  /* Find index of reaped server. */
-  for (i = 0; i < servers; i++)
-    if (states[i].pid == pid)
-      break;
-  if (i == servers)
-    {
-      eprintf("joined with unknown child process: %i", pid);
-      return;
-    }
-  
-  /* Do nothing if the server is cremated. */
-  if (states[i].state == CREMATED)
-    {
-      eprintf("cremated child process `%s' exited, ignoring.", commands[i][0]);
-      return;
-    }
-  
-  /* Mark server as dead if it was alive.  */
-  if (states[i].state == ALIVE)
-    live_count--;
-  states[i].state = DEAD;
-  
-  /* Cremate server if it exited normally or was killed nicely. */
-  if (WIFEXITED(status) ? (WEXITSTATUS(status) == 0) :
-      ((WTERMSIG(status) == SIGTERM) || (WTERMSIG(status) == SIGINT)))
-    {
-      eprintf("child process `%s' exited normally, cremating.", commands[i][0]);
-      states[i].state = CREMATED;
-      return;
-    }
-  
-  /* Print exit status of the reaped server. */
-  if (WIFEXITED(status))
-    eprintf("`%s' exited with code %i.", commands[i][0], WEXITSTATUS(status));
-  else
-    eprintf("`%s' died by signal %i.", commands[i][0], WTERMSIG(status));
-  
-  /* When did the server exit. */
-  if (monotone(&ended) < 0)
-    {
-      xperror(*argv);
-      eprintf("`%s' died abnormally, burying because we could not read the time.", commands[i][0]);
-      states[i].state = DEAD_AND_BURIED;
-      return;
-    }
-  
-  /* Bury the server if it died abnormally too fast. */
-  if (ended.tv_sec - states[i].started.tv_sec < interval)
-    {
-      eprintf("`%s' died abnormally, burying because it died too fast.", commands[i][0]);
-      states[i].state = DEAD_AND_BURIED;
-      return;
-    }
-  
-  /* Respawn server if it died abnormally in a responable time. */
-  eprintf("`%s' died abnormally, respawning.", commands[i][0]);
-  spawn_server(i);
+	struct timespec ended;
+	size_t i;
+
+	/* Find index of reaped server. */
+	for (i = 0; i < servers; i++)
+		if (states[i].pid == pid)
+			break;
+	if (i == servers) {
+		eprintf("joined with unknown child process: %i", pid);
+		return;
+	}
+
+	/* Do nothing if the server is cremated. */
+	if (states[i].state == CREMATED) {
+		eprintf("cremated child process `%s' exited, ignoring.", commands[i][0]);
+		return;
+	}
+
+	/* Mark server as dead if it was alive.  */
+	if (states[i].state == ALIVE)
+		live_count--;
+	states[i].state = DEAD;
+
+	/* Cremate server if it exited normally or was killed nicely. */
+	if (WIFEXITED(status) ? !WEXITSTATUS(status) :
+	    (WTERMSIG(status) == SIGTERM || WTERMSIG(status) == SIGINT)) {
+		eprintf("child process `%s' exited normally, cremating.", commands[i][0]);
+		states[i].state = CREMATED;
+		return;
+	}
+
+	/* Print exit status of the reaped server. */
+	if (WIFEXITED(status))
+		eprintf("`%s' exited with code %i.", commands[i][0], WEXITSTATUS(status));
+	else
+		eprintf("`%s' died by signal %i.", commands[i][0], WTERMSIG(status));
+
+	/* When did the server exit. */
+	if (monotone(&ended) < 0) {
+		xperror(*argv);
+		eprintf("`%s' died abnormally, burying because we could not read the time.", commands[i][0]);
+		states[i].state = DEAD_AND_BURIED;
+		return;
+	}
+
+	/* Bury the server if it died abnormally too fast. */
+	if (ended.tv_sec - states[i].started.tv_sec < interval) {
+		eprintf("`%s' died abnormally, burying because it died too fast.", commands[i][0]);
+		states[i].state = DEAD_AND_BURIED;
+		return;
+	}
+
+	/* Respawn server if it died abnormally in a responable time. */
+	eprintf("`%s' died abnormally, respawning.", commands[i][0]);
+	spawn_server(i);
 }
 
 
@@ -505,36 +480,36 @@ static void joined_with_server(pid_t pid, int status)
  * 
  * @return  Non-zero on error
  */
-int master_loop(void)
+int
+master_loop(void)
 {
-  int status, rc = 0;
-  size_t i;
-  
-  while (!reexecing && !terminating && live_count)
-    {
-      pid_t pid = uninterruptable_waitpid(-1, &status, 0);
-      
-      if (reviving)
-	for (reviving = 0, i = 0; i < servers; i++)
-	  if (states[i].state == DEAD_AND_BURIED)
-	    spawn_server(i);
-      
-      if (pid == (pid_t)-1)
-	{
-	  xperror(*argv);
-	  rc = 1;
-	  break;
+	int status, rc = 0;
+	size_t i;
+	pid_t pid;
+
+	while (!reexecing && !terminating && live_count) {
+		pid = uninterruptable_waitpid(-1, &status, 0);
+
+		if (reviving)
+			for (reviving = 0, i = 0; i < servers; i++)
+				if (states[i].state == DEAD_AND_BURIED)
+					spawn_server(i);
+
+		if (pid == (pid_t)-1) {
+			xperror(*argv);
+			rc = 1;
+			break;
+		}
+
+		joined_with_server(pid, status);
 	}
-      
-      joined_with_server(pid, status);
-    }
-  
-  free(commands_args);
-  free(commands);
-  if (reexecing == 0)
-    free(states);
-  
-  return rc;
+
+	free(commands_args);
+	free(commands);
+	if (!reexecing)
+		free(states);
+
+	return rc;
 }
 
 
@@ -545,41 +520,40 @@ int master_loop(void)
  * 
  * @param  signo  The signal that has been received
  */
-void received_info(int signo)
+void
+received_info(int signo)
 {
-  SIGHANDLER_START;
-  server_state_t state;
-  size_t i, n = servers;
-  char** cmdline;
-  struct timespec now;
-  (void) signo;
-  if (monotone(&now) < 0)
-    iprint("(unable to get current time)");
-  else
-    iprintf("current time: %ji.%09li", (intmax_t)(now.tv_sec), (long)(now.tv_nsec));
-  iprintf("do-not-resuscitate period: %i seconds", interval);
-  iprintf("managed servers: %zu", n);
-  iprintf("alive servers: %zu", live_count);
-  iprintf("reviving: %s", reviving ? "yes" : "no");
-  for (i = 0; i < n; i++)
-    {
-      state = states[i];
-      cmdline = commands[i];
-      iprintf("managed server %zu: pid: %li", i, (long)(state.pid));
-      iprintf("managed server %zu: state: %s", i,
-	      state.state == UNBORN          ? "not started yet" :
-	      state.state == ALIVE           ? "up and running" :
-	      state.state == DEAD            ? "about to be respawn" :
-	      state.state == DEAD_AND_BURIED ? "requires SIGUSR2 to respawn" :
-	      state.state == CREMATED        ? "will never respawn" :
-	      "unrecognised state, something is wrong here!");
-      iprintf("managed server %zu: started: %ji.%09li", i,
-	      (intmax_t)(state.started.tv_sec),
-	      (long)(state.started.tv_nsec));
-      iprintf("managed server %zu: cmdline:", i);
-      while (*cmdline)
-	iprintf("  %z", *cmdline++);
-    }
-  SIGHANDLER_END;
+	SIGHANDLER_START;
+	server_state_t state;
+	size_t i, n = servers;
+	char **cmdline;
+	struct timespec now;
+	if (monotone(&now) < 0)
+		iprint("(unable to get current time)");
+	else
+		iprintf("current time: %ji.%09li", (intmax_t)(now.tv_sec), (long)(now.tv_nsec));
+	iprintf("do-not-resuscitate period: %i seconds", interval);
+	iprintf("managed servers: %zu", n);
+	iprintf("alive servers: %zu", live_count);
+	iprintf("reviving: %s", reviving ? "yes" : "no");
+	for (i = 0; i < n; i++) {
+		state = states[i];
+		cmdline = commands[i];
+		iprintf("managed server %zu: pid: %li", i, (long)(state.pid));
+		iprintf("managed server %zu: state: %s", i,
+		        state.state == UNBORN          ? "not started yet" :
+		        state.state == ALIVE           ? "up and running" :
+		        state.state == DEAD            ? "about to be respawn" :
+		        state.state == DEAD_AND_BURIED ? "requires SIGUSR2 to respawn" :
+		        state.state == CREMATED        ? "will never respawn" :
+		        "unrecognised state, something is wrong here!");
+		iprintf("managed server %zu: started: %ji.%09li", i,
+		        (intmax_t)(state.started.tv_sec),
+		        (long)(state.started.tv_nsec));
+		iprintf("managed server %zu: cmdline:", i);
+		while (*cmdline)
+			iprintf("  %z", *cmdline++);
+	}
+	SIGHANDLER_END;
+	(void) signo;
 }
-

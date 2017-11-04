@@ -26,14 +26,14 @@
 
 
 #ifndef __USE_GNU
-__attribute__((pure, nonnull))
-static inline void* rawmemchr(const void* str, int chr)
+static inline void *__attribute__((pure, nonnull))
+rawmemchr(const void *str, int chr)
 {
-  intptr_t str_address = (intptr_t)str;
-  void* str_nonconst = (void*)str_address;
-  char* s = str_nonconst;
-  while ((int)*s++ != chr);
-  return s - 1;
+	intptr_t str_address = (intptr_t)str;
+	void *str_nonconst = (void*)str_address;
+	char *s = str_nonconst;
+	while ((int)*s++ != chr);
+	return s - 1;
 }
 #endif
 
@@ -45,7 +45,7 @@ static inline void* rawmemchr(const void* str, int chr)
  * @return       The client ID integer
  */
 __attribute__((pure, nonnull))
-uint64_t parse_client_id(const char* str);
+uint64_t parse_client_id(const char *str);
 
 /**
  * Read an environment variable, but handle it as undefined if empty
@@ -54,7 +54,7 @@ uint64_t parse_client_id(const char* str);
  * @return       The environment variable's value, `NULL` if empty or not defined
  */
 __attribute__((nonnull))
-char* getenv_nonempty(const char* var);
+char *getenv_nonempty(const char *var);
 
 /**
  * Prepare the server so that it can reexec into
@@ -88,7 +88,7 @@ int prepare_reexec(void);
  * @param  argv      The command line arguments
  * @param  reexeced  Whether the server has previously been re-exec:ed
  */
-void reexec_server(int argc, char** argv, int reexeced);
+void reexec_server(int argc, char **argv, int reexeced);
 
 /**
  * Set up a signal trap.
@@ -112,7 +112,7 @@ int xsigaction(int signo, void (*function)(int signo));
  * @param   length   The length of the message
  * @return           The number of bytes that have been sent (even on error)
  */
-size_t send_message(int socket, const char* message, size_t length);
+size_t send_message(int socket, const char *message, size_t length);
 
 /**
  * A version of `atoi` that is strict about the syntax and bounds
@@ -124,7 +124,7 @@ size_t send_message(int socket, const char* message, size_t length);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoi(const char* str, int* value, int min, int max);
+int strict_atoi(const char *str, int *value, int min, int max);
 
 /**
  * A version of `atoj` that is strict about the syntax and bounds
@@ -136,7 +136,7 @@ int strict_atoi(const char* str, int* value, int min, int max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoj(const char* str, intmax_t* value, intmax_t min, intmax_t max);
+int strict_atoj(const char *str, intmax_t *value, intmax_t min, intmax_t max);
 
 /**
  * A version of `atouj` that is strict about the syntax and bounds
@@ -148,7 +148,7 @@ int strict_atoj(const char* str, intmax_t* value, intmax_t min, intmax_t max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max);
+int strict_atouj(const char *str, uintmax_t *value, uintmax_t min, uintmax_t max);
 
 /**
  * A version of `atoh` that is strict about the syntax and bounds
@@ -160,7 +160,7 @@ int strict_atouj(const char* str, uintmax_t* value, uintmax_t min, uintmax_t max
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoh(const char* str, short int* value, int min, int max);
+int strict_atoh(const char *str, short int *value, int min, int max);
 
 /**
  * A version of `atouh` that is strict about the syntax and bounds
@@ -172,7 +172,7 @@ int strict_atoh(const char* str, short int* value, int min, int max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atouh(const char* str, unsigned short int* value, unsigned int min, unsigned int max);
+int strict_atouh(const char *str, unsigned short int *value, unsigned int min, unsigned int max);
 
 /**
  * A version of `atou` that is strict about the syntax and bounds
@@ -184,7 +184,7 @@ int strict_atouh(const char* str, unsigned short int* value, unsigned int min, u
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atou(const char* str, unsigned int* value, unsigned int min, unsigned int max);
+int strict_atou(const char *str, unsigned int *value, unsigned int min, unsigned int max);
 
 /**
  * A version of `atol` that is strict about the syntax and bounds
@@ -196,7 +196,7 @@ int strict_atou(const char* str, unsigned int* value, unsigned int min, unsigned
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atol(const char* str, long int* value, long int min, long int max);
+int strict_atol(const char *str, long int *value, long int min, long int max);
 
 /**
  * A version of `atoul` that is strict about the syntax and bounds
@@ -208,7 +208,7 @@ int strict_atol(const char* str, long int* value, long int min, long int max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoul(const char* str, unsigned long int* value, unsigned long int min, unsigned long int max);
+int strict_atoul(const char *str, unsigned long int *value, unsigned long int min, unsigned long int max);
 
 /**
  * A version of `atoll` that is strict about the syntax and bounds
@@ -220,7 +220,7 @@ int strict_atoul(const char* str, unsigned long int* value, unsigned long int mi
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoll(const char* str, long long int* value, long long int min, long long int max);
+int strict_atoll(const char *str, long long int *value, long long int min, long long int max);
 
 /**
  * A version of `atoull` that is strict about the syntax and bounds
@@ -232,8 +232,8 @@ int strict_atoll(const char* str, long long int* value, long long int min, long 
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoull(const char* str, unsigned long long int* value,
-		  unsigned long long int min, unsigned long long int max);
+int strict_atoull(const char *str, unsigned long long int *value,
+                  unsigned long long int min, unsigned long long int max);
 
 /**
  * A version of `atoz` that is strict about the syntax and bounds
@@ -245,7 +245,7 @@ int strict_atoull(const char* str, unsigned long long int* value,
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atoz(const char* str, size_t* value, size_t min, size_t max);
+int strict_atoz(const char *str, size_t *value, size_t min, size_t max);
 
 /**
  * A version of `atosz` that is strict about the syntax and bounds
@@ -257,7 +257,7 @@ int strict_atoz(const char* str, size_t* value, size_t min, size_t max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atosz(const char* str, ssize_t* value, ssize_t min, ssize_t max);
+int strict_atosz(const char *str, ssize_t *value, ssize_t min, ssize_t max);
 
 /**
  * A version of `ato8` that is strict about the syntax and bounds
@@ -269,7 +269,7 @@ int strict_atosz(const char* str, ssize_t* value, ssize_t min, ssize_t max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_ato8(const char* str, int8_t* value, int min, int max);
+int strict_ato8(const char *str, int8_t *value, int min, int max);
 
 /**
  * A version of `atou8` that is strict about the syntax and bounds
@@ -281,7 +281,7 @@ int strict_ato8(const char* str, int8_t* value, int min, int max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atou8(const char* str, uint8_t* value, int min, int max);
+int strict_atou8(const char *str, uint8_t *value, int min, int max);
 
 /**
  * A version of `ato16` that is strict about the syntax and bounds
@@ -293,7 +293,7 @@ int strict_atou8(const char* str, uint8_t* value, int min, int max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_ato16(const char* str, int16_t* value, int min, int max);
+int strict_ato16(const char *str, int16_t *value, int min, int max);
 
 /**
  * A version of `atou16` that is strict about the syntax and bounds
@@ -305,7 +305,7 @@ int strict_ato16(const char* str, int16_t* value, int min, int max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atou16(const char* str, uint16_t* value, unsigned int min, unsigned int max);
+int strict_atou16(const char *str, uint16_t *value, unsigned int min, unsigned int max);
 
 /**
  * A version of `ato32` that is strict about the syntax and bounds
@@ -317,7 +317,7 @@ int strict_atou16(const char* str, uint16_t* value, unsigned int min, unsigned i
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_ato32(const char* str, int32_t* value, int32_t min, int32_t max);
+int strict_ato32(const char *str, int32_t *value, int32_t min, int32_t max);
 
 /**
  * A version of `atou32` that is strict about the syntax and bounds
@@ -329,7 +329,7 @@ int strict_ato32(const char* str, int32_t* value, int32_t min, int32_t max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atou32(const char* str, uint32_t* value, uint32_t min, uint32_t max);
+int strict_atou32(const char *str, uint32_t *value, uint32_t min, uint32_t max);
 
 /**
  * A version of `ato64` that is strict about the syntax and bounds
@@ -341,7 +341,7 @@ int strict_atou32(const char* str, uint32_t* value, uint32_t min, uint32_t max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_ato64(const char* str, int64_t* value, int64_t min, int64_t max);
+int strict_ato64(const char *str, int64_t *value, int64_t min, int64_t max);
 
 /**
  * A version of `atou64` that is strict about the syntax and bounds
@@ -353,7 +353,7 @@ int strict_ato64(const char* str, int64_t* value, int64_t min, int64_t max);
  * @return         Zero on success, -1 on syntax error
  */
 __attribute__((nonnull))
-int strict_atou64(const char* str, uint64_t* value, uint64_t min, uint64_t max);
+int strict_atou64(const char *str, uint64_t *value, uint64_t min, uint64_t max);
 
 /**
  * Send a buffer into a file and ignore interruptions
@@ -363,7 +363,7 @@ int strict_atou64(const char* str, uint64_t* value, uint64_t min, uint64_t max);
  * @param   length  The length of the buffer
  * @return          Zero on success, -1 on error
  */
-int full_write(int fd, const char* buffer, size_t length);
+int full_write(int fd, const char *buffer, size_t length);
 
 /**
  * Read a file completely and ignore interruptions
@@ -372,7 +372,7 @@ int full_write(int fd, const char* buffer, size_t length);
  * @param   length  Output parameter for the length of the file, may be `NULL`
  * @return          The content of the file, you will need to free it. `NULL` on error
  */
-char* full_read(int fd, size_t* length);
+char *full_read(int fd, size_t *length);
 
 /**
  * Send a full message even if interrupted
@@ -382,7 +382,7 @@ char* full_read(int fd, size_t* length);
  * @param   length   The length of the message
  * @return           Zero on success, -1 on error
  */
-int full_send(int socket, const char* message, size_t length);
+int full_send(int socket, const char *message, size_t length);
 
 /**
  * Check whether a string begins with a specific string,
@@ -395,7 +395,7 @@ int full_send(int socket, const char* message, size_t length);
  * @return              Whether the `haystack` begins with `needle`
  */
 __attribute__((pure, nonnull))
-int startswith_n(const char* haystack, const char* needle, size_t haystack_n, size_t needle_n);
+int startswith_n(const char *haystack, const char *needle, size_t haystack_n, size_t needle_n);
 
 /**
  * Wrapper around `waitpid` that never returns on an interruption unless
@@ -406,7 +406,7 @@ int startswith_n(const char* haystack, const char* needle, size_t haystack_n, si
  * @param   options  See description of `options` in the documentation for `waitpid`
  * @return           See the documentation for `waitpid`
  */
-pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options);
+pid_t uninterruptable_waitpid(pid_t pid, int *restrict status, int options);
 
 /**
  * Check whether a NUL-terminated string is encoded in UTF-8
@@ -416,7 +416,7 @@ pid_t uninterruptable_waitpid(pid_t pid, int* restrict status, int options);
  * @return                      Zero if good, -1 on encoding error
  */
 __attribute__((pure, nonnull))
-int verify_utf8(const char* string, int allow_modified_nul);
+int verify_utf8(const char *string, int allow_modified_nul);
 
 /**
  * Construct an error message to be sent to a client
@@ -444,10 +444,10 @@ int verify_utf8(const char* string, int allow_modified_nul);
  * @return                    The length of the message, zero on error
  */
 __attribute__((nonnull(1, 2, 3, 7, 8)))
-size_t construct_error_message(const char* restrict recv_client_id, const char* restrict recv_message_id,
-			       const char* restrict recv_command, int custom, int errnum,
-			       const char* restrict message, char** restrict send_buffer,
-			       size_t* restrict send_buffer_size, uint32_t message_id);
+size_t construct_error_message(const char *restrict recv_client_id, const char *restrict recv_message_id,
+                               const char *restrict recv_command, int custom, int errnum,
+                               const char *restrict message, char **restrict send_buffer,
+                               size_t *restrict send_buffer_size, uint32_t message_id);
 
 /**
  * Send an error message
@@ -476,11 +476,10 @@ size_t construct_error_message(const char* restrict recv_client_id, const char* 
  * @return                    Zero on success, -1 on error
  */
 __attribute__((nonnull(1, 2, 3, 7, 8)))
-int send_error(const char* restrict recv_client_id, const char* restrict recv_message_id,
-	       const char* restrict recv_command, int custom, int errnum, const char* restrict message,
-	       char** restrict send_buffer, size_t* restrict send_buffer_size, uint32_t message_id,
-	       int socket_fd);
+int send_error(const char *restrict recv_client_id, const char *restrict recv_message_id,
+               const char *restrict recv_command, int custom, int errnum, const char *restrict message,
+               char **restrict send_buffer, size_t *restrict send_buffer_size, uint32_t message_id,
+               int socket_fd);
 
 
 #endif
-

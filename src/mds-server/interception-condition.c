@@ -30,9 +30,10 @@
  * @param   this  The interception condition
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t interception_condition_marshal_size(const interception_condition_t* restrict this)
+size_t
+interception_condition_marshal_size(const interception_condition_t *restrict this)
 {
-  return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + (strlen(this->condition) + 1) * sizeof(char);
+	return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + (strlen(this->condition) + 1) * sizeof(char);
 }
 
 /**
@@ -42,15 +43,16 @@ size_t interception_condition_marshal_size(const interception_condition_t* restr
  * @param   data  Output buffer for the marshalled data
  * @return        The number of bytes that have been written (everything will be written)
  */
-size_t interception_condition_marshal(const interception_condition_t* restrict this, char* restrict data)
+size_t
+interception_condition_marshal(const interception_condition_t *restrict this, char *restrict data)
 {
-  size_t n = (strlen(this->condition) + 1) * sizeof(char);
-  buf_set_next(data, int, INTERCEPTION_CONDITION_T_VERSION);
-  buf_set_next(data, size_t, this->header_hash);
-  buf_set_next(data, int64_t, this->priority);
-  buf_set_next(data, int, this->modifying);
-  memcpy(data, this->condition, n);
-  return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + n;
+	size_t n = (strlen(this->condition) + 1) * sizeof(char);
+	buf_set_next(data, int, INTERCEPTION_CONDITION_T_VERSION);
+	buf_set_next(data, size_t, this->header_hash);
+	buf_set_next(data, int64_t, this->priority);
+	buf_set_next(data, int, this->modifying);
+	memcpy(data, this->condition, n);
+	return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + n;
 }
 
 
@@ -61,20 +63,21 @@ size_t interception_condition_marshal(const interception_condition_t* restrict t
  * @param   data  In buffer with the marshalled data
  * @return        Zero on error, `errno` will be set accordingly, otherwise the number of read bytes
  */
-size_t interception_condition_unmarshal(interception_condition_t* restrict this, char* restrict data)
+size_t
+interception_condition_unmarshal(interception_condition_t *restrict this, char *restrict data)
 {
-  size_t n;
-  this->condition = NULL;
-  /* buf_get_next(data, int, INTERCEPTION_CONDITION_T_VERSION); */
-  buf_next(data, int, 1);
-  buf_get_next(data, size_t, this->header_hash);
-  buf_get_next(data, int64_t, this->priority);
-  buf_get_next(data, int, this->modifying);
-  n = strlen(data) + 1;
-  fail_if (xmemdup(this->condition, data, n, char));
-  return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + n * sizeof(char);
- fail:
-  return 0;
+	size_t n;
+	this->condition = NULL;
+	/* buf_get_next(data, int, INTERCEPTION_CONDITION_T_VERSION); */
+	buf_next(data, int, 1);
+	buf_get_next(data, size_t, this->header_hash);
+	buf_get_next(data, int64_t, this->priority);
+	buf_get_next(data, int, this->modifying);
+	n = strlen(data) + 1;
+	fail_if (xmemdup(this->condition, data, n, char));
+	return sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int) + n * sizeof(char);
+fail:
+	return 0;
 }
 
 
@@ -84,14 +87,14 @@ size_t interception_condition_unmarshal(interception_condition_t* restrict this,
  * @param   data  In buffer with the marshalled data
  * @return        The number of read bytes
  */
-size_t interception_condition_unmarshal_skip(char* restrict data)
+size_t
+interception_condition_unmarshal_skip(char *restrict data)
 {
-  size_t n = sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int);
-  buf_next(data, int, 1);
-  buf_next(data, size_t, 1);
-  buf_next(data, int64_t, 1);
-  buf_next(data, int, 1);
-  n += (strlen(data) + 1) * sizeof(char);
-  return n;
+	size_t n = sizeof(size_t) + sizeof(int64_t) + 2 * sizeof(int);
+	buf_next(data, int, 1);
+	buf_next(data, size_t, 1);
+	buf_next(data, int64_t, 1);
+	buf_next(data, int, 1);
+	n += (strlen(data) + 1) * sizeof(char);
+	return n;
 }
-

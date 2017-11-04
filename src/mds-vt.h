@@ -32,7 +32,7 @@
  * @param   data  Thread input parameter, will always be `NULL`
  * @return        Thread return value, will always be `NULL`
  */
-void* secondary_loop(void* data);
+void *secondary_loop(void *data);
 
 
 /**
@@ -58,7 +58,7 @@ int handle_message(void);
  * @param   message  The value of the header `Message ID` in the received message
  * @return           Zero on success, -1 on error
  */
-int handle_get_vt(const char* client, const char* message);
+int handle_get_vt(const char *client, const char *message);
 
 /**
  * Handle a received `Command: configure-vt` message
@@ -69,7 +69,7 @@ int handle_get_vt(const char* client, const char* message);
  * @param   exclusive  The value of the header `Exclusive` in the received message
  * @return             Zero on success, -1 on error
  */
-int handle_configure_vt(const char* client, const char* message, const char* graphical, const char* exclusive);
+int handle_configure_vt(const char *client, const char *message, const char *graphical, const char *exclusive);
 
 
 /**
@@ -121,7 +121,7 @@ int vt_set_active(int vt);
  * @param   old_stat  Output parameter for the old file stat for the terminal
  * @return            The file descriptor for the terminal, -1 on error
  */
-int vt_open(int vt, struct stat* restrict old_stat);
+int vt_open(int vt, struct stat *restrict old_stat);
 
 
 /**
@@ -130,7 +130,7 @@ int vt_open(int vt, struct stat* restrict old_stat);
  * @param  vt        The index of the terminal
  * @param  old_stat  The old file stat for the terminal
  */
-void vt_close(int fd, struct stat* restrict old_stat);
+void vt_close(int fd, struct stat *restrict old_stat);
 
 
 
@@ -141,8 +141,8 @@ void vt_close(int fd, struct stat* restrict old_stat);
  * @param   exclusive:int  Whether to block other programs for using the terminal
  * @return  :int           Zero on success, -1 on error
  */
-#define vt_set_exclusive(fd, exclusive)  \
-  (ioctl(fd, (exclusive) ? TIOCEXCL : TIOCNXCL))
+#define vt_set_exclusive(fd, exclusive)\
+	(ioctl(fd, (exclusive) ? TIOCEXCL : TIOCNXCL))
 
 
 /**
@@ -152,8 +152,8 @@ void vt_close(int fd, struct stat* restrict old_stat);
  * @param   graphical:int  Whether to use graphical mode
  * @return  :int           Zero on success, -1 on error
  */
-#define vt_set_graphical(fd, graphical)  \
-  (ioctl(fd, KDSETMODE, (graphical) ? KD_GRAPHICS : KD_TEXT))
+#define vt_set_graphical(fd, graphical)\
+	(ioctl(fd, KDSETMODE, (graphical) ? KD_GRAPHICS : KD_TEXT))
 
 
 /**
@@ -167,7 +167,7 @@ void vt_close(int fd, struct stat* restrict old_stat);
  * @param  mode               Output parameter
  */
 void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
-		       int vt_enter_signal, struct vt_mode* restrict mode);
+                       int vt_enter_signal, struct vt_mode *restrict mode);
 
 
 /**
@@ -178,8 +178,8 @@ void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
  * @param   mode:struct vt_mode*  Input or outpur parameter for the mode
  * @return  :int                  Zero on success, -1 on error
  */
-#define vt_get_set_mode(fd, set, mode)  \
-  (ioctl(fd, set ? VT_SETMODE : VT_GETMODE, mode))
+#define vt_get_set_mode(fd, set, mode)\
+	(ioctl(fd, set ? VT_SETMODE : VT_GETMODE, mode))
 
 
 /**
@@ -188,8 +188,8 @@ void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
  * @param   fd:int  File descriptor for our terminal
  * @return  :int    Zero on success, -1 on error
  */
-#define vt_stop_switch(fd)  \
-  (ioctl(fd, VT_RELDISP, 0))
+#define vt_stop_switch(fd)\
+	(ioctl(fd, VT_RELDISP, 0))
 
 
 /**
@@ -198,8 +198,8 @@ void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
  * @param   fd:int  File descriptor for our terminal
  * @return  :int    Zero on success, -1 on error
  */
-#define vt_continue_switch(fd)  \
-  (ioctl(fd, VT_RELDISP, 1))
+#define vt_continue_switch(fd)\
+	(ioctl(fd, VT_RELDISP, 1))
 
 
 /**
@@ -208,8 +208,8 @@ void vt_construct_mode(int vt_switch_control, int vt_leave_signal,
  * @param   fd:int  File descriptor for our terminal
  * @return  :int    Zero on success, -1 on error
  */
-#define vt_accept_switch(fd)  \
-  (ioctl(fd, VT_RELDISP, VT_ACKACQ))
+#define vt_accept_switch(fd)\
+	(ioctl(fd, VT_RELDISP, VT_ACKACQ))
 
 
 #endif

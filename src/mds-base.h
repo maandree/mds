@@ -32,53 +32,53 @@
  */
 typedef struct server_characteristics
 {
-  /**
-   * Setting this to zero will cause the server to drop privileges as a security precaution
-   */
-  unsigned require_privileges : 1;
-  
-  /**
-   * Setting this to non-zero will cause the server to connect to the display
-   */
-  unsigned require_display : 1;
-  
-  /**
-   * Setting this to non-zero will cause the server to refuse to
-   * start unless either --initial-spawn or --respawn is used
-   */
-  unsigned require_respawn_info : 1;
-  
-  /**
-   * Setting this to non-zero will cause the server to refuse to
-   * start if there are too many command line arguments
-   */
-  unsigned sanity_check_argc : 1;
-  
-  /**
-   * Setting this to non-zero will cause the server to place
-   * itself in a fork of itself when initialised. This can be
-   * used to let the server clean up fatal stuff after itself
-   * if it crashes. When the child exits, no matter how it
-   * exits, the parent will call `fork_cleanup` and then
-   * die it the same manner as the child.
-   */
-  unsigned fork_for_safety : 1;
-  
-  /**
-   * Setting this to non-zero without setting a signal action
-   * for `SIGDANGER` will cause the server to die if `SIGDANGER`
-   * is received. It is safe to set both `danger_is_deadly` and
-   * `fork_for_safety` to non-zero, during the call of
-   * `server_initialised` the signal handler for `SIGDANGER`
-   * in the parent process will be set to `SIG_IGN` independently
-   * of the value of `danger_is_deadly` if `fork_for_safety`
-   * is set to non-zero.
-   * 
-   * This setting will be treated as set to zero if
-   * --immortal is used.
-   */
-  unsigned danger_is_deadly : 1;
-  
+	/**
+	 * Setting this to zero will cause the server to drop privileges as a security precaution
+	 */
+	unsigned require_privileges : 1;
+
+	/**
+	 * Setting this to non-zero will cause the server to connect to the display
+	 */
+	unsigned require_display : 1;
+
+	/**
+	 * Setting this to non-zero will cause the server to refuse to
+	 * start unless either --initial-spawn or --respawn is used
+	 */
+	unsigned require_respawn_info : 1;
+
+	/**
+	 * Setting this to non-zero will cause the server to refuse to
+	 * start if there are too many command line arguments
+	 */
+	unsigned sanity_check_argc : 1;
+
+	/**
+	 * Setting this to non-zero will cause the server to place
+	 * itself in a fork of itself when initialised. This can be
+	 * used to let the server clean up fatal stuff after itself
+	 * if it crashes. When the child exits, no matter how it
+	 * exits, the parent will call `fork_cleanup` and then
+	 * die it the same manner as the child.
+	 */
+	unsigned fork_for_safety : 1;
+
+	/**
+	 * Setting this to non-zero without setting a signal action
+	 * for `SIGDANGER` will cause the server to die if `SIGDANGER`
+	 * is received. It is safe to set both `danger_is_deadly` and
+	 * `fork_for_safety` to non-zero, during the call of
+	 * `server_initialised` the signal handler for `SIGDANGER`
+	 * in the parent process will be set to `SIG_IGN` independently
+	 * of the value of `danger_is_deadly` if `fork_for_safety`
+	 * is set to non-zero.
+	 * 
+	 * This setting will be treated as set to zero if
+	 * --immortal is used.
+	 */
+	unsigned danger_is_deadly : 1;
+
 } __attribute__((packed)) server_characteristics_t;
 
 
@@ -100,7 +100,7 @@ extern int argc;
 /**
  * Command line arguments
  */
-extern char** argv;
+extern char **argv;
 
 /**
  * Whether the server has been respawn
@@ -298,7 +298,7 @@ extern size_t marshal_server_size(void);
  * @return             Non-zero on error
  */
 __attribute__((nonnull))
-extern int marshal_server(char* state_buf);
+extern int marshal_server(char *state_buf);
 
 /**
  * This function should be implemented by the actual server implementation
@@ -313,7 +313,7 @@ extern int marshal_server(char* state_buf);
  * @return             Non-zero on error
  */
 __attribute__((nonnull))
-extern int unmarshal_server(char* state_buf);
+extern int unmarshal_server(char *state_buf);
 
 /**
  * This function should be implemented by the actual server implementation
@@ -349,4 +349,3 @@ void fork_cleanup(int status); /* __attribute__((weak)) */
 
 
 #endif
-

@@ -25,7 +25,7 @@
 
 
 
-#define min(a, b)  ((a) < (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 
 
@@ -40,17 +40,17 @@
  * @throws  ENOMEM  See pthread_mutex_init(3)
  * @throws  EPERM   See pthread_mutex_init(3)
  */
-int libmds_connection_initialise(libmds_connection_t* restrict this)
+int libmds_connection_initialise(libmds_connection_t *restrict this)
 {
-  this->socket_fd = -1;
-  this->message_id = UINT32_MAX;
-  this->client_id = NULL;
-  this->mutex_initialised = 0;
-  errno = pthread_mutex_init(&(this->mutex), NULL);
-  if (errno)
-    return -1;
-  this->mutex_initialised = 1;
-  return 0;
+	this->socket_fd = -1;
+	this->message_id = UINT32_MAX;
+	this->client_id = NULL;
+	this->mutex_initialised = 0;
+	errno = pthread_mutex_init(&(this->mutex), NULL);
+	if (errno)
+		return -1;
+	this->mutex_initialised = 1;
+	return 0;
 }
 
 
@@ -65,12 +65,13 @@ int libmds_connection_initialise(libmds_connection_t* restrict this)
  * @throws  EAGAIN  See pthread_mutex_init(3)
  * @throws  EPERM   See pthread_mutex_init(3)
  */
-libmds_connection_t* libmds_connection_create(void)
+libmds_connection_t *
+libmds_connection_create(void)
 {
-  libmds_connection_t* rc = malloc(sizeof(libmds_connection_t));
-  if (rc == NULL)
-    return NULL;
-  return libmds_connection_initialise(rc) ? NULL : rc;
+	libmds_connection_t *rc = malloc(sizeof(libmds_connection_t));
+	if (!rc)
+		return NULL;
+	return libmds_connection_initialise(rc) ? NULL : rc;
 }
 
 
@@ -79,25 +80,24 @@ libmds_connection_t* libmds_connection_create(void)
  * 
  * @param  this  The connection descriptor, may be `NULL`
  */
-void libmds_connection_destroy(libmds_connection_t* restrict this)
+void
+libmds_connection_destroy(libmds_connection_t *restrict this)
 {
-  if (this == NULL)
-    return;
-  
-  if (this->socket_fd >= 0)
-    {
-      close(this->socket_fd); /* TODO Linux closes the filedescriptor on EINTR, but POSIX does not require that. */
-      this->socket_fd = -1;
-    }
-  
-  free(this->client_id);
-  this->client_id = NULL;
-  
-  if (this->mutex_initialised)
-    {
-      this->mutex_initialised = 0;
-      pthread_mutex_destroy(&(this->mutex)); /* Can return EBUSY. */
-    }
+	if (!this)
+		return;
+
+	if (this->socket_fd >= 0) {
+		close(this->socket_fd); /* TODO Linux closes the filedescriptor on EINTR, but POSIX does not require that. */
+		this->socket_fd = -1;
+	}
+
+	free(this->client_id);
+	this->client_id = NULL;
+
+	if (this->mutex_initialised) {
+		this->mutex_initialised = 0;
+		pthread_mutex_destroy(&(this->mutex)); /* Can return EBUSY. */
+	}
 }
 
 
@@ -107,10 +107,11 @@ void libmds_connection_destroy(libmds_connection_t* restrict this)
  * 
  * @param  this  The connection descriptor, may be `NULL`
  */
-void libmds_connection_free(libmds_connection_t* restrict this)
+void
+libmds_connection_free(libmds_connection_t *restrict this)
 {
-  libmds_connection_destroy(this);
-  free(this);
+	libmds_connection_destroy(this);
+	free(this);
 }
 
 
@@ -137,36 +138,37 @@ void libmds_connection_free(libmds_connection_t* restrict this)
  * @throws                Any error specified for socket(2)
  * @throws                Any error specified for connect(2), except EINTR
  */
-int libmds_connection_establish(libmds_connection_t* restrict this, const char** restrict display)
+int
+libmds_connection_establish(libmds_connection_t *restrict this, const char **restrict display)
 {
-  libmds_display_address_t addr;
-  int saved_errno;
-  
-  addr.address = NULL;
-  
-  if (*display == NULL)
-    *display = getenv("MDS_DISPLAY");
-  
-  if ((*display == NULL) || (strchr(*display, ':') == NULL))
-    goto efault;
-  
-  if (libmds_parse_display_address(*display, &addr) < 0)
-    goto fail;
-  
-  if (libmds_connection_establish_address(this, &addr) < 0)
-    goto fail;
-  
-  free(addr.address);
-  return 0;
-  
- efault:
-  free(addr.address);
-  return errno = EFAULT, -1;
-  
- fail:
-  saved_errno = errno;
-  free(addr.address);
-  return errno = saved_errno, -1;
+	libmds_display_address_t addr;
+	int saved_errno;
+
+	addr.address = NULL;
+
+	if (!*display)
+		*display = getenv("MDS_DISPLAY");
+
+	if (!*display || !strchr(*display, ':'))
+		goto efault;
+
+	if (libmds_parse_display_address(*display, &addr) < 0)
+		goto fail;
+
+	if (libmds_connection_establish_address(this, &addr) < 0)
+		goto fail;
+
+	free(addr.address);
+	return 0;
+
+efault:
+	free(addr.address);
+	return errno = EFAULT, -1;
+
+fail:
+	saved_errno = errno;
+	free(addr.address);
+	return errno = saved_errno, -1;
 }
 
 
@@ -186,28 +188,29 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
  * @throws           Any error specified for socket(2)
  * @throws           Any error specified for connect(2), except EINTR
  */
-int libmds_connection_establish_address(libmds_connection_t* restrict this,
-					const libmds_display_address_t* restrict address)
+int
+libmds_connection_establish_address(libmds_connection_t *restrict this,
+                                    const libmds_display_address_t *restrict address)
 {
-  if (address->domain   < 0)     goto efault;
-  if (address->type     < 0)     goto efault;
-  if (address->protocol < 0)     goto efault;
-  if (address->address == NULL)  goto efault;
-  
-  this->socket_fd = socket(address->domain, address->type, address->protocol);
-  if (this->socket_fd < 0)
-    goto fail;
-  
-  while (connect(this->socket_fd, address->address, address->address_len))
-    if (errno != EINTR)
-      goto fail;
-  
-  return 0;
-  
- efault:
-  errno = EFAULT;
- fail:
-  return -1;
+	if (address->domain   < 0) goto efault;
+	if (address->type     < 0) goto efault;
+	if (address->protocol < 0) goto efault;
+	if (!address->address)     goto efault;
+
+	this->socket_fd = socket(address->domain, address->type, address->protocol);
+	if (this->socket_fd < 0)
+		goto fail;
+
+	while (connect(this->socket_fd, address->address, address->address_len))
+		if (errno != EINTR)
+			goto fail;
+
+	return 0;
+
+efault:
+	errno = EFAULT;
+fail:
+	return -1;
 }
 
 
@@ -234,19 +237,20 @@ int libmds_connection_establish_address(libmds_connection_t* restrict this,
  * @throws  ENOTSOCK      See send(2)
  * @throws                See pthread_mutex_lock(3)
  */
-size_t libmds_connection_send(libmds_connection_t* restrict this, const char* restrict message, size_t length)
+size_t
+libmds_connection_send(libmds_connection_t *restrict this, const char *restrict message, size_t length)
 {
-  int saved_errno;
-  size_t r;
-  
-  if (libmds_connection_lock(this))
-    return 0;
-  
-  r = libmds_connection_send_unlocked(this, message, length, 1);
-  
-  saved_errno = errno;
-  (void) libmds_connection_unlock(this);
-  return errno = saved_errno, r;
+	int saved_errno;
+	size_t r;
+
+	if (libmds_connection_lock(this))
+		return 0;
+
+	r = libmds_connection_send_unlocked(this, message, length, 1);
+
+	saved_errno = errno;
+	(void) libmds_connection_unlock(this);
+	return errno = saved_errno, r;
 }
 
 
@@ -274,36 +278,33 @@ size_t libmds_connection_send(libmds_connection_t* restrict this, const char* re
  * @throws  ENOTCONN      See send(2)
  * @throws  ENOTSOCK      See send(2)
  */
-size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* restrict message,
-				       size_t length, int continue_on_interrupt)
+size_t
+libmds_connection_send_unlocked(libmds_connection_t *restrict this, const char *restrict message,
+                                size_t length, int continue_on_interrupt)
 {
-  size_t block_size = length;
-  size_t sent = 0;
-  ssize_t just_sent;
-  
-  errno = 0;
-  while (length > 0)
-    if ((just_sent = send(this->socket_fd, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0)
-      {
-	if (errno == EPIPE)
-	  errno = ECONNRESET;
-	if (errno == EMSGSIZE)
-	  {
-	    block_size >>= 1;
-	    if (block_size == 0)
-	      return sent;
-	  }
-	else if ((errno == EINTR) && continue_on_interrupt)
-	  continue;
-	else
-	  return sent;
-      }
-    else
-      {
-	sent += (size_t)just_sent;
-	length -= (size_t)just_sent;
-      }
-  
-  return sent;
-}
+	size_t block_size = length;
+	size_t sent = 0;
+	ssize_t just_sent;
 
+	errno = 0;
+	while (length > 0) {
+		if ((just_sent = send(this->socket_fd, message + sent, min(block_size, length), MSG_NOSIGNAL)) < 0) {
+			if (errno == EPIPE)
+				errno = ECONNRESET;
+			if (errno == EMSGSIZE) {
+				block_size >>= 1;
+				if (!block_size)
+					return sent;
+			} else if (errno == EINTR && continue_on_interrupt) {
+				continue;
+			} else {
+				return sent;
+			}
+		} else {
+			sent += (size_t)just_sent;
+			length -= (size_t)just_sent;
+		}
+	}
+
+	return sent;
+}

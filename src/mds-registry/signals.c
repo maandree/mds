@@ -36,21 +36,20 @@
  */
 void signal_all(int signo)
 {      
-  pthread_t current_thread;
-  ssize_t node;
-  
-  current_thread = pthread_self();
-  
-  if (pthread_equal(current_thread, master_thread) == 0)
-    pthread_kill(master_thread, signo);
-  
-  with_mutex (slave_mutex,
-	      foreach_linked_list_node (slave_list, node)
-	        {
-		  slave_t* value = (slave_t*)(void*)(slave_list.values[node]);
-		  if (pthread_equal(current_thread, value->thread) == 0)
-		    pthread_kill(value->thread, signo);
-		}
-	      );
-}
+	pthread_t current_thread;
+	ssize_t node;
+	slave_t *value;
 
+	current_thread = pthread_self();
+
+	if (!pthread_equal(current_thread, master_thread))
+		pthread_kill(master_thread, signo);
+
+	with_mutex (slave_mutex,
+	            foreach_linked_list_node (slave_list, node) {
+	                    value = (slave_t*)(void*)(slave_list.values[node]);
+	                    if (pthread_equal(current_thread, value->thread) == 0)
+	                            pthread_kill(value->thread, signo);
+	            }
+	           );
+}

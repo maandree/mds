@@ -30,8 +30,7 @@
  * @return          Normally zero, but 1 if exited because of re-exec or termination
  */
 __attribute__((nonnull))
-int message_received(client_t* client);
+int message_received(client_t *client);
 
 
 #endif
-

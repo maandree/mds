@@ -30,59 +30,59 @@
 
 
 
-#define SLAVE_T_VERSION  0
+#define SLAVE_T_VERSION 0
 
 /**
  * Slave information, a thread waiting for protocols to become available
  */
 typedef struct slave
 {
-  /**
-   * Set of protocols for which to wait that they become available
-   */
-  hash_table_t* wait_set;
-  
-  /**
-   * The ID of the waiting client
-   */
-  uint64_t client;
-  
-  /**
-   * The ID of the waiting client
-   */
-  char* client_id;
-  
-  /**
-   * The ID of the message that triggered the waiting
-   */
-  char* message_id;
-  
-  /**
-   * The slave's node in the linked list of slaves
-   */
-  ssize_t node;
-  
-  /**
-   * Whether the client has been closed
-   */
-  volatile sig_atomic_t closed;
-  
-  /**
-   * The slave thread
-   */
-  pthread_t thread;
-  
-  /**
-   * The time slave should die if its condition
-   * has not be meet at that time
-   */
-  struct timespec dethklok;
-  
-  /**
-   * Whether `dethklok` should apply
-   */
-  int timed;
-  
+	/**
+	 * Set of protocols for which to wait that they become available
+	 */
+	hash_table_t *wait_set;
+
+	/**
+	 * The ID of the waiting client
+	 */
+	uint64_t client;
+
+	/**
+	 * The ID of the waiting client
+	 */
+	char *client_id;
+
+	/**
+	 * The ID of the message that triggered the waiting
+	 */
+	char *message_id;
+
+	/**
+	 * The slave's node in the linked list of slaves
+	 */
+	ssize_t node;
+
+	/**
+	 * Whether the client has been closed
+	 */
+	volatile sig_atomic_t closed;
+
+	/**
+	 * The slave thread
+	 */
+	pthread_t thread;
+
+	/**
+	 * The time slave should die if its condition
+	 * has not be meet at that time
+	 */
+	struct timespec dethklok;
+
+	/**
+	 * Whether `dethklok` should apply
+	 */
+	int timed;
+
 } slave_t;
 
 
@@ -94,7 +94,7 @@ typedef struct slave
  * @return         Non-zero on error, `errno` will be set accordingly
  */
 __attribute__((nonnull))
-int start_created_slave(slave_t* restrict slave);
+int start_created_slave(slave_t *restrict slave);
 
 /**
  * Start a slave thread
@@ -105,8 +105,8 @@ int start_created_slave(slave_t* restrict slave);
  * @return                   Non-zero on error
  */
 __attribute__((nonnull))
-int start_slave(hash_table_t* restrict wait_set, const char* restrict recv_client_id,
-		const char* restrict recv_message_id);
+int start_slave(hash_table_t *restrict wait_set, const char *restrict recv_client_id,
+                const char *restrict recv_message_id);
 
 /**
  * Close all slaves associated with a client
@@ -122,7 +122,7 @@ void close_slaves(uint64_t client);
  * @return           Non-zero on error, `ernno`will be set accordingly
  */
 __attribute__((nonnull))
-int advance_slaves(char* command);
+int advance_slaves(char *command);
 
 /**
  * Create a slave
@@ -133,8 +133,8 @@ int advance_slaves(char* command);
  * @return                   The slave, `NULL` on error, `errno` will be set accordingly
  */
 __attribute__((nonnull))
-slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv_client_id,
-		      const char* restrict recv_message_id);
+slave_t *slave_create(hash_table_t *restrict wait_set, const char *restrict recv_client_id,
+                      const char *restrict recv_message_id);
 
 
 /**
@@ -143,14 +143,14 @@ slave_t* slave_create(hash_table_t* restrict wait_set, const char* restrict recv
  * @param  this  Memory slot in which to store the new slave information
  */
 __attribute__((nonnull))
-void slave_initialise(slave_t* restrict this);
+void slave_initialise(slave_t *restrict this);
 
 /**
  * Release all resources assoicated with a slave
  * 
  * @param  this  The slave information
  */
-void slave_destroy(slave_t* restrict this);
+void slave_destroy(slave_t *restrict this);
 
 /**
  * Calculate the buffer size need to marshal slave information
@@ -159,7 +159,7 @@ void slave_destroy(slave_t* restrict this);
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t slave_marshal_size(const slave_t* restrict this);
+size_t slave_marshal_size(const slave_t *restrict this);
 
 /**
  * Marshals slave information
@@ -169,7 +169,7 @@ size_t slave_marshal_size(const slave_t* restrict this);
  * @return        The number of bytes that have been written (everything will be written)
  */
 __attribute__((nonnull))
-size_t slave_marshal(const slave_t* restrict this, char* restrict data);
+size_t slave_marshal(const slave_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals slave information
@@ -180,7 +180,7 @@ size_t slave_marshal(const slave_t* restrict this, char* restrict data);
  *                number of read bytes. Destroy the slave information on error.
  */
 __attribute__((nonnull))
-size_t slave_unmarshal(slave_t* restrict this, char* restrict data);
+size_t slave_unmarshal(slave_t *restrict this, char *restrict data);
 
 /**
  * Pretend to unmarshal slave information
@@ -189,8 +189,7 @@ size_t slave_unmarshal(slave_t* restrict this, char* restrict data);
  * @return        The number of read bytes
  */
 __attribute__((pure, nonnull))
-size_t slave_unmarshal_skip(char* restrict data);
+size_t slave_unmarshal_skip(char *restrict data);
 
 
 #endif
-

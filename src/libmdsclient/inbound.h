@@ -31,64 +31,64 @@
  */
 typedef struct libmds_message
 {
-  /**
-   * The headers in the message, each element in this list
-   * as an unparsed header, it consists of both the header
-   * name and its associated value, joined by ": ". A header
-   * cannot be `NULL` but `headers` itself is `NULL` if there
-   * are no headers. The "Length" header is included in this list.
-   */
-  char** headers;
-  
-  /**
-   * The number of headers in the message
-   */
-  size_t header_count;
-  
-  /**
-   * The payload of the message, `NULL` if none (of zero-length)
-   */
-  char* payload;
-  
-  /**
-   * The size of the payload
-   */
-  size_t payload_size;
-  
-  /**
-   * Internal buffer for the reading function (internal data)
-   */
-  char* buffer;
-  
-  /**
-   * The size allocated to `buffer` (internal data)
-   */
-  size_t buffer_size;
-  
-  /**
-   * The number of bytes used in `buffer` (internal data)
-   */
-  size_t buffer_ptr;
-  
-  /**
-   * The number of bytes read from `buffer` (internal data)
-   */
-  size_t buffer_off;
-  
-  /**
-   * Zero unless the structure is flattend, otherwise
-   * the size of the object (internal data)
-   * 
-   * Flattened means that all pointers are subpointers
-   * of the object itself
-   */
-  size_t flattened;
-  
-  /**
-   * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
-   */
-  int stage;
-  
+	/**
+	 * The headers in the message, each element in this list
+	 * as an unparsed header, it consists of both the header
+	 * name and its associated value, joined by ": ". A header
+	 * cannot be `NULL` but `headers` itself is `NULL` if there
+	 * are no headers. The "Length" header is included in this list.
+	 */
+	char **headers;
+
+	/**
+	 * The number of headers in the message
+	 */
+	size_t header_count;
+
+	/**
+	 * The payload of the message, `NULL` if none (of zero-length)
+	 */
+	char *payload;
+
+	/**
+	 * The size of the payload
+	 */
+	size_t payload_size;
+
+	/**
+	 * Internal buffer for the reading function (internal data)
+	 */
+	char *buffer;
+
+	/**
+	 * The size allocated to `buffer` (internal data)
+	 */
+	size_t buffer_size;
+
+	/**
+	 * The number of bytes used in `buffer` (internal data)
+	 */
+	size_t buffer_ptr;
+
+	/**
+	 * The number of bytes read from `buffer` (internal data)
+	 */
+	size_t buffer_off;
+
+	/**
+	 * Zero unless the structure is flattend, otherwise
+	 * the size of the object (internal data)
+	 * 
+	 * Flattened means that all pointers are subpointers
+	 * of the object itself
+	 */
+	size_t flattened;
+
+	/**
+	 * 0 while reading headers, 1 while reading payload, and 2 when done (internal data)
+	 */
+	int stage;
+
 } libmds_message_t;
 
 
@@ -97,79 +97,79 @@ typedef struct libmds_message
  */
 typedef struct libmds_mspool
 {
-  /**
-   * Array of messages (internal data)
-   */
-  libmds_message_t** messages;
-  
-  /**
-   * The number of elements the current
-   * allocation of `messages` can hold (internal data)
-   */
-  size_t size;
-  
-  /**
-   * Push end (internal data)
-   */
-  size_t head;
-  
-  /**
-   * Poll end (internal data)
-   */
-  size_t tail;
-  
-  /**
-   * The total size of all spooled messages
-   * (internal data)
-   */
-  size_t spooled_bytes;
-  
-  /**
-   * Do not spool additional messages if
-   * `spooled_bytes` is equal to or exceeds
-   * to value
-   */
-  size_t spool_limit_bytes;
-  
-  /**
-   * Do not spool more than this amount
-   * of messages
-   */
-  size_t spool_limit_messages;
-  
-  /**
-   * If non-zero, `wait_semaphore` shall
-   * be incremented when a message is
-   * polled (internal data)
-   */
-  int please_post;
-  
-  /* POSIX semaphores are lighter weight than XSI semaphores, so we use POSIX here. */
-  
-  /**
-   * Binary semaphore used to lock the spool whilst
-   * manipulating it (internal data)
-   */
-  sem_t lock;
-  
-  /**
-   * Semaphore used to signal addition of messages.
-   * Each time a message is spooled, this semaphore
-   * is increased, the polling thread decreases the
-   * semaphore before despooling a message, causing
-   * it to block when the spool is empty
-   * (internal data)
-   */
-  sem_t semaphore;
-  
-  /**
-   * If the spool is full, the semaphore is acquired
-   * so that the spool function blocks, it is then
-   * posted when a message is polled so that the
-   * spool function may try again (internal data)
-   */
-  sem_t wait_semaphore;
-  
+	/**
+	 * Array of messages (internal data)
+	 */
+	libmds_message_t **messages;
+
+	/**
+	 * The number of elements the current
+	 * allocation of `messages` can hold (internal data)
+	 */
+	size_t size;
+
+	/**
+	 * Push end (internal data)
+	 */
+	size_t head;
+
+	/**
+	 * Poll end (internal data)
+	 */
+	size_t tail;
+
+	/**
+	 * The total size of all spooled messages
+	 * (internal data)
+	 */
+	size_t spooled_bytes;
+
+	/**
+	 * Do not spool additional messages if
+	 * `spooled_bytes` is equal to or exceeds
+	 * to value
+	 */
+	size_t spool_limit_bytes;
+
+	/**
+	 * Do not spool more than this amount
+	 * of messages
+	 */
+	size_t spool_limit_messages;
+
+	/**
+	 * If non-zero, `wait_semaphore` shall
+	 * be incremented when a message is
+	 * polled (internal data)
+	 */
+	int please_post;
+
+	/* POSIX semaphores are lighter weight than XSI semaphores, so we use POSIX here. */
+
+	/**
+	 * Binary semaphore used to lock the spool whilst
+	 * manipulating it (internal data)
+	 */
+	sem_t lock;
+
+	/**
+	 * Semaphore used to signal addition of messages.
+	 * Each time a message is spooled, this semaphore
+	 * is increased, the polling thread decreases the
+	 * semaphore before despooling a message, causing
+	 * it to block when the spool is empty
+	 * (internal data)
+	 */
+	sem_t semaphore;
+
+	/**
+	 * If the spool is full, the semaphore is acquired
+	 * so that the spool function blocks, it is then
+	 * posted when a message is polled so that the
+	 * spool function may try again (internal data)
+	 */
+	sem_t wait_semaphore;
+
 } libmds_mspool_t;
 
 
@@ -178,28 +178,28 @@ typedef struct libmds_mspool
  */
 typedef struct libmds_mpool
 {
-  /**
-   * Array of messages (internal data)
-   */
-  libmds_message_t** messages;
-  
-  /**
-   * The number of elements the current
-   * allocation of 'messages` can hold (internal data)
-   */
-  size_t size;
-  
-  /**
-   * The tip of the stack (internal data)
-   */
-  volatile size_t tip;
-  
-  /**
-   * Binary semaphore used to lock the pool
-   * whilst manipulating it (internal data)
-   */
-  sem_t lock;
-  
+	/**
+	 * Array of messages (internal data)
+	 */
+	libmds_message_t **messages;
+
+	/**
+	 * The number of elements the current
+	 * allocation of 'messages` can hold (internal data)
+	 */
+	size_t size;
+
+	/**
+	 * The tip of the stack (internal data)
+	 */
+	volatile size_t tip;
+
+	/**
+	 * Binary semaphore used to lock the pool
+	 * whilst manipulating it (internal data)
+	 */
+	sem_t lock;
+
 } libmds_mpool_t;
 
 
@@ -216,7 +216,7 @@ typedef struct libmds_mpool
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull, warn_unused_result))
-int libmds_message_initialise(libmds_message_t* restrict this);
+int libmds_message_initialise(libmds_message_t *restrict this);
 
 /**
  * Release all resources in a message
@@ -224,7 +224,7 @@ int libmds_message_initialise(libmds_message_t* restrict this);
  * @param  this  The message
  */
 __attribute__((nonnull))
-void libmds_message_destroy(libmds_message_t* restrict this);
+void libmds_message_destroy(libmds_message_t *restrict this);
 
 /**
  * Release all resources in a message, should
@@ -241,7 +241,7 @@ void libmds_message_destroy(libmds_message_t* restrict this);
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull(1), malloc, warn_unused_result))
-libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this, libmds_mpool_t* restrict pool);
+libmds_message_t *libmds_message_duplicate(libmds_message_t *restrict this, libmds_mpool_t *restrict pool);
 
 /**
  * Read the next message from a file descriptor
@@ -261,7 +261,7 @@ libmds_message_t* libmds_message_duplicate(libmds_message_t* restrict this, libm
  * @throws          Any error specified for recv(3)
  */
 __attribute__((nonnull, warn_unused_result))
-int libmds_message_read(libmds_message_t* restrict this, int fd);
+int libmds_message_read(libmds_message_t *restrict this, int fd);
 
 
 
@@ -275,7 +275,7 @@ int libmds_message_read(libmds_message_t* restrict this, int fd);
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull, warn_unused_result))
-int libmds_mspool_initialise(libmds_mspool_t* restrict this);
+int libmds_mspool_initialise(libmds_mspool_t *restrict this);
 
 /**
  * Destroy a message spool, deallocate its resources
@@ -283,7 +283,7 @@ int libmds_mspool_initialise(libmds_mspool_t* restrict this);
  * @param  this  The message spool
  */
 __attribute__((nonnull))
-void libmds_mspool_destroy(libmds_mspool_t* restrict this);
+void libmds_mspool_destroy(libmds_mspool_t *restrict this);
 
 /**
  * Spool a message
@@ -297,7 +297,7 @@ void libmds_mspool_destroy(libmds_mspool_t* restrict this);
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull, warn_unused_result))
-int libmds_mspool_spool(libmds_mspool_t* restrict this, libmds_message_t* restrict message);
+int libmds_mspool_spool(libmds_mspool_t *restrict this, libmds_message_t *restrict message);
 
 /**
  * Poll a message from a spool, wait if empty
@@ -308,7 +308,7 @@ int libmds_mspool_spool(libmds_mspool_t* restrict this, libmds_message_t* restri
  * @throws  EINTR  If interrupted
  */
 __attribute__((nonnull, warn_unused_result, malloc))
-libmds_message_t* libmds_mspool_poll(libmds_mspool_t* restrict this);
+libmds_message_t *libmds_mspool_poll(libmds_mspool_t *restrict this);
 
 /**
  * Poll a message from a spool, wait for a limited time
@@ -325,8 +325,8 @@ libmds_message_t* libmds_mspool_poll(libmds_mspool_t* restrict this);
  * @throws  ETIMEDOUT  If the time specified `deadline` passed and the spool was till empty
  */
 __attribute__((nonnull(1), warn_unused_result, malloc))
-libmds_message_t* libmds_mspool_poll_try(libmds_mspool_t* restrict this,
-					 const struct timespec* restrict deadline);
+libmds_message_t *libmds_mspool_poll_try(libmds_mspool_t *restrict this,
+                                         const struct timespec *restrict deadline);
 
 
 
@@ -341,7 +341,7 @@ libmds_message_t* libmds_mspool_poll_try(libmds_mspool_t* restrict this,
  *                  RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull, warn_unused_result))
-int libmds_mpool_initialise(libmds_mpool_t* restrict this, size_t size);
+int libmds_mpool_initialise(libmds_mpool_t *restrict this, size_t size);
 
 /**
  * Destroy a pool of reusable message allocations,
@@ -350,7 +350,7 @@ int libmds_mpool_initialise(libmds_mpool_t* restrict this, size_t size);
  * @param  this  The message allocation pool
  */
 __attribute__((nonnull))
-void libmds_mpool_destroy(libmds_mpool_t* restrict this);
+void libmds_mpool_destroy(libmds_mpool_t *restrict this);
 
 /**
  * Add a message allocation to a pool
@@ -362,7 +362,7 @@ void libmds_mpool_destroy(libmds_mpool_t* restrict this);
  * @return           Zero on success, -1 on error, `errno` will be set accordingly
  */
 __attribute__((nonnull, warn_unused_result))
-int libmds_mpool_offer(libmds_mpool_t* restrict this, libmds_message_t* restrict message);
+int libmds_mpool_offer(libmds_mpool_t *restrict this, libmds_message_t *restrict message);
 
 /**
  * Fetch a message allocation from a pool
@@ -373,9 +373,8 @@ int libmds_mpool_offer(libmds_mpool_t* restrict this, libmds_message_t* restrict
  *                if the pool was empty, otherwise `errno` will describe the error.
  */
 __attribute__((nonnull, warn_unused_result, malloc))
-libmds_message_t* libmds_mpool_poll(libmds_mpool_t* restrict this);
+libmds_message_t *libmds_mpool_poll(libmds_mpool_t *restrict this);
 
 
 
 #endif
-

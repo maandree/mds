@@ -28,7 +28,7 @@
  * @param   data  Input data
  * @return        Output data
  */
-void* keyboard_loop(void* data);
+void *keyboard_loop(void *data);
 
 /**
  * Handle the received message
@@ -47,8 +47,8 @@ int handle_message(void);
  * @return                   Zero on success, -1 on error
  */
 __attribute__((nonnull(1, 2)))
-int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_message_id,
-			       const char* recv_modify_id);
+int handle_enumerate_keyboards(const char *recv_client_id, const char *recv_message_id,
+                               const char *recv_modify_id);
 
 /**
  * Handle the received message after it has been
@@ -57,7 +57,7 @@ int handle_enumerate_keyboards(const char* recv_client_id, const char* recv_mess
  * @param   recv_modify_id  The value of the `Modify ID`-header, `NULL` if omitted
  * @return                  Zero on success, -1 on error
  */
-int handle_keyboard_enumeration(const char* recv_modify_id);
+int handle_keyboard_enumeration(const char *recv_modify_id);
 
 /**
  * Handle the received message after it has been
@@ -68,7 +68,7 @@ int handle_keyboard_enumeration(const char* recv_modify_id);
  * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
  * @return                 Zero on success, -1 on error
  */
-int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask, const char* recv_keyboard);
+int handle_set_keyboard_leds(const char *recv_active, const char *recv_mask, const char *recv_keyboard);
 
 /**
  * Handle the received message after it has been
@@ -80,7 +80,7 @@ int handle_set_keyboard_leds(const char* recv_active, const char* recv_mask, con
  * @return                   Zero on success, -1 on error
  */
 __attribute__((nonnull(1, 2)))
-int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_message_id, const char* recv_keyboard);
+int handle_get_keyboard_leds(const char *recv_client_id, const char *recv_message_id, const char *recv_keyboard);
 
 /**
  * Handle the received message after it has been
@@ -89,7 +89,7 @@ int handle_get_keyboard_leds(const char* recv_client_id, const char* recv_messag
  * @param   recv_keyboard  The value of the `Keyboard`-header, `NULL` if omitted
  * @return                 Zero on success, -1 on error
  */
-int handle_map_keyboard_leds(const char* recv_keyboard);
+int handle_map_keyboard_leds(const char *recv_keyboard);
 
 /**
  * Handle the received message after it has been
@@ -102,8 +102,8 @@ int handle_map_keyboard_leds(const char* recv_keyboard);
  * @return                   Zero on success, -1 on error
  */
 __attribute__((nonnull(1, 2)))
-int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
-		       const char* recv_action, const char* recv_keyboard);
+int handle_keycode_map(const char *recv_client_id, const char *recv_message_id,
+                       const char *recv_action, const char *recv_keyboard);
 
 /**
  * Remap a LED, from the command line
@@ -114,7 +114,7 @@ int handle_keycode_map(const char* recv_client_id, const char* recv_message_id,
  * @return       Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int remap_led_cmdline(char* arg);
+int remap_led_cmdline(char *arg);
 
 /**
  * Acquire access of the keyboard's LED:s
@@ -163,7 +163,7 @@ void close_input(void);
  * @return            Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int send_key(int* restrict scancode, int trio);
+int send_key(int *restrict scancode, int trio);
 
 /**
  * Fetch and broadcast keys until interrupted
@@ -181,7 +181,7 @@ int fetch_keys(void);
  * @return                   Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int send_errno(int error, const char* recv_client_id, const char* recv_message_id);
+int send_errno(int error, const char *recv_client_id, const char *recv_message_id);
 
 /**
  * Attempt to shrink `mapping`
@@ -190,4 +190,3 @@ void shrink_map(void);
 
 
 #endif
-

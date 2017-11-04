@@ -27,50 +27,50 @@
  */
 typedef struct libmds_display_address
 {
-  /**
-   * The domain (protocol family), that is
-   * the first argument for socket(2), a
-   * value whose constant is prefixed PF_;
-   * -1 if not detected
-   */
-  int domain;
-  
-  /**
-   * The socket type, that is the second
-   * argument for socket(2), a value whose
-   * constant is prefixed SOCK_; -1 if not
-   * detected
-   */
-  int type;
-  
-  /**
-   * The protocol, that is the third
-   * argument for socket(2), a value whose
-   * constant is affixed PROTO_ (zero
-   * for the default); -1 if not detected
-   */
-  int protocol;
-  
-  /**
-   * The address, `NULL` if not detected,
-   * you are responsible for freeing this
-   */
-  struct sockaddr* address;
-  
-  /**
-   * The size of `address`, may be set
-   * even if `address` is `NULL`
-   */
-  socklen_t address_len;
-  
-  /**
-   * Code for an error that has occured
-   * when parsing the address, whose
-   * description can be retrieved using
-   * `gia_strerror`, zero if none
-   */
-  int gai_error;
-  
+	/**
+	 * The domain (protocol family), that is
+	 * the first argument for socket(2), a
+	 * value whose constant is prefixed PF_;
+	 * -1 if not detected
+	 */
+	int domain;
+
+	/**
+	 * The socket type, that is the second
+	 * argument for socket(2), a value whose
+	 * constant is prefixed SOCK_; -1 if not
+	 * detected
+	 */
+	int type;
+
+	/**
+	 * The protocol, that is the third
+	 * argument for socket(2), a value whose
+	 * constant is affixed PROTO_ (zero
+	 * for the default); -1 if not detected
+	 */
+	int protocol;
+
+	/**
+	 * The address, `NULL` if not detected,
+	 * you are responsible for freeing this
+	 */
+	struct sockaddr *address;
+
+	/**
+	 * The size of `address`, may be set
+	 * even if `address` is `NULL`
+	 */
+	socklen_t address_len;
+
+	/**
+	 * Code for an error that has occured
+	 * when parsing the address, whose
+	 * description can be retrieved using
+	 * `gia_strerror`, zero if none
+	 */
+	int gai_error;
+
 } libmds_display_address_t;
 
 
@@ -87,8 +87,7 @@ typedef struct libmds_display_address
  * @throws  ENAMETOOLONG  The filename of the target socket is too long
  */
 __attribute__((nonnull))
-int libmds_parse_display_address(const char* restrict display, libmds_display_address_t* restrict address);
+int libmds_parse_display_address(const char *restrict display, libmds_display_address_t *restrict address);
 
 
 #endif
-

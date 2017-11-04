@@ -42,7 +42,7 @@ bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o bin/libmdsserver.so
 else
 bin/mds-registry: $(OBJ_mds-registry) obj/mds-base.o
 endif
-	@printf '\e[00;01;31mLD\e[34m %s\e[00m\n' "$@"o
+	@printf '\e[00;01;31mLD\e[34m %s\e[00m\n' "$@"
 	@mkdir -p $(shell dirname $@)
 	$(CC) $(C_FLAGS) -o $@ $(LDS) $(LDS_mds-registry) $(OBJ_mds-registry) obj/mds-base.o
 	@echo

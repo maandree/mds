@@ -29,16 +29,16 @@
  * @param   str  The string
  * @return       The hash of the string
  */
-__attribute__((pure))
-static inline size_t string_hash(const char* str)
+static inline size_t __attribute__((pure))
+string_hash(const char *str)
 {
-  size_t hash = 0;
-  
-  if (str != NULL)
-    while (*str != '\0')
-      hash = hash * 31 + (size_t)(unsigned char)*str++;
-  
-  return hash;
+	size_t hash = 0;
+
+	if (str)
+		while (*str != '\0')
+			hash = hash * 31 + (size_t)(unsigned char)*str++;
+
+	return hash;
 }
 
 
@@ -49,15 +49,14 @@ static inline size_t string_hash(const char* str)
  * @param   str_b  The second string
  * @return         Whether the strings are equals
  */
-__attribute__((pure))
-static inline int string_comparator(char* str_a, char* str_b)
+static inline int __attribute__((pure))
+string_comparator(char *str_a, char *str_b)
 {
-  if ((str_a != NULL) && (str_b != NULL) && (str_a != str_b))
-    return !strcmp((char*)str_a, (char*)str_b);
-  else
-    return str_a == str_b;
+	if (str_a && str_b && str_a != str_b)
+		return !strcmp(str_a, str_b);
+	else
+		return str_a == str_b;
 }
 
 
 #endif
-

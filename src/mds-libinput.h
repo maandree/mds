@@ -32,7 +32,7 @@
  * @param   data  Input data
  * @return        Output data
  */
-void* event_loop(void* data);
+void *event_loop(void *data);
 
 /**
  * Handle an event from libinput
@@ -84,14 +84,14 @@ void terminate_libinput(void);
  * @param   dev  The device
  * @return       Zero on success, -1 on error
  */
-int add_device(struct libinput_device* dev);
+int add_device(struct libinput_device *dev);
 
 /**
  * Remove a device from the device list
  * 
  * @param  dev  The device
  */
-void remove_device(struct libinput_device* dev);
+void remove_device(struct libinput_device *dev);
 
 /**
  * Pack the device list

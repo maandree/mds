@@ -46,63 +46,63 @@
 /**
  * Sentinel value indicating that the position is unused
  */
-#define LINKED_LIST_UNUSED  (-((ssize_t)(SIZE_MAX >> 1)) - 1)
+#define LINKED_LIST_UNUSED (-((ssize_t)(SIZE_MAX >> 1)) - 1)
 
 
 
-#define LINKED_LIST_T_VERSION  0
+#define LINKED_LIST_T_VERSION 0
 
 /**
  * Linear array sentinel doubly linked list class
  */
 typedef struct linked_list
 {
-  /**
-   * The size of the arrays
-   */
-  size_t capacity;
-  
-  /**
-   * The index after the last used index in
-   * `values` and `next`
-   */
-  size_t end;
-  
-  /**
-   * Head of the stack of reusable positions
-   */
-  size_t reuse_head;
-  
-  /**
-   * Stack of indices than are no longer in use
-   */
-  ssize_t* reusable;
-  
-  /**
-   * The value stored in each node
-   */
-  size_t* values;
-  
-  /**
-   * The next node for each node, `edge` if the current
-   * node is the last node, and `LINKED_LIST_UNUSED`
-   * if there is no node on this position
-   */
-  ssize_t* next;
-  
-  /**
-   * The previous node for each node, `edge` if
-   * the current node is the first node, and
-   * `LINKED_LIST_UNUSED` if there is no node
-   * on this position
-   */
-  ssize_t* previous;
-  
-  /**
-   * The sentinel node in the list
-   */
-  ssize_t edge;
-  
+	/**
+	 * The size of the arrays
+	 */
+	size_t capacity;
+
+	/**
+	 * The index after the last used index in
+	 * `values` and `next`
+	 */
+	size_t end;
+
+	/**
+	 * Head of the stack of reusable positions
+	 */
+	size_t reuse_head;
+
+	/**
+	 * Stack of indices than are no longer in use
+	 */
+	ssize_t *reusable;
+
+	/**
+	 * The value stored in each node
+	 */
+	size_t *values;
+
+	/**
+	 * The next node for each node, `edge` if the current
+	 * node is the last node, and `LINKED_LIST_UNUSED`
+	 * if there is no node on this position
+	 */
+	ssize_t *next;
+
+	/**
+	 * The previous node for each node, `edge` if
+	 * the current node is the first node, and
+	 * `LINKED_LIST_UNUSED` if there is no node
+	 * on this position
+	 */
+	ssize_t *previous;
+
+	/**
+	 * The sentinel node in the list
+	 */
+	ssize_t edge;
+
 } linked_list_t;
 
 
@@ -115,7 +115,7 @@ typedef struct linked_list
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int linked_list_create(linked_list_t* restrict this, size_t capacity);
+int linked_list_create(linked_list_t *restrict this, size_t capacity);
 
 /**
  * Release all resources in a linked list, should
@@ -124,7 +124,7 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity);
  * @param  this  The linked list
  */
 __attribute__((nonnull))
-void linked_list_destroy(linked_list_t* restrict this);
+void linked_list_destroy(linked_list_t *restrict this);
 
 /**
  * Clone a linked list
@@ -134,7 +134,7 @@ void linked_list_destroy(linked_list_t* restrict this);
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out);
+int linked_list_clone(const linked_list_t *restrict this, linked_list_t *restrict out);
 
 /**
  * Pack the list so that there are no reusable
@@ -151,7 +151,7 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int linked_list_pack(linked_list_t* restrict this);
+int linked_list_pack(linked_list_t *restrict this);
     
 /**
  * Insert a value in the beginning of the list
@@ -161,8 +161,8 @@ int linked_list_pack(linked_list_t* restrict this);
  * @return  :ssize_t             The node that has been created and inserted,
  *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-#define linked_list_insert_beginning(this, value)  \
-  (linked_list_insert_after(this, value, this->edge))
+#define linked_list_insert_beginning(this, value)\
+	(linked_list_insert_after(this, value, this->edge))
 
 /**
  * Remove the node at the beginning of the list
@@ -170,8 +170,8 @@ int linked_list_pack(linked_list_t* restrict this);
  * @param   this:linked_list_t*  The list
  * @return  :ssize_t             The node that has been removed
  */
-#define linked_list_remove_beginning(this)  \
-  (linked_list_remove_after(this, this->edge))
+#define linked_list_remove_beginning(this)\
+	(linked_list_remove_after(this, this->edge))
 
 /**
  * Insert a value after a specified, reference, node
@@ -183,7 +183,7 @@ int linked_list_pack(linked_list_t* restrict this);
  *                       `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
 __attribute__((nonnull))
-ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssize_t predecessor);
+ssize_t linked_list_insert_after(linked_list_t *restrict this, size_t value, ssize_t predecessor);
 
 /**
  * Remove the node after a specified, reference, node
@@ -193,7 +193,7 @@ ssize_t linked_list_insert_after(linked_list_t* restrict this, size_t value, ssi
  * @return               The node that has been removed
  */
 __attribute__((nonnull))
-ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor);
+ssize_t linked_list_remove_after(linked_list_t *restrict this, ssize_t predecessor);
 
 /**
  * Insert a value before a specified, reference, node
@@ -205,7 +205,7 @@ ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecess
  *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
 __attribute__((nonnull))
-ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor);
+ssize_t linked_list_insert_before(linked_list_t *restrict this, size_t value, ssize_t successor);
 
 /**
  * Remove the node before a specified, reference, node
@@ -215,7 +215,7 @@ ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ss
  * @return             The node that has been removed
  */
 __attribute__((nonnull))
-ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor);
+ssize_t linked_list_remove_before(linked_list_t *restrict this, ssize_t successor);
 
 /**
  * Remove the node from the list
@@ -224,7 +224,7 @@ ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successo
  * @param  node  The node to remove
  */
 __attribute__((nonnull))
-void linked_list_remove(linked_list_t* restrict this, ssize_t node);
+void linked_list_remove(linked_list_t *restrict this, ssize_t node);
 
 /**
  * Insert a value in the end of the list
@@ -234,8 +234,8 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node);
  * @return  :ssize_t             The node that has been created and inserted,
  *                               `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-#define linked_list_insert_end(this, value)  \
-  (linked_list_insert_before((this), (value), (this)->edge))
+#define linked_list_insert_end(this, value)\
+	(linked_list_insert_before((this), (value), (this)->edge))
 
 /**
  * Remove the node at the end of the list
@@ -243,8 +243,8 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node);
  * @param   this:linked_list_t*  The list
  * @return  :ssize_t             The node that has been removed
  */
-#define linked_list_remove_end(this)  \
-  (linked_list_remove_before((this), (this)->edge))
+#define linked_list_remove_end(this)\
+	(linked_list_remove_before((this), (this)->edge))
 
 /**
  * Calculate the buffer size need to marshal a linked list
@@ -253,7 +253,7 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node);
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t linked_list_marshal_size(const linked_list_t* restrict this);
+size_t linked_list_marshal_size(const linked_list_t *restrict this);
 
 /**
  * Marshals a linked list
@@ -262,7 +262,7 @@ size_t linked_list_marshal_size(const linked_list_t* restrict this);
  * @param  data  Output buffer for the marshalled data
  */
 __attribute__((nonnull))
-void linked_list_marshal(const linked_list_t* restrict this, char* restrict data);
+void linked_list_marshal(const linked_list_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals a linked list
@@ -273,7 +273,7 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
  *                Destroy the list on error.
  */
 __attribute__((nonnull))
-int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
+int linked_list_unmarshal(linked_list_t *restrict this, char *restrict data);
 
 /**
  * Wrapper for `for` keyword that iterates over each element in a linked list
@@ -281,8 +281,8 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
  * @param  list:linked_list_t  The linked list
  * @param  node:ssize_t        The variable to store the node in at each iteration
  */
-#define foreach_linked_list_node(list, node)  \
-  for (node = (list).edge; node = (list).next[node], node != (list).edge;)
+#define foreach_linked_list_node(list, node)\
+	for (node = (list).edge; node = (list).next[node], node != (list).edge;)
 
 /**
  * Print the content of the list
@@ -291,8 +291,7 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data);
  * @param  output  Output file
  */
 __attribute__((nonnull))
-void linked_list_dump(linked_list_t* restrict this, FILE* restrict output);
+void linked_list_dump(linked_list_t *restrict this, FILE *restrict output);
 
 
 #endif
-

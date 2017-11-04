@@ -44,7 +44,7 @@ int argc = 0;
 /**
  * Command line arguments
  */
-char** argv = NULL;
+char **argv = NULL;
 
 /**
  * Whether the server has been respawn
@@ -75,7 +75,7 @@ int on_init_fork = 0;
  * Command the run (`NULL` for none) when
  * the server has been properly initialised
  */
-char* on_init_sh = NULL;
+char *on_init_sh = NULL;
 
 /**
  * The thread that runs the master loop
@@ -112,51 +112,48 @@ int socket_fd = -1;
  * 
  * @return  Non-zero on error
  */
-int __attribute__((weak)) parse_cmdline(void)
+int __attribute__((weak))
+parse_cmdline(void)
 {
-  int i;
-  
+	int i, v;
+	char *arg;
+
 #if (LIBEXEC_ARGC_EXTRA_LIMIT < 2)
 # error LIBEXEC_ARGC_EXTRA_LIMIT is too small, need at least 2.
 #endif
-  
-  
-  /* Parse command line arguments. */
-  for (i = 1; i < argc; i++)
-    {
-      char* arg = argv[i];
-      int v;
-      if ((v = strequals(arg, "--initial-spawn")) || /* Initial spawn? */
-	  strequals(arg, "--respawn"))               /* Respawning after crash? */
-	{
-	  exit_if (is_respawn == v,
-		   eprintf("conflicting arguments %s and %s cannot be combined.",
-			   "--initial-spawn", "--respawn"););
-	  is_respawn = !v;
+
+	/* Parse command line arguments. */
+	for (i = 1; i < argc; i++) {
+		arg = argv[i];
+		if ((v = strequals(arg, "--initial-spawn")) || /* Initial spawn? */
+		    strequals(arg, "--respawn")) {             /* Respawning after crash? */
+			exit_if (is_respawn == v,
+			         eprintf("conflicting arguments %s and %s cannot be combined.",
+			                 "--initial-spawn", "--respawn"););
+			is_respawn = !v;
+		} else if (strequals(arg, "--re-exec")) { /* Re-exec state-marshal. */
+			is_reexec = 1;
+		} else if (startswith(arg, "--alarm=")) { /* Schedule an alarm signal for forced abort. */
+			alarm(min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
+		} else if (strequals(arg, "--on-init-fork")) { /* Fork process when initialised. */
+			on_init_fork = 1;
+		} else if (startswith(arg, "--on-init-sh=")) { /* Run a command when initialised. */
+			on_init_sh = arg + strlen("--on-init-sh=");
+		} else if (strequals(arg, "--immortal")) { /* I return to serve. */
+			is_immortal = 1;
+		}
 	}
-      else if (strequals(arg, "--re-exec")) /* Re-exec state-marshal. */
-	is_reexec = 1;
-      else if (startswith(arg, "--alarm=")) /* Schedule an alarm signal for forced abort. */
-	alarm(min(atou(arg + strlen("--alarm=")), 60)); /* At most 1 minute. */
-      else if (strequals(arg, "--on-init-fork")) /* Fork process when initialised. */
-	on_init_fork = 1;
-      else if (startswith(arg, "--on-init-sh=")) /* Run a command when initialised. */
-	on_init_sh = arg + strlen("--on-init-sh=");
-      else if (strequals(arg, "--immortal")) /* I return to serve. */
-	is_immortal = 1;
-    }
-  if (is_reexec)
-    {
-      is_respawn = 1;
-      eprint("re-exec performed.");
-    }
-  
-  /* Check that mandatory arguments have been specified. */
-  if (server_characteristics.require_respawn_info)
-    exit_if (is_respawn < 0,
-	     eprintf("missing state argument, require either %s or %s.",
-		     "--initial-spawn", "--respawn"););
-  return 0;
+	if (is_reexec) {
+		is_respawn = 1;
+		eprint("re-exec performed.");
+	}
+
+	/* Check that mandatory arguments have been specified. */
+	if (server_characteristics.require_respawn_info)
+		exit_if (is_respawn < 0,
+		          eprintf("missing state argument, require either %s or %s.",
+		                  "--initial-spawn", "--respawn"););
+	return 0;
 }
 
 
@@ -165,30 +162,31 @@ int __attribute__((weak)) parse_cmdline(void)
  * 
  * @return  Non-zero on error
  */
-int __attribute__((weak)) connect_to_display(void)
+int __attribute__((weak))
+connect_to_display(void)
 {
-  char* display;
-  char pathname[PATH_MAX];
-  struct sockaddr_un address;
-  
-  display = getenv("MDS_DISPLAY");
-  exit_if ((display == NULL) || (strchr(display, ':') == NULL),
-	   eprint("MDS_DISPLAY has not set."););
-  exit_if (display[0] != ':',
-	   eprint("remote mds sessions are not supported."););
-  xsnprintf(pathname, "%s/%s.socket", MDS_RUNTIME_ROOT_DIRECTORY, display + 1);
-  address.sun_family = AF_UNIX;
-  strcpy(address.sun_path, pathname);
-  fail_if ((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0);
-  fail_if (connect(socket_fd, (struct sockaddr*)(&address), sizeof(address)) < 0);
-  
-  return 0;
-  
- fail:
-  xperror(*argv);
-  if (socket_fd >= 0)
-    xclose(socket_fd);
-  return 1;
+	char *display;
+	char pathname[PATH_MAX];
+	struct sockaddr_un address;
+
+	display = getenv("MDS_DISPLAY");
+	exit_if (!display || !strchr(display, ':'),
+	         eprint("MDS_DISPLAY has not set."););
+	exit_if (display[0] != ':',
+	         eprint("remote mds sessions are not supported."););
+	xsnprintf(pathname, "%s/%s.socket", MDS_RUNTIME_ROOT_DIRECTORY, display + 1);
+	address.sun_family = AF_UNIX;
+	strcpy(address.sun_path, pathname);
+	fail_if ((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0);
+	fail_if (connect(socket_fd, (struct sockaddr*)(&address), sizeof(address)) < 0);
+
+	return 0;
+
+fail:
+	xperror(*argv);
+	if (socket_fd >= 0)
+		xclose(socket_fd);
+	return 1;
 }
 
 
@@ -201,45 +199,44 @@ int __attribute__((weak)) connect_to_display(void)
  */
 static int server_initialised_fork_for_safety(void)
 {
-  unsigned pending_alarm = alarm(0); /* Disable the alarm. */
-  pid_t pid = fork();
-  int status;
-  
-  fail_if (pid == (pid_t)-1);
-  if (pid == 0)
-    /* Reinstate the alarm for the child. */
-    alarm(pending_alarm);
-  else
-    {
-      /* SIGDANGER cannot hurt the parent process. */
-      if (xsigaction(SIGDANGER, SIG_IGN) < 0)
-	{
-	  xperror(*argv);
-	  eprint("WARNING! parent process failed to sig up ignoring of SIGDANGER.");
+	unsigned pending_alarm = alarm(0); /* Disable the alarm. */
+	pid_t pid = fork();
+	int status;
+
+	fail_if (pid == (pid_t)-1);
+	if (!pid) {
+		/* Reinstate the alarm for the child. */
+		alarm(pending_alarm);
+	} else {
+		/* SIGDANGER cannot hurt the parent process. */
+		if (xsigaction(SIGDANGER, SIG_IGN) < 0) {
+			xperror(*argv);
+			eprint("WARNING! parent process failed to sig up ignoring of SIGDANGER.");
+		}
+
+		/* Wait for the child process to die. */
+		if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1) {
+			xperror(*argv);
+			kill(pid, SIGABRT);
+			sleep(5);
+		}
+
+		/* Clean up after us. */
+		fork_cleanup(status);
+
+		/* Die like the child. */
+		if (WIFEXITED(status))
+			exit(WEXITSTATUS(status));
+		else if (WIFSIGNALED(status))
+			raise(WTERMSIG(status));
+		exit(1);
 	}
-      
-      /* Wait for the child process to die. */
-      if (uninterruptable_waitpid(pid, &status, 0) == (pid_t)-1)
-	{
-	  xperror(*argv);
-	  kill(pid, SIGABRT);
-	  sleep(5);
-	}
-      
-      /* Clean up after us. */
-      fork_cleanup(status);
-      
-      /* Die like the child. */
-      if      (WIFEXITED(status))    exit(WEXITSTATUS(status));
-      else if (WIFSIGNALED(status))  raise(WTERMSIG(status));
-      exit(1);
-    }
-  
-  return 0;
- fail:
-  xperror(*argv);
-  eprint("while forking for safety.");
-  return -1;
+
+	return 0;
+fail:
+	xperror(*argv);
+	eprint("while forking for safety.");
+	return -1;
 }
 
 
@@ -250,49 +247,48 @@ static int server_initialised_fork_for_safety(void)
  * 
  * @return  Zero on success, -1 on error
  */
-int __attribute__((weak)) server_initialised(void)
+int __attribute__((weak))
+server_initialised(void)
 {
-  pid_t r;
-  int saved_errno;
-  
-  if (on_init_fork && (r = fork()))
-    {
-      fail_if (r == (pid_t)-1);
-      exit(0);
-    }
-  
-  if (on_init_sh != NULL)
-    if (system(on_init_sh) == -1)
-      {
-	saved_errno = errno;
-	if (system(NULL))
-	  {
-	    errno = 0;
-	    eprint("no shell is available.");
-	    return -1;
-	  }
-	else
-	  {
-	    errno = saved_errno;
-	    xperror(*argv);
-	    eprint("while running shell at completed initialisation.");
-	    return -1;
-	  }
-      }
-  
-  if (server_characteristics.fork_for_safety)
-    return server_initialised_fork_for_safety();
-  
-  return 0;
- fail:
-  xperror(*argv);
-  eprint("while forking at completed initialisation.");
-  return -1;
+	pid_t r;
+	int saved_errno;
+
+	if (on_init_fork && (r = fork())) {
+		fail_if (r == (pid_t)-1);
+		exit(0);
+	}
+
+	if (on_init_sh) {
+		if (system(on_init_sh) == -1) {
+			saved_errno = errno;
+			if (system(NULL)) {
+				errno = 0;
+				eprint("no shell is available.");
+				return -1;
+			} else {
+				errno = saved_errno;
+				xperror(*argv);
+				eprint("while running shell at completed initialisation.");
+				return -1;
+			}
+		}
+	}
+
+	if (server_characteristics.fork_for_safety)
+		return server_initialised_fork_for_safety();
+
+	return 0;
+fail:
+	xperror(*argv);
+	eprint("while forking at completed initialisation.");
+	return -1;
 }
 
 
+#if defined(__GNUC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
+#endif
 /**
  * This function should be implemented by the actual server implementation
  * if the server is multi-threaded
@@ -301,11 +297,14 @@ int __attribute__((weak)) server_initialised(void)
  * 
  * @param  signo  The signal
  */
-void __attribute__((weak)) signal_all(int signo)
+void __attribute__((weak))
+signal_all(int signo)
 {
-  (void) signo;
+	(void) signo;
 }
+#if defined(__GNUC__)
 # pragma GCC diagnostic pop
+#endif
 
 
 /**
@@ -314,12 +313,13 @@ void __attribute__((weak)) signal_all(int signo)
  * 
  * @param  signo  The signal that has been received
  */
-static void __attribute__((const)) received_noop(int signo)
+static void __attribute__((const))
+received_noop(int signo)
 {
-  (void) signo;
-  /* This function is used rather than `SIG_IGN` because we
-   * want blocking functions to return with `errno` set to
-   * `EINTR` rather than continue blocking. */
+	(void) signo;
+	/* This function is used rather than `SIG_IGN` because we
+	 * want blocking functions to return with `errno` set to
+	 * `EINTR` rather than continue blocking. */
 }
 
 
@@ -332,17 +332,17 @@ static void __attribute__((const)) received_noop(int signo)
  * 
  * @param  signo  The signal that has been received
  */
-void __attribute__((weak)) received_reexec(int signo)
+void __attribute__((weak))
+received_reexec(int signo)
 {
-  SIGHANDLER_START;
-  (void) signo;
-  if (reexecing == 0)
-    {
-      reexecing = terminating = 1;
-      eprint("re-exec signal received.");
-      signal_all(signo);
-    }
-  SIGHANDLER_END;
+	SIGHANDLER_START;
+	if (!reexecing) {
+		reexecing = terminating = 1;
+		eprint("re-exec signal received.");
+		signal_all(signo);
+	}
+	SIGHANDLER_END;
+	(void) signo;
 }
 
 
@@ -354,17 +354,17 @@ void __attribute__((weak)) received_reexec(int signo)
  * 
  * @param  signo  The signal that has been received
  */
-void __attribute__((weak)) received_terminate(int signo)
+void __attribute__((weak))
+received_terminate(int signo)
 {
-  SIGHANDLER_START;
-  (void) signo;
-  if (terminating == 0)
-    {
-      terminating = 1;
-      eprint("terminate signal received.");
-      signal_all(signo);
-    }
-  SIGHANDLER_END;
+	SIGHANDLER_START;
+	if (!terminating) {
+		terminating = 1;
+		eprint("terminate signal received.");
+		signal_all(signo);
+	}
+	SIGHANDLER_END;
+	(void) signo;
 }
 
 
@@ -377,16 +377,16 @@ void __attribute__((weak)) received_terminate(int signo)
  * 
  * @param  signo  The signal that has been received
  */
-void __attribute__((weak)) received_danger(int signo)
+void __attribute__((weak))
+received_danger(int signo)
 {
-  SIGHANDLER_START;
-  (void) signo;
-  if (danger == 0)
-    {
-      danger = 1;
-      eprint("danger signal received.");
-    }
-  SIGHANDLER_END;
+	SIGHANDLER_START;
+	if (!danger) {
+		danger = 1;
+		eprint("danger signal received.");
+	}
+	SIGHANDLER_END;
+	(void) signo;
 }
 
 
@@ -397,13 +397,18 @@ void __attribute__((weak)) received_danger(int signo)
  * 
  * @param  signo  The signal that has been received
  */
+#if defined(__GNUC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsuggest-attribute=const"
-void __attribute__((weak)) received_info(int signo)
+#endif
+void __attribute__((weak))
+received_info(int signo)
 {
-  (void) signo;
+	(void) signo;
 }
+#if defined(__GNUC__)
 # pragma GCC diagnostic pop
+#endif
 
 
 /**
@@ -411,47 +416,48 @@ void __attribute__((weak)) received_info(int signo)
  * 
  * @return  Non-zero on error
  */
-static int base_unmarshal(void)
+static int
+base_unmarshal(void)
 {
-  pid_t pid = getpid();
-  int reexec_fd, r;
-  char shm_path[NAME_MAX + 1];
-  char* state_buf;
-  char* state_buf_;
-  
-  /* Acquire access to marshalled data. */
-  xsnprintf(shm_path, SHM_PATH_PATTERN, (intmax_t)pid);
-  reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
-  fail_if (reexec_fd < 0); /* Critical. */
-  
-  /* Read the state file. */
-  fail_if ((state_buf = state_buf_ = full_read(reexec_fd, NULL)) == NULL);
-  
-  /* Release resources. */
-  xclose(reexec_fd);
-  shm_unlink(shm_path);
-  
-  
-  /* Unmarshal state. */
-  
-  /* Get the marshal protocal version. Not needed, there is only the one version right now. */
-  /* buf_get(state_buf_, int, 0, MDS_BASE_VARS_VERSION); */
-  buf_next(state_buf_, int, 1);
-  
-  buf_get_next(state_buf_, int, socket_fd);
-  r = unmarshal_server(state_buf_);
-  
-  
-  /* Release resources. */
-  free(state_buf);
-  
-  /* Recover after failure. */
-  fail_if (r && reexec_failure_recover());
-  
-  return 0;
- fail:
-  xperror(*argv);
-  return 1;
+	pid_t pid = getpid();
+	int reexec_fd, r;
+	char shm_path[NAME_MAX + 1];
+	char *state_buf;
+	char *state_buf_;
+
+	/* Acquire access to marshalled data. */
+	xsnprintf(shm_path, SHM_PATH_PATTERN, (intmax_t)pid);
+	reexec_fd = shm_open(shm_path, O_RDONLY, S_IRWXU);
+	fail_if (reexec_fd < 0); /* Critical. */
+
+	/* Read the state file. */
+	fail_if (!(state_buf = state_buf_ = full_read(reexec_fd, NULL)));
+
+	/* Release resources. */
+	xclose(reexec_fd);
+	shm_unlink(shm_path);
+
+
+	/* Unmarshal state. */
+
+	/* Get the marshal protocal version. Not needed, there is only the one version right now. */
+	/* buf_get(state_buf_, int, 0, MDS_BASE_VARS_VERSION); */
+	buf_next(state_buf_, int, 1);
+
+	buf_get_next(state_buf_, int, socket_fd);
+	r = unmarshal_server(state_buf_);
+
+
+	/* Release resources. */
+	free(state_buf);
+
+	/* Recover after failure. */
+	fail_if (r && reexec_failure_recover());
+
+	return 0;
+fail:
+	xperror(*argv);
+	return 1;
 }
 
 
@@ -461,40 +467,41 @@ static int base_unmarshal(void)
  * @param   reexec_fd  The file descriptor of the file into which the state shall be saved
  * @return             Non-zero on error
  */
-static int base_marshal(int reexec_fd)
+static int
+base_marshal(int reexec_fd)
 {
-  size_t state_n;
-  char* state_buf;
-  char* state_buf_;
-  
-  /* Calculate the size of the state data when it is marshalled. */
-  state_n = 2 * sizeof(int);
-  state_n += marshal_server_size();
-  
-  /* Allocate a buffer for all data. */
-  fail_if (xbmalloc(state_buf = state_buf_, state_n));
-  
-  
-  /* Marshal the state of the server. */
-  
-  /* Tell the new version of the program what version of the program it is marshalling. */
-  buf_set_next(state_buf_, int, MDS_BASE_VARS_VERSION);
-  
-  /* Store the state. */
-  buf_set_next(state_buf_, int, socket_fd);
-  fail_if (marshal_server(state_buf_));
-  
-  
-  /* Send the marshalled data into the file. */
-  fail_if (full_write(reexec_fd, state_buf, state_n) < 0);
-  
-  free(state_buf);
-  return 0;
-  
- fail:
-  xperror(*argv);
-  free(state_buf);
-  return 1;
+	size_t state_n;
+	char *state_buf;
+	char *state_buf_;
+
+	/* Calculate the size of the state data when it is marshalled. */
+	state_n = 2 * sizeof(int);
+	state_n += marshal_server_size();
+
+	/* Allocate a buffer for all data. */
+	fail_if (xbmalloc(state_buf = state_buf_, state_n));
+
+
+	/* Marshal the state of the server. */
+
+	/* Tell the new version of the program what version of the program it is marshalling. */
+	buf_set_next(state_buf_, int, MDS_BASE_VARS_VERSION);
+
+	/* Store the state. */
+	buf_set_next(state_buf_, int, socket_fd);
+	fail_if (marshal_server(state_buf_));
+
+
+	/* Send the marshalled data into the file. */
+	fail_if (full_write(reexec_fd, state_buf, state_n) < 0);
+
+	free(state_buf);
+	return 0;
+
+fail:
+	xperror(*argv);
+	free(state_buf);
+	return 1;
 }
 
 
@@ -504,30 +511,30 @@ static int base_marshal(int reexec_fd)
  * This function only returns on error,
  * in which case the error will have been printed.
  */
-static void perform_reexec(void)
+static void
+perform_reexec(void)
 {
-  pid_t pid = getpid();
-  int reexec_fd;
-  char shm_path[NAME_MAX + 1];
-  
-  /* Marshal the state of the server. */
-  xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
-  reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
-  fail_if (reexec_fd < 0);
-  fail_if (base_marshal(reexec_fd) < 0);
-  xclose(reexec_fd);
-  reexec_fd = -1;
-  
-  /* Re-exec the server. */
-  reexec_server(argc, argv, is_reexec);
-  
- fail:
-  xperror(*argv);
-  if (reexec_fd >= 0)
-    {
-      xclose(reexec_fd);
-      shm_unlink(shm_path);
-    }
+	pid_t pid = getpid();
+	int reexec_fd;
+	char shm_path[NAME_MAX + 1];
+
+	/* Marshal the state of the server. */
+	xsnprintf(shm_path, SHM_PATH_PATTERN, (unsigned long int)pid);
+	reexec_fd = shm_open(shm_path, O_RDWR | O_CREAT | O_EXCL, S_IRWXU);
+	fail_if (reexec_fd < 0);
+	fail_if (base_marshal(reexec_fd) < 0);
+	xclose(reexec_fd);
+	reexec_fd = -1;
+
+	/* Re-exec the server. */
+	reexec_server(argc, argv, is_reexec);
+
+fail:
+	xperror(*argv);
+	if (reexec_fd >= 0) {
+		xclose(reexec_fd);
+		shm_unlink(shm_path);
+	}
 }
 
 
@@ -538,80 +545,77 @@ static void perform_reexec(void)
  * @param   argv_  Command line arguments
  * @return         Non-zero on error
  */
-int main(int argc_, char** argv_)
+int
+main(int argc_, char **argv_)
 {
-  argc = argc_;
-  argv = argv_;
-  
-  
-  if (server_characteristics.require_privileges == 0)
-    /* Drop privileges like it's hot. */
-    if (drop_privileges())
-      fail_if (1);
-  
-  
-  /* Use /proc/self/exe when re:exec-ing */
-  if (prepare_reexec())
-    xperror(*argv);
-  
-  
-  /* Sanity check the number of command line arguments. */
-  exit_if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT,
-	   eprint("that number of arguments is ridiculous, I will not allow it."););
-  
-  /* Parse command line arguments. */
-  fail_if (parse_cmdline());
-  
-  
-  /* Store the current thread so it can be killed from elsewhere. */
-  master_thread = pthread_self();
-  
-  /* Set up signal traps for all especially handled signals. */
-  trap_signals();
-  
-  
-  /* Initialise the server. */
-  fail_if (preinitialise_server());
-  
-  if (is_reexec == 0)
-    {
-      if (server_characteristics.require_display)
-	/* Connect to the display. */
-	fail_if (connect_to_display());
-      
-      /* Initialise the server. */
-      fail_if (initialise_server());
-    }
-  else
-    {
-      /* Unmarshal the server's saved state. */
-      fail_if (base_unmarshal());
-    }
-  
-  /* Initialise the server. */
-  fail_if (postinitialise_server());
-  
-  
-  /* Run the server. */
-  fail_if (master_loop());
-  
-  
-  /* Re-exec server if signal to re-exec. */
-  if (reexecing)
-    {
-      perform_reexec();
-      fail_if (1);
-    }
-  
-  xclose(socket_fd);
-  return 0;
-  
-  
- fail:
-  xperror(*argv);
-  if (socket_fd >= 0)
-    xclose(socket_fd);
-  return 1;
+	argc = argc_;
+	argv = argv_;
+
+
+	if (!server_characteristics.require_privileges)
+		/* Drop privileges like it's hot. */
+		if (drop_privileges())
+			fail_if (1);
+
+
+	/* Use /proc/self/exe when re:exec-ing */
+	if (prepare_reexec())
+		xperror(*argv);
+
+
+	/* Sanity check the number of command line arguments. */
+	exit_if (argc > ARGC_LIMIT + LIBEXEC_ARGC_EXTRA_LIMIT,
+	         eprint("that number of arguments is ridiculous, I will not allow it."););
+
+	/* Parse command line arguments. */
+	fail_if (parse_cmdline());
+
+
+	/* Store the current thread so it can be killed from elsewhere. */
+	master_thread = pthread_self();
+
+	/* Set up signal traps for all especially handled signals. */
+	trap_signals();
+
+
+	/* Initialise the server. */
+	fail_if (preinitialise_server());
+
+	if (!is_reexec) {
+		if (server_characteristics.require_display)
+			/* Connect to the display. */
+			fail_if (connect_to_display());
+
+		/* Initialise the server. */
+		fail_if (initialise_server());
+	} else {
+		/* Unmarshal the server's saved state. */
+		fail_if (base_unmarshal());
+	}
+
+	/* Initialise the server. */
+	fail_if (postinitialise_server());
+
+
+	/* Run the server. */
+	fail_if (master_loop());
+
+
+	/* Re-exec server if signal to re-exec. */
+	if (reexecing) {
+		perform_reexec();
+		fail_if (1);
+	}
+
+	xclose(socket_fd);
+	return 0;
+
+
+fail:
+	xperror(*argv);
+	if (socket_fd >= 0)
+		xclose(socket_fd);
+	return 1;
 }
 
 
@@ -625,19 +629,20 @@ int main(int argc_, char** argv_)
  * 
  * @param  signo  The signal that has been received
  */
-static void commit_suicide(int signo)
+static void
+commit_suicide(int signo)
 {
-  (void) signo;
-  
-  eprint("SIGDANGER received, process is killing itself to free memory.");
-  
-  /* abort(), but on the process rather than the thread. */
-  xsigaction(SIGABRT, SIG_DFL);
-  kill(getpid(), SIGABRT);
-  
-  /* Just in case. */
-  xperror(*argv);
-  _exit(1);
+	eprint("SIGDANGER received, process is killing itself to free memory.");
+
+	/* abort(), but on the process rather than the thread. */
+	xsigaction(SIGABRT, SIG_DFL);
+	kill(getpid(), SIGABRT);
+
+	/* Just in case. */
+	xperror(*argv);
+	_exit(1);
+
+	(void) signo;
 }
 
 
@@ -646,33 +651,34 @@ static void commit_suicide(int signo)
  * 
  * @return  Non-zero on error
  */
-int trap_signals(void)
+int
+trap_signals(void)
 {
-  /* Make the server update without all slaves dying on SIGUPDATE. */
-  fail_if (xsigaction(SIGUPDATE, received_reexec) < 0);
-  
-  /* Implement clean exit on SIGTERM. */
-  fail_if (xsigaction(SIGTERM, received_terminate) < 0);
-  
-  /* Implement clean exit on SIGINT. */
-  fail_if (xsigaction(SIGINT, received_terminate) < 0);
-  
-  /* Implement silent interruption on SIGRTMIN. */
-  fail_if (xsigaction(SIGRTMIN, received_noop) < 0);
-  
-  /* Implement death on SIGDANGER or ignoral of SIGDANGER. */
-  if (server_characteristics.danger_is_deadly && !is_immortal)
-    fail_if (xsigaction(SIGDANGER, commit_suicide) < 0);
-  else
-    fail_if (xsigaction(SIGDANGER, received_danger) < 0);
-  
-  /* Implement support of SIGINFO. */
-  fail_if (xsigaction(SIGINFO, received_info) < 0);
-  
-  return 0;
- fail:
-  xperror(*argv);
-  return 1;
+	/* Make the server update without all slaves dying on SIGUPDATE. */
+	fail_if (xsigaction(SIGUPDATE, received_reexec) < 0);
+
+	/* Implement clean exit on SIGTERM. */
+	fail_if (xsigaction(SIGTERM, received_terminate) < 0);
+
+	/* Implement clean exit on SIGINT. */
+	fail_if (xsigaction(SIGINT, received_terminate) < 0);
+
+	/* Implement silent interruption on SIGRTMIN. */
+	fail_if (xsigaction(SIGRTMIN, received_noop) < 0);
+
+	/* Implement death on SIGDANGER or ignoral of SIGDANGER. */
+	if (server_characteristics.danger_is_deadly && !is_immortal)
+		fail_if (xsigaction(SIGDANGER, commit_suicide) < 0);
+	else
+		fail_if (xsigaction(SIGDANGER, received_danger) < 0);
+
+	/* Implement support of SIGINFO. */
+	fail_if (xsigaction(SIGINFO, received_info) < 0);
+
+	return 0;
+fail:
+	xperror(*argv);
+	return 1;
 }
 
 
@@ -687,9 +693,9 @@ int trap_signals(void)
  * 
  * @param  status  The status the child died with
  */
-void __attribute__((weak)) fork_cleanup(int status)
+void __attribute__((weak))
+fork_cleanup(int status)
 {
-  (void) status;
-  fprintf(stderr, "Something is wrong, `fork_cleanup` has been called but not reimplemented.");
+	fprintf(stderr, "Something is wrong, `fork_cleanup` has been called but not reimplemented.");
+	(void) status;
 }
-

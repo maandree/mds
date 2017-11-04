@@ -729,8 +729,8 @@
  * 
  * @param  str:const char*  The argument passed to `perror`
  */
-#define xperror(str)  \
-  (errno ? perror(str), errno = 0 : 0)
+#define xperror(str)\
+	(errno ? perror(str), errno = 0 : 0)
 
 
 /**
@@ -738,17 +738,17 @@
  * 
  * @param  ...  The condition
  */
-#define fail_if(...)								\
-  do										\
-    if (__VA_ARGS__)								\
-      {										\
-	int _fail_if_saved_errno = errno;					\
-	if ((errno != EMSGSIZE) && (errno != ECONNRESET) && (errno != EINTR))	\
-	  fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__);		\
-	errno = _fail_if_saved_errno;						\
-	goto fail;					       			\
-      }										\
-  while (0)
+#define fail_if(...)\
+	do {\
+		int _fail_if_saved_errno;\
+		if (__VA_ARGS__) {\
+			_fail_if_saved_errno = errno;\
+			if (errno != EMSGSIZE && errno != ECONNRESET && errno != EINTR)\
+				fprintf(stderr, "failure at %s:%i\n", __FILE__, __LINE__);\
+			errno = _fail_if_saved_errno;\
+			goto fail;\
+		}\
+	} while (0)
 
 
 /**
@@ -757,8 +757,8 @@
  * @param  condition     The condition
  * @param  instructions  The instruction (semicolon-terminated)
  */
-#define exit_if(condition, instructions)  \
-  do { if (condition) { instructions return 1; } } while (0)
+#define exit_if(condition, instructions)\
+	do { if (condition) { instructions return 1; } } while (0)
 
 
 /**
@@ -769,8 +769,8 @@
  * the compiler you are using, you may want to edit this
  * macro.
  */
-#define STREND(str)  \
-  (strchr(str, '\0'))
+#define STREND(str)\
+	(strchr(str, '\0'))
 
 
 /**
@@ -778,7 +778,7 @@
  * Quick, free up all your unused memory or kill yourself!
  */
 #ifndef SIGDANGER
-# define SIGDANGER  (SIGRTMIN + 1)
+# define SIGDANGER (SIGRTMIN + 1)
 #endif
 
 
@@ -787,7 +787,7 @@
  * about the server's state or statistics
  */
 #ifndef SIGINFO
-# define SIGINFO  (SIGRTMIN + 2)
+# define SIGINFO (SIGRTMIN + 2)
 #endif
 
 
@@ -796,7 +796,7 @@
  * into an updated binary
  */
 #ifndef SIGUPDATE
-# define SIGUPDATE  SIGUSR1
+# define SIGUPDATE SIGUSR1
 #endif
 
 
@@ -804,8 +804,8 @@
  * Normal signal handlers should place this macro
  * at the top of the function
  */
-#define SIGHANDLER_START  \
-  int sighandler_saved_errno = errno
+#define SIGHANDLER_START\
+	int sighandler_saved_errno = errno
 
 
 /**
@@ -813,9 +813,8 @@
  * at the bottom of the function, or just before
  * any `return`
  */
-#define SIGHANDLER_END  \
-  (errno = sighandler_saved_errno)
+#define SIGHANDLER_END\
+	(errno = sighandler_saved_errno)
 
 
 #endif
-

@@ -22,48 +22,48 @@
 #include "queued-interception.h"
 
 
-#define MULTICAST_T_VERSION  0
+#define MULTICAST_T_VERSION 0
 
 /**
  * Message multicast state
  */
 typedef struct multicast
 {
-  /**
-   * Queue of clients that is listening this message
-   */
-  struct queued_interception* interceptions;
-  
-  /**
-   * The number of clients in `interceptions`
-   */
-  size_t interceptions_count;
-  
-  /**
-   * The index of the current/next client in `interceptions` to whom to send the message
-   */
-  size_t interceptions_ptr;
-  
-  /**
-   * The message to send
-   */
-  char* message;
-  
-  /**
-   * The length of `message`
-   */
-  size_t message_length;
-  
-  /**
-   * How much of the message that has already been sent to the current recipient
-   */
-  size_t message_ptr;
-  
-  /**
-   * How much of the message to skip if the recipient is not a modifier
-   */
-  size_t message_prefix;
-  
+	/**
+	 * Queue of clients that is listening this message
+	 */
+	struct queued_interception *interceptions;
+
+	/**
+	 * The number of clients in `interceptions`
+	 */
+	size_t interceptions_count;
+
+	/**
+	 * The index of the current/next client in `interceptions` to whom to send the message
+	 */
+	size_t interceptions_ptr;
+
+	/**
+	 * The message to send
+	 */
+	char *message;
+
+	/**
+	 * The length of `message`
+	 */
+	size_t message_length;
+
+	/**
+	 * How much of the message that has already been sent to the current recipient
+	 */
+	size_t message_ptr;
+
+	/**
+	 * How much of the message to skip if the recipient is not a modifier
+	 */
+	size_t message_prefix;
+
 } multicast_t;
 
 
@@ -73,7 +73,7 @@ typedef struct multicast
  * @param  this  The message multicast state
  */
 __attribute__((nonnull))
-void multicast_initialise(multicast_t* restrict this);
+void multicast_initialise(multicast_t *restrict this);
 
 /**
  * Destroy a message multicast state
@@ -81,7 +81,7 @@ void multicast_initialise(multicast_t* restrict this);
  * @param  this  The message multicast state
  */
 __attribute__((nonnull))
-void multicast_destroy(multicast_t* restrict this);
+void multicast_destroy(multicast_t *restrict this);
 
 /**
  * Calculate the buffer size need to marshal a message multicast state
@@ -90,7 +90,7 @@ void multicast_destroy(multicast_t* restrict this);
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t multicast_marshal_size(const multicast_t* restrict this);
+size_t multicast_marshal_size(const multicast_t *restrict this);
 
 /**
  * Marshals a message multicast state
@@ -100,7 +100,7 @@ size_t multicast_marshal_size(const multicast_t* restrict this);
  * @return        The number of bytes that have been written (everything will be written)
  */
 __attribute__((nonnull))
-size_t multicast_marshal(const multicast_t* restrict this, char* restrict data);
+size_t multicast_marshal(const multicast_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals a message multicast state
@@ -111,7 +111,7 @@ size_t multicast_marshal(const multicast_t* restrict this, char* restrict data);
  *                number of read bytes. Destroy the message multicast state on error.
  */
 __attribute__((nonnull))
-size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data);
+size_t multicast_unmarshal(multicast_t *restrict this, char *restrict data);
 
 /**
  * Pretend to unmarshal a message multicast state
@@ -120,9 +120,8 @@ size_t multicast_unmarshal(multicast_t* restrict this, char* restrict data);
  * @return        The number of read bytes
  */
 __attribute__((pure, nonnull))
-size_t multicast_unmarshal_skip(char* restrict data);
+size_t multicast_unmarshal_skip(char *restrict data);
 
 
 
 #endif
-

@@ -37,7 +37,7 @@ int accept_connection(void);
  * @param   data  Input data
  * @return        Output data
  */
-void* slave_loop(void* data);
+void *slave_loop(void *data);
 
 /**
  * Queue a message for multicasting
@@ -47,7 +47,7 @@ void* slave_loop(void* data);
  * @param  sender   The original sender of the message
  */
 __attribute__((nonnull))
-void queue_message_multicast(char* message, size_t length, client_t* sender);
+void queue_message_multicast(char *message, size_t length, client_t *sender);
 
 /**
  * Exec into the mdsinitrc script
@@ -55,8 +55,7 @@ void queue_message_multicast(char* message, size_t length, client_t* sender);
  * @param  args  The arguments to the child process
  */
 __attribute__((noreturn, nonnull))
-void run_initrc(char** args);
+void run_initrc(char **args);
 
 
 #endif
-

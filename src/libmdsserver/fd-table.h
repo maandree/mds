@@ -25,43 +25,43 @@
 
 
 
-#define FD_TABLE_T_VERSION  0
+#define FD_TABLE_T_VERSION 0
 
 /**
  * Value lookup table optimised for file descriptors as keys
  */
 typedef struct fd_table
 {
-  /**
-   * The table's capacity, i.e. how many entries that can be stored,
-   * in total, before its internal table needs to grow
-   */
-  size_t capacity;
-  
-  /**
-   * The number of entries stored in the table
-   */
-  size_t size;
-  
-  /**
-   * Map from keys to values
-   */
-  size_t* values;
-  
-  /**
-   * Map from keys to whether that are in used, bit-packed
-   */
-  uint64_t* used;
-  
-  /**
-   * Check whether two values are equal
-   * 
-   * If this function pointer is `NULL`, the identity is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   */
-  compare_func* value_comparator;
-  
+	/**
+	 * The table's capacity, i.e. how many entries that can be stored,
+	 * in total, before its internal table needs to grow
+	 */
+	size_t capacity;
+
+	/**
+	 * The number of entries stored in the table
+	 */
+	size_t size;
+
+	/**
+	 * Map from keys to values
+	 */
+	size_t *values;
+
+	/**
+	 * Map from keys to whether that are in used, bit-packed
+	 */
+	uint64_t *used;
+
+	/**
+	 * Check whether two values are equal
+	 * 
+	 * If this function pointer is `NULL`, the identity is used
+	 * 
+	 * Be aware, this variable cannot be marshalled
+	 */
+	compare_func *value_comparator;
+
 } fd_table_t;
 
 
@@ -74,7 +74,7 @@ typedef struct fd_table
  * @return                    Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
+int fd_table_create_tuned(fd_table_t *restrict this, size_t initial_capacity);
 
 /**
  * Create a fd table
@@ -82,8 +82,8 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
  * @param   this:fd_table_t*  Memory slot in which to store the new fd table
  * @return  :int              Non-zero on error, `errno` will have been set accordingly
  */
-#define fd_table_create(this)  \
-  fd_table_create_tuned(this, 16)
+#define fd_table_create(this)\
+	fd_table_create_tuned(this, 16)
 
 /**
  * Release all resources in a fd table, should
@@ -94,7 +94,7 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity);
  * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
 __attribute__((nonnull(1)))
-void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func* value_freer);
+void fd_table_destroy(fd_table_t *restrict this, free_func *key_freer, free_func *value_freer);
 
 /**
  * Check whether a value is stored in the table
@@ -104,7 +104,7 @@ void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func
  * @return         Whether the value is stored in the table
  */
 __attribute__((pure, nonnull))
-int fd_table_contains_value(const fd_table_t* restrict this, size_t value);
+int fd_table_contains_value(const fd_table_t *restrict this, size_t value);
 
 /**
  * Check whether a key is used in the table
@@ -114,7 +114,7 @@ int fd_table_contains_value(const fd_table_t* restrict this, size_t value);
  * @return        Whether the key is used
  */
 __attribute__((pure, nonnull))
-int fd_table_contains_key(const fd_table_t* restrict this, int key);
+int fd_table_contains_key(const fd_table_t *restrict this, int key);
 
 /**
  * Look up a value in the table
@@ -124,7 +124,7 @@ int fd_table_contains_key(const fd_table_t* restrict this, int key);
  * @return        The value associated with the key, 0 if the key was not used
  */
 __attribute__((pure, nonnull))
-size_t fd_table_get(const fd_table_t* restrict this, int key);
+size_t fd_table_get(const fd_table_t *restrict this, int key);
 
 /**
  * Add an entry to the table
@@ -136,7 +136,7 @@ size_t fd_table_get(const fd_table_t* restrict this, int key);
  *                 0 will also be returned on error, check the `errno` variable.
  */
 __attribute__((nonnull))
-size_t fd_table_put(fd_table_t* restrict this, int key, size_t value);
+size_t fd_table_put(fd_table_t *restrict this, int key, size_t value);
 
 /**
  * Remove an entry in the table
@@ -146,7 +146,7 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value);
  * @return        The previous value associated with the key, 0 if the key was not used
  */
 __attribute__((nonnull))
-size_t fd_table_remove(fd_table_t* restrict this, int key);
+size_t fd_table_remove(fd_table_t *restrict this, int key);
 
 /**
  * Remove all entries in the table
@@ -154,7 +154,7 @@ size_t fd_table_remove(fd_table_t* restrict this, int key);
  * @param  this  The fd table
  */
 __attribute__((nonnull))
-void fd_table_clear(fd_table_t* restrict this);
+void fd_table_clear(fd_table_t *restrict this);
 
 /**
  * Calculate the buffer size need to marshal a fd table
@@ -163,7 +163,7 @@ void fd_table_clear(fd_table_t* restrict this);
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t fd_table_marshal_size(const fd_table_t* restrict this);
+size_t fd_table_marshal_size(const fd_table_t *restrict this);
 
 /**
  * Marshals a fd table
@@ -172,7 +172,7 @@ size_t fd_table_marshal_size(const fd_table_t* restrict this);
  * @param  data  Output buffer for the marshalled data
  */
 __attribute__((nonnull))
-void fd_table_marshal(const fd_table_t* restrict this, char* restrict data);
+void fd_table_marshal(const fd_table_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals a fd table
@@ -184,8 +184,7 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data);
  *                    Destroy the table on error.
  */
 __attribute__((nonnull(1, 2)))
-int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper);
+int fd_table_unmarshal(fd_table_t *restrict this, char *restrict data, remap_func *remapper);
 
 
 #endif
-

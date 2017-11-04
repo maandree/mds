@@ -22,152 +22,128 @@
 /**
  * The name under which this package is installed
  */
-#define PKGNAME  "@PKGNAME@"
-
+#define PKGNAME "@PKGNAME@"
 
 /**
  * The directory where all servers are installed
  */
-#define LIBEXECDIR  "@LIBEXECDIR@"
-
+#define LIBEXECDIR "@LIBEXECDIR@"
 
 /**
  * The system's directory for non-persistent temporary files
  */
-#define TMPDIR  "@TMPDIR@"
-
+#define TMPDIR "@TMPDIR@"
 
 /**
  * The system's directory for runtime data
  */
-#define RUNDIR  "@RUNDIR@"
-
+#define RUNDIR "@RUNDIR@"
 
 /**
  * The system's directory for site-specific configurations
  */
-#define SYSCONFDIR  "@SYSCONFDIR@"
-
+#define SYSCONFDIR "@SYSCONFDIR@"
 
 /**
  * The system's directory for pseudo-devices
  */
-#define DEVDIR  "@DEVDIR@"
-
+#define DEVDIR "@DEVDIR@"
 
 /**
  * Pathname pattern for virtual terminals
  */
-#define VT_PATH_PATTERN  "@VT_PATH_PATTERN@"
-
+#define VT_PATH_PATTERN "@VT_PATH_PATTERN@"
 
 /**
  * The root directory of all runtime data stored by mds
  */
-#define MDS_RUNTIME_ROOT_DIRECTORY  "@MDS_RUNTIME_ROOT_DIRECTORY@"
-
+#define MDS_RUNTIME_ROOT_DIRECTORY "@MDS_RUNTIME_ROOT_DIRECTORY@"
 
 /**
  * The root directory of temporarily stored data stored by mds servers
  */
-#define MDS_STORAGE_ROOT_DIRECTORY  "@MDS_STORAGE_ROOT_DIRECTORY@"
-
+#define MDS_STORAGE_ROOT_DIRECTORY "@MDS_STORAGE_ROOT_DIRECTORY@"
 
 /**
  * The user ID for the root user
  */
-#define ROOT_USER_UID  @ROOT_USER_UID@
-
+#define ROOT_USER_UID @ROOT_USER_UID@
 
 /**
  * The group ID for the root group
  */
-#define ROOT_GROUP_GID  @ROOT_GROUP_GID@
-
+#define ROOT_GROUP_GID @ROOT_GROUP_GID@
 
 /**
  * The group ID for the nobody group
  */
-#define NOBODY_GROUP_GID  @NOBODY_GROUP_GID@
+#define NOBODY_GROUP_GID @NOBODY_GROUP_GID@
 
 /* These three names above are redundant, but that is to avoid errors. */
-
 
 /**
  * The byte length of the authentication token
  */
-#define TOKEN_LENGTH  @TOKEN_LENGTH@
-
+#define TOKEN_LENGTH @TOKEN_LENGTH@
 
 /**
  * Random number generator to use for generating a token
  */
-#define TOKEN_RANDOM  "@TOKEN_RANDOM@"
-
+#define TOKEN_RANDOM "@TOKEN_RANDOM@"
 
 /**
  * The path of the symlink to the executed command
  */
-#define SELF_EXE  "@SELF_EXE@"
-
+#define SELF_EXE "@SELF_EXE@"
 
 /**
  * The path to the directory with symlinks to each file that is open
  */
-#define SELF_FD  "@SELF_FD@"
-
+#define SELF_FD "@SELF_FD@"
 
 /**
  * Pattern for the names of shared object to which states are marshalled
  */
-#define SHM_PATH_PATTERN  "@SHM_PATH_PATTERN@"
-
+#define SHM_PATH_PATTERN "@SHM_PATH_PATTERN@"
 
 /**
  * The maximum number of command line arguments to allow
  */
-#define ARGC_LIMIT  @ARGC_LIMIT@
-
+#define ARGC_LIMIT @ARGC_LIMIT@
 
 /**
  * The number of additional arguments a libexec server may have
  */
-#define LIBEXEC_ARGC_EXTRA_LIMIT  @LIBEXEC_ARGC_EXTRA_LIMIT@
-
+#define LIBEXEC_ARGC_EXTRA_LIMIT @LIBEXEC_ARGC_EXTRA_LIMIT@
 
 /**
  * The maximum number of display allowed on the system
  */
-#define DISPLAY_MAX  @DISPLAY_MAX@
-
+#define DISPLAY_MAX @DISPLAY_MAX@
 
 /**
  * The name of the environment variable that
  * indicates the index of the display
  */
-#define DISPLAY_ENV  "@DISPLAY_ENV@"
-
+#define DISPLAY_ENV "@DISPLAY_ENV@"
 
 /**
  * The name of the environment variable that
  * indicates the display server's process group
  */
-#define PGROUP_ENV  "@PGROUP_ENV@"
-
+#define PGROUP_ENV "@PGROUP_ENV@"
 
 /**
  * The minimum time that most have elapsed
  * for respawning to be allowed
  */
-#define RESPAWN_TIME_LIMIT_SECONDS  @RESPAWN_TIME_LIMIT_SECONDS@
-
+#define RESPAWN_TIME_LIMIT_SECONDS @RESPAWN_TIME_LIMIT_SECONDS@
 
 /**
  * The dot-prefixless basename of the initrc
  * file that the master server executes
  */
-#define INITRC_FILE  "@INITRC_FILE@"
+#define INITRC_FILE "@INITRC_FILE@"
 
 
 #endif
-

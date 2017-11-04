@@ -38,15 +38,14 @@
  * 
  * This tells the server-base how to behave
  */
-server_characteristics_t server_characteristics =
-  {
-    .require_privileges = 0,
-    .require_display = 1,
-    .require_respawn_info = 0,
-    .sanity_check_argc = 1,
-    .fork_for_safety = 0,
-    .danger_is_deadly = 0
-  };
+server_characteristics_t server_characteristics = {
+	.require_privileges = 0,
+	.require_display = 1,
+	.require_respawn_info = 0,
+	.sanity_check_argc = 1,
+	.fork_for_safety = 0,
+	.danger_is_deadly = 0
+};
 
 
 
@@ -57,8 +56,8 @@ server_characteristics_t server_characteristics =
  * @param   length:size_t        The length of the message
  * @return  :int                 Zero on success, -1 on error
  */
-#define full_send(message, length)  \
-  ((full_send)(socket_fd, message, length))
+#define full_send(message, length)\
+	((full_send)(socket_fd, message, length))
 
 
 /**
@@ -69,20 +68,20 @@ server_characteristics_t server_characteristics =
  */
 int preinitialise_server(void)
 {
-  int stage = 0;
-  
-  fail_if ((errno = pthread_mutex_init(&slave_mutex, NULL)));  stage++;
-  fail_if ((errno = pthread_cond_init(&slave_cond, NULL)));  stage++;
-  
-  linked_list_create(&slave_list, 2);
-  
-  return 0;
-  
- fail:
-  xperror(*argv);
-  if (stage >= 1)  pthread_mutex_destroy(&slave_mutex);
-  if (stage >= 2)  pthread_cond_destroy(&slave_cond);
-  return 1;
+	int stage = 0;
+
+	fail_if ((errno = pthread_mutex_init(&slave_mutex, NULL))); stage++;
+	fail_if ((errno = pthread_cond_init(&slave_cond, NULL))); stage++;
+
+	linked_list_create(&slave_list, 2);
+
+	return 0;
+
+fail:
+	xperror(*argv);
+	if (stage >= 1) pthread_mutex_destroy(&slave_mutex);
+	if (stage >= 2) pthread_cond_destroy(&slave_cond);
+	return 1;
 }
 
 
@@ -92,43 +91,44 @@ int preinitialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int initialise_server(void)
+int
+initialise_server(void)
 {
-  int stage = 0;
-  const char* const message =
-    "Command: intercept\n"
-    "Message ID: 0\n"
-    "Length: 32\n"
-    "\n"
-    "Command: register\n"
-    "Client closed\n"
-    /* -- NEXT MESSAGE -- */
-    "Command: reregister\n"
-    "Message ID: 1\n"
-    "\n";
-  
-  /* We are asking all servers to reregister their
-     protocols for two reasons:
-     
-     1) The server would otherwise not get registrations
-        from servers started before this server.
-     2) If this server crashes we may miss registrations
-        that happen between the crash and the recovery.
-   */
-  
-  fail_if (full_send(message, strlen(message)));  stage++;
-  fail_if (hash_table_create_tuned(&reg_table, 32));
-  reg_table.key_comparator = (compare_func*)string_comparator;
-  reg_table.hasher = (hash_func*)string_hash;
-  fail_if (server_initialised() < 0);  stage++;
-  fail_if (mds_message_initialise(&received));
-  
-  return 0;  
- fail:
-  xperror(*argv);
-  if (stage >= 1)  hash_table_destroy(&reg_table, NULL, NULL);
-  if (stage >= 2)  mds_message_destroy(&received);
-  return 1;
+	int stage = 0;
+	const char *const message =
+		"Command: intercept\n"
+		"Message ID: 0\n"
+		"Length: 32\n"
+		"\n"
+		"Command: register\n"
+		"Client closed\n"
+		/* -- NEXT MESSAGE -- */
+		"Command: reregister\n"
+		"Message ID: 1\n"
+		"\n";
+
+	/* We are asking all servers to reregister their
+	   protocols for two reasons:
+
+	   1) The server would otherwise not get registrations
+	      from servers started before this server.
+	   2) If this server crashes we may miss registrations
+	      that happen between the crash and the recovery.
+	*/
+
+	fail_if (full_send(message, strlen(message)));  stage++;
+	fail_if (hash_table_create_tuned(&reg_table, 32));
+	reg_table.key_comparator = (compare_func*)string_comparator;
+	reg_table.hasher = (hash_func*)string_hash;
+	fail_if (server_initialised() < 0);  stage++;
+	fail_if (mds_message_initialise(&received));
+
+	return 0;  
+fail:
+	xperror(*argv);
+	if (stage >= 1) hash_table_destroy(&reg_table, NULL, NULL);
+	if (stage >= 2) mds_message_destroy(&received);
+	return 1;
 }
 
 
@@ -138,17 +138,18 @@ int initialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int postinitialise_server(void)
+int
+postinitialise_server(void)
 {
-  if (connected)
-    return 0;
-  
-  fail_if (reconnect_to_display());
-  connected = 1;
-  return 0;
- fail:
-  mds_message_destroy(&received);
-  return 1;
+	if (connected)
+		return 0;
+
+	fail_if (reconnect_to_display());
+	connected = 1;
+	return 0;
+fail:
+	mds_message_destroy(&received);
+	return 1;
 }
 
 
@@ -157,60 +158,57 @@ int postinitialise_server(void)
  * 
  * @return  Non-zero on error
  */
-int master_loop(void)
+int
+master_loop(void)
 {
-  int rc = 1, r;
-  
-  while (!reexecing && !terminating)
-    {
-      if (danger)
-	{
-	  danger = 0;
-	  free(send_buffer), send_buffer = NULL;
-	  send_buffer_size = 0;
-	  with_mutex (slave_mutex, linked_list_pack(&slave_list););
-	}
-      
-      if (r = mds_message_read(&received, socket_fd), r == 0)
-	if (r = handle_message(), r == 0)
-	  continue;
-      
-      if (r == -2)
-	{
-	  eprint("corrupt message received, aborting.");
-	  goto done;
-	}
-      else if (errno == EINTR)
-	continue;
-      else
-	fail_if (errno != ECONNRESET);
-      
-      eprint("lost connection to server.");
-      mds_message_destroy(&received);
-      mds_message_initialise(&received);
-      connected = 0;
-      fail_if (reconnect_to_display());
-      connected = 1;
-    }
-  
-  rc = 0;
-  goto done;
- fail:
-  xperror(*argv);
- done:
-  /* Join with all slaves threads. */
-  with_mutex (slave_mutex,
-              while (running_slaves > 0)
-                pthread_cond_wait(&slave_cond, &slave_mutex););
-  
-  if (rc || !reexecing)
-    {
-      hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
-      mds_message_destroy(&received);
-    }
-  pthread_mutex_destroy(&slave_mutex);
-  pthread_cond_destroy(&slave_cond);
-  free(send_buffer);
-  return rc;
-}
+	int rc = 1, r;
 
+	while (!reexecing && !terminating) {
+		if (danger) {
+			danger = 0;
+			free(send_buffer);
+			send_buffer = NULL;
+			send_buffer_size = 0;
+			with_mutex (slave_mutex, linked_list_pack(&slave_list););
+		}
+
+		if (!(r = mds_message_read(&received, socket_fd)))
+			if (!(r = handle_message()))
+				continue;
+
+		if (r == -2) {
+			eprint("corrupt message received, aborting.");
+			goto done;
+		} else if (errno == EINTR) {
+			continue;
+		} else {
+			fail_if (errno != ECONNRESET);
+		}
+
+		eprint("lost connection to server.");
+		mds_message_destroy(&received);
+		mds_message_initialise(&received);
+		connected = 0;
+		fail_if (reconnect_to_display());
+		connected = 1;
+	}
+
+	rc = 0;
+	goto done;
+fail:
+	xperror(*argv);
+ done:
+	/* Join with all slaves threads. */
+	with_mutex (slave_mutex,
+	            while (running_slaves > 0)
+	                    pthread_cond_wait(&slave_cond, &slave_mutex););
+
+	if (rc || !reexecing) {
+		hash_table_destroy(&reg_table, (free_func*)reg_table_free_key, (free_func*)reg_table_free_value);
+		mds_message_destroy(&received);
+	}
+	pthread_mutex_destroy(&slave_mutex);
+	pthread_cond_destroy(&slave_cond);
+	free(send_buffer);
+	return rc;
+}

@@ -25,28 +25,28 @@
 
 
 
-#define CLIENT_LIST_T_VERSION  0
+#define CLIENT_LIST_T_VERSION 0
 
 /**
  * Dynamic array of client ID:s
  */
 typedef struct client_list
 {
-  /**
-   * The size of the array
-   */
-  size_t capacity;
-  
-  /**
-   * The index after the last used index
-   */
-  size_t size;
-  
-  /**
-   * Stored client ID:s
-   */
-  uint64_t* clients;
-  
+	/**
+	 * The size of the array
+	 */
+	size_t capacity;
+
+	/**
+	 * The index after the last used index
+	 */
+	size_t size;
+
+	/**
+	 * Stored client ID:s
+	 */
+	uint64_t *clients;
+
 } client_list_t;
 
 
@@ -59,7 +59,7 @@ typedef struct client_list
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int client_list_create(client_list_t* restrict this, size_t capacity);
+int client_list_create(client_list_t *restrict this, size_t capacity);
 
 /**
  * Release all resources in a client list, should
@@ -68,7 +68,7 @@ int client_list_create(client_list_t* restrict this, size_t capacity);
  * @param  this  The client list
  */
 __attribute__((nonnull))
-void client_list_destroy(client_list_t* restrict this);
+void client_list_destroy(client_list_t *restrict this);
 
 /**
  * Clone a client list
@@ -78,7 +78,7 @@ void client_list_destroy(client_list_t* restrict this);
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int client_list_clone(const client_list_t* restrict this, client_list_t* restrict out);
+int client_list_clone(const client_list_t *restrict this, client_list_t *restrict out);
 
 /**
  * Add a client to the list
@@ -88,7 +88,7 @@ int client_list_clone(const client_list_t* restrict this, client_list_t* restric
  * @return          Non-zero on error, `errno` will be set accordingly
  */
 __attribute__((nonnull))
-int client_list_add(client_list_t* restrict this, uint64_t client);
+int client_list_add(client_list_t *restrict this, uint64_t client);
 
 /**
  * Remove a client from the list, once
@@ -97,7 +97,7 @@ int client_list_add(client_list_t* restrict this, uint64_t client);
  * @param  client  The client to remove
  */
 __attribute__((nonnull))
-void client_list_remove(client_list_t* restrict this, uint64_t client);
+void client_list_remove(client_list_t *restrict this, uint64_t client);
 
 /**
  * Calculate the buffer size need to marshal a client list
@@ -106,7 +106,7 @@ void client_list_remove(client_list_t* restrict this, uint64_t client);
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t client_list_marshal_size(const client_list_t* restrict this);
+size_t client_list_marshal_size(const client_list_t *restrict this);
 
 /**
  * Marshals a client list
@@ -115,7 +115,7 @@ size_t client_list_marshal_size(const client_list_t* restrict this);
  * @param  data  Output buffer for the marshalled data
  */
 __attribute__((nonnull))
-void client_list_marshal(const client_list_t* restrict this, char* restrict data);
+void client_list_marshal(const client_list_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals a client list
@@ -126,8 +126,7 @@ void client_list_marshal(const client_list_t* restrict this, char* restrict data
  *                Destroy the list on error.
  */
 __attribute__((nonnull))
-int client_list_unmarshal(client_list_t* restrict this, char* restrict data);
+int client_list_unmarshal(client_list_t *restrict this, char *restrict data);
 
 
 #endif
-

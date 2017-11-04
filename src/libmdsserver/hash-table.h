@@ -23,33 +23,33 @@
 
 
 
-#define HASH_TABLE_T_VERSION  0
+#define HASH_TABLE_T_VERSION 0
 
 /**
  * Hash table entry
  */
 typedef struct hash_entry
 {
-  /**
-   * A key
-   */
-  size_t key;
-  
-  /**
-   * The value associated with the key
-   */
-  size_t value;
-  
-  /**
-   * The truncated hash value of the key
-   */
-  size_t hash;
-  
-  /**
-   * The next entry in the bucket
-   */
-  struct hash_entry* next;
-  
+	/**
+	 * A key
+	 */
+	size_t key;
+
+	/**
+	 * The value associated with the key
+	 */
+	size_t value;
+
+	/**
+	 * The truncated hash value of the key
+	 */
+	size_t hash;
+
+	/**
+	 * The next entry in the bucket
+	 */
+	struct hash_entry *next;
+
 } hash_entry_t;
 
 
@@ -58,61 +58,61 @@ typedef struct hash_entry
  */
 typedef struct hash_table
 {
-  /**
-   * The table's capacity, i.e. the number of buckets
-   */
-  size_t capacity;
-  
-  /**
-   * Entry buckets
-   */
-  hash_entry_t** buckets;
-  
-  /**
-   * When, in the ratio of entries comparied to the capacity, to grow the table
-   */
-  float load_factor;
-  
-  /**
-   * When, in the number of entries, to grow the table
-   */
-  size_t threshold;
-  
-  /**
-   * The number of entries stored in the table
-   */
-  size_t size;
-  
-  /**
-   * Check whether two values are equal
-   * 
-   * If this function pointer is `NULL`, the identity is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   */
-  compare_func* value_comparator;
-  
-  /**
-   * Check whether two keys are equal
-   * 
-   * If this function pointer is `NULL`, the identity is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   */
-  compare_func* key_comparator;
-  
-  /**
-   * Calculate the hash of a key
-   * 
-   * If this function pointer is `NULL`, the identity hash is used
-   * 
-   * Be aware, this variable cannot be marshalled
-   * 
-   * @param   key  The key
-   * @return       The hash of the key
-   */
-  hash_func* hasher;
-  
+	/**
+	 * The table's capacity, i.e. the number of buckets
+	 */
+	size_t capacity;
+
+	/**
+	 * Entry buckets
+	 */
+	hash_entry_t **buckets;
+
+	/**
+	 * When, in the ratio of entries comparied to the capacity, to grow the table
+	 */
+	float load_factor;
+
+	/**
+	 * When, in the number of entries, to grow the table
+	 */
+	size_t threshold;
+
+	/**
+	 * The number of entries stored in the table
+	 */
+	size_t size;
+
+	/**
+	 * Check whether two values are equal
+	 * 
+	 * If this function pointer is `NULL`, the identity is used
+	 * 
+	 * Be aware, this variable cannot be marshalled
+	 */
+	compare_func *value_comparator;
+
+	/**
+	 * Check whether two keys are equal
+	 * 
+	 * If this function pointer is `NULL`, the identity is used
+	 * 
+	 * Be aware, this variable cannot be marshalled
+	 */
+	compare_func *key_comparator;
+
+	/**
+	 * Calculate the hash of a key
+	 * 
+	 * If this function pointer is `NULL`, the identity hash is used
+	 * 
+	 * Be aware, this variable cannot be marshalled
+	 * 
+	 * @param   key  The key
+	 * @return       The hash of the key
+	 */
+	hash_func *hasher;
+
 } hash_table_t;
 
 
@@ -126,7 +126,7 @@ typedef struct hash_table
  * @return                    Non-zero on error, `errno` will have been set accordingly
  */
 __attribute__((nonnull))
-int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_capacity, float load_factor);
+int hash_table_create_fine_tuned(hash_table_t *restrict this, size_t initial_capacity, float load_factor);
 
 /**
  * Create a hash table
@@ -135,8 +135,8 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
  * @param   initial_capacity:size_t  The initial capacity of the table
  * @return  :int                     Non-zero on error, `errno` will have been set accordingly
  */
-#define hash_table_create_tuned(this, initial_capacity)  \
-  hash_table_create_fine_tuned(this, initial_capacity, 0.75f)
+#define hash_table_create_tuned(this, initial_capacity)\
+	hash_table_create_fine_tuned(this, initial_capacity, 0.75f)
 
 /**
  * Create a hash table
@@ -144,8 +144,8 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
  * @param   this:hash_table_t*  Memory slot in which to store the new hash table
  * @return  :int                Non-zero on error, `errno` will have been set accordingly
  */
-#define hash_table_create(this)  \
-  hash_table_create_tuned(this, 16)
+#define hash_table_create(this)\
+	hash_table_create_tuned(this, 16)
 
 /**
  * Release all resources in a hash table, should
@@ -156,7 +156,7 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
  * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
 __attribute__((nonnull(1)))
-void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_func* value_freer);
+void hash_table_destroy(hash_table_t *restrict this, free_func *key_freer, free_func *value_freer);
 
 /**
  * Check whether a value is stored in the table
@@ -166,7 +166,7 @@ void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_
  * @return         Whether the value is stored in the table
  */
 __attribute__((pure, nonnull))
-int hash_table_contains_value(const hash_table_t* restrict this, size_t value);
+int hash_table_contains_value(const hash_table_t *restrict this, size_t value);
 
 /**
  * Check whether a key is used in the table
@@ -176,7 +176,7 @@ int hash_table_contains_value(const hash_table_t* restrict this, size_t value);
  * @return        Whether the key is used
  */
 __attribute__((pure, nonnull))
-int hash_table_contains_key(const hash_table_t* restrict this, size_t key);
+int hash_table_contains_key(const hash_table_t *restrict this, size_t key);
 
 /**
  * Look up a value in the table
@@ -186,7 +186,7 @@ int hash_table_contains_key(const hash_table_t* restrict this, size_t key);
  * @return        The value associated with the key, 0 if the key was not used
  */
 __attribute__((pure, nonnull))
-size_t hash_table_get(const hash_table_t* restrict this, size_t key);
+size_t hash_table_get(const hash_table_t *restrict this, size_t key);
 
 /**
  * Look up an entry in the table
@@ -196,7 +196,7 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key);
  * @return        The entry associated with the key, `NULL` if the key was not used
  */
 __attribute__((pure, nonnull))
-hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key);
+hash_entry_t *hash_table_get_entry(const hash_table_t *restrict this, size_t key);
 
 /**
  * Add an entry to the table
@@ -208,7 +208,7 @@ hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key
  *                 0 will also be returned on error, check the `errno` variable.
  */
 __attribute__((nonnull))
-size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
+size_t hash_table_put(hash_table_t *restrict this, size_t key, size_t value);
 
 /**
  * Remove an entry in the table
@@ -218,7 +218,7 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value);
  * @return        The previous value associated with the key, 0 if the key was not used
  */
 __attribute__((nonnull))
-size_t hash_table_remove(hash_table_t* restrict this, size_t key);
+size_t hash_table_remove(hash_table_t *restrict this, size_t key);
 
 /**
  * Remove all entries in the table
@@ -226,7 +226,7 @@ size_t hash_table_remove(hash_table_t* restrict this, size_t key);
  * @param  this  The hash table
  */
 __attribute__((nonnull))
-void hash_table_clear(hash_table_t* restrict this);
+void hash_table_clear(hash_table_t *restrict this);
 
 /**
  * Wrapper for `for` keyword that iterates over entry element in a hash table
@@ -235,9 +235,9 @@ void hash_table_clear(hash_table_t* restrict this);
  * @param  i:size_t             The variable to store the buckey index in at each iteration
  * @param  entry:hash_entry_t*  The variable to store the entry in at each iteration
  */
-#define foreach_hash_table_entry(this, i, entry)  \
-  for (i = 0; i < (this).capacity; i++)           \
-    for (entry = (this).buckets[i]; entry != NULL; entry = entry->next)
+#define foreach_hash_table_entry(this, i, entry)\
+	for (i = 0; i < (this).capacity; i++)\
+		for (entry = (this).buckets[i]; entry; entry = entry->next)
 
 /**
  * Calculate the buffer size need to marshal a hash table
@@ -246,7 +246,7 @@ void hash_table_clear(hash_table_t* restrict this);
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t hash_table_marshal_size(const hash_table_t* restrict this);
+size_t hash_table_marshal_size(const hash_table_t *restrict this);
 
 /**
  * Marshals a hash table
@@ -255,7 +255,7 @@ size_t hash_table_marshal_size(const hash_table_t* restrict this);
  * @param  data  Output buffer for the marshalled data
  */
 __attribute__((nonnull))
-void hash_table_marshal(const hash_table_t* restrict this, char* restrict data);
+void hash_table_marshal(const hash_table_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals a hash table
@@ -267,8 +267,7 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data);
  *                    Destroy the table on error.
  */
 __attribute__((nonnull(1, 2)))
-int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper);
+int hash_table_unmarshal(hash_table_t *restrict this, char *restrict data, remap_func *remapper);
 
 
 #endif
-

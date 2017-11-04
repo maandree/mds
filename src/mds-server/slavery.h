@@ -31,7 +31,7 @@
  * @return          Zero on success, -2 on failure, otherwise -1
  */
 __attribute__((nonnull))
-int fetch_message(client_t* client);
+int fetch_message(client_t *client);
 
 /**
  * Create, start and detache a slave thread
@@ -41,7 +41,7 @@ int fetch_message(client_t* client);
  * @return            Zero on success, -1 on error, error message will have been printed
  */
 __attribute__((nonnull))
-int create_slave(pthread_t* thread_slot, int slave_fd);
+int create_slave(pthread_t *thread_slot, int slave_fd);
 
 /**
  * Initialise a client, except for threading
@@ -49,8 +49,7 @@ int create_slave(pthread_t* thread_slot, int slave_fd);
  * @param   client_fd  The file descriptor of the client's socket
  * @return             The client information, `NULL` on error
  */
-client_t* initialise_client(int client_fd);
+client_t *initialise_client(int client_fd);
 
 
 #endif
-

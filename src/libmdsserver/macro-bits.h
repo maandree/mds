@@ -31,7 +31,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atoz(str)    ((size_t)atol(str))
+#define atoz(str) ((size_t)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to an `ssize_t`
@@ -39,7 +39,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atosz(str)   ((ssize_t)atol(str))
+#define atosz(str) ((ssize_t)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to a `short int`
@@ -47,7 +47,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atoh(str)    ((short)atol(str))
+#define atoh(str) ((short)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to an `unsigned short int`
@@ -55,7 +55,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atouh(str)   ((unsigned short)atol(str))
+#define atouh(str) ((unsigned short)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to an `unsigned int`
@@ -63,7 +63,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atou(str)    ((unsigned int)atoi(str))
+#define atou(str) ((unsigned int)atoi(str))
 
 /**
  * Convert the beginning of a `const char*` to an `unsigned long int`
@@ -71,7 +71,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atoul(str)   ((unsigned long)atol(str))
+#define atoul(str) ((unsigned long)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to an `unsigned long long int`
@@ -79,7 +79,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-#define atoull(str)  ((unsigned long long)atoll(str))
+#define atoull(str) ((unsigned long long)atoll(str))
 
 /**
  * Convert the beginning of a `const char*` to an `int8_t`
@@ -87,7 +87,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define ato8(str)   ((int8_t)atoi(str))
+#define ato8(str) ((int8_t)atoi(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uint8_t`
@@ -95,7 +95,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atou8(str)  ((uint8_t)atou(str))
+#define atou8(str) ((uint8_t)atou(str))
 
 /**
  * Convert the beginning of a `const char*` to an `int16_t`
@@ -103,7 +103,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define ato16(str)   ((int16_t)atoi(str))
+#define ato16(str) ((int16_t)atoi(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uint16_t`
@@ -111,7 +111,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atou16(str)  ((uint16_t)atou(str))
+#define atou16(str) ((uint16_t)atou(str))
 
 #if UINT_MAX == UINT32_MAX
 /**
@@ -120,7 +120,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define ato32(str)   ((int32_t)atoi(str))
+# define ato32(str) ((int32_t)atoi(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uint32_t`
@@ -128,7 +128,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atou32(str)  ((uint32_t)atou(str))
+# define atou32(str) ((uint32_t)atou(str))
 #else
 /**
  * Convert the beginning of a `const char*` to an `int32_t`
@@ -136,7 +136,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define ato32(str)   ((int32_t)atol(str))
+# define ato32(str) ((int32_t)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uint32_t`
@@ -144,7 +144,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atou32(str)  ((uint32_t)atoul(str))
+# define atou32(str) ((uint32_t)atoul(str))
 #endif
 
 #if ULONG_MAX == UINT64_MAX
@@ -154,7 +154,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define ato64(str)   ((int64_t)atol(str))
+# define ato64(str) ((int64_t)atol(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uint64_t`
@@ -162,7 +162,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atou64(str)  ((uint64_t)atoul(str))
+# define atou64(str) ((uint64_t)atoul(str))
 #else
 /**
  * Convert the beginning of a `const char*` to an `int64_t`
@@ -170,7 +170,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define ato64(str)   ((int64_t)atoll(str))
+# define ato64(str) ((int64_t)atoll(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uint64_t`
@@ -178,7 +178,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atou64(str)  ((uint64_t)atoull(str))
+# define atou64(str) ((uint64_t)atoull(str))
 #endif
 
 /**
@@ -187,7 +187,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atoj(str)   ((intmax_t)atou64(str))
+#define atoj(str) ((intmax_t)atou64(str))
 
 /**
  * Convert the beginning of a `const char*` to an `uintmax_t`
@@ -195,8 +195,7 @@
  * @param   str:const char*  The string that begins with an integer
  * @return                   The integer at the beginning of the string
  */
-# define atouj(str)  ((uintmax_t)atou64(str))
+#define atouj(str) ((uintmax_t)atou64(str))
 
 
 #endif
-

@@ -18,7 +18,6 @@
 #include "globals.h"
 
 
-
 /**
  * Value of the ‘Message ID’ header for the next message
  */
@@ -42,7 +41,7 @@ hash_table_t reg_table;
 /**
  * Reusable buffer for data to send
  */
-char* send_buffer = NULL;
+char *send_buffer = NULL;
 
 /**
  * The size of `send_buffer`
@@ -52,7 +51,7 @@ size_t send_buffer_size = 0;
 /**
  * Used to temporarily store the old value when reallocating heap-allocations
  */
-char* old;
+char *old;
 
 /**
  * The master thread
@@ -78,4 +77,3 @@ pthread_mutex_t slave_mutex;
  * Condition for slave data
  */
 pthread_cond_t slave_cond;
-

@@ -35,37 +35,37 @@
  */
 typedef struct libmds_connection
 {
-  /**
-   * The file descriptor of the socket
-   * connected to the display server,
-   * -1 if not connected
-   */
-  int socket_fd;
-  
-  /**
-   * The ID of the _previous_ message
-   */
-  uint32_t message_id;
-  
-  /**
-   * The client ID, `NULL` if anonymous
-   */
-  char* client_id;
-  
-  /**
-   * Mutex used to hinder concurrent modification
-   * and concurrent message passing
-   * 
-   * This mutex is a fast mutex, a thread may not
-   * lock it more than once
-   */
-  pthread_mutex_t mutex;
-  
-  /**
-   * Whether `mutex` is initialised
-   */
-  int mutex_initialised;
-  
+	/**
+	 * The file descriptor of the socket
+	 * connected to the display server,
+	 * -1 if not connected
+	 */
+	int socket_fd;
+
+	/**
+	 * The ID of the _previous_ message
+	 */
+	uint32_t message_id;
+
+	/**
+	 * The client ID, `NULL` if anonymous
+	 */
+	char *client_id;
+
+	/**
+	 * Mutex used to hinder concurrent modification
+	 * and concurrent message passing
+	 * 
+	 * This mutex is a fast mutex, a thread may not
+	 * lock it more than once
+	 */
+	pthread_mutex_t mutex;
+
+	/**
+	 * Whether `mutex` is initialised
+	 */
+	int mutex_initialised;
+
 } libmds_connection_t;
 
 
@@ -81,7 +81,7 @@ typedef struct libmds_connection
  * @throws  EPERM   See pthread_mutex_init(3)
  */
 __attribute__((nonnull))
-int libmds_connection_initialise(libmds_connection_t* restrict this);
+int libmds_connection_initialise(libmds_connection_t *restrict this);
 
 /**
  * Allocate and initialise a connection descriptor
@@ -94,14 +94,14 @@ int libmds_connection_initialise(libmds_connection_t* restrict this);
  * @throws  EAGAIN  See pthread_mutex_init(3)
  * @throws  EPERM   See pthread_mutex_init(3)
  */
-libmds_connection_t* libmds_connection_create(void);
+libmds_connection_t *libmds_connection_create(void);
 
 /**
  * Release all resources held by a connection descriptor
  * 
  * @param  this  The connection descriptor, may be `NULL`
  */
-void libmds_connection_destroy(libmds_connection_t* restrict this);
+void libmds_connection_destroy(libmds_connection_t *restrict this);
 
 /**
  * Release all resources held by a connection descriptor,
@@ -109,7 +109,7 @@ void libmds_connection_destroy(libmds_connection_t* restrict this);
  * 
  * @param  this  The connection descriptor, may be `NULL`
  */
-void libmds_connection_free(libmds_connection_t* restrict this);
+void libmds_connection_free(libmds_connection_t *restrict this);
 
 /**
  * Connect to the display server
@@ -135,7 +135,7 @@ void libmds_connection_free(libmds_connection_t* restrict this);
  * @throws                Any error specified for connect(2), except EINTR
  */
 __attribute__((nonnull))
-int libmds_connection_establish(libmds_connection_t* restrict this, const char** restrict display);
+int libmds_connection_establish(libmds_connection_t *restrict this, const char **restrict display);
 
 /**
  * Connect to the display server
@@ -153,8 +153,8 @@ int libmds_connection_establish(libmds_connection_t* restrict this, const char**
  * @throws  Any error specified for connect(2), except EINTR
  */
 __attribute__((nonnull))
-int libmds_connection_establish_address(libmds_connection_t* restrict this,
-					const libmds_display_address_t* restrict address);
+int libmds_connection_establish_address(libmds_connection_t *restrict this,
+                                        const libmds_display_address_t *restrict address);
 
 /**
  * Wrapper for `libmds_connection_send_unlocked` that locks
@@ -180,7 +180,7 @@ int libmds_connection_establish_address(libmds_connection_t* restrict this,
  * @throws                See pthread_mutex_lock(3)
  */
 __attribute__((nonnull))
-size_t libmds_connection_send(libmds_connection_t* restrict this, const char* restrict message, size_t length);
+size_t libmds_connection_send(libmds_connection_t *restrict this, const char *restrict message, size_t length);
 
 /**
  * Send a message to the display server, without locking the
@@ -207,8 +207,8 @@ size_t libmds_connection_send(libmds_connection_t* restrict this, const char* re
  * @throws  ENOTSOCK      See send(2)
  */
 __attribute__((nonnull))
-size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const char* restrict message,
-				       size_t length, int continue_on_interrupt);
+size_t libmds_connection_send_unlocked(libmds_connection_t *restrict this, const char *restrict message,
+                                       size_t length, int continue_on_interrupt);
 
 /**
  * Lock the connection descriptor for being modified,
@@ -220,8 +220,8 @@ size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const
  * 
  * @throws  See pthread_mutex_lock(3)
  */
-#define libmds_connection_lock(this) \
-  (errno = pthread_mutex_lock(&((this)->mutex)), (errno ? 0 : -1))
+#define libmds_connection_lock(this)\
+	(errno = pthread_mutex_lock(&((this)->mutex)), (errno ? 0 : -1))
 
 /**
  * Lock the connection descriptor for being modified,
@@ -233,8 +233,8 @@ size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const
  * 
  * @throws  See pthread_mutex_trylock(3)
  */
-#define libmds_connection_trylock(this) \
-  (errno = pthread_mutex_trylock(&((this)->mutex)), (errno ? 0 : -1))
+#define libmds_connection_trylock(this)\
+	(errno = pthread_mutex_trylock(&((this)->mutex)), (errno ? 0 : -1))
 
 /**
  * Lock the connection descriptor for being modified,
@@ -248,8 +248,8 @@ size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const
  * 
  * @throws  See pthread_mutex_timedlock(3)
  */
-#define libmds_connection_timedlock(this, deadline)  \
-  (errno = pthread_mutex_timedlock(&((this)->mutex), deadline), (errno ? 0 : -1))
+#define libmds_connection_timedlock(this, deadline)\
+	(errno = pthread_mutex_timedlock(&((this)->mutex), deadline), (errno ? 0 : -1))
 
 /**
  * Undo the action of `libmds_connection_lock`, `libmds_connection_trylock`
@@ -261,24 +261,24 @@ size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const
  * 
  * @throws  See pthread_mutex_unlock(3)
  */
-#define libmds_connection_unlock(this)  \
-  (errno = pthread_mutex_unlock(&((this)->mutex)), (errno ? 0 : -1))
+#define libmds_connection_unlock(this)\
+	(errno = pthread_mutex_unlock(&((this)->mutex)), (errno ? 0 : -1))
 
 /**
  * Arguments for `libmds_compose` to compose the `Client ID`-header
  * 
  * @param  this: libmds_connection_t*  The connection descriptor, must not be `NULL`
  */
-#define LIBMDS_HEADER_CLIENT_ID(this)  \
-  "?Client ID: %s", (this)->client_id != NULL, (this)->client_id
+#define LIBMDS_HEADER_CLIENT_ID(this)\
+	"?Client ID: %s", (this)->client_id != NULL, (this)->client_id
 
 /**
  * Arguments for `libmds_compose` to compose the `Message ID`-header
  * 
  * @param  this: libmds_connection_t*  The connection descriptor, must not be `NULL`
  */
-#define LIBMDS_HEADER_MESSAGE_ID(this)  \
-  "Message ID: %"PRIu32, (this)->message_id
+#define LIBMDS_HEADER_MESSAGE_ID(this)\
+	"Message ID: %" PRIu32, (this)->message_id
 
 /**
  * Arguments for `libmds_compose` to compose the standard headers:
@@ -286,10 +286,8 @@ size_t libmds_connection_send_unlocked(libmds_connection_t* restrict this, const
  * 
  * @param  this: libmds_connection_t*  The connection descriptor, must not be `NULL`
  */
-#define LIBMDS_HEADERS_STANDARD(this)  \
-  LIBMDS_HEADER_CLIENT_ID(this), LIBMDS_HEADER_MESSAGE_ID(this)
-
+#define LIBMDS_HEADERS_STANDARD(this)\
+	LIBMDS_HEADER_CLIENT_ID(this), LIBMDS_HEADER_MESSAGE_ID(this)
 
 
 #endif
-

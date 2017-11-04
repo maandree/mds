@@ -54,38 +54,38 @@
  */
 typedef struct clipitem
 {
-  /**
-   * The stored content
-   */
-  char* content;
-  
-  /**
-   * The length of the stored content
-   */
-  size_t length;
-  
-  /**
-   * Time of planned death if `autopurge` is `CLIPITEM_AUTOPURGE_UPON_CLOCK`
-   */
-  struct timespec dethklok;
-  
-  /**
-   * The client that issued the inclusion of this entry
-   */
-  uint64_t client;
-  
-  /**
-   * Rule for automatic deletion
-   */
-  int autopurge;
-  
+	/**
+	 * The stored content
+	 */
+	char *content;
+
+	/**
+	 * The length of the stored content
+	 */
+	size_t length;
+
+	/**
+	 * Time of planned death if `autopurge` is `CLIPITEM_AUTOPURGE_UPON_CLOCK`
+	 */
+	struct timespec dethklok;
+
+	/**
+	 * The client that issued the inclusion of this entry
+	 */
+	uint64_t client;
+
+	/**
+	 * Rule for automatic deletion
+	 */
+	int autopurge;
+
 } clipitem_t;
 
 
 /**
  * The number of levels in the clipboard
  */
-#define CLIPBOARD_LEVELS  3
+#define CLIPBOARD_LEVELS 3
 
 
 
@@ -110,7 +110,7 @@ int clipboard_danger(void);
  * @return                  Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int clipboard_death(const char* recv_client_id);
+int clipboard_death(const char *recv_client_id);
 
 /**
  * Add a new entry to the clipboard
@@ -121,7 +121,7 @@ int clipboard_death(const char* recv_client_id);
  * @return                  Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int clipboard_add(int level, const char* time_to_live, const char* recv_client_id);
+int clipboard_add(int level, const char *time_to_live, const char *recv_client_id);
 
 /**
  * Read an entry to the clipboard
@@ -133,7 +133,7 @@ int clipboard_add(int level, const char* time_to_live, const char* recv_client_i
  * @return                   Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int clipboard_read(int level, size_t index, const char* recv_client_id, const char* recv_message_id);
+int clipboard_read(int level, size_t index, const char *recv_client_id, const char *recv_message_id);
 
 /**
  * Clear a clipstack
@@ -161,8 +161,7 @@ int clipboard_set_size(int level, size_t size);
  * @return                   Zero on success, -1 on error
  */
 __attribute__((nonnull))
-int clipboard_get_size(int level, const char* recv_client_id, const char* recv_message_id);
+int clipboard_get_size(int level, const char *recv_client_id, const char *recv_message_id);
 
 
 #endif
-

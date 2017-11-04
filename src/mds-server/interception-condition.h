@@ -23,36 +23,36 @@
 #include <stdint.h>
 
 
-#define INTERCEPTION_CONDITION_T_VERSION  0
+#define INTERCEPTION_CONDITION_T_VERSION 0
 
 /**
  * A condition for a message being intercepted by a client
  */
 typedef struct interception_condition
 {
-  /**
-   * The header of messages to intercept, optionally with a value,
-   * empty (most not be NULL) for all messages.
-   */
-  char* condition;
-  
-  /**
-   * The hash of the header of messages to intercept
-   */
-  size_t header_hash;
-  
-  /**
-   * The interception priority. The client should be
-   * consistent with the priority for conditions that
-   * are not mutually exclusive.
-   */
-  int64_t priority;
-  
-  /**
-   * Whether the messages may get modified by the client
-   */
-  int modifying;
-  
+	/**
+	 * The header of messages to intercept, optionally with a value,
+	 * empty (most not be NULL) for all messages.
+	 */
+	char *condition;
+
+	/**
+	 * The hash of the header of messages to intercept
+	 */
+	size_t header_hash;
+
+	/**
+	 * The interception priority. The client should be
+	 * consistent with the priority for conditions that
+	 * are not mutually exclusive.
+	 */
+	int64_t priority;
+
+	/**
+	 * Whether the messages may get modified by the client
+	 */
+	int modifying;
+
 } interception_condition_t;
 
 
@@ -63,7 +63,7 @@ typedef struct interception_condition
  * @return        The number of bytes to allocate to the output buffer
  */
 __attribute__((pure, nonnull))
-size_t interception_condition_marshal_size(const interception_condition_t* restrict this);
+size_t interception_condition_marshal_size(const interception_condition_t *restrict this);
 
 /**
  * Marshals an interception condition
@@ -73,7 +73,7 @@ size_t interception_condition_marshal_size(const interception_condition_t* restr
  * @return        The number of bytes that have been written (everything will be written)
  */
 __attribute__((nonnull))
-size_t interception_condition_marshal(const interception_condition_t* restrict this, char* restrict data);
+size_t interception_condition_marshal(const interception_condition_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals an interception condition
@@ -84,7 +84,7 @@ size_t interception_condition_marshal(const interception_condition_t* restrict t
  *                number of read bytes. Destroy the interception condition on error.
  */
 __attribute__((nonnull))
-size_t interception_condition_unmarshal(interception_condition_t* restrict this, char* restrict data);
+size_t interception_condition_unmarshal(interception_condition_t *restrict this, char *restrict data);
 
 /**
  * Pretend to an interception condition
@@ -93,8 +93,7 @@ size_t interception_condition_unmarshal(interception_condition_t* restrict this,
  * @return        The number of read bytes
  */
 __attribute__((pure, nonnull))
-size_t interception_condition_unmarshal_skip(char* restrict data);
+size_t interception_condition_unmarshal_skip(char *restrict data);
 
 
 #endif
-

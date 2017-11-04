@@ -31,58 +31,57 @@
  */
 typedef enum libmds_cherrypick_optimisation
 {
-  /**
-   * No optimisation is allowed, in particular this
-   * means that the array of headers may not be reordered.
-   * The function may still create a copy of the header
-   * array and sort the copy.
-   * 
-   * Cannot be combined with `SORT` or `SORTED`
-   * 
-   * This option is guaranteed to always have the value 0
-   */
-  DO_NOT_SORT = 0,
-  
-  /**
-   * `libmds_headers_cherrypick` is allowed to
-   * sort the header array. There is no guarantee
-   * that the header array will be sorted.
-   * 
-   * Cannot be combined with `DO_NOT_SORT` or `SORTED`
-   */
-  SORT = 1,
-  
-  /**
-   * Informs `libmds_headers_cherrypick` that the header
-   * array already is sorted. `libmds_headers_cherrypick`
-   * can use this information to optimise its procedure.
-   * But this also means that the header array will not
-   * be reordered.
-   * 
-   * Cannot be combined with `DO_NOT_SORT` or `SORT`
-   */
-  SORTED = 2,
-  
-  
-  /**
-   * The list of requested headers is not sorted
-   * in ascending order
-   * 
-   * Cannot be combined with `ARGS_SORTED`
-   * 
-   * This option is guaranteed to always have the value 0
-   */
-  ARGS_UNSORTED = 0,
-  
-  /**
-   * The list of requested headers is sorted in
-   * ascending order
-   * 
-   * Cannot be combined with `ARGS_UNSORTED`
-   */
-  ARGS_SORTED = 4,
-  
-  
+	/**
+	 * No optimisation is allowed, in particular this
+	 * means that the array of headers may not be reordered.
+	 * The function may still create a copy of the header
+	 * array and sort the copy.
+	 * 
+	 * Cannot be combined with `SORT` or `SORTED`
+	 * 
+	 * This option is guaranteed to always have the value 0
+	 */
+	DO_NOT_SORT = 0,
+
+	/**
+	 * `libmds_headers_cherrypick` is allowed to
+	 * sort the header array. There is no guarantee
+	 * that the header array will be sorted.
+	 * 
+	 * Cannot be combined with `DO_NOT_SORT` or `SORTED`
+	 */
+	SORT = 1,
+
+	/**
+	 * Informs `libmds_headers_cherrypick` that the header
+	 * array already is sorted. `libmds_headers_cherrypick`
+	 * can use this information to optimise its procedure.
+	 * But this also means that the header array will not
+	 * be reordered.
+	 * 
+	 * Cannot be combined with `DO_NOT_SORT` or `SORT`
+	 */
+	SORTED = 2,
+
+
+	/**
+	 * The list of requested headers is not sorted
+	 * in ascending order
+	 * 
+	 * Cannot be combined with `ARGS_SORTED`
+	 * 
+	 * This option is guaranteed to always have the value 0
+	 */
+	ARGS_UNSORTED = 0,
+
+	/**
+	 * The list of requested headers is sorted in
+	 * ascending order
+	 * 
+	 * Cannot be combined with `ARGS_UNSORTED`
+	 */
+	ARGS_SORTED = 4,
+
 } libmds_cherrypick_optimisation_t;
 
 
@@ -111,8 +110,8 @@ typedef enum libmds_cherrypick_optimisation
  *                        RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((sentinel))
-int libmds_headers_cherrypick(char** restrict headers, size_t header_count, size_t* restrict found,
-			      libmds_cherrypick_optimisation_t optimisation, ...);
+int libmds_headers_cherrypick(char **restrict headers, size_t header_count, size_t *restrict found,
+                              libmds_cherrypick_optimisation_t optimisation, ...);
 
 /**
  * Cherrypick headers from a message,
@@ -133,8 +132,8 @@ int libmds_headers_cherrypick(char** restrict headers, size_t header_count, size
  * @return                The number of found headers of those that were requested
  */
 __attribute__((sentinel))
-size_t libmds_headers_cherrypick_linear_unsorted(char** restrict headers, size_t header_count, ...);
-#define libmds_headers_cherrypick_linear_unsorted  libmds_headers_cherrypick_linear_unsorted
+size_t libmds_headers_cherrypick_linear_unsorted(char **restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_linear_unsorted libmds_headers_cherrypick_linear_unsorted
 
 /**
  * Cherrypick headers from a message,
@@ -157,8 +156,8 @@ size_t libmds_headers_cherrypick_linear_unsorted(char** restrict headers, size_t
  * @return                The number of found headers of those that were requested
  */
 __attribute__((sentinel))
-size_t libmds_headers_cherrypick_linear_sorted(char** restrict headers, size_t header_count, ...);
-#define libmds_headers_cherrypick_linear_sorted  libmds_headers_cherrypick_linear_sorted
+size_t libmds_headers_cherrypick_linear_sorted(char **restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_linear_sorted libmds_headers_cherrypick_linear_sorted
 
 /**
  * Cherrypick headers from a message,
@@ -179,8 +178,8 @@ size_t libmds_headers_cherrypick_linear_sorted(char** restrict headers, size_t h
  * @return                The number of found headers of those that were requested
  */
 __attribute__((sentinel))
-size_t libmds_headers_cherrypick_binary_unsorted(char** restrict headers, size_t header_count, ...);
-#define libmds_headers_cherrypick_binary_unsorted  libmds_headers_cherrypick_binary_unsorted
+size_t libmds_headers_cherrypick_binary_unsorted(char **restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_binary_unsorted libmds_headers_cherrypick_binary_unsorted
 
 /**
  * Cherrypick headers from a message,
@@ -202,8 +201,8 @@ size_t libmds_headers_cherrypick_binary_unsorted(char** restrict headers, size_t
  * @return                The number of found headers of those that were requested
  */
 __attribute__((sentinel))
-size_t libmds_headers_cherrypick_binary_sorted(char** restrict headers, size_t header_count, ...);
-#define libmds_headers_cherrypick_binary_unsorted  libmds_headers_cherrypick_binary_unsorted
+size_t libmds_headers_cherrypick_binary_sorted(char **restrict headers, size_t header_count, ...);
+#define libmds_headers_cherrypick_binary_unsorted libmds_headers_cherrypick_binary_unsorted
 
 /**
  * Cherrypick headers from a message
@@ -229,8 +228,8 @@ size_t libmds_headers_cherrypick_binary_sorted(char** restrict headers, size_t h
  * @throws  ENOMEM        Out of memory. Possibly, the process hit the RLIMIT_AS or
  *                        RLIMIT_DATA limit described in getrlimit(2).
  */
-int libmds_headers_cherrypick_v(char** restrict headers, size_t header_count, size_t* restrict found,
-				libmds_cherrypick_optimisation_t optimisation, va_list args);
+int libmds_headers_cherrypick_v(char **restrict headers, size_t header_count, size_t *restrict found,
+                                libmds_cherrypick_optimisation_t optimisation, va_list args);
 
 /**
  * Cherrypick headers from a message,
@@ -250,8 +249,8 @@ int libmds_headers_cherrypick_v(char** restrict headers, size_t header_count, si
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
-size_t libmds_headers_cherrypick_linear_unsorted_v(char** restrict headers, size_t header_count, va_list args);
-#define libmds_headers_cherrypick_linear_unsorted_v  libmds_headers_cherrypick_linear_unsorted_v
+size_t libmds_headers_cherrypick_linear_unsorted_v(char **restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_linear_unsorted_v libmds_headers_cherrypick_linear_unsorted_v
 
 /**
  * Cherrypick headers from a message,
@@ -273,8 +272,8 @@ size_t libmds_headers_cherrypick_linear_unsorted_v(char** restrict headers, size
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
-size_t libmds_headers_cherrypick_linear_sorted_v(char** restrict headers, size_t header_count, va_list args);
-#define libmds_headers_cherrypick_linear_sorted_v  libmds_headers_cherrypick_linear_sorted_v
+size_t libmds_headers_cherrypick_linear_sorted_v(char **restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_linear_sorted_v libmds_headers_cherrypick_linear_sorted_v
 
 /**
  * Cherrypick headers from a message,
@@ -294,8 +293,8 @@ size_t libmds_headers_cherrypick_linear_sorted_v(char** restrict headers, size_t
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
-size_t libmds_headers_cherrypick_binary_unsorted_v(char** restrict headers, size_t header_count, va_list args);
-#define libmds_headers_cherrypick_binary_unsorted_v  libmds_headers_cherrypick_binary_unsorted_v
+size_t libmds_headers_cherrypick_binary_unsorted_v(char **restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_binary_unsorted_v libmds_headers_cherrypick_binary_unsorted_v
 
 /**
  * Cherrypick headers from a message,
@@ -316,8 +315,8 @@ size_t libmds_headers_cherrypick_binary_unsorted_v(char** restrict headers, size
  *                        more headers in the list, it should be terminated with a `NULL`.
  * @return                The number of found headers of those that were requested
  */
-size_t libmds_headers_cherrypick_binary_sorted_v(char** restrict headers, size_t header_count, va_list args);
-#define libmds_headers_cherrypick_binary_sorted_v  libmds_headers_cherrypick_binary_sorted_v
+size_t libmds_headers_cherrypick_binary_sorted_v(char **restrict headers, size_t header_count, va_list args);
+#define libmds_headers_cherrypick_binary_sorted_v libmds_headers_cherrypick_binary_sorted_v
 
 /**
  * Sort the a header array, this is what `libmds_headers_cherrypick`
@@ -326,7 +325,7 @@ size_t libmds_headers_cherrypick_binary_sorted_v(char** restrict headers, size_t
  * @param  headers      The array of headers
  * @param  headr_count  The number of elements in `headers`
  */
-void libmds_headers_sort(char** restrict headers, size_t header_count);
+void libmds_headers_sort(char **restrict headers, size_t header_count);
 
 /**
  * Compose a message
@@ -371,8 +370,8 @@ void libmds_headers_sort(char** restrict headers, size_t header_count);
  *                          RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull(1, 2, 3), sentinel))
-int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
-		   const char* restrict payload, const size_t* restrict payload_length, ...);
+int libmds_compose(char **restrict buffer, size_t *restrict buffer_size, size_t *restrict length,
+                   const char *restrict payload, const size_t *restrict payload_length, ...);
 
 /**
  * Compose a message
@@ -417,8 +416,8 @@ int libmds_compose(char** restrict buffer, size_t* restrict buffer_size, size_t*
  *                          RLIMIT_DATA limit described in getrlimit(2).
  */
 __attribute__((nonnull(1, 2, 3)))
-int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_t* restrict length,
-		     const char* restrict payload, const size_t* restrict payload_length, va_list args);
+int libmds_compose_v(char **restrict buffer, size_t *restrict buffer_size, size_t *restrict length,
+                     const char *restrict payload, const size_t *restrict payload_length, va_list args);
 
 /**
  * Increase the message ID counter
@@ -442,9 +441,7 @@ int libmds_compose_v(char** restrict buffer, size_t* restrict buffer_size, size_
  * @throws              Any error that `test` may throw.
  */
 __attribute__((nonnull(1)))
-int libmds_next_message_id(uint32_t* restrict message_id, int (*test)(uint32_t message_id, void* data),
-			   void* data);
+int libmds_next_message_id(uint32_t *restrict message_id, int (*test)(uint32_t message_id, void *data), void *data);
 
 
 #endif
-

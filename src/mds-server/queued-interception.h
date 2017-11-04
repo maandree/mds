@@ -24,33 +24,33 @@
 #include <stdint.h>
 
 
-#define QUEUED_INTERCEPTION_T_VERSION  0
+#define QUEUED_INTERCEPTION_T_VERSION 0
 
 /**
  * A queued interception
  */
 typedef struct queued_interception
 {
-  /**
-   * The intercepting client
-   */
-  struct client* client;
-  
-  /**
-   * The interception priority
-   */
-  int64_t priority;
-  
-  /**
-   * Whether the messages may get modified by the client
-   */
-  int modifying;
-  
-  /**
-   * The file descriptor of the intercepting client's socket (used for unmarshalling)
-   */
-  int socket_fd;
-  
+	/**
+	 * The intercepting client
+	 */
+	struct client *client;
+
+	/**
+	 * The interception priority
+	 */
+	int64_t priority;
+
+	/**
+	 * Whether the messages may get modified by the client
+	 */
+	int modifying;
+
+	/**
+	 * The file descriptor of the intercepting client's socket (used for unmarshalling)
+	 */
+	int socket_fd;
+
 } queued_interception_t;
 
 
@@ -71,7 +71,7 @@ size_t queued_interception_marshal_size(void);
  * @return        The number of bytes that have been written (everything will be written)
  */
 __attribute__((nonnull))
-size_t queued_interception_marshal(const queued_interception_t* restrict this, char* restrict data);
+size_t queued_interception_marshal(const queued_interception_t *restrict this, char *restrict data);
 
 /**
  * Unmarshals a queued interception
@@ -81,7 +81,7 @@ size_t queued_interception_marshal(const queued_interception_t* restrict this, c
  * @return        Zero on error, `errno` will be set accordingly, otherwise the number of read bytes.
  */
 __attribute__((nonnull))
-size_t queued_interception_unmarshal(queued_interception_t* restrict this, char* restrict data);
+size_t queued_interception_unmarshal(queued_interception_t *restrict this, char *restrict data);
 
 /**
  * Pretend to unmarshal a queued interception
@@ -94,4 +94,3 @@ size_t queued_interception_unmarshal_skip(void);
 
 
 #endif
-

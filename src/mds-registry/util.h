@@ -38,5 +38,3 @@ void reg_table_free_value(size_t obj);
 
 
 #endif
-
-

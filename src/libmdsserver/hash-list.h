@@ -592,4 +592,3 @@ T##_unmarshal(T##_t* restrict this, char* restrict data)\
 
 
 #endif
-

@@ -6,4 +6,3 @@ Description: Library for mds-servers
 Version: @VERSION@
 Libs: -L${libdir} -lmdsserver @LIBS@
 Cflags: -I${includedir} @CFLAGS@
-

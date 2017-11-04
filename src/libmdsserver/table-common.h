@@ -56,4 +56,3 @@ typedef size_t remap_func(size_t obj);
 
 
 #endif
-
