@@ -4,7 +4,7 @@
 @include macros.texinfo
 @copying
 @c --------------------------------------------------------------------------------
-Copyright @copyright{} 2014, 2015, 2016  @w{Mattias Andrée @e{maandree@@member.fsf.org}}
+Copyright @copyright{} 2014, 2015, 2016, 2017  @w{Mattias Andrée @e{maandree@@kth.se}}
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -15,7 +15,7 @@ Free Documentation License'', with no Front-Cover Texts, and with no
 Back-Cover Texts. A copy of the license is included in the section
 entitled ``GNU Free Documentation License''.
 @end quotation
-@c THIS WAS LAST CHANGED 2016-JULY-10
+@c THIS WAS LAST CHANGED 2017-NOVEMBER-05
 @c --------------------------------------------------------------------------------
 @end copying
 
