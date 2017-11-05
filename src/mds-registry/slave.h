@@ -35,8 +35,7 @@
 /**
  * Slave information, a thread waiting for protocols to become available
  */
-typedef struct slave
-{
+typedef struct slave {
 	/**
 	 * Set of protocols for which to wait that they become available
 	 */
@@ -82,7 +81,6 @@ typedef struct slave
 	 * Whether `dethklok` should apply
 	 */
 	int timed;
-
 } slave_t;
 
 

@@ -66,8 +66,7 @@
 /**
  * The state and identifier of a server
  */
-typedef struct server_state
-{
+typedef struct server_state {
 	/**
 	 * The server's process ID
 	 */
@@ -82,10 +81,8 @@ typedef struct server_state
 	 * The time (monotonic) the server started
 	 */
 	struct timespec started;
-
 } server_state_t;
 
 
 
 #endif
-

@@ -31,8 +31,8 @@
  * @param  K  The key
  * @param  H  The hash of the key
  */
-#define TEST_KEY(T, B, K, H) \
-  ((B->key == K) || (T->key_comparator && (B->hash == H) && T->key_comparator(B->key, K)))
+#define TEST_KEY(T, B, K, H)\
+	((B)->key == (K) || ((T)->key_comparator && (B)->hash == (H) && (T)->key_comparator((B)->key, (K))))
 
 
 /**
@@ -42,10 +42,10 @@
  * @param   key   The key to hash
  * @return        The hash of the key
  */
-__attribute__((pure, nonnull))
-static inline size_t hash(const hash_table_t* restrict this, size_t key)
+static inline size_t __attribute__((pure, nonnull))
+hash(const hash_table_t *restrict this, size_t key)
 {
-  return this->hasher ? this->hasher(key) : key;
+	return this->hasher ? this->hasher(key) : key;
 }
 
 
@@ -56,10 +56,10 @@ static inline size_t hash(const hash_table_t* restrict this, size_t key)
  * @param   key   The key to hash
  * @return        A non-negative value less the the table's capacity
  */
-__attribute__((pure, nonnull))
-static inline size_t truncate_hash(const hash_table_t* restrict this, size_t hash)
+static inline size_t __attribute__((pure, nonnull))
+truncate_hash(const hash_table_t *restrict this, size_t hash)
 {
-  return hash % this->capacity;
+	return hash % this->capacity;
 }
 
 
@@ -69,49 +69,42 @@ static inline size_t truncate_hash(const hash_table_t* restrict this, size_t has
  * @param   this  The hash table
  * @return        Non-zero on error, `errno` will be set accordingly
  */
-__attribute__((nonnull))
-static int rehash(hash_table_t* restrict this)
+static int __attribute__((nonnull))
+rehash(hash_table_t *restrict this)
 {
-  hash_entry_t** old_buckets = this->buckets;
-  size_t old_capacity = this->capacity;
-  size_t i = old_capacity, index;
-  hash_entry_t* bucket;
-  hash_entry_t* destination;
-  hash_entry_t* next;
-  
-  fail_if (xcalloc(this->buckets, old_capacity * 2 + 1, hash_entry_t*));
-  this->capacity = old_capacity * 2 + 1;
-  this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
-  
-  while (i)
-    {
-      bucket = this->buckets[--i];
-      while (bucket)
-	{
-	  index = truncate_hash(this, bucket->hash);
-	  if ((destination = this->buckets[index]))
-	    {
-	      next = destination->next;
-	      while (next)
-		{
-		  destination = next;
-		  next = destination->next;
+	hash_entry_t **old_buckets = this->buckets;
+	size_t old_capacity = this->capacity;
+	size_t i = old_capacity, index;
+	hash_entry_t *bucket;
+	hash_entry_t *destination;
+	hash_entry_t *next;
+
+	fail_if (xcalloc(this->buckets, old_capacity * 2 + 1, hash_entry_t*));
+	this->capacity = old_capacity * 2 + 1;
+	this->threshold = (size_t)((float)(this->capacity) * this->load_factor);
+
+	while (i--) {
+		bucket = this->buckets[i];
+		while (bucket) {
+			index = truncate_hash(this, bucket->hash);
+			if ((destination = this->buckets[index])) {
+				while ((next = destination->next))
+					destination = next;
+				destination->next = bucket;
+			} else {
+				this->buckets[index] = bucket;
+			}
+
+			next = bucket->next;
+			bucket->next = NULL;
+			bucket = next;
 		}
-	      destination->next = bucket;
-	    }
-	  else
-	    this->buckets[index] = bucket;
-	  
-	  next = bucket->next;
-	  bucket->next = NULL;
-	  bucket = next;
 	}
-    }
-  
-  free(old_buckets);
-  return 0;
- fail:
-  return -1;
+
+	free(old_buckets);
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -123,22 +116,23 @@ static int rehash(hash_table_t* restrict this)
  * @param   load_factor       The load factor of the table, i.e. when to grow the table
  * @return                    Non-zero on error, `errno` will have been set accordingly
  */
-int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_capacity, float load_factor)
+int
+hash_table_create_fine_tuned(hash_table_t *restrict this, size_t initial_capacity, float load_factor)
 {
-  this->buckets = NULL;
-  
-  this->capacity = initial_capacity ? initial_capacity : 1;
-  fail_if (xcalloc(this->buckets, this->capacity, hash_entry_t*));
-  this->load_factor = load_factor;
-  this->threshold = (size_t)((float)(this->capacity) * load_factor);
-  this->size = 0;
-  this->value_comparator = NULL;
-  this->key_comparator = NULL;
-  this->hasher = NULL;
-  
-  return 0;
- fail:
-  return -1;
+	this->buckets = NULL;
+
+	this->capacity = initial_capacity ? initial_capacity : 1;
+	fail_if (xcalloc(this->buckets, this->capacity, hash_entry_t*));
+	this->load_factor = load_factor;
+	this->threshold = (size_t)((float)(this->capacity) * load_factor);
+	this->size = 0;
+	this->value_comparator = NULL;
+	this->key_comparator = NULL;
+	this->hasher = NULL;
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -150,27 +144,24 @@ int hash_table_create_fine_tuned(hash_table_t* restrict this, size_t initial_cap
  * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
  * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
-void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_func* value_freer)
+void
+hash_table_destroy(hash_table_t *restrict this, free_func *key_freer, free_func *value_freer)
 {
-  size_t i = this->capacity;
-  hash_entry_t* bucket;
-  hash_entry_t* last;
-  
-  if (this->buckets != NULL)
-    {
-      while (i)
-	{
-	  bucket = this->buckets[--i];
-	  while (bucket)
-	    {
-	      if (key_freer   != NULL)  key_freer(bucket->key);
-	      if (value_freer != NULL)  value_freer(bucket->value);
-	      bucket = (last = bucket)->next;
-	      free(last);
-	    }
+	size_t i = this->capacity;
+	hash_entry_t *bucket, *last;
+
+	if (this->buckets) {
+		while (i) {
+			bucket = this->buckets[--i];
+			while (bucket) {
+				if (key_freer)   key_freer(bucket->key);
+				if (value_freer) value_freer(bucket->value);
+				bucket = (last = bucket)->next;
+				free(last);
+			}
+		}
+		free(this->buckets);
 	}
-      free(this->buckets);
-    }
 }
 
 
@@ -181,25 +172,24 @@ void hash_table_destroy(hash_table_t* restrict this, free_func* key_freer, free_
  * @param   value  The value
  * @return         Whether the value is stored in the table
  */
-int hash_table_contains_value(const hash_table_t* restrict this, size_t value)
+int
+hash_table_contains_value(const hash_table_t *restrict this, size_t value)
 {
-  size_t i = this->capacity;
-  hash_entry_t* restrict bucket;
-  
-  while (i)
-    {
-      bucket = this->buckets[--i];
-      while (bucket != NULL)
-	{
-	  if (bucket->value == value)
-	    return 1;
-	  if (this->value_comparator && this->value_comparator(bucket->value, value))
-	    return 1;
-	  bucket = bucket->next;
+	size_t i = this->capacity;
+	hash_entry_t *restrict bucket;
+
+	while (i--) {
+		bucket = this->buckets[i];
+		while (bucket) {
+			if (bucket->value == value)
+				return 1;
+			if (this->value_comparator && this->value_comparator(bucket->value, value))
+				return 1;
+			bucket = bucket->next;
+		}
 	}
-    }
-  
-  return 0;
+
+	return 0;
 }
 
 
@@ -210,20 +200,20 @@ int hash_table_contains_value(const hash_table_t* restrict this, size_t value)
  * @param   key   The key
  * @return        Whether the key is used
  */
-int hash_table_contains_key(const hash_table_t* restrict this, size_t key)
+int
+hash_table_contains_key(const hash_table_t *restrict this, size_t key)
 {
-  size_t key_hash = hash(this, key);
-  size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* restrict bucket = this->buckets[index];
-  
-  while (bucket)
-    {
-      if (TEST_KEY(this, bucket, key, key_hash))
-	return 1;
-      bucket = bucket->next;
-    }
-  
-  return 0;
+	size_t key_hash = hash(this, key);
+	size_t index = truncate_hash(this, key_hash);
+	hash_entry_t *restrict bucket = this->buckets[index];
+
+	while (bucket) {
+		if (TEST_KEY(this, bucket, key, key_hash))
+			return 1;
+		bucket = bucket->next;
+	}
+
+	return 0;
 }
 
 
@@ -234,20 +224,20 @@ int hash_table_contains_key(const hash_table_t* restrict this, size_t key)
  * @param   key   The key associated with the value
  * @return        The value associated with the key, 0 if the key was not used
  */
-size_t hash_table_get(const hash_table_t* restrict this, size_t key)
+size_t
+hash_table_get(const hash_table_t *restrict this, size_t key)
 {
-  size_t key_hash = hash(this, key);
-  size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* restrict bucket = this->buckets[index];
-  
-  while (bucket)
-    {
-      if (TEST_KEY(this, bucket, key, key_hash))
-	return bucket->value;
-      bucket = bucket->next;
-    }
-  
-  return 0;
+	size_t key_hash = hash(this, key);
+	size_t index = truncate_hash(this, key_hash);
+	hash_entry_t *restrict bucket = this->buckets[index];
+
+	while (bucket) {
+		if (TEST_KEY(this, bucket, key, key_hash))
+			return bucket->value;
+		bucket = bucket->next;
+	}
+
+	return 0;
 }
 
 
@@ -258,20 +248,20 @@ size_t hash_table_get(const hash_table_t* restrict this, size_t key)
  * @param   key   The key associated with the value
  * @return        The entry associated with the key, `NULL` if the key was not used
  */
-hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key)
+hash_entry_t *
+hash_table_get_entry(const hash_table_t *restrict this, size_t key)
 {
-  size_t key_hash = hash(this, key);
-  size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* restrict bucket = this->buckets[index];
-  
-  while (bucket)
-    {
-      if (TEST_KEY(this, bucket, key, key_hash))
-	return bucket;
-      bucket = bucket->next;
-    }
-  
-  return NULL;
+	size_t key_hash = hash(this, key);
+	size_t index = truncate_hash(this, key_hash);
+	hash_entry_t *restrict bucket = this->buckets[index];
+
+	while (bucket) {
+		if (TEST_KEY(this, bucket, key, key_hash))
+			return bucket;
+		bucket = bucket->next;
+	}
+
+	return NULL;
 }
 
 
@@ -284,41 +274,41 @@ hash_entry_t* hash_table_get_entry(const hash_table_t* restrict this, size_t key
  * @return         The previous value associated with the key, 0 if the key was not used.
  *                 0 will also be returned on error, check the `errno` variable.
  */
-size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
+size_t
+hash_table_put(hash_table_t *restrict this, size_t key, size_t value)
 {
-  size_t key_hash = hash(this, key);
-  size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* restrict bucket = this->buckets[index];
-  size_t rc;
-  
-  while (bucket)
-    if (TEST_KEY(this, bucket, key, key_hash))
-      {
-	rc = bucket->value;
+	size_t key_hash = hash(this, key);
+	size_t index = truncate_hash(this, key_hash);
+	hash_entry_t *restrict bucket = this->buckets[index];
+	size_t rc;
+
+	while (bucket) {
+		if (TEST_KEY(this, bucket, key, key_hash)) {
+				rc = bucket->value;
+				bucket->value = value;
+				return rc;
+		} else {
+			bucket = bucket->next;
+		}
+	}
+
+	if (++(this->size) > this->threshold) {
+		errno = 0;
+		fail_if (rehash(this));
+		index = truncate_hash(this, key_hash);
+	}
+
+	errno = 0;
+	fail_if (xmalloc(bucket, 1, hash_entry_t));
 	bucket->value = value;
-	return rc;
-      }
-    else
-      bucket = bucket->next;
-  
-  if (++(this->size) > this->threshold)
-    {
-      errno = 0;
-      fail_if (rehash(this));
-      index = truncate_hash(this, key_hash);
-    }
-  
-  errno = 0;
-  fail_if (xmalloc(bucket, 1, hash_entry_t));
-  bucket->value = value;
-  bucket->key = key;
-  bucket->hash = key_hash;
-  bucket->next = this->buckets[index];
-  this->buckets[index] = bucket;
-  
-  return 0;
- fail:
-  return 0;
+	bucket->key = key;
+	bucket->hash = key_hash;
+	bucket->next = this->buckets[index];
+	this->buckets[index] = bucket;
+
+	return 0;
+fail:
+	return 0;
 }
 
 
@@ -329,32 +319,31 @@ size_t hash_table_put(hash_table_t* restrict this, size_t key, size_t value)
  * @param   key   The key of the entry to remove
  * @return        The previous value associated with the key, 0 if the key was not used
  */
-size_t hash_table_remove(hash_table_t* restrict this, size_t key)
+size_t
+hash_table_remove(hash_table_t *restrict this, size_t key)
 {
-  size_t key_hash = hash(this, key);
-  size_t index = truncate_hash(this, key_hash);
-  hash_entry_t* bucket = this->buckets[index];
-  hash_entry_t* last = NULL;
-  size_t rc;
-  
-  while (bucket)
-    {
-      if (TEST_KEY(this, bucket, key, key_hash))
-	{
-	  if (last == NULL)
-	    this->buckets[index] = bucket->next;
-	  else
-	    last->next = bucket->next;
-	  this->size--;
-	  rc = bucket->value;
-	  free(bucket);
-	  return rc;
+	size_t key_hash = hash(this, key);
+	size_t index = truncate_hash(this, key_hash);
+	hash_entry_t *bucket = this->buckets[index];
+	hash_entry_t *last = NULL;
+	size_t rc;
+
+	while (bucket) {
+		if (TEST_KEY(this, bucket, key, key_hash)) {
+			if (!last)
+				this->buckets[index] = bucket->next;
+			else
+				last->next = bucket->next;
+			this->size--;
+			rc = bucket->value;
+			free(bucket);
+			return rc;
+		}
+		last = bucket;
+		bucket = bucket->next;
 	}
-      last = bucket;
-      bucket = bucket->next;
-    }
-  
-  return 0;
+
+	return 0;
 }
 
 
@@ -363,32 +352,29 @@ size_t hash_table_remove(hash_table_t* restrict this, size_t key)
  * 
  * @param  this  The hash table
  */
-void hash_table_clear(hash_table_t* restrict this)
+void
+hash_table_clear(hash_table_t *restrict this)
 {
-  hash_entry_t** buf;
-  hash_entry_t* bucket;
-  size_t i, ptr;
-  
-  if (this->size)
-    {
-      buf = alloca((this->size + 1) * sizeof(hash_entry_t*));
-      i = this->capacity;
-      while (i)
-	{
-	  bucket = this->buckets[--i];
-	  ptr = 0;
-	  buf[ptr++] = bucket;
-	  while (bucket)
-	    {
-	      bucket = bucket->next;
-	      buf[ptr++] = bucket;
-	    }
-	  while (ptr)
-	    free(buf[--ptr]);
-	  this->buckets[i] = NULL;
+	hash_entry_t **buf, *bucket;
+	size_t i, ptr;
+
+	if (this->size) {
+		buf = alloca((this->size + 1) * sizeof(hash_entry_t*));
+		i = this->capacity;
+		while (i--) {
+			bucket = this->buckets[i];
+			ptr = 0;
+			buf[ptr++] = bucket;
+			while (bucket) {
+				bucket = bucket->next;
+				buf[ptr++] = bucket;
+			}
+			while (ptr)
+				free(buf[--ptr]);
+			this->buckets[i] = NULL;
+		}
+		this->size = 0;
 	}
-      this->size = 0;
-    }
 }
 
 
@@ -398,23 +384,23 @@ void hash_table_clear(hash_table_t* restrict this)
  * @param   this  The hash table
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t hash_table_marshal_size(const hash_table_t* restrict this)
+size_t
+hash_table_marshal_size(const hash_table_t *restrict this)
 {
-  size_t n = this->capacity;
-  size_t rc = 3 * sizeof(size_t) + sizeof(float) + n * sizeof(size_t);
-  size_t i, m = 0;
-  
-  for (i = 0; i < n; i++)
-    {
-      hash_entry_t* restrict bucket = this->buckets[i];
-      while (bucket != NULL)
-	{
-	  bucket = bucket->next;
-	  m++;
+	size_t n = this->capacity;
+	size_t rc = 3 * sizeof(size_t) + sizeof(float) + n * sizeof(size_t);
+	size_t i, m = 0;
+	hash_entry_t *restrict bucket;
+
+	for (i = 0; i < n; i++) {
+		bucket = this->buckets[i];
+		while (bucket) {
+			bucket = bucket->next;
+			m++;
+		}
 	}
-    }
-  
-  return rc + m * 3 * sizeof(size_t) + sizeof(int);
+
+	return rc + m * 3 * sizeof(size_t) + sizeof(int);
 }
 
 
@@ -424,31 +410,31 @@ size_t hash_table_marshal_size(const hash_table_t* restrict this)
  * @param  this  The hash table
  * @param  data  Output buffer for the marshalled data
  */
-void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
+void
+hash_table_marshal(const hash_table_t *restrict this, char *restrict data)
 {
-  size_t i, n = this->capacity;
-  
-  buf_set_next(data, int, HASH_TABLE_T_VERSION);
-  buf_set_next(data, size_t, this->capacity);
-  buf_set_next(data, float, this->load_factor);
-  buf_set_next(data, size_t, this->threshold);
-  buf_set_next(data, size_t, this->size);
-  
-  for (i = 0; i < n; i++)
-    {
-      hash_entry_t* restrict bucket = this->buckets[i];
-      size_t m = 0;
-      while (bucket != NULL)
-	{
-	  buf_set(data, size_t, 1 + m * 3 + 0, bucket->key);
-	  buf_set(data, size_t, 1 + m * 3 + 1, bucket->value);
-	  buf_set(data, size_t, 1 + m * 3 + 2, bucket->hash);
-	  bucket = bucket->next;
-	  m++;
+	size_t i, n = this->capacity, m;
+	hash_entry_t *restrict bucket;
+
+	buf_set_next(data, int, HASH_TABLE_T_VERSION);
+	buf_set_next(data, size_t, this->capacity);
+	buf_set_next(data, float, this->load_factor);
+	buf_set_next(data, size_t, this->threshold);
+	buf_set_next(data, size_t, this->size);
+
+	for (i = 0; i < n; i++) {
+		bucket = this->buckets[i];
+		m = 0;
+		while (bucket) {
+			buf_set(data, size_t, 1 + m * 3 + 0, bucket->key);
+			buf_set(data, size_t, 1 + m * 3 + 1, bucket->value);
+			buf_set(data, size_t, 1 + m * 3 + 2, bucket->hash);
+			bucket = bucket->next;
+			m++;
+		}
+		buf_set(data, size_t, 0, m);
+		buf_next(data, size_t, 1 + m * 3);
 	}
-      buf_set(data, size_t, 0, m);
-      buf_next(data, size_t, 1 + m * 3);
-    }
 }
 
 
@@ -461,48 +447,45 @@ void hash_table_marshal(const hash_table_t* restrict this, char* restrict data)
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
-int hash_table_unmarshal(hash_table_t* restrict this, char* restrict data, remap_func* remapper)
+int
+hash_table_unmarshal(hash_table_t *restrict this, char *restrict data, remap_func *remapper)
 {
-  size_t i, n;
-  
-  /* buf_get(data, int, 0, HASH_TABLE_T_VERSION); */
-  buf_next(data, int, 1);
-  
-  this->value_comparator = NULL;
-  this->key_comparator   = NULL;
-  this->hasher           = NULL;
-  
-  buf_get_next(data, size_t, this->capacity = n);
-  buf_get_next(data, float, this->load_factor);
-  buf_get_next(data, size_t, this->threshold);
-  buf_get_next(data, size_t, this->size);
-  
-  fail_if (xcalloc(this->buckets, this->capacity, hash_entry_t*));
-  
-  for (i = 0; i < n; i++)
-    {
-      size_t m;
-      hash_entry_t* restrict bucket;
-      buf_get_next(data, size_t, m);
-      
-      fail_if (xmalloc(this->buckets[i] = bucket, 1, hash_entry_t));
-      
-      while (m--)
-	{
-	  if (m == 0)
-	    bucket->next = NULL;
-	  else
-	    fail_if (xmalloc(bucket->next, 1, hash_entry_t));
-	  buf_get_next(data, size_t, bucket->key);
-	  buf_get_next(data, size_t, bucket->value);
-	  if (remapper != NULL)
-	    bucket->value = remapper(bucket->value);
-	  buf_get_next(data, size_t, bucket->hash);
-	}
-    }
-  
-  return 0;
- fail:
-  return -1;
-}
+	size_t i, n, m;
+	hash_entry_t *restrict bucket;
 
+	/* buf_get(data, int, 0, HASH_TABLE_T_VERSION); */
+	buf_next(data, int, 1);
+
+	this->value_comparator = NULL;
+	this->key_comparator   = NULL;
+	this->hasher           = NULL;
+
+	buf_get_next(data, size_t, this->capacity = n);
+	buf_get_next(data, float, this->load_factor);
+	buf_get_next(data, size_t, this->threshold);
+	buf_get_next(data, size_t, this->size);
+
+	fail_if (xcalloc(this->buckets, this->capacity, hash_entry_t*));
+
+	for (i = 0; i < n; i++) {
+		buf_get_next(data, size_t, m);
+
+		fail_if (xmalloc(this->buckets[i] = bucket, 1, hash_entry_t));
+
+		while (m--) {
+			if (!m)
+				bucket->next = NULL;
+			else
+				fail_if (xmalloc(bucket->next, 1, hash_entry_t));
+			buf_get_next(data, size_t, bucket->key);
+			buf_get_next(data, size_t, bucket->value);
+			if (remapper)
+				bucket->value = remapper(bucket->value);
+			buf_get_next(data, size_t, bucket->hash);
+		}
+	}
+
+	return 0;
+fail:
+	return -1;
+}

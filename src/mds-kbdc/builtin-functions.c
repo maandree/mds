@@ -29,35 +29,35 @@
 /**
  * Define useful data for built-in function with 2 parameters
  */
-#define define_2				\
-  const char32_t* restrict a = *args++;		\
-  const char32_t* restrict b = *args++;		\
-  size_t an = string_length(a);			\
-  size_t bn = string_length(b);			\
-  size_t i, n = an > bn ? an : bn;		\
-  char32_t* restrict rc;			\
-  fail_if (xmalloc(rc, n + 1, char32_t));	\
-  rc[n] = -1
+#define define_2\
+	const char32_t *restrict a = *args++;\
+	const char32_t *restrict b = *args++;\
+	size_t an = string_length(a);\
+	size_t bn = string_length(b);\
+	size_t i, n = an > bn ? an : bn;\
+	char32_t *restrict rc;\
+	fail_if (xmalloc(rc, n + 1, char32_t));\
+	rc[n] = -1
 
 /**
  * Define useful data for built-in function with 1 parameter
  */
-#define define_1				\
-  const char32_t* restrict a = *args++;		\
-  size_t i, n = string_length(a);		\
-  char32_t* restrict rc;			\
-  fail_if (xmalloc(rc, n + 1, char32_t));	\
-  rc[n] = -1
+#define define_1\
+	const char32_t* restrict a = *args++;\
+	size_t i, n = string_length(a);\
+	char32_t *restrict rc;\
+	fail_if (xmalloc(rc, n + 1, char32_t));\
+	rc[n] = -1
 
 /**
  * Return a value, or if there was a failure somewhere, return `NULL`
  * 
  * @param  v:void*  The value to return on success
  */
-#define return(v)				\
-  return v;					\
- fail:						\
-  return NULL;
+#define return(v)\
+	return v;\
+fail:\
+	return NULL;
 
 
 /**
@@ -66,12 +66,13 @@
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_add_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_add_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] + b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] + b[i % bn];
+	return(rc);
 }
 
 
@@ -81,12 +82,13 @@ static char32_t* builtin_function_add_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_sub_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_sub_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] - b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] - b[i % bn];
+	return(rc);
 }
 
 
@@ -96,12 +98,13 @@ static char32_t* builtin_function_sub_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_mul_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_mul_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] * b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] * b[i % bn];
+	return(rc);
 }
 
 
@@ -111,12 +114,13 @@ static char32_t* builtin_function_mul_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_div_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_div_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] / b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] / b[i % bn];
+	return(rc);
 }
 
 
@@ -126,12 +130,13 @@ static char32_t* builtin_function_div_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_mod_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_mod_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] % b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] % b[i % bn];
+	return(rc);
 }
 
 
@@ -141,12 +146,13 @@ static char32_t* builtin_function_mod_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_rsh_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_rsh_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] >> b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] >> b[i % bn];
+	return(rc);
 }
 
 
@@ -156,12 +162,13 @@ static char32_t* builtin_function_rsh_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_lsh_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_lsh_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] << b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] << b[i % bn];
+	return(rc);
 }
 
 
@@ -171,12 +178,13 @@ static char32_t* builtin_function_lsh_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_or_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_or_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] | b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] | b[i % bn];
+	return(rc);
 }
 
 
@@ -186,12 +194,13 @@ static char32_t* builtin_function_or_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_and_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_and_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] & b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] & b[i % bn];
+	return(rc);
 }
 
 
@@ -201,12 +210,13 @@ static char32_t* builtin_function_and_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_xor_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_xor_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] ^ b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] ^ b[i % bn];
+	return(rc);
 }
 
 
@@ -216,12 +226,13 @@ static char32_t* builtin_function_xor_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_not_1(const char32_t** restrict args)
+static char32_t *
+builtin_function_not_1(const char32_t **restrict args)
 {
-  define_1;
-  for (i = 0; i < n; i++)
-    rc[i] = !a[i];
-  return(rc);
+	define_1;
+	for (i = 0; i < n; i++)
+		rc[i] = !a[i];
+	return(rc);
 }
 
 
@@ -231,12 +242,13 @@ static char32_t* builtin_function_not_1(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_equals_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_equals_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] == b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] == b[i % bn];
+	return(rc);
 }
 
 
@@ -246,12 +258,13 @@ static char32_t* builtin_function_equals_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_greater_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_greater_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] > b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] > b[i % bn];
+	return(rc);
 }
 
 
@@ -261,12 +274,13 @@ static char32_t* builtin_function_greater_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_less_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_less_2(const char32_t **restrict args)
 {
-  define_2;
-  for (i = 0; i < n; i++)
-    rc[i] = a[i % an] < b[i % bn];
-  return(rc);
+	define_2;
+	for (i = 0; i < n; i++)
+		rc[i] = a[i % an] < b[i % bn];
+	return(rc);
 }
 
 
@@ -276,17 +290,18 @@ static char32_t* builtin_function_less_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_get_2(const char32_t** restrict args)
+static char32_t *
+builtin_function_get_2(const char32_t **restrict args)
 {
-  const char32_t* restrict a = *args++;
-  const char32_t* restrict b = *args++;
-  char32_t* restrict rc;
-  size_t n = (size_t)*b;
-  mds_kbdc_tree_t* value = variables_get((size_t)*a)->array.elements;
-  while (n--)
-    value = value->next;
-  fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
-  return(rc);
+	const char32_t *restrict a = *args++;
+	const char32_t *restrict b = *args++;
+	char32_t *restrict rc;
+	size_t n = (size_t)*b;
+	mds_kbdc_tree_t *value = variables_get((size_t)*a)->array.elements;
+	while (n--)
+		value = value->next;
+	fail_if (rc = string_dup(value->compiled_string.string), rc == NULL);
+	return(rc);
 }
 
 
@@ -296,21 +311,22 @@ static char32_t* builtin_function_get_2(const char32_t** restrict args)
  * @param   args  The arguments passed to the function
  * @return        The return value of the function, `NULL` on error
  */
-static char32_t* builtin_function_set_3(const char32_t** restrict args)
+static char32_t *
+builtin_function_set_3(const char32_t **restrict args)
 {
-  const char32_t* restrict a = *args++;
-  const char32_t* restrict b = *args++;
-  const char32_t* restrict c = *args++;
-  char32_t* restrict rc;
-  size_t n = (size_t)*b;
-  mds_kbdc_tree_t* value = variables_get((size_t)*a)->array.elements;
-  while (n--)
-    value = value->next;
-  free(value->compiled_string.string);
-  value->compiled_string.string = string_dup(c);
-  fail_if (value->compiled_string.string == NULL);
-  fail_if (rc = string_dup(c), rc == NULL);
-  return(rc);
+	const char32_t *restrict a = *args++;
+	const char32_t *restrict b = *args++;
+	const char32_t *restrict c = *args++;
+	char32_t *restrict rc;
+	size_t n = (size_t)*b;
+	mds_kbdc_tree_t *value = variables_get((size_t)*a)->array.elements;
+	while (n--)
+		value = value->next;
+	free(value->compiled_string.string);
+	value->compiled_string.string = string_dup(c);
+	fail_if (!value->compiled_string.string);
+	fail_if (!(rc = string_dup(c)));
+	return(rc);
 }
 
 
@@ -326,25 +342,26 @@ static char32_t* builtin_function_set_3(const char32_t** restrict args)
  * @param   arg_count  The number of arguments to pass to the function
  * @return             Whether the described function is a builtin function
  */
-int builtin_function_defined(const char* restrict name, size_t arg_count)
+int
+builtin_function_defined(const char *restrict name, size_t arg_count)
 {
-  size_t i;
-  static const char* const BUILTIN_FUNCTIONS_2[] =
-    {
-      "add", "sub", "mul", "div", "mod", "rsh", "lsh", "or",
-      "and", "xor", "equals", "greater", "less", "get", NULL
-    };
-  
-  if (arg_count == 3)
-    return !strcmp(name, "set");
-  else if (arg_count == 1)
-    return !strcmp(name, "not");
-  else if (arg_count == 2)
-    for (i = 0; BUILTIN_FUNCTIONS_2[i]; i++)
-      if (!strcmp(name, BUILTIN_FUNCTIONS_2[i]))
-	return 1;
-  
-  return 0;
+	size_t i;
+	static const char* const BUILTIN_FUNCTIONS_2[] = {
+		"add", "sub", "mul", "div", "mod", "rsh", "lsh", "or",
+		"and", "xor", "equals", "greater", "less", "get", NULL
+	};
+
+	if (arg_count == 1) {
+		return !strcmp(name, "not");
+	} else if (arg_count == 2) {
+		for (i = 0; BUILTIN_FUNCTIONS_2[i]; i++)
+			if (!strcmp(name, BUILTIN_FUNCTIONS_2[i]))
+				return 1;
+	} else if (arg_count == 3) {
+		return !strcmp(name, "set");
+	}
+
+	return 0;
 }
 
 
@@ -362,35 +379,35 @@ int builtin_function_defined(const char* restrict name, size_t arg_count)
  * @param   args       The arguments to pass
  * @return             The return value of the function, `NULL` on error
  */
-char32_t* builtin_function_invoke(const char* restrict name, size_t arg_count, const char32_t** restrict args)
+char32_t *
+builtin_function_invoke(const char *restrict name, size_t arg_count, const char32_t **restrict args)
 {
-#define t(f)  do { fail_if (rc = builtin_function_##f(args), rc == NULL); return rc; } while (0)
-  char32_t* rc;
-  
-  if ((arg_count == 3) && !strcmp(name, "set"))  t (set_3);
-  if ((arg_count == 1) && !strcmp(name, "not"))  t (not_1);
-  
-  if (arg_count != 2)
-    abort();
-  
-  if (!strcmp(name, "add"))      t (add_2);
-  if (!strcmp(name, "sub"))      t (sub_2);
-  if (!strcmp(name, "mul"))      t (mul_2);
-  if (!strcmp(name, "div"))      t (div_2);
-  if (!strcmp(name, "mod"))      t (mod_2);
-  if (!strcmp(name, "rsh"))      t (rsh_2);
-  if (!strcmp(name, "lsh"))      t (lsh_2);
-  if (!strcmp(name, "or"))       t (or_2);
-  if (!strcmp(name, "and"))      t (and_2);
-  if (!strcmp(name, "xor"))      t (xor_2);
-  if (!strcmp(name, "equals"))   t (equals_2);
-  if (!strcmp(name, "greater"))  t (greater_2);
-  if (!strcmp(name, "less"))     t (less_2);
-  if (!strcmp(name, "get"))      t (get_2);
-  
-  abort();
- fail:
-  return NULL;
+#define t(f) do { fail_if (rc = builtin_function_##f(args), rc == NULL); return rc; } while (0)
+	char32_t *rc;
+
+	if (arg_count == 3 && !strcmp(name, "set"))  t (set_3);
+	if (arg_count == 1 && !strcmp(name, "not"))  t (not_1);
+
+	if (arg_count != 2)
+		abort();
+
+	if (!strcmp(name, "add"))     t (add_2);
+	if (!strcmp(name, "sub"))     t (sub_2);
+	if (!strcmp(name, "mul"))     t (mul_2);
+	if (!strcmp(name, "div"))     t (div_2);
+	if (!strcmp(name, "mod"))     t (mod_2);
+	if (!strcmp(name, "rsh"))     t (rsh_2);
+	if (!strcmp(name, "lsh"))     t (lsh_2);
+	if (!strcmp(name, "or"))      t (or_2);
+	if (!strcmp(name, "and"))     t (and_2);
+	if (!strcmp(name, "xor"))     t (xor_2);
+	if (!strcmp(name, "equals"))  t (equals_2);
+	if (!strcmp(name, "greater")) t (greater_2);
+	if (!strcmp(name, "less"))    t (less_2);
+	if (!strcmp(name, "get"))     t (get_2);
+
+	abort();
+fail:
+	return NULL;
 #undef t
 }
-

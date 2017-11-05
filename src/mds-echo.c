@@ -30,7 +30,7 @@
 
 
 
-#define MDS_ECHO_VARS_VERSION  0
+#define MDS_ECHO_VARS_VERSION 0
 
 
 
@@ -363,4 +363,3 @@ received_info(int signo)
 	iprintf("echo buffer size: %zu bytes", echo_buffer_size);
 	SIGHANDLER_END;
 }
-

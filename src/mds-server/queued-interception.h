@@ -29,8 +29,7 @@
 /**
  * A queued interception
  */
-typedef struct queued_interception
-{
+typedef struct queued_interception {
 	/**
 	 * The intercepting client
 	 */
@@ -50,7 +49,6 @@ typedef struct queued_interception
 	 * The file descriptor of the intercepting client's socket (used for unmarshalling)
 	 */
 	int socket_fd;
-
 } queued_interception_t;
 
 

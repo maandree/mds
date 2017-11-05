@@ -30,8 +30,7 @@
 /**
  * Dynamic array of client ID:s
  */
-typedef struct client_list
-{
+typedef struct client_list {
 	/**
 	 * The size of the array
 	 */
@@ -46,7 +45,6 @@ typedef struct client_list
 	 * Stored client ID:s
 	 */
 	uint64_t *clients;
-
 } client_list_t;
 
 

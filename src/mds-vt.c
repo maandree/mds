@@ -38,7 +38,7 @@
 
 
 
-#define MDS_VT_VARS_VERSION  0
+#define MDS_VT_VARS_VERSION 0
 
 
 

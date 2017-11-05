@@ -24,31 +24,29 @@
 /**
  * An entry in the call-stack
  */
-typedef struct mds_kbdc_call
-{
-  /**
-   * The tree node where the call was made
-   */
-  const mds_kbdc_tree_t* tree;
-  
-  /**
-   * The position of the line of the tree node
-   * where the call begins
-   */
-  size_t start;
-  
-  /**
-   * The position of the line of the tree node
-   * where the call end
-   */
-  size_t end;
-  
-  /**
-   * A snapshot of the include-stack as it
-   * looked when the call was being made
-   */
-  mds_kbdc_include_stack_t* include_stack;
-  
+typedef struct mds_kbdc_call {
+	/**
+	 * The tree node where the call was made
+	 */
+	const mds_kbdc_tree_t *tree;
+
+	/**
+	 * The position of the line of the tree node
+	 * where the call begins
+	 */
+	size_t start;
+
+	/**
+	 * The position of the line of the tree node
+	 * where the call end
+	 */
+	size_t end;
+
+	/**
+	 * A snapshot of the include-stack as it
+	 * looked when the call was being made
+	 */
+	mds_kbdc_include_stack_t *include_stack;
 } mds_kbdc_call_t;
 
 
@@ -56,27 +54,27 @@ typedef struct mds_kbdc_call
 /**
  * Variable whether the latest created error is stored
  */
-static mds_kbdc_parse_error_t* error;
+static mds_kbdc_parse_error_t *error;
 
 /**
  * The `result` parameter of root procedure that requires the include-stack
  */
-static mds_kbdc_parsed_t* result;
+static mds_kbdc_parsed_t *result;
 
 /**
  * The original value of `result->pathname`
  */
-static char* original_pathname;
+static char *original_pathname;
 
 /**
  * The original value of `result->source_code`
  */
-static mds_kbdc_source_code_t* original_source_code;
+static mds_kbdc_source_code_t *original_source_code;
 
 /**
  * Stack of visited function- and macro-calls
  */
-static mds_kbdc_call_t* restrict calls = NULL;
+static mds_kbdc_call_t *restrict calls = NULL;
 
 /**
  * The number elements allocated for `calls`
@@ -95,57 +93,59 @@ static size_t calls_ptr = 0;
  * 
  * @return  Zero on success, -1 on error
  */
-int mds_kbdc_call_stack_dump(void)
+int
+mds_kbdc_call_stack_dump(void)
 {
-  char* old_pathname = result->pathname;
-  mds_kbdc_source_code_t* old_source_code = result->source_code;
-  size_t ptr = calls_ptr, iptr;
-  mds_kbdc_call_t* restrict call;
-  mds_kbdc_include_stack_t* restrict includes;
-  
-  while (ptr--)
-    {
-      call = calls + ptr;
-      includes = call->include_stack;
-      iptr = includes->ptr;
-      result->pathname    = iptr ? includes->stack[iptr - 1]->filename    : original_pathname;
-      result->source_code = iptr ? includes->stack[iptr - 1]->source_code : original_source_code;
-      NEW_ERROR_(result, NOTE, 1, call->tree->loc_line, call->start, call->end, 1, "called from here");
-      DUMP_INCLUDE_STACK(iptr);
-    }
-  
-  result->pathname = old_pathname;
-  result->source_code = old_source_code;
-  return 0;
- fail:
-  result->pathname = old_pathname;
-  result->source_code = old_source_code;
-  return -1;
+	char *old_pathname = result->pathname;
+	mds_kbdc_source_code_t *old_source_code = result->source_code;
+	size_t ptr = calls_ptr, iptr;
+	mds_kbdc_call_t *restrict call;
+	mds_kbdc_include_stack_t *restrict includes;
+
+	while (ptr--) {
+		call = calls + ptr;
+		includes = call->include_stack;
+		iptr = includes->ptr;
+		result->pathname    = iptr ? includes->stack[iptr - 1]->filename    : original_pathname;
+		result->source_code = iptr ? includes->stack[iptr - 1]->source_code : original_source_code;
+		NEW_ERROR_(result, NOTE, 1, call->tree->loc_line, call->start, call->end, 1, "called from here");
+		DUMP_INCLUDE_STACK(iptr);
+	}
+
+	result->pathname = old_pathname;
+	result->source_code = old_source_code;
+	return 0;
+fail:
+	result->pathname = old_pathname;
+	result->source_code = old_source_code;
+	return -1;
 }
 
 
 /**
  * Prepare for usage of call-stacks
  * 
-xo * @param  result_  The `result` parameter of root procedure that requires the call-stack
+ * @param  result_  The `result` parameter of root procedure that requires the call-stack
  */
-void mds_kbdc_call_stack_begin(mds_kbdc_parsed_t* restrict result_)
+void
+mds_kbdc_call_stack_begin(mds_kbdc_parsed_t *restrict result_)
 {
-  result = result_;
-  original_pathname = result_->pathname;
-  original_source_code = result_->source_code;
+	result = result_;
+	original_pathname = result_->pathname;
+	original_source_code = result_->source_code;
 }
 
 
 /**
  * Cleanup after usage of call-stacks
  */
-void mds_kbdc_call_stack_end(void)
+void
+mds_kbdc_call_stack_end(void)
 {
-  result->pathname = original_pathname;
-  result->source_code = original_source_code;
-  free(calls), calls = NULL;
-  calls_size = calls_ptr = 0;
+	result->pathname = original_pathname;
+	result->source_code = original_source_code;
+	free(calls), calls = NULL;
+	calls_size = calls_ptr = 0;
 }
 
 
@@ -157,27 +157,27 @@ void mds_kbdc_call_stack_end(void)
  * @param   end    The position of the line of the tree node where the call end
  * @return         Zero on success, -1 on error
  */
-int mds_kbdc_call_stack_push(const mds_kbdc_tree_t* restrict tree, size_t start, size_t end)
+int
+mds_kbdc_call_stack_push(const mds_kbdc_tree_t *restrict tree, size_t start, size_t end)
 {
-  mds_kbdc_call_t* tmp;
-  mds_kbdc_call_t* call;
-  
-  if (calls_ptr == calls_size)
-    {
-      fail_if (yrealloc(tmp, calls, calls_size + 4, mds_kbdc_call_t));
-      calls_size += 4;
-    }
-  
-  call = calls + calls_ptr++;
-  call->tree = tree;
-  call->start = start;
-  call->end = end;
-  call->include_stack = mds_kbdc_include_stack_save();
-  fail_if (call->include_stack == NULL);
-  
-  return 0;
- fail:
-  return -1;
+	mds_kbdc_call_t *tmp;
+	mds_kbdc_call_t *call;
+
+	if (calls_ptr == calls_size) {
+		fail_if (yrealloc(tmp, calls, calls_size + 4, mds_kbdc_call_t));
+		calls_size += 4;
+	}
+
+	call = calls + calls_ptr++;
+	call->tree = tree;
+	call->start = start;
+	call->end = end;
+	call->include_stack = mds_kbdc_include_stack_save();
+	fail_if (!call->include_stack);
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -186,10 +186,10 @@ int mds_kbdc_call_stack_push(const mds_kbdc_tree_t* restrict tree, size_t start,
  * 
  * This function is guaranteed not to modify `errno`
  */
-void mds_kbdc_call_stack_pop(void)
+void
+mds_kbdc_call_stack_pop(void)
 {
-  int saved_errno = errno;
-  mds_kbdc_include_stack_free(calls[--calls_ptr].include_stack);
-  errno = saved_errno;
+	int saved_errno = errno;
+	mds_kbdc_include_stack_free(calls[--calls_ptr].include_stack);
+	errno = saved_errno;
 }
-

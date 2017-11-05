@@ -66,7 +66,8 @@ server_characteristics_t server_characteristics = {
  * 
  * @return  Non-zero on error
  */
-int preinitialise_server(void)
+int
+preinitialise_server(void)
 {
 	int stage = 0;
 

@@ -30,8 +30,7 @@
 /**
  * Data structure for colour
  */
-typedef struct colour
-{
+typedef struct colour {
 	/**
 	 * The value of the red channel
 	 */
@@ -52,7 +51,6 @@ typedef struct colour
 	 * each channel is encoded
 	 */
 	int bytes;
-
 } colour_t;
 
 
@@ -139,4 +137,3 @@ void colour_list_entry_free(colour_list_entry_t *entry);
 
 
 #endif
-

@@ -31,29 +31,30 @@
  * @param   initial_capacity  The initial capacity of the table
  * @return                    Non-zero on error, `errno` will have been set accordingly
  */
-int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
+int
+fd_table_create_tuned(fd_table_t *restrict this, size_t initial_capacity)
 {
-  size_t bitcap;
-  
-  this->capacity = initial_capacity ? initial_capacity : 1;
-  this->size = 0;
-  
-  this->values = NULL;
-  this->used = NULL;
-  this->value_comparator = NULL;
-  
-  /* It is important that both allocations are done with calloc:
-     `this->used` must set all keys as unused at the initial state,
-     `this->values` must be initialised for marshaling and it helps
-     the time overhead of `fd_table_contains_value`. */
-  
-  bitcap = (this->capacity + 63) / 64;
-  fail_if (xcalloc(this->used,   bitcap,         size_t));
-  fail_if (xcalloc(this->values, this->capacity, size_t));
-  
-  return 0;
- fail:
-  return -1;
+	size_t bitcap;
+
+	this->capacity = initial_capacity ? initial_capacity : 1;
+	this->size = 0;
+
+	this->values = NULL;
+	this->used = NULL;
+	this->value_comparator = NULL;
+
+	/* It is important that both allocations are done with calloc:
+	   `this->used` must set all keys as unused at the initial state,
+	   `this->values` must be initialised for marshaling and it helps
+	   the time overhead of `fd_table_contains_value`. */
+
+	bitcap = (this->capacity + 63) / 64;
+	fail_if (xcalloc(this->used,   bitcap,         size_t));
+	fail_if (xcalloc(this->values, this->capacity, size_t));
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -65,20 +66,20 @@ int fd_table_create_tuned(fd_table_t* restrict this, size_t initial_capacity)
  * @param  keys_freer    Function that frees a key, `NULL` if keys should not be freed
  * @param  values_freer  Function that frees a value, `NULL` if value should not be freed
  */
-void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func* value_freer)
+void
+fd_table_destroy(fd_table_t *restrict this, free_func *key_freer, free_func *value_freer)
 {
-  if (((key_freer != NULL) || (value_freer != NULL)) && (this->used != NULL) && (this->values != NULL))
-    {
-      size_t i;
-      for (i = 0; i < this->capacity; i++)
-	if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
-	  {
-	    if (key_freer   != NULL)  key_freer(i);
-	    if (value_freer != NULL)  value_freer(this->values[i]);
-	  }
-    }
-  free(this->values);
-  free(this->used);
+	size_t i;
+	if ((key_freer || value_freer) && this->used && this->values) {
+		for (i = 0; i < this->capacity; i++) {
+			if (this->used[i / 64] & ((uint64_t)1 << (i % 64))) {
+				if (key_freer)   key_freer(i);
+				if (value_freer) value_freer(this->values[i]);
+			}
+		}
+	}
+	free(this->values);
+	free(this->used);
 }
 
 
@@ -89,24 +90,22 @@ void fd_table_destroy(fd_table_t* restrict this, free_func* key_freer, free_func
  * @param   value  The value
  * @return         Whether the value is stored in the table
  */
-int fd_table_contains_value(const fd_table_t* restrict this, size_t value)
+int
+fd_table_contains_value(const fd_table_t *restrict this, size_t value)
 {
-  size_t i;
-  if (this->value_comparator == NULL)
-    {
-      for (i = 0; i < this->capacity; i++)
-	if (this->values[i] == value)
-	  if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
-	    return 1;
-    }
-  else
-    {
-      for (i = 0; i < this->capacity; i++)
-	if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
-	  if (this->value_comparator(this->values[i], value))
-	    return 1;
-    }
-  return 0;
+	size_t i;
+	if (!this->value_comparator) {
+		for (i = 0; i < this->capacity; i++)
+			if (this->values[i] == value)
+				if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
+					return 1;
+	} else {
+		for (i = 0; i < this->capacity; i++)
+			if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
+				if (this->value_comparator(this->values[i], value))
+					return 1;
+	}
+	return 0;
 }
 
 
@@ -117,9 +116,10 @@ int fd_table_contains_value(const fd_table_t* restrict this, size_t value)
  * @param   key   The key
  * @return        Whether the key is used
  */
-int fd_table_contains_key(const fd_table_t* restrict this, int key)
+int
+fd_table_contains_key(const fd_table_t *restrict this, int key)
 {
-  return ((size_t)key < this->capacity) && (this->used[key / 64] & ((uint64_t)1 << (key % 64)));
+	return (size_t)key < this->capacity && (this->used[key / 64] & ((uint64_t)1 << (key % 64)));
 }
 
 
@@ -130,11 +130,10 @@ int fd_table_contains_key(const fd_table_t* restrict this, int key)
  * @param   key   The key associated with the value
  * @return        The value associated with the key, 0 if the key was not used
  */
-size_t fd_table_get(const fd_table_t* restrict this, int key)
+size_t
+fd_table_get(const fd_table_t *restrict this, int key)
 {
-  if (fd_table_contains_key(this, key) == 0)
-    return 0;
-  return this->values[key];
+	return fd_table_contains_key(this, key) ? this->values[key] : 0;
 }
 
 
@@ -147,55 +146,53 @@ size_t fd_table_get(const fd_table_t* restrict this, int key)
  * @return         The previous value associated with the key, 0 if the key was not used.
  *                 0 will also be returned on error, check the `errno` variable.
  */
-size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
+size_t
+fd_table_put(fd_table_t *restrict this, int key, size_t value)
 {
-  /* Override current value if the key is already used. */
-  if (fd_table_contains_key(this, key))
-    {
-      size_t rc = fd_table_get(this, key);
-      this->values[key] = value;
-      return rc;
-    }
-  
-  /* Grow the table if it is too small. */
-  errno = 0;
-  if ((size_t)key >= this->capacity)
-    {
-      size_t* old_values = this->values;
-      size_t old_bitcap, new_bitcap;
-      if (xrealloc(this->values, this->capacity << 1, size_t))
-	{
-	  this->values = old_values;
-	  fail_if (1);
+	size_t rc, old_bitcap, new_bitcap, *old_values;
+	uint64_t *old_used;
+
+	/* Override current value if the key is already used. */
+	if (fd_table_contains_key(this, key)) {
+		rc = fd_table_get(this, key);
+		this->values[key] = value;
+		return rc;
 	}
+
+	/* Grow the table if it is too small. */
+	errno = 0;
+	if ((size_t)key >= this->capacity) {
+		old_values = this->values;
+		if (xrealloc(this->values, this->capacity << 1, size_t)) {
+			this->values = old_values;
+			fail_if (1);
+		}
+
+		memset(this->values + this->capacity, 0, this->capacity * sizeof(size_t));
       
-      memset(this->values + this->capacity, 0, this->capacity * sizeof(size_t));
-      
-      old_bitcap = (this->capacity + 63) / 64;
-      this->capacity <<= 1;
-      new_bitcap = (this->capacity + 63) / 64;
-      
-      if (new_bitcap > old_bitcap)
-	{
-	  uint64_t* old_used = this->used;
-	  if (xrealloc(this->used, new_bitcap, size_t))
-	    {
-	      this->used = old_used;
-	      this->capacity >>= 1;
-	      fail_if (1);
-	    }
-	  
-	  memset(this->used + old_bitcap, 0, (new_bitcap - old_bitcap) * sizeof(uint64_t));
+		old_bitcap = (this->capacity + 63) / 64;
+		this->capacity <<= 1;
+		new_bitcap = (this->capacity + 63) / 64;
+
+		if (new_bitcap > old_bitcap) {
+			old_used = this->used;
+			if (xrealloc(this->used, new_bitcap, size_t)) {
+				this->used = old_used;
+				this->capacity >>= 1;
+				fail_if (1);
+			}
+
+			memset(this->used + old_bitcap, 0, (new_bitcap - old_bitcap) * sizeof(uint64_t));
+		}
 	}
-    }
-  
-  /* Store the entry. */
-  this->used[key / 64] |= (uint64_t)1 << (key % 64);
-  this->values[key] = value;
-  this->size++;
-  return 0;
- fail:
-  return 0;
+
+	/* Store the entry. */
+	this->used[key / 64] |= (uint64_t)1 << (key % 64);
+	this->values[key] = value;
+	this->size++;
+	return 0;
+fail:
+	return 0;
 }
 
 
@@ -206,15 +203,15 @@ size_t fd_table_put(fd_table_t* restrict this, int key, size_t value)
  * @param   key   The key of the entry to remove
  * @return        The previous value associated with the key, 0 if the key was not used
  */
-size_t fd_table_remove(fd_table_t* restrict this, int key)
+size_t
+fd_table_remove(fd_table_t *restrict this, int key)
 {
-  size_t rc = fd_table_get(this, key);
-  if (rc && fd_table_contains_key(this, key))
-    {
-      this->used[key / 64] &= ~((uint64_t)1 << (key % 64));
-      this->size--;
-    }
-  return rc;
+	size_t rc = fd_table_get(this, key);
+	if (rc && fd_table_contains_key(this, key)) {
+		this->used[key / 64] &= ~((uint64_t)1 << (key % 64));
+		this->size--;
+	}
+	return rc;
 }
 
 
@@ -223,12 +220,13 @@ size_t fd_table_remove(fd_table_t* restrict this, int key)
  * 
  * @param  this  The fd table
  */
-void fd_table_clear(fd_table_t* restrict this)
+void
+fd_table_clear(fd_table_t *restrict this)
 {
-  size_t bitcap;
-  this->size = 0;
-  bitcap = (this->capacity + 63) / 64;
-  memset(this->used, 0, bitcap * sizeof(uint64_t));
+	size_t bitcap;
+	this->size = 0;
+	bitcap = (this->capacity + 63) / 64;
+	memset(this->used, 0, bitcap * sizeof(uint64_t));
 }
 
 
@@ -238,10 +236,11 @@ void fd_table_clear(fd_table_t* restrict this)
  * @param   this  The fd table
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t fd_table_marshal_size(const fd_table_t* restrict this)
+size_t
+fd_table_marshal_size(const fd_table_t *restrict this)
 {
-  size_t bitcap = (this->capacity + 63) / 64;
-  return (this->capacity + 2) * sizeof(size_t) + bitcap * sizeof(uint64_t) + sizeof(int);
+	size_t bitcap = (this->capacity + 63) / 64;
+	return (this->capacity + 2) * sizeof(size_t) + bitcap * sizeof(uint64_t) + sizeof(int);
 }
 
 
@@ -251,18 +250,19 @@ size_t fd_table_marshal_size(const fd_table_t* restrict this)
  * @param  this  The fd table
  * @param  data  Output buffer for the marshalled data
  */
-void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
+void
+fd_table_marshal(const fd_table_t *restrict this, char *restrict data)
 {
-  size_t bitcap = (this->capacity + 63) / 64;
-  
-  buf_set_next(data, int, FD_TABLE_T_VERSION);
-  buf_set_next(data, size_t, this->capacity);
-  buf_set_next(data, size_t, this->size);
-  
-  memcpy(data, this->values, this->capacity * sizeof(size_t));
-  buf_next(data, size_t, this->capacity);
-  
-  memcpy(data, this->used, bitcap * sizeof(uint64_t));
+	size_t bitcap = (this->capacity + 63) / 64;
+
+	buf_set_next(data, int, FD_TABLE_T_VERSION);
+	buf_set_next(data, size_t, this->capacity);
+	buf_set_next(data, size_t, this->size);
+
+	memcpy(data, this->values, this->capacity * sizeof(size_t));
+	buf_next(data, size_t, this->capacity);
+
+	memcpy(data, this->used, bitcap * sizeof(uint64_t));
 }
 
 
@@ -275,38 +275,38 @@ void fd_table_marshal(const fd_table_t* restrict this, char* restrict data)
  * @return            Non-zero on error, `errno` will be set accordingly.
  *                    Destroy the table on error.
  */
-int fd_table_unmarshal(fd_table_t* restrict this, char* restrict data, remap_func* remapper)
+int
+fd_table_unmarshal(fd_table_t *restrict this, char *restrict data, remap_func *remapper)
 {
-  size_t bitcap;
-  size_t i;
-  
-  /* buf_get(data, int, 0, FD_TABLE_T_VERSION) */
-  buf_next(data, int, 1);
-  
-  buf_get_next(data, size_t, this->capacity);
-  buf_get_next(data, size_t, this->size);
-  
-  this->values           = NULL;
-  this->used             = NULL;
-  this->value_comparator = NULL;
-  
-  fail_if (xmalloc(this->values, this->capacity, size_t));
-  
-  bitcap = (this->capacity + 63) / 64;
-  fail_if (xmalloc(this->used, bitcap, size_t));
-  
-  memcpy(this->values, data, this->capacity * sizeof(size_t));
-  buf_next(data, size_t, this->capacity);
-  
-  memcpy(this->used, data, bitcap * sizeof(uint64_t));
-  
-  if (remapper != NULL)
-    for (i = 0; i < this->capacity; i++)
-      if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
-	this->values[i] = remapper(this->values[i]);
-  
-  return 0;
- fail:
-  return -1;
-}
+	size_t bitcap;
+	size_t i;
 
+	/* buf_get(data, int, 0, FD_TABLE_T_VERSION) */
+	buf_next(data, int, 1);
+
+	buf_get_next(data, size_t, this->capacity);
+	buf_get_next(data, size_t, this->size);
+
+	this->values           = NULL;
+	this->used             = NULL;
+	this->value_comparator = NULL;
+
+	fail_if (xmalloc(this->values, this->capacity, size_t));
+
+	bitcap = (this->capacity + 63) / 64;
+	fail_if (xmalloc(this->used, bitcap, size_t));
+
+	memcpy(this->values, data, this->capacity * sizeof(size_t));
+	buf_next(data, size_t, this->capacity);
+
+	memcpy(this->used, data, bitcap * sizeof(uint64_t));
+
+	if (remapper)
+		for (i = 0; i < this->capacity; i++)
+			if (this->used[i / 64] & ((uint64_t)1 << (i % 64)))
+				this->values[i] = remapper(this->values[i]);
+
+	return 0;
+fail:
+	return -1;
+}

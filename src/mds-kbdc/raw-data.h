@@ -25,42 +25,40 @@
 /**
  * Source code by lines, with and without comments
  */
-typedef struct mds_kbdc_source_code
-{
-  /**
-   * Source code by lines without comments,
-   * `NULL`-terminated.
-   */
-  char** restrict lines;
-  
-  /**
-   * Source code by lines with comments,
-   * `NULL`-terminated.
-   */
-  char** restrict real_lines;
-  
-  /**
-   * Data for `lines` (internal data)
-   */
-  char* content;
-  
-  /**
-   * Data for `real_lines` (internal data)
-   */
-  char* real_content;
-  
-  /**
-   * The number of lines, that is, the number of
-   * elements in `lines` and `real_lines`.
-   */
-  size_t line_count;
-  
-  /**
-   * The number of duplicates there are of this
-   * structure that shared the memory
-   */
-  size_t duplicates;
-  
+typedef struct mds_kbdc_source_code {
+	/**
+	 * Source code by lines without comments,
+	 * `NULL`-terminated.
+	 */
+	char **restrict lines;
+
+	/**
+	 * Source code by lines with comments,
+	 * `NULL`-terminated.
+	 */
+	char **restrict real_lines;
+
+	/**
+	 * Data for `lines` (internal data)
+	 */
+	char *content;
+
+	/**
+	 * Data for `real_lines` (internal data)
+	 */
+	char *real_content;
+
+	/**
+	 * The number of lines, that is, the number of
+	 * elements in `lines` and `real_lines`.
+	 */
+	size_t line_count;
+
+	/**
+	 * The number of duplicates there are of this
+	 * structure that shared the memory
+	 */
+	size_t duplicates;
 } mds_kbdc_source_code_t;
 
 
@@ -69,21 +67,21 @@ typedef struct mds_kbdc_source_code
  * 
  * @param  this  The `mds_kbdc_source_code_t*`
  */
-void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this);
+void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t *restrict this);
 
 /**
  * Release all data in a `mds_kbdc_source_code_t*`
  * 
  * @param  this  The `mds_kbdc_source_code_t*`
  */
-void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this);
+void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t *restrict this);
 
 /**
  * Release all data in a `mds_kbdc_source_code_t*`, and free it
  * 
  * @param  this  The `mds_kbdc_source_code_t*`
  */
-void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this);
+void mds_kbdc_source_code_free(mds_kbdc_source_code_t *restrict this);
 
 /**
  * Create a duplicate of a `mds_kbdc_source_code_t*`
@@ -91,7 +89,7 @@ void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this);
  * @param   this  The `mds_kbdc_source_code_t*`
  * @return        `this` is returned
  */
-mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restrict this);
+mds_kbdc_source_code_t *mds_kbdc_source_code_dup(mds_kbdc_source_code_t *restrict this);
 
 
 /**
@@ -106,7 +104,8 @@ mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restric
  *                   or `size` if the call do not end (that is, the code ends
  *                   prematurely), or zero if there is no function call at `offset`
  */
-size_t get_end_of_call(const char* restrict content, size_t offset, size_t size) __attribute__((pure));
+__attribute__((pure))
+size_t get_end_of_call(const char *restrict content, size_t offset, size_t size);
 
 /**
  * Read lines of a source file
@@ -115,7 +114,7 @@ size_t get_end_of_call(const char* restrict content, size_t offset, size_t size)
  * @param   source_code  Output parameter for read data
  * @return               Zero on success, -1 on error
  */
-int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* restrict source_code);
+int read_source_lines(const char *restrict pathname, mds_kbdc_source_code_t *restrict source_code);
 
 
 /**
@@ -124,8 +123,7 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
  * @param   string  The string
  * @return          The string in machine-readable format, `NULL` on error
  */
-char* parse_raw_string(const char* restrict string);
+char *parse_raw_string(const char *restrict string);
 
 
 #endif
-

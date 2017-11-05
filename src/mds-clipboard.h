@@ -30,30 +30,29 @@
 /**
  * Delete entry only when needed
  */
-#define CLIPITEM_AUTOPURGE_NEVER  0
+#define CLIPITEM_AUTOPURGE_NEVER 0
 
 /**
  * Delete entry when the client closes, or needed
  */
-#define CLIPITEM_AUTOPURGE_UPON_DEATH  1
+#define CLIPITEM_AUTOPURGE_UPON_DEATH 1
 
 /**
  * Delete entry when a point in time has elapsed, or needed
  */
-#define CLIPITEM_AUTOPURGE_UPON_CLOCK  2
+#define CLIPITEM_AUTOPURGE_UPON_CLOCK 2
 
 /**
  * Delete entry when the client closes or when a
  * point in time has elapsed, or when needed 
  */
-#define CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK  3
+#define CLIPITEM_AUTOPURGE_UPON_DEATH_OR_CLOCK 3
 
 
 /**
  * A clipboard entry
  */
-typedef struct clipitem
-{
+typedef struct clipitem {
 	/**
 	 * The stored content
 	 */
@@ -78,7 +77,6 @@ typedef struct clipitem
 	 * Rule for automatic deletion
 	 */
 	int autopurge;
-
 } clipitem_t;
 
 

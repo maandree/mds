@@ -28,8 +28,7 @@
  * @param   result  `result` from `simplify_tree`, will be updated
  * @return          -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int process_includes(mds_kbdc_parsed_t* restrict result);
+int process_includes(mds_kbdc_parsed_t *restrict result);
 
 
 #endif
-

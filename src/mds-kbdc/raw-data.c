@@ -39,14 +39,15 @@
  * 
  * @param  this  The `mds_kbdc_source_code_t*`
  */
-void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this)
+void
+mds_kbdc_source_code_initialise(mds_kbdc_source_code_t *restrict this)
 {
-  this->lines        = NULL;
-  this->real_lines   = NULL;
-  this->content      = NULL;
-  this->real_content = NULL;
-  this->line_count   = 0;
-  this->duplicates   = 0;
+	this->lines        = NULL;
+	this->real_lines   = NULL;
+	this->content      = NULL;
+	this->real_content = NULL;
+	this->line_count   = 0;
+	this->duplicates   = 0;
 }
 
 
@@ -55,16 +56,17 @@ void mds_kbdc_source_code_initialise(mds_kbdc_source_code_t* restrict this)
  * 
  * @param  this  The `mds_kbdc_source_code_t*`
  */
-void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this)
+void
+mds_kbdc_source_code_destroy(mds_kbdc_source_code_t *restrict this)
 {
-  if (this == NULL)
-    return;
-  if (this->duplicates--)
-    return;
-  free(this->lines),        this->lines        = NULL;
-  free(this->real_lines),   this->real_lines   = NULL;
-  free(this->content),      this->content      = NULL;
-  free(this->real_content), this->real_content = NULL;
+	if (!this)
+		return;
+	if (this->duplicates--)
+		return;
+	free(this->lines),        this->lines        = NULL;
+	free(this->real_lines),   this->real_lines   = NULL;
+	free(this->content),      this->content      = NULL;
+	free(this->real_content), this->real_content = NULL;
 }
 
 
@@ -73,17 +75,18 @@ void mds_kbdc_source_code_destroy(mds_kbdc_source_code_t* restrict this)
  * 
  * @param  this  The `mds_kbdc_source_code_t*`
  */
-void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this)
+void
+mds_kbdc_source_code_free(mds_kbdc_source_code_t *restrict this)
 {
-  if (this == NULL)
-    return;
-  if (this->duplicates--)
-    return;
-  free(this->lines);
-  free(this->real_lines);
-  free(this->content);
-  free(this->real_content);
-  free(this);
+	if (!this)
+		return;
+	if (this->duplicates--)
+		return;
+	free(this->lines);
+	free(this->real_lines);
+	free(this->content);
+	free(this->real_content);
+	free(this);
 }
 
 /**
@@ -92,10 +95,11 @@ void mds_kbdc_source_code_free(mds_kbdc_source_code_t* restrict this)
  * @param   this  The `mds_kbdc_source_code_t*`
  * @return        `this` is returned
  */
-mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restrict this)
+mds_kbdc_source_code_t *
+mds_kbdc_source_code_dup(mds_kbdc_source_code_t *restrict this)
 {
-  this->duplicates++;
-  return this;
+	this->duplicates++;
+	return this;
 }
 
 
@@ -107,51 +111,51 @@ mds_kbdc_source_code_t* mds_kbdc_source_code_dup(mds_kbdc_source_code_t* restric
  * @param   size      Output parameter for the size of the read content, in char:s
  * @return            The read content, `NULL` on error
  */
-static char* read_file(const char* restrict pathname, size_t* restrict size)
+static char *
+read_file(const char *restrict pathname, size_t *restrict size)
 {
-  size_t buf_size = 8096;
-  size_t buf_ptr = 0;
-  char* restrict content = NULL;
-  char* restrict old = NULL;
-  int fd = -1;
-  ssize_t got;
-  
-  /* Allocate buffer for the file's content. */
-  fail_if (xmalloc(content, buf_size, char));
-  /* Open the file to compile. */
-  fail_if ((fd = open(pathname, O_RDONLY)) < 0);
-  
-  /* Read the file to compile. */
-  for (;;)
-    {
-      /* Make sure the buffer is not small. */
-      if (buf_size - buf_ptr < 2048)
-	fail_if (xxrealloc(old, content, buf_size <<= 1, char));
-      /* Read a chunk of the file. */
-      got = read(fd, content + buf_ptr, (buf_size - buf_ptr) * sizeof(char));
-      if ((got < 0) && (errno == EINTR))  continue;
-      if (got == 0)                       break;
-      fail_if (got < 0);
-      buf_ptr += (size_t)got;
-    }
-  
-  /* Shrink the buffer so it is not excessively large. */
-  if (buf_ptr) /* Simplest way to handle empty files: let the have the initial allocation size. */
-    fail_if (xxrealloc(old, content, buf_ptr, char));
-  
-  /* Close file decriptor for the file. */
-  xclose(fd);
-  
-  *size = buf_ptr;
-  return content;
-  
- fail:
-  xperror(*argv);
-  free(old);
-  free(content);
-  if (fd >= 0)
-    xclose(fd);
-  return NULL;
+	size_t buf_size = 8096;
+	size_t buf_ptr = 0;
+	char *restrict content = NULL;
+	char *restrict old = NULL;
+	int fd = -1;
+	ssize_t got;
+
+	/* Allocate buffer for the file's content. */
+	fail_if (xmalloc(content, buf_size, char));
+	/* Open the file to compile. */
+	fail_if ((fd = open(pathname, O_RDONLY)) < 0);
+
+	/* Read the file to compile. */
+	for (;;) {
+		/* Make sure the buffer is not small. */
+		if (buf_size - buf_ptr < 2048)
+			fail_if (xxrealloc(old, content, buf_size <<= 1, char));
+		/* Read a chunk of the file. */
+		got = read(fd, content + buf_ptr, (buf_size - buf_ptr) * sizeof(char));
+		if (got < 0 && errno == EINTR) continue;
+		if (got == 0)                  break;
+		fail_if (got < 0);
+		buf_ptr += (size_t)got;
+	}
+
+	/* Shrink the buffer so it is not excessively large. */
+	if (buf_ptr) /* Simplest way to handle empty files: let the have the initial allocation size. */
+		fail_if (xxrealloc(old, content, buf_ptr, char));
+
+	/* Close file decriptor for the file. */
+	xclose(fd);
+
+	*size = buf_ptr;
+	return content;
+
+fail:
+	xperror(*argv);
+	free(old);
+	free(content);
+	if (fd >= 0)
+		xclose(fd);
+	return NULL;
 }
 
 
@@ -167,54 +171,59 @@ static char* read_file(const char* restrict pathname, size_t* restrict size)
  *                   or `size` if the call do not end (that is, the code ends
  *                   prematurely), or zero if there is no function call at `offset`
  */
-size_t get_end_of_call(const char* restrict content, size_t offset, size_t size)
+size_t
+get_end_of_call(const char *restrict content, size_t offset, size_t size)
 {
-#define C                content[ptr]
-#define r(lower, upper)  (((lower) <= C) && (C <= (upper)))
-  
-  size_t ptr = offset, call_end = 0;
-  int escape = 0, quote = 0;
-  
-  /* Skip to end of function name. */
-  while ((ptr < size) && (r('a', 'z') || r('A', 'Z') || r('0', '9') || (C == '_')))
-    ptr++;
-  
-  /* Check that it is a function call. */
-  if ((ptr == size) || (ptr == offset) || (C != '('))
-    return 0;
-  
-  /* Find the end of the function call. */
-  while (ptr < size)
-    {
-      char c = content[ptr++];
-      
-      /* Escapes may be longer than one character,
-         but only the first can affect the parsing. */
-      if (escape)                escape = 0;
-      /* Nested function and nested quotes can appear. */
-      else if (ptr <= call_end)  ;
-      /* Quotes end with the same symbols as they start with,
-         and quotes automatically escape brackets. */
-      /* \ can either start a functon call or an escape. */
-      else if (c == '\\')
-	{
-	  /* It may not be an escape, but registering it
-	     as an escape cannot harm us since we only
-	     skip the first character, and a function call
-	     cannot be that short. */
-	  escape = 1;
-	  /* Nested quotes can appear at function calls. */
-	  call_end = get_end_of_call(content, ptr, size);
+#define C               content[ptr]
+#define r(lower, upper) ((lower) <= C && C <= (upper))
+
+	size_t ptr = offset, call_end = 0;
+	int escape = 0, quote = 0;
+	char c;
+
+	/* Skip to end of function name. */
+	while (ptr < size && (r('a', 'z') || r('A', 'Z') || r('0', '9') || (C == '_')))
+		ptr++;
+
+	/* Check that it is a function call. */
+	if (ptr == size || ptr == offset || C != '(')
+		return 0;
+
+	/* Find the end of the function call. */
+	while (ptr < size) {
+		c = content[ptr++];
+
+		if (escape) {
+			/* Escapes may be longer than one character,
+			   but only the first can affect the parsing. */
+			escape = 0;
+		} else if (ptr <= call_end) {
+			/* Nested function and nested quotes can appear. */;
+		} else if (c == '\\') {
+			/* Quotes end with the same symbols as they start with,
+			   and quotes automatically escape brackets. */
+			/* \ can either start a functon call or an escape. */
+
+			/* It may not be an escape, but registering it
+			   as an escape cannot harm us since we only
+			   skip the first character, and a function call
+			   cannot be that short. */
+			escape = 1;
+			/* Nested quotes can appear at function calls. */
+			call_end = get_end_of_call(content, ptr, size);
+		} else if (quote) {
+			quote = (c != '"');
+		} else if (c == ')') {
+			/* End of function call, end of fun. */
+			break;
+		} else if (c == '"') {
+			/* " is the quote symbol. */
+			quote = 1;
+		}
 	}
-      else if (quote)            quote = (c != '"');
-      /* End of function call, end of fun. */
-      else if (c == ')')         break;
-      /* " is the quote symbol. */
-      else if (c == '"')         quote = 1;
-    }
-  
-  return ptr;
-  
+
+	return ptr;
+
 #undef r
 #undef C
 }
@@ -227,55 +236,58 @@ size_t get_end_of_call(const char* restrict content, size_t offset, size_t size)
  * @param   size     The size of `content`, in char:s
  * @return           The new size of `content`, in char:s; this function cannot fail
  */
-static size_t remove_comments(char* restrict content, size_t size)
+static size_t
+remove_comments(char *restrict content, size_t size)
 {
-#define t  content[n_ptr++] = c
-  
-  size_t n_ptr = 0, o_ptr = 0, call_end = 0;
-  int comment = 0, quote = 0, escape = 0;
-  
-  while (o_ptr < size)
-    {
-      char c = content[o_ptr++];
-      /* Remove comment. */
-      if (comment)
-	{
-	  if (c == '\n')           t, comment = 0;
+#define t content[n_ptr++] = c
+
+	size_t n_ptr = 0, o_ptr = 0, call_end = 0;
+	int comment = 0, quote = 0, escape = 0;
+	char c;
+
+	while (o_ptr < size) {
+		c = content[o_ptr++];
+		if (comment) {
+			/* Remove comment. */
+			if (c == '\n')
+				t, comment = 0;
+		} else if (escape) {
+			/* Escapes may be longer than one character,
+			   but only the first can affect the parsing. */
+			t, escape = 0;
+		} else if (o_ptr <= call_end) {
+			/* Nested quotes can appear at function calls. */
+			t;
+		} else if (c == '\\') {
+			/* \ can either start a functon call or an escape. */
+			t;
+			/* It may not be an escape, but registering it
+			   as an escape cannot harm us since we only
+			   skip the first character, and a function call
+			   cannot be that short. */
+			escape = 1;
+			/* Nested quotes can appear at function calls. */
+			call_end = get_end_of_call(content, o_ptr, size);
+		} else if (quote) {
+			/* Quotes end with the same symbols as they start with,
+			   and quotes automatically escape comments. */
+			t;
+			if (strchr("\"\n", c))
+				quote = 0;
+		} else if (c == '#') {
+			/* # is the comment symbol. */
+			comment = 1;
+		} else if (c == '"') {
+			/* " is the quote symbol. */
+			t, quote = 1;
+		} else {
+			/* Code and whitespace.  */
+			t;
+		}
 	}
-      /* Escapes may be longer than one character,
-         but only the first can affect the parsing. */
-      else if (escape)             t, escape = 0;
-      /* Nested quotes can appear at function calls. */
-      else if (o_ptr <= call_end)  t;
-      /* \ can either start a functon call or an escape. */
-      else if (c == '\\')
-	{
-	  t;
-	  /* It may not be an escape, but registering it
-	     as an escape cannot harm us since we only
-	     skip the first character, and a function call
-	     cannot be that short. */
-	  escape = 1;
-	  /* Nested quotes can appear at function calls. */
-	  call_end = get_end_of_call(content, o_ptr, size);
-	}
-      /* Quotes end with the same symbols as they start with,
-         and quotes automatically escape comments. */
-      else if (quote)
-	{
-	  t;
-	  if (strchr("\"\n", c))   quote = 0;
-	}
-      /* # is the comment symbol. */
-      else if (c == '#')           comment = 1;
-      /* " is the quote symbol. */
-      else if (c == '"')           t, quote = 1;
-      /* Code and whitespace.  */
-      else                         t;
-    }
-  
-  return n_ptr;
-  
+
+	return n_ptr;
+
 #undef t
 }
 
@@ -298,36 +310,35 @@ static size_t remove_comments(char* restrict content, size_t size)
  *                   `NULL` is returned, and `content` will not
  *                   have been modified.
  */
-static char** line_split(char* content, size_t length)
+static char **
+line_split(char *content, size_t length)
 {
-  char** restrict lines = NULL;
-  size_t count = 0;
-  size_t i, j;
-  int new_line = 1;
-  
-  for (i = 0; i < length; i++)
-    if (content[i] == '\n')
-      count++;
-  
-  fail_if (xmalloc(lines, count + 1, char*));
-  lines[count] = NULL;
-  
-  for (i = j = 0; i < length; i++)
-    {
-      if (new_line)
-	new_line = 0, lines[j++] = content + i;
-      if (content[i] == '\n')
-	{
-	  new_line = 1;
-	  content[i] = '\0';
+	char **restrict lines = NULL;
+	size_t count = 0;
+	size_t i, j;
+	int new_line = 1;
+
+	for (i = 0; i < length; i++)
+		if (content[i] == '\n')
+			count++;
+
+	fail_if (xmalloc(lines, count + 1, char*));
+	lines[count] = NULL;
+
+	for (i = j = 0; i < length; i++) {
+		if (new_line)
+			new_line = 0, lines[j++] = content + i;
+		if (content[i] == '\n') {
+			new_line = 1;
+			content[i] = '\0';
+		}
 	}
-    }
-  
-  return lines;
-  
- fail:
-  xperror(*argv);
-  return NULL;
+
+	return lines;
+
+fail:
+	xperror(*argv);
+	return NULL;
 }
 
 
@@ -338,40 +349,44 @@ static char** line_split(char* content, size_t length)
  * @param   content_size  Input and output parameter for the size of the file's content
  * @return                Zero on success, -1 on error 
  */
-static int expand(char** restrict content, size_t* restrict content_size)
+static int
+expand(char **restrict content, size_t *restrict content_size)
 {
-  size_t extra = 0, added = 0, ptr, col, n = *content_size;
-  char* restrict data = *content;
-  
-  /* Calculate the new size of the file. */
-  for (ptr = col = 0; ptr < n; ptr++)
-    if (data[ptr] == '\n')
-      col = 0;
-    else if (data[ptr] == '\t')
-      extra += 8 - (col % 8) - 1;
-  
-  /* Extend the allocation. */
-  if (extra == 0)
-    return 0;
-  *content_size += extra;
-  fail_if (xrealloc(data, *content_size, char));
-  *content = data;
-  
-  /* Expand tab spaces. */
-  memmove(data + extra, data, n);
-  for (ptr = 0; ptr < n; ptr++, added--)
-    if (data[ptr + extra] == '\n')
-      data[ptr + added++] = data[ptr + extra], col = 0;
-    else if (data[ptr + extra] != '\t')
-      data[ptr + added++] = data[ptr + extra], col++;
-    else
-      do
-	data[ptr + added++] = ' ';
-      while (++col % 8);
-  
-  return 0;
- fail:
-  return -1;
+	size_t extra = 0, added = 0, ptr, col, n = *content_size;
+	char *restrict data = *content;
+
+	/* Calculate the new size of the file. */
+	for (ptr = col = 0; ptr < n; ptr++) {
+		if (data[ptr] == '\n')
+			col = 0;
+		else if (data[ptr] == '\t')
+			extra += 8 - (col % 8) - 1;
+	}
+
+	/* Extend the allocation. */
+	if (!extra)
+		return 0;
+	*content_size += extra;
+	fail_if (xrealloc(data, *content_size, char));
+	*content = data;
+
+	/* Expand tab spaces. */
+	memmove(data + extra, data, n);
+	for (ptr = 0; ptr < n; ptr++, added--) {
+		if (data[ptr + extra] == '\n') {
+			data[ptr + added++] = data[ptr + extra], col = 0;
+		} else if (data[ptr + extra] != '\t') {
+			data[ptr + added++] = data[ptr + extra], col++;
+		} else {
+			do
+				data[ptr + added++] = ' ';
+			while (++col % 8);
+		}
+	}
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -382,60 +397,60 @@ static int expand(char** restrict content, size_t* restrict content_size)
  * @param   source_code  Output parameter for read data
  * @return               Zero on success, -1 on error
  */
-int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* restrict source_code)
+int
+read_source_lines(const char *restrict pathname, mds_kbdc_source_code_t *restrict source_code)
 {
-  char* content = NULL;
-  char* real_content = NULL;
-  char* old = NULL;
-  size_t content_size;
-  size_t real_content_size;
-  char** lines = NULL;
-  char** real_lines = NULL;
-  size_t line_count = 0;
-  
-  /* Read the file. */
-  content = read_file(pathname, &content_size);
-  fail_if (content == NULL);
-  
-  /* Expand tab spaces. */
-  fail_if (expand(&content, &content_size));
-  
-  /* Make sure the content ends with a new line. */
-  if (!content_size || (content[content_size - 1] != '\n'))
-    {
-      fail_if (xxrealloc(old, content, content_size + 1, char));
-      content[content_size++] = '\n';
-    }
-  
-  /* Simplify file. */
-  fail_if (xmemdup(real_content, content, content_size, char));
-  real_content_size = content_size;
-  content_size = remove_comments(content, content_size);
-  fail_if (xxrealloc(old, content, content_size, char));
-  
-  /* Split by line.  */
-  fail_if ((lines = line_split(content, content_size)) == NULL);
-  fail_if ((real_lines = line_split(real_content, real_content_size)) == NULL);
-  
-  /* Count the number of lines. */
-  while (lines[line_count] != NULL)
-    line_count++;
-  
-  source_code->lines = lines;
-  source_code->real_lines = real_lines;
-  source_code->content = content;
-  source_code->real_content = real_content;
-  source_code->line_count = line_count;
-  return 0;
-  
- fail:
-  xperror(*argv);
-  free(old);
-  free(content);
-  free(real_content);
-  free(lines);
-  free(real_lines);
-  return -1;
+	char *content = NULL;
+	char *real_content = NULL;
+	char *old = NULL;
+	size_t content_size;
+	size_t real_content_size;
+	char **lines = NULL;
+	char **real_lines = NULL;
+	size_t line_count = 0;
+
+	/* Read the file. */
+	content = read_file(pathname, &content_size);
+	fail_if (!content);
+
+	/* Expand tab spaces. */
+	fail_if (expand(&content, &content_size));
+
+	/* Make sure the content ends with a new line. */
+	if (!content_size || content[content_size - 1] != '\n') {
+		fail_if (xxrealloc(old, content, content_size + 1, char));
+		content[content_size++] = '\n';
+	}
+
+	/* Simplify file. */
+	fail_if (xmemdup(real_content, content, content_size, char));
+	real_content_size = content_size;
+	content_size = remove_comments(content, content_size);
+	fail_if (xxrealloc(old, content, content_size, char));
+
+	/* Split by line.  */
+	fail_if (!(lines = line_split(content, content_size)));
+	fail_if (!(real_lines = line_split(real_content, real_content_size)));
+
+	/* Count the number of lines. */
+	while (lines[line_count])
+		line_count++;
+
+	source_code->lines = lines;
+	source_code->real_lines = real_lines;
+	source_code->content = content;
+	source_code->real_content = real_content;
+	source_code->line_count = line_count;
+	return 0;
+
+fail:
+	xperror(*argv);
+	free(old);
+	free(content);
+	free(real_content);
+	free(lines);
+	free(real_lines);
+	return -1;
 }
 
 
@@ -446,24 +461,25 @@ int read_source_lines(const char* restrict pathname, mds_kbdc_source_code_t* res
  * @param   character  The character
  * @return             The of the character in `buffer`, `NULL` on error
  */
-static char* encode_utf8(char* buffer, char32_t character)
+static char *
+encode_utf8(char *buffer, char32_t character)
 {
-  char32_t text[2];
-  char* restrict str;
-  char* restrict str_;
-  
-  text[0] = character;
-  text[1] = -1;
-  
-  fail_if (str_ = str = string_encode(text), str == NULL);
-  
-  while (*str)
-    *buffer++ = *str++;
-  
-  free(str_);
-  return buffer;
- fail:
-  return NULL;
+	char32_t text[2];
+	char *restrict str;
+	char *restrict str_;
+
+	text[0] = character;
+	text[1] = -1;
+
+	fail_if (!(str_ = str = string_encode(text)));
+
+	while (*str)
+		*buffer++ = *str++;
+
+	free(str_);
+	return buffer;
+fail:
+	return NULL;
 }
 
 
@@ -473,53 +489,57 @@ static char* encode_utf8(char* buffer, char32_t character)
  * @param   string  The string
  * @return          The string in machine-readable format, `NULL` on error
  */
-char* parse_raw_string(const char* restrict string)
+char *
+parse_raw_string(const char *restrict string)
 {
-#define r(cond, lower, upper)  ((cond) && ((lower) <= c) && (c <= (upper)))
-  char* rc;
-  char* p;
-  int escape = 0;
-  char32_t buf = 0;
-  char c;
-  
-  /* We know that the output string can only be shorter because
-   * it is surrounded by 2 quotes and escape can only be longer
-   * then what they escape, for example \uA0, is four characters,
-   * but when parsed it generateds 2 bytes in UTF-8, and their
-   * is not code point whose UTF-8 encoding is longer than its
-   * hexadecimal representation. */
-  fail_if (xmalloc(p = rc, strlen(string), char));
-  
-  while ((c = *string++))
-    if      (r(escape ==  8, '0', '7'))  buf = (buf << 3) | (c & 15);
-    else if (r(escape == 16, '0', '9'))  buf = (buf << 4) | (c & 15);
-    else if (r(escape == 16, 'a', 'f'))  buf = (buf << 4) | ((c & 15) + 9);
-    else if (r(escape == 16, 'A', 'F'))  buf = (buf << 4) | ((c & 15) + 9);
-    else if (escape > 1)
-      {
-	escape = 0;
-	fail_if ((p = encode_utf8(p, buf), p == NULL));
-	if (c != '.')
-	  *p++ = c;
-      }
-    else if (escape == 1)
-      {
-	escape = 0, buf = 0;
-	switch (c)
-	  {
-	  case '0':  escape = 8;   break;
-	  case 'u':  escape = 16;  break;
-	  default:   *p++ = c;     break;
-	  }
-      }
-    else if (c == '\\')  escape = 1;
-    else if (c != '\"')  *p++ = c;
-  
-  *p = '\0';
-  return rc;
- fail:
-  free(rc);
-  return NULL;
+#define r(cond, lower, upper) ((cond) && ((lower) <= c) && (c <= (upper)))
+	char *rc, *p;
+	int escape = 0;
+	char32_t buf = 0;
+	char c;
+
+	/* We know that the output string can only be shorter because
+	 * it is surrounded by 2 quotes and escape can only be longer
+	 * then what they escape, for example \uA0, is four characters,
+	 * but when parsed it generateds 2 bytes in UTF-8, and their
+	 * is not code point whose UTF-8 encoding is longer than its
+	 * hexadecimal representation. */
+	fail_if (xmalloc(p = rc, strlen(string), char));
+
+	while ((c = *string++)) {
+		if (r(escape ==  8, '0', '7')) {
+			buf = (buf << 3) | (c & 15);
+		} else if (r(escape == 16, '0', '9')) {
+			buf = (buf << 4) | (c & 15);
+		} else if (r(escape == 16, 'a', 'f')) {
+			buf = (buf << 4) | ((c & 15) + 9);
+		} else if (r(escape == 16, 'A', 'F')) {
+			buf = (buf << 4) | ((c & 15) + 9);
+		} else if (escape > 1) {
+			escape = 0;
+			fail_if (!(p = encode_utf8(p, buf)));
+			if (c != '.')
+				*p++ = c;
+		} else if (escape == 1) {
+			escape = 0;
+			buf = 0;
+			if (c == '0')
+				escape = 8;
+			else if (c == 'u')
+				escape = 16;
+			else
+				*p++ = c;
+		} else if (c == '\\') {
+			escape = 1;
+		} else if (c != '\"') {
+			*p++ = c;
+		}
+	}
+
+	*p = '\0';
+	return rc;
+fail:
+	free(rc);
+	return NULL;
 #undef r
 }
-

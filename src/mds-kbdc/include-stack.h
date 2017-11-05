@@ -31,17 +31,17 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, ...)			\
-  NEW_ERROR_(result, SEVERITY, 1, (NODE)->loc_line,			\
-	     (NODE)->loc_start, (NODE)->loc_end, 1, __VA_ARGS__)
+#define NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, ...)\
+	NEW_ERROR_(result, SEVERITY, 1, (NODE)->loc_line,\
+	           (NODE)->loc_start, (NODE)->loc_end, 1, __VA_ARGS__)
 
 /**
  * Add “included from here”-notes
  * 
  * @param  PTR:size_t  The number of “included from here”-notes
  */
-#define DUMP_INCLUDE_STACK(PTR)			\
-  fail_if (mds_kbdc_include_stack_dump(PTR))
+#define DUMP_INCLUDE_STACK(PTR)\
+	fail_if (mds_kbdc_include_stack_dump(PTR))
 
 /**
  * Add an error with “included from here”-notes to the error list
@@ -52,36 +52,32 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, ...)	\
-  do								\
-    {								\
-      NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, __VA_ARGS__);	\
-      DUMP_INCLUDE_STACK(PTR);					\
-    }								\
-  while (0)
+#define NEW_ERROR_WITH_INCLUDES(NODE, PTR, SEVERITY, ...)\
+	do {\
+		NEW_ERROR_WITHOUT_INCLUDES(NODE, SEVERITY, __VA_ARGS__);\
+		DUMP_INCLUDE_STACK(PTR);\
+	} while (0)
 
 
 
 /**
  * A saved state of the include-stack
  */
-typedef struct mds_kbdc_include_stack
-{
-  /**
-   * Stack of visited include-statements
-   */
-  const mds_kbdc_tree_include_t** stack;
-  
-  /**
-   * The number elements stored in `stack` (do not edit)
-   */
-  size_t ptr;
-  
-  /**
-   * The number of duplicates there are of this object
-   */
-  size_t duplicates;
-  
+typedef struct mds_kbdc_include_stack {
+	/**
+	 * Stack of visited include-statements
+	 */
+	const mds_kbdc_tree_include_t **stack;
+
+	/**
+	 * The number elements stored in `stack` (do not edit)
+	 */
+	size_t ptr;
+
+	/**
+	 * The number of duplicates there are of this object
+	 */
+	size_t duplicates;
 } mds_kbdc_include_stack_t;
 
 
@@ -107,7 +103,7 @@ int mds_kbdc_include_stack_dump(size_t ptr);
  * 
  * @param  result  The `result` parameter of root procedure that requires the include-stack
  */
-void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t* restrict result);
+void mds_kbdc_include_stack_begin(mds_kbdc_parsed_t *restrict result);
 
 /**
  * Mark the root of the tree as no longer being visited,
@@ -124,7 +120,7 @@ void mds_kbdc_include_stack_end(void);
  *                is undefined on error
  * @return        Zero on success, -1 on error
  */
-int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, void** data);
+int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t *restrict tree, void **data);
 
 /**
  * Undo the lasted not-undone call to `mds_kbdc_include_stack_push`
@@ -133,7 +129,7 @@ int mds_kbdc_include_stack_push(const mds_kbdc_tree_include_t* restrict tree, vo
  * 
  * @param  data  `*data` from `mds_kbdc_include_stack_push`
  */
-void mds_kbdc_include_stack_pop(void* data);
+void mds_kbdc_include_stack_pop(void *data);
 
 /**
  * Save the current include-stack
@@ -148,15 +144,14 @@ mds_kbdc_include_stack_t* mds_kbdc_include_stack_save(void);
  * @param   stack  The include-stack
  * @return         Zero on success, -1 on error
  */
-int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t* restrict stack);
+int mds_kbdc_include_stack_restore(mds_kbdc_include_stack_t *restrict stack);
 
 /**
  * Destroy a previous include-stack and free its allocation
  * 
  * @param  stack  The include-stack
  */
-void mds_kbdc_include_stack_free(mds_kbdc_include_stack_t* restrict stack);
+void mds_kbdc_include_stack_free(mds_kbdc_include_stack_t *restrict stack);
 
 
 #endif
-

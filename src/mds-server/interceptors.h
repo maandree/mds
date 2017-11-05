@@ -52,7 +52,7 @@ void add_intercept_condition(client_t *client, char *condition, int64_t priority
  */
 __attribute__((pure, nonnull(1)))
 int is_condition_matching(interception_condition_t *cond, size_t *hashes,
-			  char **keys, char **headers, size_t count);
+                          char **keys, char **headers, size_t count);
 
 
 /**

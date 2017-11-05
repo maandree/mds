@@ -1718,7 +1718,7 @@ void
 shrink_map(void)
 {
 	size_t i, greatest_mapping = 0;
-	int* old;
+	int *old;
 
 	for (i = mapping_size; i > 0; i--) {
 		if (mapping[i] != (int)i) {

@@ -465,7 +465,8 @@ handle_register_message(void)
  * @return  Zero on success, -1 on error or interruption,
  *          `errno` will be set accordingly
  */
-int handle_message(void)
+int
+handle_message(void)
 {
 	size_t i;
 	for (i = 0; i < received.header_count; i++) {
@@ -476,6 +477,6 @@ int handle_message(void)
 	}
 	fail_if (handle_close_message());
 	return 0;
- fail:
+fail:
 	return -1;
 }

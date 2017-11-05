@@ -27,74 +27,72 @@
 /**
  * Not an error, simply a note about the previous error or warning
  */
-#define  MDS_KBDC_PARSE_ERROR_NOTE  1
+#define MDS_KBDC_PARSE_ERROR_NOTE 1
 
 /**
  * A warning, must likely an error that is not fatal to the compilation
  */
-#define  MDS_KBDC_PARSE_ERROR_WARNING  2
+#define MDS_KBDC_PARSE_ERROR_WARNING 2
 
 /**
  * An error, the compilation will halt
  */
-#define  MDS_KBDC_PARSE_ERROR_ERROR  3
+#define MDS_KBDC_PARSE_ERROR_ERROR 3
 
 /**
  * Internal compiler error or system error, compilation halts
  */
-#define  MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR  4
+#define MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR 4
 
 
 
 /**
  * Description of an parsing error
  */
-typedef struct mds_kbdc_parse_error
-{
-  /**
-   * Either of:
-   * - `MDS_KBDC_PARSE_ERROR_NOTE`
-   * - `MDS_KBDC_PARSE_ERROR_WARNING`
-   * - `MDS_KBDC_PARSE_ERROR_ERROR`
-   * - `MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR`
-   */
-  int severity;
-  
-  /**
-   * If zero, disregard `.line`, `.start`, `.end` and `.code`
-   */
-  int error_is_in_file;
-  
-  /**
-   * The pathname of the file with the error
-   */
-  char* pathname;
-  
-  /**
-   * The line where the error occurred, zero-based
-   */
-  size_t line;
-  
-  /**
-   * The byte where the error started, inclusive, zero-based
-   */
-  size_t start;
-  
-  /**
-   * The byte where the error ended, exclusive, zero-based
-   */
-  size_t end;
-  
-  /**
-   * The code on the line where the error occurred
-   */
-  char* code;
-  
-  /**
-   * Description of the error
-   */
-  char* description;
-  
+typedef struct mds_kbdc_parse_error {
+	/**
+	 * Either of:
+	 * - `MDS_KBDC_PARSE_ERROR_NOTE`
+	 * - `MDS_KBDC_PARSE_ERROR_WARNING`
+	 * - `MDS_KBDC_PARSE_ERROR_ERROR`
+	 * - `MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR`
+	 */
+	int severity;
+
+	/**
+	 * If zero, disregard `.line`, `.start`, `.end` and `.code`
+	 */
+	int error_is_in_file;
+
+	/**
+	 * The pathname of the file with the error
+	 */
+	char *pathname;
+
+	/**
+	 * The line where the error occurred, zero-based
+	 */
+	size_t line;
+
+	/**
+	 * The byte where the error started, inclusive, zero-based
+	 */
+	size_t start;
+
+	/**
+	 * The byte where the error ended, exclusive, zero-based
+	 */
+	size_t end;
+
+	/**
+	 * The code on the line where the error occurred
+	 */
+	char *code;
+
+	/**
+	 * Description of the error
+	 */
+	char *description;
 } mds_kbdc_parse_error_t;
 
 
@@ -105,7 +103,7 @@ typedef struct mds_kbdc_parse_error
  * @param  this    The error structure
  * @param  output  The output file
  */
-void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict output);
+void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t *restrict this, FILE *restrict output);
 
 
 /**
@@ -113,7 +111,7 @@ void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FIL
  * 
  * @param  this  The error structure
  */
-void mds_kbdc_parse_error_destroy(mds_kbdc_parse_error_t* restrict this);
+void mds_kbdc_parse_error_destroy(mds_kbdc_parse_error_t *restrict this);
 
 /**
  * Release all resources allocated in a `mds_kbdc_parse_error_t*`
@@ -121,7 +119,7 @@ void mds_kbdc_parse_error_destroy(mds_kbdc_parse_error_t* restrict this);
  * 
  * @param  this  The error structure
  */
-void mds_kbdc_parse_error_free(mds_kbdc_parse_error_t* restrict this);
+void mds_kbdc_parse_error_free(mds_kbdc_parse_error_t *restrict this);
 
 /**
  * Release all resources allocated in a `NULL`-terminated group
@@ -129,7 +127,7 @@ void mds_kbdc_parse_error_free(mds_kbdc_parse_error_t* restrict this);
  * 
  * @param  this  The group of error structures
  */
-void mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t** restrict these);
+void mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t **restrict these);
 
 /**
  * Release all resources allocated in a `NULL`-terminated group of
@@ -137,9 +135,8 @@ void mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t** restrict these);
  * 
  * @param  this  The group of error structures
  */
-void mds_kbdc_parse_error_free_all(mds_kbdc_parse_error_t** restrict these);
+void mds_kbdc_parse_error_free_all(mds_kbdc_parse_error_t **restrict these);
 
 
 
 #endif
-

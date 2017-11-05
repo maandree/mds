@@ -37,7 +37,8 @@
  * 
  * @param  obj  The key
  */
-void reg_table_free_key(size_t obj)
+void
+reg_table_free_key(size_t obj)
 {
 	char *command = (void *)obj;
 	free(command);
@@ -49,7 +50,8 @@ void reg_table_free_key(size_t obj)
  * 
  * @param  obj  The value
  */
-void reg_table_free_value(size_t obj)
+void
+reg_table_free_value(size_t obj)
 {
 	client_list_t *list = (void *)obj;
 	client_list_destroy(list);

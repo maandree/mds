@@ -34,7 +34,8 @@
  * 
  * @param  signo  The signal
  */
-void signal_all(int signo)
+void
+signal_all(int signo)
 {      
 	pthread_t current_thread;
 	ssize_t node;

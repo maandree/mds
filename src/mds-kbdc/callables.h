@@ -38,8 +38,8 @@ void callables_terminate(void);
  * @param   callable_include_stack  The include-stack for the callable
  * @return                          Zero on success, -1 on error
  */
-int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* restrict callable,
-		  mds_kbdc_include_stack_t* restrict callable_include_stack);
+int callables_set(const char *restrict name, size_t arg_count, mds_kbdc_tree_t *restrict callable,
+                  mds_kbdc_include_stack_t *restrict callable_include_stack);
 
 /**
  * Get a stored callable
@@ -50,9 +50,8 @@ int callables_set(const char* restrict name, size_t arg_count, mds_kbdc_tree_t* 
  * @param  callable                Output parameter for the callable
  * @param  callable_include_stack  Output parameter for the include-stack for the callable
  */
-void callables_get(const char* restrict name, size_t arg_count, mds_kbdc_tree_t** restrict callable,
-		   mds_kbdc_include_stack_t** restrict callable_include_stack);
+void callables_get(const char *restrict name, size_t arg_count, mds_kbdc_tree_t **restrict callable,
+                   mds_kbdc_include_stack_t **restrict callable_include_stack);
 
 
 #endif
-

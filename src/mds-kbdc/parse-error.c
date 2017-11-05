@@ -32,46 +32,45 @@
  * @param  output  The output file
  * @param  desc    The description of the error
  */
-static void print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict output, const char* restrict desc)
+static void
+print(const mds_kbdc_parse_error_t *restrict this, FILE *restrict output, const char *restrict desc)
 {
-  size_t i, n, start = 0, end = 0;
-  const char* restrict code = this->code;
-  char* restrict path = relpath(this->pathname, NULL);
-  
-  /* Convert bytes count to character count for the code position. */
-  for (i = 0, n = this->start; i < n; i++)
-    if ((code[i] & 0xC0) != 0x80)
-      start++;
-  for (n = this->end; i < n; i++)
-    if ((code[i] & 0xC0) != 0x80)
-      end++;
-  end += start;
-  
-  /* Print error information. */
-  fprintf(output, "\033[01m%s\033[21m:", path ? path : this->pathname);
-  free(path);
-  if (this->error_is_in_file)
-    fprintf(output, "%zu:%zu–%zu:", this->line + 1, start, end);
-  switch (this->severity)
-    {
-    case MDS_KBDC_PARSE_ERROR_NOTE:            fprintf(output, " \033[01;36mnote:\033[00m ");            break;
-    case MDS_KBDC_PARSE_ERROR_WARNING:         fprintf(output, " \033[01;35mwarning:\033[00m ");         break;
-    case MDS_KBDC_PARSE_ERROR_ERROR:           fprintf(output, " \033[01;31merror:\033[00m ");           break;
-    case MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR:  fprintf(output, " \033[01;31minternal error:\033[00m ");  break;
-    default:
-      abort();
-      break;
-    }
-  if (this->error_is_in_file)
-    {
-      fprintf(output, "%s\n %s\n \033[01;32m", desc, code);
-      i = 0;
-      for (n = start; i < n; i++)  fputc(' ', output);
-      for (n = end;   i < n; i++)  fputc('^', output);
-    }
-  else
-    fprintf(output, "%s\n", desc);
-  fprintf(output, "\033[00m\n");
+	size_t i, n, start = 0, end = 0;
+	const char *restrict code = this->code;
+	char *restrict path = relpath(this->pathname, NULL);
+
+	/* Convert bytes count to character count for the code position. */
+	for (i = 0, n = this->start; i < n; i++)
+		if ((code[i] & 0xC0) != 0x80)
+			start++;
+	for (n = this->end; i < n; i++)
+		if ((code[i] & 0xC0) != 0x80)
+			end++;
+	end += start;
+
+	/* Print error information. */
+	fprintf(output, "\033[01m%s\033[21m:", path ? path : this->pathname);
+	free(path);
+	if (this->error_is_in_file)
+		fprintf(output, "%zu:%zu–%zu:", this->line + 1, start, end);
+	switch (this->severity) {
+	case MDS_KBDC_PARSE_ERROR_NOTE:           fprintf(output, " \033[01;36mnote:\033[00m ");           break;
+	case MDS_KBDC_PARSE_ERROR_WARNING:        fprintf(output, " \033[01;35mwarning:\033[00m ");        break;
+	case MDS_KBDC_PARSE_ERROR_ERROR:          fprintf(output, " \033[01;31merror:\033[00m ");          break;
+	case MDS_KBDC_PARSE_ERROR_INTERNAL_ERROR: fprintf(output, " \033[01;31minternal error:\033[00m "); break;
+	default:
+		abort();
+		break;
+	}
+	if (this->error_is_in_file) {
+		fprintf(output, "%s\n %s\n \033[01;32m", desc, code);
+		i = 0;
+		for (n = start; i < n; i++) fputc(' ', output);
+		for (n = end;   i < n; i++) fputc('^', output);
+	} else {
+		fprintf(output, "%s\n", desc);
+	}
+	fprintf(output, "\033[00m\n");
 }
 
 
@@ -81,49 +80,57 @@ static void print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict ou
  * @param  this    The error structure
  * @param  output  The output file
  */
-void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FILE* restrict output)
+void
+mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t *restrict this, FILE *restrict output)
 {
-  ssize_t m;
-  size_t n;
-  char* desc;
-  char* dend = this->description + strlen(this->description);
-  char* dstart;
-  char* dptr;
-  char* p;
-  char* q;
-  
-  /* Count the number points in the description we should modify to format it. */
-  for (p = this->description, n = 0;;)
-    {
-      if (q = strstr(p, "‘"), q == NULL)  q = dend;
-      if (p = strstr(p, "’"), p == NULL)  p = dend;
-      if (q < p)  p = q;
-      if (*p++)   n++;
-      else        break;
-    }
-  
-  /* Allocate string for the formatted description. */
-  n = 1 + strlen(this->description) + strlen("\033[xxm’") * n;
-  dptr = desc = alloca(n * sizeof(char));
-  
-  /* Format description. */
-  for (p = this->description;;)
-    {
-      dstart = p;
-      if (q = strstr(p, "‘"), q == NULL)  q = dend;
-      if (p = strstr(p, "’"), p == NULL)  p = dend;
-      if (q < p)  p = q;
-      if ((n = (size_t)(p - dstart)))
-	memcpy(dptr, dstart, n), dptr += n;
-      if (p == dend)
-	break;
-      if (strstr(p, "‘") == p)  sprintf(dptr, "\033[01m‘%zn", &m),  dptr += (size_t)m,  p += strlen("‘");
-      else                      sprintf(dptr, "’\033[21m%zn", &m),  dptr += (size_t)m,  p += strlen("’");
-    }
-  *dptr = '\0';
-  
-  /* Print the error. */
-  print(this, output, desc);
+	size_t n;
+	char *desc;
+	char *dend = this->description + strlen(this->description);
+	char *dstart;
+	char *dptr;
+	char *p;
+	char *q;
+
+	/* Count the number points in the description we should modify to format it. */
+	for (p = this->description, n = 0;;) {
+		if (!(q = strstr(p, "‘")))
+			q = dend;
+		if (!(p = strstr(p, "’")))
+			p = dend;
+		if (q < p)
+			p = q;
+		if (*p++)
+			n++;
+		else
+			break;
+	}
+
+	/* Allocate string for the formatted description. */
+	n = 1 + strlen(this->description) + strlen("\033[xxm’") * n;
+	dptr = desc = alloca(n * sizeof(char));
+
+	/* Format description. */
+	for (p = this->description;;) {
+		dstart = p;
+		if (!(q = strstr(p, "‘")))
+			q = dend;
+		if (!(p = strstr(p, "’")))
+			p = dend;
+		if (q < p)
+			p = q;
+		if ((n = (size_t)(p - dstart)))
+			memcpy(dptr, dstart, n), dptr += n;
+		if (p == dend)
+			break;
+		if (strstr(p, "‘") == p)
+			dptr += sprintf(dptr, "\033[01m‘"), p += strlen("‘");
+		else
+			dptr += sprintf(dptr, "’\033[21m"), p += strlen("’");
+	}
+	*dptr = '\0';
+
+	/* Print the error. */
+	print(this, output, desc);
 }
 
 
@@ -133,13 +140,14 @@ void mds_kbdc_parse_error_print(const mds_kbdc_parse_error_t* restrict this, FIL
  * 
  * @param  this  The error structure
  */
-void mds_kbdc_parse_error_destroy(mds_kbdc_parse_error_t* restrict this)
+void
+mds_kbdc_parse_error_destroy(mds_kbdc_parse_error_t *restrict this)
 {
-  if (this == NULL)
-    return;
-  free(this->pathname),    this->pathname    = NULL;
-  free(this->code),        this->code        = NULL;
-  free(this->description), this->description = NULL;
+	if (!this)
+		return;
+	free(this->pathname),    this->pathname    = NULL;
+	free(this->code),        this->code        = NULL;
+	free(this->description), this->description = NULL;
 }
 
 
@@ -149,10 +157,11 @@ void mds_kbdc_parse_error_destroy(mds_kbdc_parse_error_t* restrict this)
  * 
  * @param  this  The error structure
  */
-void mds_kbdc_parse_error_free(mds_kbdc_parse_error_t* restrict this)
+void
+mds_kbdc_parse_error_free(mds_kbdc_parse_error_t *restrict this)
 {
-  mds_kbdc_parse_error_destroy(this);
-  free(this);
+	mds_kbdc_parse_error_destroy(this);
+	free(this);
 }
 
 
@@ -162,13 +171,14 @@ void mds_kbdc_parse_error_free(mds_kbdc_parse_error_t* restrict this)
  * 
  * @param  this  The group of error structures
  */
-void mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t** restrict these)
+void
+mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t **restrict these)
 {
-  mds_kbdc_parse_error_t* restrict that;
-  if (these == NULL)
-    return;
-  while (that = *these, that != NULL)
-    mds_kbdc_parse_error_free(that), *these++ = NULL;
+	mds_kbdc_parse_error_t *restrict that;
+	if (!these)
+		return;
+	while ((that = *these))
+		mds_kbdc_parse_error_free(that), *these++ = NULL;
 }
 
 
@@ -178,9 +188,9 @@ void mds_kbdc_parse_error_destroy_all(mds_kbdc_parse_error_t** restrict these)
  * 
  * @param  this  The group of error structures
  */
-void mds_kbdc_parse_error_free_all(mds_kbdc_parse_error_t** restrict these)
+void
+mds_kbdc_parse_error_free_all(mds_kbdc_parse_error_t**restrict these)
 {
-  mds_kbdc_parse_error_destroy_all(these);
-  free(these);
+	mds_kbdc_parse_error_destroy_all(these);
+	free(these);
 }
-

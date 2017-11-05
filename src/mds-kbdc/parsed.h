@@ -42,15 +42,13 @@
  * @param  ...:const char*, ...           Error description format string and arguments
  * @scope  error:mds_kbdc_parse_error_t*  Variable where the new error will be stored
  */
-#define NEW_ERROR_(RESULT, SEVERITY, ERROR_IS_IN_FILE, LINE, START, END, WITH_DESCRIPTION, ...)		\
-  do													\
-    {													\
-      error = mds_kbdc_parsed_new_error(RESULT, MDS_KBDC_PARSE_ERROR_##SEVERITY,			\
-					ERROR_IS_IN_FILE, LINE, START, END);				\
-      fail_if (error == NULL);										\
-      fail_if (WITH_DESCRIPTION && xasprintf(error->description, __VA_ARGS__));				\
-    }													\
-  while (0)
+#define NEW_ERROR_(RESULT, SEVERITY, ERROR_IS_IN_FILE, LINE, START, END, WITH_DESCRIPTION, ...)\
+	do {\
+		error = mds_kbdc_parsed_new_error(RESULT, MDS_KBDC_PARSE_ERROR_##SEVERITY,\
+		                                  ERROR_IS_IN_FILE, LINE, START, END);\
+		fail_if (!error);\
+		fail_if (WITH_DESCRIPTION && xasprintf(error->description, __VA_ARGS__));\
+	} while (0)
 
 
 
@@ -58,115 +56,113 @@
  * Structure with parsed tree, error list
  * source code and the file's pathname
  */
-typedef struct mds_kbdc_parsed
-{
-  /**
-   * The parsed tree
-   */
-  mds_kbdc_tree_t* tree;
-  
-  /**
-   * The source code of the parsed file
-   */
-  mds_kbdc_source_code_t* source_code;
-  
-  /**
-   * A non-relative pathname to the parsed file.
-   * Relative filenames can be misleading as the
-   * program can have changed working directory
-   * to be able to resolve filenames.
-   */
-  char* pathname;
-  
-  /**
-   * `NULL`-terminated list of found errors
-   * `NULL` if no errors that could be listed
-   * were found
-   */
-  mds_kbdc_parse_error_t** errors;
-  
-  /**
-   * The number of elements allocated to `errors`
-   */
-  size_t errors_size;
-  
-  /**
-   * The number of elements stored in `errors`
-   */
-  size_t errors_ptr;
-  
-  /**
-   * The level of the severest countered error,
-   * 0 if none has been encountered.
-   */
-  int severest_error_level;
-  
-  /**
-   * List of languages for which the layout is designed
-   */
-  char** languages;
-  
-  /**
-   * The number of elements allocated to `languages`
-   */
-  size_t languages_size;
-  
-  /**
-   * The number of elements stored in `languages`
-   */
-  size_t languages_ptr;
-  
-  /**
-   * List of countries for which the layout is designed
-   */
-  char** countries;
-  
-  /**
-   * The number of elements allocated to `countries`
-   */
-  size_t countries_size;
-  
-  /**
-   * The number of elements stored in `countries`
-   */
-  size_t countries_ptr;
-  
-  /**
-   * The variant of the keyboard for the languages/countries,
-   * `NULL` if not specified
-   */
-  char* variant;
-  
-  /**
-   * List of strings the assembler should assume are provided
-   */
-  char32_t** assumed_strings;
-  
-  /**
-   * The number of elements allocated to `assumed_strings`
-   */
-  size_t assumed_strings_size;
-  
-  /**
-   * The number of elements stored in `assumed_strings`
-   */
-  size_t assumed_strings_ptr;
-  
-  /**
-   * List of keys the assembler should assume are provided
-   */
-  char32_t** assumed_keys;
-  
-  /**
-   * The number of elements allocated to `assumed_keys`
-   */
-  size_t assumed_keys_size;
-  
-  /**
-   * The number of elements stored in `assumed_keys`
-   */
-  size_t assumed_keys_ptr;
-  
+typedef struct mds_kbdc_parsed {
+	/**
+	 * The parsed tree
+	 */
+	mds_kbdc_tree_t *tree;
+
+	/**
+	 * The source code of the parsed file
+	 */
+	mds_kbdc_source_code_t *source_code;
+
+	/**
+	 * A non-relative pathname to the parsed file.
+	 * Relative filenames can be misleading as the
+	 * program can have changed working directory
+	 * to be able to resolve filenames.
+	 */
+	char *pathname;
+
+	/**
+	 * `NULL`-terminated list of found errors
+	 * `NULL` if no errors that could be listed
+	 * were found
+	 */
+	mds_kbdc_parse_error_t **errors;
+
+	/**
+	 * The number of elements allocated to `errors`
+	 */
+	size_t errors_size;
+
+	/**
+	 * The number of elements stored in `errors`
+	 */
+	size_t errors_ptr;
+
+	/**
+	 * The level of the severest countered error,
+	 * 0 if none has been encountered.
+	 */
+	int severest_error_level;
+
+	/**
+	 * List of languages for which the layout is designed
+	 */
+	char **languages;
+
+	/**
+	 * The number of elements allocated to `languages`
+	 */
+	size_t languages_size;
+
+	/**
+	 * The number of elements stored in `languages`
+	 */
+	size_t languages_ptr;
+
+	/**
+	 * List of countries for which the layout is designed
+	 */
+	char **countries;
+
+	/**
+	 * The number of elements allocated to `countries`
+	 */
+	size_t countries_size;
+
+	/**
+	 * The number of elements stored in `countries`
+	 */
+	size_t countries_ptr;
+
+	/**
+	 * The variant of the keyboard for the languages/countries,
+	 * `NULL` if not specified
+	 */
+	char *variant;
+
+	/**
+	 * List of strings the assembler should assume are provided
+	 */
+	char32_t **assumed_strings;
+
+	/**
+	 * The number of elements allocated to `assumed_strings`
+	 */
+	size_t assumed_strings_size;
+
+	/**
+	 * The number of elements stored in `assumed_strings`
+	 */
+	size_t assumed_strings_ptr;
+
+	/**
+	 * List of keys the assembler should assume are provided
+	 */
+	char32_t **assumed_keys;
+
+	/**
+	 * The number of elements allocated to `assumed_keys`
+	 */
+	size_t assumed_keys_size;
+
+	/**
+	 * The number of elements stored in `assumed_keys`
+	 */
+	size_t assumed_keys_ptr;
 } mds_kbdc_parsed_t;
 
 
@@ -176,14 +172,14 @@ typedef struct mds_kbdc_parsed
  * 
  * @param  this  The `mds_kbdc_parsed_t*`
  */
-void mds_kbdc_parsed_initialise(mds_kbdc_parsed_t* restrict this);
+void mds_kbdc_parsed_initialise(mds_kbdc_parsed_t *restrict this);
 
 /**
  * Release all resources allocated in a `mds_kbdc_parsed_t*`
  * 
  * @param  this  The `mds_kbdc_parsed_t*`
  */
-void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this);
+void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t *restrict this);
 
 /**
  * Check whether a fatal errors has occurred
@@ -191,7 +187,8 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this);
  * @param   this  The parsing result
  * @return        Whether a fatal errors has occurred
  */
-int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this) __attribute__((pure));
+__attribute__((pure))
+int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t *restrict this);
 
 /**
  * Print all encountered errors
@@ -199,7 +196,7 @@ int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this) __attribute__((pu
  * @param  this    The parsing result
  * @param  output  The output file
  */
-void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t* restrict this, FILE* output);
+void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t *restrict this, FILE *output);
 
 /**
  * Add a new error to the list
@@ -212,9 +209,8 @@ void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t* restrict this, FILE* output
  * @param   end               The byte where the error ended, on the line, exclusive, zero-based
  * @return                    The new error on success, `NULL` on error
  */
-mds_kbdc_parse_error_t* mds_kbdc_parsed_new_error(mds_kbdc_parsed_t* restrict this, int severity,
-						  int error_is_in_file, size_t line, size_t start, size_t end);
+mds_kbdc_parse_error_t *mds_kbdc_parsed_new_error(mds_kbdc_parsed_t *restrict this, int severity,
+                                                  int error_is_in_file, size_t line, size_t start, size_t end);
 
 
 #endif
-

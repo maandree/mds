@@ -28,9 +28,10 @@
  * 
  * @param  this  The `mds_kbdc_parsed_t*`
  */
-void mds_kbdc_parsed_initialise(mds_kbdc_parsed_t* restrict this)
+void
+mds_kbdc_parsed_initialise(mds_kbdc_parsed_t *restrict this)
 {
-  memset(this, 0, sizeof(mds_kbdc_parsed_t));
+	memset(this, 0, sizeof(mds_kbdc_parsed_t));
 }
 
 
@@ -39,27 +40,28 @@ void mds_kbdc_parsed_initialise(mds_kbdc_parsed_t* restrict this)
  * 
  * @param  this  The `mds_kbdc_parsed_t*`
  */
-void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
+void
+mds_kbdc_parsed_destroy(mds_kbdc_parsed_t *restrict this)
 {
-  mds_kbdc_tree_free(this->tree);
-  mds_kbdc_source_code_destroy(this->source_code);
-  free(this->source_code);
-  free(this->pathname);
-  mds_kbdc_parse_error_free_all(this->errors);
-  while (this->languages_ptr--)
-    free(this->languages[this->languages_ptr]);
-  free(this->languages);
-  while (this->countries_ptr--)
-    free(this->countries[this->countries_ptr]);
-  free(this->countries);
-  free(this->variant);
-  while (this->assumed_strings_ptr--)
-    free(this->assumed_strings[this->assumed_strings_ptr]);
-  free(this->assumed_strings);
-  while (this->assumed_keys_ptr--)
-    free(this->assumed_keys[this->assumed_keys_ptr]);
-  free(this->assumed_keys);
-  memset(this, 0, sizeof(mds_kbdc_parsed_t));
+	mds_kbdc_tree_free(this->tree);
+	mds_kbdc_source_code_destroy(this->source_code);
+	free(this->source_code);
+	free(this->pathname);
+	mds_kbdc_parse_error_free_all(this->errors);
+	while (this->languages_ptr--)
+		free(this->languages[this->languages_ptr]);
+	free(this->languages);
+	while (this->countries_ptr--)
+		free(this->countries[this->countries_ptr]);
+	free(this->countries);
+	free(this->variant);
+	while (this->assumed_strings_ptr--)
+		free(this->assumed_strings[this->assumed_strings_ptr]);
+	free(this->assumed_strings);
+	while (this->assumed_keys_ptr--)
+		free(this->assumed_keys[this->assumed_keys_ptr]);
+	free(this->assumed_keys);
+	memset(this, 0, sizeof(mds_kbdc_parsed_t));
 }
 
 
@@ -69,9 +71,10 @@ void mds_kbdc_parsed_destroy(mds_kbdc_parsed_t* restrict this)
  * @param   this  The parsing result
  * @return        Whether a fatal errors has occurred
  */
-int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this)
+int
+mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t *restrict this)
 {
-  return this->severest_error_level >= MDS_KBDC_PARSE_ERROR_ERROR;
+	return this->severest_error_level >= MDS_KBDC_PARSE_ERROR_ERROR;
 }
 
 
@@ -81,23 +84,22 @@ int mds_kbdc_parsed_is_fatal(mds_kbdc_parsed_t* restrict this)
  * @param  this    The parsing result
  * @param  output  The output file
  */
-void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t* restrict this, FILE* output)
+void
+mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t *restrict this, FILE *output)
 {
-  mds_kbdc_parse_error_t** errors = this->errors;
-  char* env = getenv("MDS_KBDC_ERRORS_ORDER");
-  if (errors == NULL)
-    return;
-  if (env && (strcasecmp(env, "reversed") || strcasecmp(env, "reverse")))
-    {
-      while (*errors)
-	errors++;
-      while (errors-- != this->errors)
-	mds_kbdc_parse_error_print(*errors, output);
-    }
-  else
-    while (*errors)
-      mds_kbdc_parse_error_print(*errors++, output);
-  
+	mds_kbdc_parse_error_t **errors = this->errors;
+	char *env = getenv("MDS_KBDC_ERRORS_ORDER");
+	if (!errors) {
+		return;
+	} else if (env && (strcasecmp(env, "reversed") || strcasecmp(env, "reverse"))) {
+		while (*errors)
+			errors++;
+		while (errors-- != this->errors)
+			mds_kbdc_parse_error_print(*errors, output);
+	} else {
+		while (*errors)
+			mds_kbdc_parse_error_print(*errors++, output);
+	}
 }
 
 
@@ -112,49 +114,47 @@ void mds_kbdc_parsed_print_errors(mds_kbdc_parsed_t* restrict this, FILE* output
  * @param   end               The byte where the error ended, on the line, exclusive, zero-based
  * @return                    The new error on success, `NULL` on error
  */
-mds_kbdc_parse_error_t* mds_kbdc_parsed_new_error(mds_kbdc_parsed_t* restrict this, int severity,
-						  int error_is_in_file, size_t line, size_t start, size_t end)
+mds_kbdc_parse_error_t *
+mds_kbdc_parsed_new_error(mds_kbdc_parsed_t *restrict this, int severity,
+                          int error_is_in_file, size_t line, size_t start, size_t end)
 {
-  mds_kbdc_parse_error_t* error = NULL;
-  size_t old_errors_ptr = this->errors_ptr;
-  int saved_errno;
-  
-  if (this->errors_ptr + 1 >= this->errors_size)
-    {
-      size_t new_errors_size = this->errors_size ? (this->errors_size << 1) : 2;
-      mds_kbdc_parse_error_t** new_errors = this->errors;
-      
-      fail_if (xrealloc(new_errors, new_errors_size, mds_kbdc_parse_error_t*));
-      this->errors = new_errors;
-      this->errors_size = new_errors_size;
-    }
-  
-  fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));
-  this->errors[this->errors_ptr + 0] = error;
-  this->errors[this->errors_ptr + 1] = NULL;
-  this->errors_ptr++;
-  
-  error->severity = severity;
-  if (this->severest_error_level < severity)
-    this->severest_error_level = severity;
-  
-  fail_if (xstrdup(error->pathname, this->pathname));
-  
-  if ((error->error_is_in_file = error_is_in_file))
-    {
-      error->line = line;
-      error->start = start;
-      error->end = end;
-      fail_if (xstrdup(error->code, this->source_code->real_lines[line]));
-    }
-  
-  return error;
- fail:
-  saved_errno = errno;
-  free(error);
-  this->errors_ptr = old_errors_ptr;
-  this->errors[this->errors_ptr] = NULL;
-  errno = saved_errno;
-  return NULL;
-}
+	mds_kbdc_parse_error_t *error = NULL, **new_errors;
+	size_t old_errors_ptr = this->errors_ptr, new_errors_size;
+	int saved_errno;
 
+	if (this->errors_ptr + 1 >= this->errors_size) {
+		new_errors_size = this->errors_size ? (this->errors_size << 1) : 2;
+		new_errors = this->errors;
+
+		fail_if (xrealloc(new_errors, new_errors_size, mds_kbdc_parse_error_t*));
+		this->errors = new_errors;
+		this->errors_size = new_errors_size;
+	}
+
+	fail_if (xcalloc(error, 1, mds_kbdc_parse_error_t));
+	this->errors[this->errors_ptr + 0] = error;
+	this->errors[this->errors_ptr + 1] = NULL;
+	this->errors_ptr++;
+
+	error->severity = severity;
+	if (this->severest_error_level < severity)
+		this->severest_error_level = severity;
+
+	fail_if (xstrdup(error->pathname, this->pathname));
+
+	if ((error->error_is_in_file = error_is_in_file)) {
+		error->line = line;
+		error->start = start;
+		error->end = end;
+		fail_if (xstrdup(error->code, this->source_code->real_lines[line]));
+	}
+
+	return error;
+fail:
+	saved_errno = errno;
+	free(error);
+	this->errors_ptr = old_errors_ptr;
+	this->errors[this->errors_ptr] = NULL;
+	errno = saved_errno;
+	return NULL;
+}

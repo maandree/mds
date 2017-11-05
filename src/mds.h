@@ -57,7 +57,7 @@ int spawn_and_respawn_server(int fd);
  * @return            Non-zero on error
  */
 __attribute__((nonnull))
-int create_directory_root(const char* pathname);
+int create_directory_root(const char *pathname);
 
 /**
  * Create a directory owned by the real user and nobody group
@@ -66,7 +66,7 @@ int create_directory_root(const char* pathname);
  * @return            Non-zero on error
  */
 __attribute__((nonnull))
-int create_directory_user(const char* pathname);
+int create_directory_user(const char *pathname);
 
 /**
  * Recursively remove a directory
@@ -75,8 +75,7 @@ int create_directory_user(const char* pathname);
  * @return            Non-zero on error
  */
 __attribute__((nonnull))
-int unlink_recursive(const char* pathname);
+int unlink_recursive(const char *pathname);
 
 
 #endif
-

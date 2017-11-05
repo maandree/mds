@@ -27,7 +27,7 @@
  * The default initial capacity
  */
 #ifndef LINKED_LIST_DEFAULT_INITIAL_CAPACITY
-# define LINKED_LIST_DEFAULT_INITIAL_CAPACITY  128
+# define LINKED_LIST_DEFAULT_INITIAL_CAPACITY 128
 #endif
 
 
@@ -38,19 +38,19 @@
  * @param   value  The value to be rounded up to a power of two
  * @return         The nearest, but not smaller, power of two
  */
-__attribute__((const))
-static size_t to_power_of_two(size_t value)
+static size_t __attribute__((const))
+to_power_of_two(size_t value)
 {
-  value -= 1;
-  value |= value >> 1;
-  value |= value >> 2;
-  value |= value >> 4;
-  value |= value >> 8;
-  value |= value >> 16;
+	value -= 1;
+	value |= value >> 1;
+	value |= value >> 2;
+	value |= value >> 4;
+	value |= value >> 8;
+	value |= value >> 16;
 #if SIZE_MAX == UINT64_MAX
-  value |= value >> 32;
+	value |= value >> 32;
 #endif
-  return value + 1;
+	return value + 1;
 }
 
 
@@ -61,32 +61,33 @@ static size_t to_power_of_two(size_t value)
  * @param   capacity  The minimum initial capacity of the linked list, 0 for default
  * @return            Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_create(linked_list_t* restrict this, size_t capacity)
+int
+linked_list_create(linked_list_t *restrict this, size_t capacity)
 {
-  /* Use default capacity of zero is specified. */
-  if (capacity == 0)
-    capacity = LINKED_LIST_DEFAULT_INITIAL_CAPACITY;
-  
-  /* Initialise the linked list. */
-  this->capacity   = capacity = to_power_of_two(capacity);
-  this->edge       = 0;
-  this->end        = 1;
-  this->reuse_head = 0;
-  this->reusable   = NULL;
-  this->values     = NULL;
-  this->next       = NULL;
-  this->previous   = NULL;
-  fail_if (xmalloc(this->reusable, capacity, ssize_t));
-  fail_if (xmalloc(this->values,   capacity,  size_t));
-  fail_if (xmalloc(this->next,     capacity, ssize_t));
-  fail_if (xmalloc(this->previous, capacity, ssize_t));
-  this->values[this->edge]   = 0;
-  this->next[this->edge]     = this->edge;
-  this->previous[this->edge] = this->edge;
-  
-  return 0;
- fail:
-  return -1;
+	/* Use default capacity of zero is specified. */
+	if (!capacity)
+		capacity = LINKED_LIST_DEFAULT_INITIAL_CAPACITY;
+
+	/* Initialise the linked list. */
+	this->capacity   = capacity = to_power_of_two(capacity);
+	this->edge       = 0;
+	this->end        = 1;
+	this->reuse_head = 0;
+	this->reusable   = NULL;
+	this->values     = NULL;
+	this->next       = NULL;
+	this->previous   = NULL;
+	fail_if (xmalloc(this->reusable, capacity, ssize_t));
+	fail_if (xmalloc(this->values,   capacity,  size_t));
+	fail_if (xmalloc(this->next,     capacity, ssize_t));
+	fail_if (xmalloc(this->previous, capacity, ssize_t));
+	this->values[this->edge]   = 0;
+	this->next[this->edge]     = this->edge;
+	this->previous[this->edge] = this->edge;
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -96,12 +97,13 @@ int linked_list_create(linked_list_t* restrict this, size_t capacity)
  * 
  * @param  this  The linked list
  */
-void linked_list_destroy(linked_list_t* restrict this)
+void
+linked_list_destroy(linked_list_t *restrict this)
 {
-  free(this->reusable),  this->reusable = NULL;
-  free(this->values),    this->values   = NULL;
-  free(this->next),      this->next     = NULL;
-  free(this->previous),  this->previous = NULL;
+	free(this->reusable), this->reusable = NULL;
+	free(this->values),   this->values   = NULL;
+	free(this->next),     this->next     = NULL;
+	free(this->previous), this->previous = NULL;
 }
 
 
@@ -112,22 +114,23 @@ void linked_list_destroy(linked_list_t* restrict this)
  * @param   out   Memory slot in which to store the new linked list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restrict out)
+int
+linked_list_clone(const linked_list_t *restrict this, linked_list_t *restrict out)
 {
-  fail_if (xmemdup(out->values,   this->values,   this->capacity, size_t));
-  fail_if (xmemdup(out->next,     this->next,     this->capacity, ssize_t));
-  fail_if (xmemdup(out->previous, this->previous, this->capacity, ssize_t));
-  fail_if (xmemdup(out->reusable, this->reusable, this->capacity, ssize_t));
-  
-  out->capacity   = this->capacity;
-  out->end        = this->end;
-  out->reuse_head = this->reuse_head;
-  out->edge       = this->edge;
-  
-  return 0;
+	fail_if (xmemdup(out->values,   this->values,   this->capacity, size_t));
+	fail_if (xmemdup(out->next,     this->next,     this->capacity, ssize_t));
+	fail_if (xmemdup(out->previous, this->previous, this->capacity, ssize_t));
+	fail_if (xmemdup(out->reusable, this->reusable, this->capacity, ssize_t));
 
- fail:
-  return -1;
+	out->capacity   = this->capacity;
+	out->end        = this->end;
+	out->reuse_head = this->reuse_head;
+	out->edge       = this->edge;
+
+	return 0;
+
+fail:
+	return -1;
 }
 
 
@@ -145,64 +148,64 @@ int linked_list_clone(const linked_list_t* restrict this, linked_list_t* restric
  * @param   this  The list
  * @return        Non-zero on error, `errno` will have been set accordingly
  */
-int linked_list_pack(linked_list_t* restrict this)
+int
+linked_list_pack(linked_list_t *restrict this)
 {
-  ssize_t* restrict new_next = NULL;
-  ssize_t* restrict new_previous = NULL;
-  ssize_t* restrict new_reusable = NULL;
-  size_t size = this->end - this->reuse_head;
-  size_t cap = to_power_of_two(size);
-  ssize_t head = 0;
-  size_t i = 0;
-  ssize_t node;
-  size_t* restrict vals;
-  int saved_errno;
-  
-  fail_if (xmalloc(vals, cap, size_t));
-  while (((size_t)head != this->end) && (this->next[head] == LINKED_LIST_UNUSED))
-    head++;
-  if ((size_t)head != this->end)
-    for (node = head; (node != head) || (i == 0); i++)
-      {
-	vals[i] = this->values[node];
-	node = this->next[node];
-      }
-  
-  if (cap != this->capacity)
-    {
-      fail_if (xmalloc(new_next,     cap, ssize_t));
-      fail_if (xmalloc(new_previous, cap, ssize_t));
-      fail_if (xmalloc(new_reusable, cap, ssize_t));
-      
-      free(this->next);
-      free(this->previous);
-      free(this->reusable);
-      
-      this->next     = new_next;
-      this->previous = new_previous;
-      this->reusable = new_reusable;
-    }
-  
-  for (i = 0; i < size; i++)
-    this->next[i] = (ssize_t)(i + 1);
-  this->next[size - 1] = 0;
-  
-  for (i = 1; i < size; i++)
-    this->previous[i] = (ssize_t)(i - 1);
-  this->previous[0] = (ssize_t)(size - 1);
-  
-  this->values = vals;
-  this->end = size;
-  this->reuse_head = 0;
-  
-  return 0;
+	ssize_t *restrict new_next = NULL;
+	ssize_t *restrict new_previous = NULL;
+	ssize_t *restrict new_reusable = NULL;
+	size_t size = this->end - this->reuse_head;
+	size_t cap = to_power_of_two(size);
+	ssize_t head = 0;
+	size_t i = 0;
+	ssize_t node;
+	size_t *restrict vals;
+	int saved_errno;
 
- fail:
-  saved_errno = errno;
-  free(vals);
-  free(new_next);
-  free(new_previous);
-  return errno = saved_errno, -1;
+	fail_if (xmalloc(vals, cap, size_t));
+	while ((size_t)head != this->end && this->next[head] == LINKED_LIST_UNUSED)
+		head++;
+	if ((size_t)head != this->end) {
+		for (node = head; (node != head) || (i == 0); i++) {
+			vals[i] = this->values[node];
+			node = this->next[node];
+		}
+	}
+
+	if (cap != this->capacity) {
+		fail_if (xmalloc(new_next,     cap, ssize_t));
+		fail_if (xmalloc(new_previous, cap, ssize_t));
+		fail_if (xmalloc(new_reusable, cap, ssize_t));
+
+		free(this->next);
+		free(this->previous);
+		free(this->reusable);
+
+		this->next     = new_next;
+		this->previous = new_previous;
+		this->reusable = new_reusable;
+	}
+
+	for (i = 0; i < size; i++)
+		this->next[i] = (ssize_t)(i + 1);
+	this->next[size - 1] = 0;
+
+	for (i = 1; i < size; i++)
+		this->previous[i] = (ssize_t)(i - 1);
+	this->previous[0] = (ssize_t)(size - 1);
+
+	this->values = vals;
+	this->end = size;
+	this->reuse_head = 0;
+
+	return 0;
+
+fail:
+	saved_errno = errno;
+	free(vals);
+	free(new_next);
+	free(new_previous);
+	return errno = saved_errno, -1;
 }
 
 
@@ -215,29 +218,28 @@ int linked_list_pack(linked_list_t* restrict this)
  * @return        The next free position,
  *                `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-__attribute__((nonnull))
-static ssize_t linked_list_get_next(linked_list_t* restrict this)
+static ssize_t __attribute__((nonnull))
+linked_list_get_next(linked_list_t *restrict this)
 {
-  size_t* tmp_values;
-  ssize_t* tmp;
-  
-  if (this->reuse_head > 0)
-    return this->reusable[--(this->reuse_head)];
-  if (this->end == this->capacity)
-    {
-      if ((ssize_t)(this->end) < 0)
-	fail_if ((errno = ENOMEM));
-      
-      this->capacity <<= 1;
-      
-      fail_if (yrealloc(tmp_values, this->values,   this->capacity, size_t));
-      fail_if (yrealloc(tmp,        this->next,     this->capacity, ssize_t));
-      fail_if (yrealloc(tmp,        this->previous, this->capacity, ssize_t));
-      fail_if (yrealloc(tmp,        this->reusable, this->capacity, ssize_t));
-    }
-  return (ssize_t)(this->end++);
- fail:
-  return LINKED_LIST_UNUSED;
+	size_t *tmp_values;
+	ssize_t *tmp;
+
+	if (this->reuse_head > 0)
+		return this->reusable[--(this->reuse_head)];
+	if (this->end == this->capacity) {
+		if ((ssize_t)(this->end) < 0)
+			fail_if ((errno = ENOMEM));
+
+		this->capacity <<= 1;
+
+		fail_if (yrealloc(tmp_values, this->values,   this->capacity, size_t));
+		fail_if (yrealloc(tmp,        this->next,     this->capacity, ssize_t));
+		fail_if (yrealloc(tmp,        this->previous, this->capacity, ssize_t));
+		fail_if (yrealloc(tmp,        this->reusable, this->capacity, ssize_t));
+	}
+	return (ssize_t)(this->end++);
+fail:
+	return LINKED_LIST_UNUSED;
 }
 
 
@@ -248,15 +250,15 @@ static ssize_t linked_list_get_next(linked_list_t* restrict this)
  * @param   node  The position
  * @return        The position
  */
-__attribute__((nonnull))
-static ssize_t linked_list_unuse(linked_list_t* restrict this, ssize_t node)
+static ssize_t __attribute__((nonnull))
+linked_list_unuse(linked_list_t *restrict this, ssize_t node)
 {
-  if (node < 0)
-    return node;
-  this->reusable[this->reuse_head++] = node;
-  this->next[node] = LINKED_LIST_UNUSED;
-  this->previous[node] = LINKED_LIST_UNUSED;
-  return node;
+	if (node < 0)
+		return node;
+	this->reusable[this->reuse_head++] = node;
+	this->next[node] = LINKED_LIST_UNUSED;
+	this->previous[node] = LINKED_LIST_UNUSED;
+	return node;
 }
 
 
@@ -269,18 +271,19 @@ static ssize_t linked_list_unuse(linked_list_t* restrict this, ssize_t node)
  * @return               The node that has been created and inserted,
  *                       `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t predecessor)
+ssize_t
+linked_list_insert_after(linked_list_t *this, size_t value, ssize_t predecessor)
 {
-  ssize_t node = linked_list_get_next(this);
-  fail_if (node == LINKED_LIST_UNUSED);
-  this->values[node] = value;
-  this->next[node] = this->next[predecessor];
-  this->next[predecessor] = node;
-  this->previous[node] = predecessor;
-  this->previous[this->next[node]] = node;
-  return node;
- fail:
-  return LINKED_LIST_UNUSED;
+	ssize_t node = linked_list_get_next(this);
+	fail_if (node == LINKED_LIST_UNUSED);
+	this->values[node] = value;
+	this->next[node] = this->next[predecessor];
+	this->next[predecessor] = node;
+	this->previous[node] = predecessor;
+	this->previous[this->next[node]] = node;
+	return node;
+fail:
+	return LINKED_LIST_UNUSED;
 }
 
 
@@ -291,12 +294,13 @@ ssize_t linked_list_insert_after(linked_list_t* this, size_t value, ssize_t pred
  * @param   predecessor  The reference node
  * @return               The node that has been removed
  */
-ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecessor)
+ssize_t
+linked_list_remove_after(linked_list_t *restrict this, ssize_t predecessor)
 {
-  ssize_t node = this->next[predecessor];
-  this->next[predecessor] = this->next[node];
-  this->previous[this->next[node]] = predecessor;
-  return linked_list_unuse(this, node);
+	ssize_t node = this->next[predecessor];
+	this->next[predecessor] = this->next[node];
+	this->previous[this->next[node]] = predecessor;
+	return linked_list_unuse(this, node);
 }
 
 
@@ -309,18 +313,19 @@ ssize_t linked_list_remove_after(linked_list_t* restrict this, ssize_t predecess
  * @return             The node that has been created and inserted,
  *                     `LINKED_LIST_UNUSED` on error, `errno` will be set accordingly
  */
-ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ssize_t successor)
+ssize_t
+linked_list_insert_before(linked_list_t *restrict this, size_t value, ssize_t successor)
 {
-  ssize_t node = linked_list_get_next(this);
-  fail_if (node == LINKED_LIST_UNUSED);
-  this->values[node] = value;
-  this->previous[node] = this->previous[successor];
-  this->previous[successor] = node;
-  this->next[node] = successor;
-  this->next[this->previous[node]] = node;
-  return node;
- fail:
-  return LINKED_LIST_UNUSED;
+	ssize_t node = linked_list_get_next(this);
+	fail_if (node == LINKED_LIST_UNUSED);
+	this->values[node] = value;
+	this->previous[node] = this->previous[successor];
+	this->previous[successor] = node;
+	this->next[node] = successor;
+	this->next[this->previous[node]] = node;
+	return node;
+fail:
+	return LINKED_LIST_UNUSED;
 }
 
 
@@ -331,12 +336,13 @@ ssize_t linked_list_insert_before(linked_list_t* restrict this, size_t value, ss
  * @param   successor  The reference node
  * @return             The node that has been removed
  */
-ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successor)
+ssize_t
+linked_list_remove_before(linked_list_t *restrict this, ssize_t successor)
 {
-  ssize_t node = this->previous[successor];
-  this->previous[successor] = this->previous[node];
-  this->next[this->previous[node]] = successor;
-  return linked_list_unuse(this, node);
+	ssize_t node = this->previous[successor];
+	this->previous[successor] = this->previous[node];
+	this->next[this->previous[node]] = successor;
+	return linked_list_unuse(this, node);
 }
 
 
@@ -346,11 +352,12 @@ ssize_t linked_list_remove_before(linked_list_t* restrict this, ssize_t successo
  * @param  this  The list
  * @param  node  The node to remove
  */
-void linked_list_remove(linked_list_t* restrict this, ssize_t node)
+void
+linked_list_remove(linked_list_t *restrict this, ssize_t node)
 {
-  this->next[this->previous[node]] = this->next[node];
-  this->previous[this->next[node]] = this->previous[node];
-  linked_list_unuse(this, node);
+	this->next[this->previous[node]] = this->next[node];
+	this->previous[this->next[node]] = this->previous[node];
+	linked_list_unuse(this, node);
 }
 
 
@@ -360,9 +367,10 @@ void linked_list_remove(linked_list_t* restrict this, ssize_t node)
  * @param   this  The list
  * @return        The number of bytes to allocate to the output buffer
  */
-size_t linked_list_marshal_size(const linked_list_t* restrict this)
+size_t
+linked_list_marshal_size(const linked_list_t *restrict this)
 {
-  return sizeof(size_t) * (4 + this->reuse_head + 3 * this->end) + sizeof(int);
+	return sizeof(size_t) * (4 + this->reuse_head + 3 * this->end) + sizeof(int);
 }
 
 
@@ -372,27 +380,28 @@ size_t linked_list_marshal_size(const linked_list_t* restrict this)
  * @param  this  The list
  * @param  data  Output buffer for the marshalled data
  */
-void linked_list_marshal(const linked_list_t* restrict this, char* restrict data)
+void
+linked_list_marshal(const linked_list_t *restrict this, char *restrict data)
 {
-  buf_set(data, int, 0, LINKED_LIST_T_VERSION);
-  buf_next(data, int, 1);
-  
-  buf_set(data, size_t, 0, this->capacity);
-  buf_set(data, size_t, 1, this->end);
-  buf_set(data, size_t, 2, this->reuse_head);
-  buf_set(data, ssize_t, 3, this->edge);
-  buf_next(data, size_t, 4);
-  
-  memcpy(data, this->reusable, this->reuse_head * sizeof(ssize_t));
-  buf_next(data, ssize_t, this->reuse_head);
-  
-  memcpy(data, this->values, this->end * sizeof(size_t));
-  buf_next(data, size_t, this->end);
-  
-  memcpy(data, this->next, this->end * sizeof(ssize_t));
-  buf_next(data, ssize_t, this->end);
-  
-  memcpy(data, this->previous, this->end * sizeof(ssize_t));
+	buf_set(data, int, 0, LINKED_LIST_T_VERSION);
+	buf_next(data, int, 1);
+
+	buf_set(data, size_t, 0, this->capacity);
+	buf_set(data, size_t, 1, this->end);
+	buf_set(data, size_t, 2, this->reuse_head);
+	buf_set(data, ssize_t, 3, this->edge);
+	buf_next(data, size_t, 4);
+
+	memcpy(data, this->reusable, this->reuse_head * sizeof(ssize_t));
+	buf_next(data, ssize_t, this->reuse_head);
+
+	memcpy(data, this->values, this->end * sizeof(size_t));
+	buf_next(data, size_t, this->end);
+
+	memcpy(data, this->next, this->end * sizeof(ssize_t));
+	buf_next(data, ssize_t, this->end);
+
+	memcpy(data, this->previous, this->end * sizeof(ssize_t));
 }
 
 
@@ -404,41 +413,42 @@ void linked_list_marshal(const linked_list_t* restrict this, char* restrict data
  * @return        Non-zero on error, `errno` will be set accordingly.
  *                Destroy the list on error.
  */
-int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
+int
+linked_list_unmarshal(linked_list_t *restrict this, char *restrict data)
 {
-  /* buf_get(data, int, 0, LINKED_LIST_T_VERSION); */
-  buf_next(data, int, 1);
-  
-  this->reusable = NULL;
-  this->values   = NULL;
-  this->next     = NULL;
-  this->previous = NULL;
-  
-  buf_get(data, size_t, 0, this->capacity);
-  buf_get(data, size_t, 1, this->end);
-  buf_get(data, size_t, 2, this->reuse_head);
-  buf_get(data, ssize_t, 3, this->edge);
-  buf_next(data, size_t, 4);
-  
-  fail_if (xmalloc(this->reusable, this->capacity, size_t));
-  fail_if (xmalloc(this->values,   this->capacity, size_t));
-  fail_if (xmalloc(this->next,     this->capacity, size_t));
-  fail_if (xmalloc(this->previous, this->capacity, size_t));
-  
-  memcpy(this->reusable, data, this->reuse_head * sizeof(ssize_t));
-  buf_next(data, ssize_t, this->reuse_head);
-  
-  memcpy(this->values, data, this->end * sizeof(size_t));
-  buf_next(data, size_t, this->end);
-  
-  memcpy(this->next, data, this->end * sizeof(ssize_t));
-  buf_next(data, ssize_t, this->end);
-  
-  memcpy(this->previous, data, this->end * sizeof(ssize_t));
-  
-  return 0;
- fail:
-  return -1;
+	/* buf_get(data, int, 0, LINKED_LIST_T_VERSION); */
+	buf_next(data, int, 1);
+
+	this->reusable = NULL;
+	this->values   = NULL;
+	this->next     = NULL;
+	this->previous = NULL;
+
+	buf_get(data, size_t, 0, this->capacity);
+	buf_get(data, size_t, 1, this->end);
+	buf_get(data, size_t, 2, this->reuse_head);
+	buf_get(data, ssize_t, 3, this->edge);
+	buf_next(data, size_t, 4);
+
+	fail_if (xmalloc(this->reusable, this->capacity, size_t));
+	fail_if (xmalloc(this->values,   this->capacity, size_t));
+	fail_if (xmalloc(this->next,     this->capacity, size_t));
+	fail_if (xmalloc(this->previous, this->capacity, size_t));
+
+	memcpy(this->reusable, data, this->reuse_head * sizeof(ssize_t));
+	buf_next(data, ssize_t, this->reuse_head);
+
+	memcpy(this->values, data, this->end * sizeof(size_t));
+	buf_next(data, size_t, this->end);
+
+	memcpy(this->next, data, this->end * sizeof(ssize_t));
+	buf_next(data, ssize_t, this->end);
+
+	memcpy(this->previous, data, this->end * sizeof(ssize_t));
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -448,31 +458,31 @@ int linked_list_unmarshal(linked_list_t* restrict this, char* restrict data)
  * @param  this    The list
  * @param  output  Output file
  */
-void linked_list_dump(linked_list_t* restrict this, FILE* restrict output)
+void
+linked_list_dump(linked_list_t *restrict this, FILE *restrict output)
 {
-  ssize_t i;
-  size_t j;
-  fprintf(output, "======= LINKED LIST DUMP =======\n");
-  fprintf(output, "Capacity:    %zu\n", this->capacity);
-  fprintf(output, "End:         %zu\n", this->end);
-  fprintf(output, "Reuse head:  %zu\n", this->reuse_head);
-  fprintf(output, "Edge:        %zi\n", this->edge);
-  fprintf(output, "--------------------------------\n");
-  fprintf(output, "Node table (Next, Prev, Value):\n");
-  i = this->edge;
-  fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
-  foreach_linked_list_node((*this), i)
-    fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
-  i = this->edge;
-  fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
-  fprintf(output, "--------------------------------\n");
-  fprintf(output, "Raw node table:\n");
-  for (j = 0; j < this->end; j++)
-    fprintf(output, "    %zu: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
-  fprintf(output, "--------------------------------\n");
-  fprintf(output, "Reuse stack:\n");
-  for (j = 0; j < this->reuse_head; j++)
-    fprintf(output, "    %zu: %zi\n", j, this->reusable[j]);
-  fprintf(output, "================================\n");
+	ssize_t i;
+	size_t j;
+	fprintf(output, "======= LINKED LIST DUMP =======\n");
+	fprintf(output, "Capacity:    %zu\n", this->capacity);
+	fprintf(output, "End:         %zu\n", this->end);
+	fprintf(output, "Reuse head:  %zu\n", this->reuse_head);
+	fprintf(output, "Edge:        %zi\n", this->edge);
+	fprintf(output, "--------------------------------\n");
+	fprintf(output, "Node table (Next, Prev, Value):\n");
+	i = this->edge;
+	fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
+	foreach_linked_list_node((*this), i)
+		fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
+	i = this->edge;
+	fprintf(output, "    %zi: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
+	fprintf(output, "--------------------------------\n");
+	fprintf(output, "Raw node table:\n");
+	for (j = 0; j < this->end; j++)
+		fprintf(output, "    %zu: %zi, %zi, %zu\n", i, this->next[i], this->previous[i], this->values[i]);
+	fprintf(output, "--------------------------------\n");
+	fprintf(output, "Reuse stack:\n");
+	for (j = 0; j < this->reuse_head; j++)
+		fprintf(output, "    %zu: %zi\n", j, this->reusable[j]);
+	fprintf(output, "================================\n");
 }
-

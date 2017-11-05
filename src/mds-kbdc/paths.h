@@ -24,7 +24,7 @@
  * 
  * @return  The current working directory
  */
-char* curpath(void);
+char *curpath(void);
 
 /**
  * Get the absolute path of a file
@@ -32,7 +32,7 @@ char* curpath(void);
  * @param   path  The filename of the file
  * @return        The file's absolute path, `NULL` on error
  */
-char* abspath(const char* path);
+char *abspath(const char *path);
 
 /**
  * Get a relative path of a file
@@ -42,8 +42,7 @@ char* abspath(const char* path);
  *                `NULL` for the current working directroy
  * @return        The file's relative path, `NULL` on error
  */
-char* relpath(const char* path, const char* base);
+char *relpath(const char* path, const char *base);
 
 
 #endif
-

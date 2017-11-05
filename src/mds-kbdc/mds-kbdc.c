@@ -37,15 +37,13 @@
 /**
  * Parse command line arguments
  */
-static void parse_cmdline(void)
+static void
+parse_cmdline(void)
 {
-  int i;
-  for (i = 0; i < argc; i++)
-    {
-      char* arg = argv[i];
-      if (strequals(arg, "--force"))
-	argv_force = 1;
-    }
+	int i;
+	for (i = 0; i < argc; i++)
+		if (strequals(argv[i], "--force"))
+			argv_force = 1;
 }
 
 
@@ -56,39 +54,39 @@ static void parse_cmdline(void)
  * @param   argv_  The command line arguments
  * @return         Zero on and only one success
  */
-int main(int argc_, char** argv_)
+int
+main(int argc_, char **argv_)
 {
-#define process(expr)						\
-  fail_if ((expr) < 0);						\
-  if (fatal = mds_kbdc_parsed_is_fatal(&result), fatal)		\
-    goto stop;
-  
-  mds_kbdc_parsed_t result;
-  int fatal;
-  
-  argc = argc_;
-  argv = argv_;
-  
-  parse_cmdline();
-  
-  mds_kbdc_parsed_initialise(&result);
-  process (parse_to_tree(argv[1], &result));
-  process (simplify_tree(&result));
-  process (process_includes(&result));
-  process (validate_tree(&result));
-  process (eliminate_dead_code(&result));
-  process (compile_layout(&result));
-  /* TODO process (assemble_layout(&result)); */
- stop:
-  /* mds_kbdc_tree_print(result.tree, stderr); // for testing passes parse_to_tree–eliminate_dead_code */
-  mds_kbdc_parsed_print_errors(&result, stderr);
-  mds_kbdc_parsed_destroy(&result);
-  return fatal;
-  
- fail:
-  xperror(*argv);
-  mds_kbdc_parsed_destroy(&result);
-  return 1;
+#define process(expr)\
+	fail_if ((expr) < 0);\
+	if ((fatal = mds_kbdc_parsed_is_fatal(&result)))\
+		goto stop;
+
+	mds_kbdc_parsed_t result;
+	int fatal;
+
+	argc = argc_;
+	argv = argv_;
+
+	parse_cmdline();
+
+	mds_kbdc_parsed_initialise(&result);
+	process (parse_to_tree(argv[1], &result));
+	process (simplify_tree(&result));
+	process (process_includes(&result));
+	process (validate_tree(&result));
+	process (eliminate_dead_code(&result));
+	process (compile_layout(&result));
+	/* TODO process (assemble_layout(&result)); */
+stop:
+	/* mds_kbdc_tree_print(result.tree, stderr); // for testing passes parse_to_tree–eliminate_dead_code */
+	mds_kbdc_parsed_print_errors(&result, stderr);
+	mds_kbdc_parsed_destroy(&result);
+	return fatal;
+
+fail:
+	xperror(*argv);
+	mds_kbdc_parsed_destroy(&result);
+	return 1;
 #undef process
 }
-

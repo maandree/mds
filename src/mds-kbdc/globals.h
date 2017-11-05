@@ -27,7 +27,7 @@ extern int argc;
 /**
  * The command line arguments
  */
-extern char** argv;
+extern char **argv;
 
 /**
  * Whether ‘--force’ is used
@@ -36,4 +36,3 @@ extern int argv_force;
 
 
 #endif
-

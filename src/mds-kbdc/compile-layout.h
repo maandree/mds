@@ -28,8 +28,7 @@
  * @param   result  `result` from `eliminate_dead_code`, will be updated
  * @return          -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int compile_layout(mds_kbdc_parsed_t* restrict result);
+int compile_layout(mds_kbdc_parsed_t *restrict result);
 
 
 #endif
-

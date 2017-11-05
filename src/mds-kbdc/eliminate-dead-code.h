@@ -28,8 +28,7 @@
  * @param   result  `result` from `validate_tree`, will be updated
  * @return          -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int eliminate_dead_code(mds_kbdc_parsed_t* restrict result);
+int eliminate_dead_code(mds_kbdc_parsed_t *restrict result);
 
 
 #endif
-

@@ -33,7 +33,8 @@
  * @param   arg_count  The number of arguments to pass to the function
  * @return             Whether the described function is a builtin function
  */
-int builtin_function_defined(const char* restrict name, size_t arg_count) __attribute__((pure));
+__attribute__((pure))
+int builtin_function_defined(const char *restrict name, size_t arg_count);
 
 /**
  * Invoke a builtin function
@@ -49,9 +50,8 @@ int builtin_function_defined(const char* restrict name, size_t arg_count) __attr
  * @param   args       The arguments to pass
  * @return             The return value of the function, `NULL` on error
  */
-char32_t* builtin_function_invoke(const char* restrict name, size_t arg_count, const char32_t** restrict args);
+char32_t *builtin_function_invoke(const char *restrict name, size_t arg_count, const char32_t **restrict args);
 
 
 
 #endif
-

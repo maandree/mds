@@ -23,15 +23,14 @@
 #include <signal.h>
 
 
-#define MDS_BASE_VARS_VERSION  0
+#define MDS_BASE_VARS_VERSION 0
 
 
 
 /**
  * Characteristics of the server
  */
-typedef struct server_characteristics
-{
+typedef struct server_characteristics {
 	/**
 	 * Setting this to zero will cause the server to drop privileges as a security precaution
 	 */
@@ -78,7 +77,6 @@ typedef struct server_characteristics
 	 * --immortal is used.
 	 */
 	unsigned danger_is_deadly : 1;
-
 } __attribute__((packed)) server_characteristics_t;
 
 

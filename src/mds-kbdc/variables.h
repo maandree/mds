@@ -52,7 +52,8 @@ void variables_stack_pop(void);
  * @param   variable  The variable index
  * @return            Whether a let will override the variable
  */
-int variables_let_will_override(size_t variable) __attribute__((pure));
+__attribute__((pure))
+int variables_let_will_override(size_t variable);
 
 /**
  * Assign a value to a variable, and define or shadow it in the process
@@ -61,7 +62,7 @@ int variables_let_will_override(size_t variable) __attribute__((pure));
  * @param   value     The variable's new value
  * @return            Zero on success, -1 on error
  */
-int variables_let(size_t variable, mds_kbdc_tree_t* restrict value);
+int variables_let(size_t variable, mds_kbdc_tree_t *restrict value);
 
 /**
  * Get the value currently assigned to a variable
@@ -72,7 +73,8 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value);
  * @param   variable  The variable index
  * @return            The variable's value, `NULL` if not defined
  */
-mds_kbdc_tree_t* variables_get(size_t variable) __attribute__((pure));
+__attribute__((pure))
+mds_kbdc_tree_t *variables_get(size_t variable);
 
 /**
  * Mark a variable as having been unsed in a for-loop in the current scope
@@ -88,8 +90,8 @@ int variables_was_used_in_for(size_t variable);
  * @param   variable  The variable index, must already be defined
  * @return            Whether `variables_was_used_in_for` has been unused on the variable
  */
-int variables_has_been_used_in_for(size_t variable) __attribute__((pure));
+__attribute__((pure))
+int variables_has_been_used_in_for(size_t variable);
 
 
 #endif
-

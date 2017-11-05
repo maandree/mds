@@ -28,8 +28,7 @@
 /**
  * A condition for a message being intercepted by a client
  */
-typedef struct interception_condition
-{
+typedef struct interception_condition {
 	/**
 	 * The header of messages to intercept, optionally with a value,
 	 * empty (most not be NULL) for all messages.
@@ -52,7 +51,6 @@ typedef struct interception_condition
 	 * Whether the messages may get modified by the client
 	 */
 	int modifying;
-
 } interception_condition_t;
 
 

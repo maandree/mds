@@ -29,8 +29,7 @@
  * @param   result    Output parameter for the parsing result
  * @return            -1 if an error occursed that cannot be stored in `result`, zero otherwise
  */
-int parse_to_tree(const char* restrict filename, mds_kbdc_parsed_t* restrict result);
+int parse_to_tree(const char *restrict filename, mds_kbdc_parsed_t *restrict result);
 
 
 #endif
-

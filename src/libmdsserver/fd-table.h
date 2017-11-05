@@ -30,8 +30,7 @@
 /**
  * Value lookup table optimised for file descriptors as keys
  */
-typedef struct fd_table
-{
+typedef struct fd_table {
 	/**
 	 * The table's capacity, i.e. how many entries that can be stored,
 	 * in total, before its internal table needs to grow
@@ -61,7 +60,6 @@ typedef struct fd_table
 	 * Be aware, this variable cannot be marshalled
 	 */
 	compare_func *value_comparator;
-
 } fd_table_t;
 
 

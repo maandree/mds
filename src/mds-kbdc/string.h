@@ -35,7 +35,8 @@ typedef int32_t char32_t;
  * @param   string  The string
  * @return          The length of the string
  */
-size_t string_length(const char32_t* restrict string) __attribute__((pure, nonnull));
+__attribute__((pure, nonnull))
+size_t string_length(const char32_t *restrict string);
 
 /**
  * Convert a NUL-terminated UTF-8 string to a -1-terminated UTF-32 string
@@ -43,7 +44,8 @@ size_t string_length(const char32_t* restrict string) __attribute__((pure, nonnu
  * @param   string  The UTF-8 string
  * @return          The string in UTF-32, `NULL` on error
  */
-char32_t* string_decode(const char* restrict string) __attribute__((nonnull));
+__attribute__((nonnull))
+char32_t *string_decode(const char *restrict string);
 
 /**
  * Convert a -1-terminated UTF-32 string to a NUL-terminated Modified UTF-8 string
@@ -51,7 +53,8 @@ char32_t* string_decode(const char* restrict string) __attribute__((nonnull));
  * @param   string  The UTF-32 string
  * @return          The string in UTF-8, `NULL` on error
  */
-char* string_encode(const char32_t* restrict string) __attribute__((nonnull));
+__attribute__((nonnull))
+char *string_encode(const char32_t *restrict string);
 
 /**
  * Create duplicate of a string
@@ -59,9 +62,8 @@ char* string_encode(const char32_t* restrict string) __attribute__((nonnull));
  * @param   string  The string
  * @return          A duplicate of the string, `NULL` on error or if `string` is `NULL`
  */
-char32_t* string_dup(const char32_t* restrict string);
+char32_t *string_dup(const char32_t *restrict string);
 
 
 
 #endif
-

@@ -27,8 +27,7 @@
 /**
  * Message multicast state
  */
-typedef struct multicast
-{
+typedef struct multicast {
 	/**
 	 * Queue of clients that is listening this message
 	 */
@@ -63,7 +62,6 @@ typedef struct multicast
 	 * How much of the message to skip if the recipient is not a modifier
 	 */
 	size_t message_prefix;
-
 } multicast_t;
 
 

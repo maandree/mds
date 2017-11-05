@@ -44,24 +44,22 @@
 
 /* CLOCK_MONOTONIC_RAW is a Linux-specific bug-fix */
 #ifndef CLOCK_MONOTONIC_RAW
-# define CLOCK_MONOTONIC_RAW  CLOCK_MONOTONIC
+# define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 #endif
 
 /* Define TEMP_FAILURE_RETRY if not defined, however
  * this version does not return a value, it will hoever
  * clear `errno` if no error occurs. */
 #ifndef TEMP_FAILURE_RETRY
-# define TEMP_FAILURE_RETRY(expression)			\
-  do							\
-    {							\
-      ssize_t __result;					\
-      do						\
-	__result = (ssize_t)(expression);		\
-      while ((__result < 0) && (errno == EINTR));	\
-      if (__result >= 0)				\
-	errno = 0;					\
-    }							\
-  while (0)
+# define TEMP_FAILURE_RETRY(expression)\
+	do {\
+		ssize_t __result;\
+		do\
+			__result = (ssize_t)(expression);\
+		while (__result < 0 && errno == EINTR);\
+		if (__result >= 0)\
+			errno = 0;\
+	} while (0)
 # define MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
 #endif
 
@@ -118,16 +116,16 @@
  * @param   ...:const char*, ...  The format string and arguments
  * @return  :int                  Zero on success, -1 on error
  */
-#define xasprintf(VAR, ...)					\
-  (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
+#define xasprintf(VAR, ...)\
+	(asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0)
 /*
-#define xasprintf(VAR, ...)								\
-  ({											\
-    int _x_rc = (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0);		\
-    fprintf(stderr, "xasprintf(%s, %s)(=%zu) @ %s:%i\n",				\
-	    #VAR, #__VA_ARGS__, _x_rc ? 0 : (strlen(VAR) + 1), __FILE__, __LINE__);	\
-    _x_rc;										\
-  })
+#define xasprintf(VAR, ...)\
+	({\
+		int _x_rc = (asprintf(&(VAR), __VA_ARGS__) < 0 ? (VAR = NULL, -1) : 0);\
+		fprintf(stderr, "xasprintf(%s, %s)(=%zu) @ %s:%i\n",\
+		        #VAR, #__VA_ARGS__, _x_rc ? 0 : (strlen(VAR) + 1), __FILE__, __LINE__);\
+		_x_rc;\
+	})
 */
 
 
@@ -138,8 +136,8 @@
  * @param   ...:const char*, ...  The format string and arguments
  * @return  :int                  The number of bytes written, including the NUL-termination, negative on error
  */
-#define xsnprintf(buffer, ...)  \
-  snprintf(buffer, sizeof(buffer) / sizeof(char), __VA_ARGS__)
+#define xsnprintf(buffer, ...)\
+	snprintf(buffer, sizeof(buffer) / sizeof(char), __VA_ARGS__)
 
 
 /**
@@ -149,8 +147,8 @@
  * @param   format:const char*  The format
  * @return  :int                The number of bytes written, including the NUL-termination, negative on error
  */
-#define eprint(format)  \
-  fprintf(stderr, "%s: " format "\n", *argv)
+#define eprint(format)\
+	fprintf(stderr, "%s: " format "\n", *argv)
 
 
 /**
@@ -161,8 +159,8 @@
  * @param   ...                 The arguments
  * @return  :int                The number of bytes written, including the NUL-termination, negative on error
  */
-#define eprintf(format, ...)  \
-  fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__)
+#define eprintf(format, ...)\
+	fprintf(stderr, "%s: " format "\n", *argv, __VA_ARGS__)
 
 
 /**
@@ -174,8 +172,8 @@
  * @param   format:const char*  The format
  * @return  :int                The number of bytes written, including the NUL-termination, negative on error
  */
-#define iprint(format)  \
-  fprintf(stderr, "%s: info: " format "\n", *argv)
+#define iprint(format)\
+	fprintf(stderr, "%s: info: " format "\n", *argv)
 
 
 /**
@@ -188,8 +186,8 @@
  * @param   ...                 The arguments
  * @return  :int                The number of bytes written, including the NUL-termination, negative on error
  */
-#define iprintf(format, ...)  \
-  fprintf(stderr, "%s: info: " format "\n", *argv, __VA_ARGS__)
+#define iprintf(format, ...)\
+	fprintf(stderr, "%s: info: " format "\n", *argv, __VA_ARGS__)
 
 
 /**
@@ -198,18 +196,14 @@
  * @param  mutex:pthread_mutex_t  The mutex
  * @param  instructions           The instructions to run while the mutex is locked
  */
-#define with_mutex(mutex, instructions)		\
-  do						\
-    {						\
-      errno = pthread_mutex_lock(&(mutex));	\
-      do					\
-	{					\
-	  instructions ;			\
-	}					\
-      while (0);				\
-      errno = pthread_mutex_unlock(&(mutex));	\
-    }						\
-  while (0)
+#define with_mutex(mutex, instructions)\
+	do {\
+		errno = pthread_mutex_lock(&mutex);\
+		do {\
+			instructions;\
+		} while (0);\
+		errno = pthread_mutex_unlock(&mutex);\
+	} while (0)
 
 /**
  * Wrapper for `pthread_mutex_lock` and `pthread_mutex_unlock` with an embedded if-statement
@@ -218,19 +212,14 @@
  * @parma  condition              The condition to test
  * @param  instructions           The instructions to run while the mutex is locked
  */
-#define with_mutex_if(mutex, condition, instructions)	\
-  do							\
-    {							\
-      errno = pthread_mutex_lock(&(mutex));		\
-      if (condition)					\
-        do						\
-	  {						\
-	    instructions ;				\
-	  }						\
-        while (0);					\
-      errno = pthread_mutex_unlock(&(mutex));		\
-    }							\
-  while (0)
+#define with_mutex_if(mutex, condition, instructions)\
+	do {\
+		errno = pthread_mutex_lock(&mutex);\
+		if (condition) {\
+			instructions;\
+		}\
+		errno = pthread_mutex_unlock(&mutex);\
+	} while (0)
 
 
 /**
@@ -240,8 +229,8 @@
  * @param   b  The other one of the values
  * @return     The maximum value
  */
-#define max(a, b)  \
-  (a < b ? b : a)
+#define max(a, b)\
+	((a) < (b) ? (b) : (a))
 
 
 /**
@@ -251,8 +240,8 @@
  * @param   b  The other one of the values
  * @return     The minimum value
  */
-#define min(a, b)  \
-  (a < b ? a : b)
+#define min(a, b)\
+	((a) < (b) ? (a) : (b))
 
 
 /**
@@ -263,8 +252,8 @@
  * @param   index:size_t  The index of the element to address
  * @return  [type]        A slot that can be set or get
  */
-#define buf_cast(buffer, type, index)  \
-  (((type*)(buffer))[index])
+#define buf_cast(buffer, type, index)\
+	(((type *)(buffer))[index])
 
 
 /**
@@ -276,8 +265,8 @@
  * @param   variable:type  The new value of the element
  * @return  variable:      The new value of the element
  */
-#define buf_set(buffer, type, index, variable)	\
-  (((type*)(buffer))[index] = (variable))
+#define buf_set(buffer, type, index, variable)\
+	(((type *)(buffer))[index] = (variable))
 
 
 /**
@@ -289,8 +278,8 @@
  * @param   variable:type       Slot to set with the value of the element
  * @return  variable:           The value of the element
  */
-#define buf_get(buffer, type, index, variable)	\
-  (variable = ((const type*)(buffer))[index])
+#define buf_get(buffer, type, index, variable)\
+	(variable = ((const type*)(buffer))[index])
 
 
 /**
@@ -301,8 +290,8 @@
  * @param   count:size_t  The number elements of the data type `type` to increase the pointer with
  * @return  buffer:       The buffer
  */
-#define buf_next(buffer, type, count)  \
-  (buffer += (count) * sizeof(type) / sizeof(char))
+#define buf_next(buffer, type, count)\
+	(buffer += (count) * sizeof(type) / sizeof(char))
 
 
 /**
@@ -313,8 +302,8 @@
  * @param   count:size_t  The number elements of the data type `type` to decrease the pointer with
  * @return  buffer:       The buffer
  */
-#define buf_prev(buffer, type, count)  \
-  (buffer -= (count) * sizeof(type) / sizeof(char))
+#define buf_prev(buffer, type, count)\
+	(buffer -= (count) * sizeof(type) / sizeof(char))
 
 
 /**
@@ -326,9 +315,9 @@
  * @param   variable:type  The new value of the element
  * @return  variable:      The new value of the element
  */
-#define buf_set_next(buffer, type, variable)  \
-  (buf_set(buffer, type, 0, variable),        \
-   buf_next(buffer, type, 1))
+#define buf_set_next(buffer, type, variable)\
+	(buf_set(buffer, type, 0, variable),\
+	 buf_next(buffer, type, 1))
 
 
 /**
@@ -340,9 +329,9 @@
  * @param   variable:type  Slot to set with the value of the element
  * @return  variable:      The value of the element
  */
-#define buf_get_next(buffer, type, variable)  \
-  (buf_get(buffer, type, 0, variable),        \
-   buf_next(buffer, type, 1))
+#define buf_get_next(buffer, type, variable)\
+	(buf_get(buffer, type, 0, variable),\
+	 buf_next(buffer, type, 1))
 
 
 /**
@@ -352,8 +341,8 @@
  * @param   b:const char*  The other of the strings
  * @return  :int           Whether the strings are equal
  */
-#define strequals(a, b)  \
-  (strcmp(a, b) == 0)
+#define strequals(a, b)\
+	(!strcmp(a, b))
 
 
 /**
@@ -363,8 +352,8 @@
  * @param   needle:const char*    The string `haystack` should start with
  * @return  :int                  Whether `haystack` starts with `needle`
  */
-#define startswith(haystack, needle)  \
-  (strstr(haystack, needle) == haystack)
+#define startswith(haystack, needle)\
+	(strstr(haystack, needle) == haystack)
 
 
 /**
@@ -374,9 +363,9 @@
  * 
  * @return  :int  Non-zero on error
  */
-#define drop_privileges()                              \
-  ((getegid() == getgid() ? 0 : setegid(getgid())) ||  \
-   (geteuid() == getuid() ? 0 : seteuid(getuid())))
+#define drop_privileges()\
+	((getegid() == getgid() ? 0 : setegid(getgid())) ||\
+	 (geteuid() == getuid() ? 0 : seteuid(getuid())))
 
 
 /**
@@ -386,8 +375,8 @@
  * @param   time_slot:struct timespec*  Pointer to the variable in which to store the time
  * @return  :int                        Zero on success, -1 on error
  */
-#define monotone(time_slot)  \
-  clock_gettime(CLOCK_MONOTONIC_RAW, time_slot)
+#define monotone(time_slot)\
+	clock_gettime(CLOCK_MONOTONIC_RAW, time_slot)
 
 
 /**
@@ -397,15 +386,15 @@
  * @param  fd:int  The file descriptor
  */
 #if 1 /* For kernels that ensure that close(2) always closes valid file descriptors. */
-# define xclose(fd)  \
-  close(fd)
+# define xclose(fd)\
+	close(fd)
 #else /* For kernels that ensure that close(2) never closes valid file descriptors on interruption. */
 # ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
-#  define xclose(fd)  \
-  TEMP_FAILURE_RETRY(close(fd))
+#  define xclose(fd)\
+	TEMP_FAILURE_RETRY(close(fd))
 # else
-#  define xclose(fd)  \
-  (TEMP_FAILURE_RETRY(close(fd)) < 0 ? 0 : (errno = 0))
+#  define xclose(fd)\
+	(TEMP_FAILURE_RETRY(close(fd)) < 0 ? 0 : (errno = 0))
 # endif
 #endif
 
@@ -417,15 +406,15 @@
  * @param  f:FILE*  The stream
  */
 #if 1 /* For kernels that ensure that close(2) always closes valid file descriptors. */
-# define xfclose(f)  \
-  fclose(f)
+# define xfclose(f)\
+	fclose(f)
 #else /* For kernels that ensure that close(2) never closes valid file descriptors on interruption. */
 # ifdef MDS_LIBMDSSERVER_MACROS_DEFINED_TEMP_FAILURE_RETRY
-#  define xfclose(f)  \
-  TEMP_FAILURE_RETRY(fclose(f))
+#  define xfclose(f)\
+	TEMP_FAILURE_RETRY(fclose(f))
 # else
-#  define xfclose(f)  \
-  (TEMP_FAILURE_RETRY(fclose(f)) < 0 ? 0 : (errno = 0))
+#  define xfclose(f)\
+	(TEMP_FAILURE_RETRY(fclose(f)) < 0 ? 0 : (errno = 0))
 # endif
 #endif
 
@@ -435,29 +424,27 @@
  * 
  * @param  condition  The condition, it should evaluate the variable `fd`
  */
-#define close_files(condition)									\
-  do												\
-    {												\
-      DIR* dir = opendir(SELF_FD);								\
-      struct dirent* file;									\
-												\
-      if (dir == NULL)										\
-	perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */	\
-      else											\
-	{											\
-          int dfd = dirfd(dir);									\
-	  while ((file = readdir(dir)) != NULL)							\
-	    if (strcmp(file->d_name, ".") && strcmp(file->d_name, ".."))			\
-	      {											\
-		int fd = atoi(file->d_name);							\
-		if (fd != dfd)									\
-		  if (condition)								\
-		    xclose(fd);									\
-	      }											\
-	  closedir(dir);									\
-	}											\
-    }												\
-  while (0)
+#define close_files(condition)\
+	do {\
+		DIR *dir = opendir(SELF_FD);\
+		struct dirent *file;\
+		int dfd, fd;\
+		\
+		if (!dir) {\
+			perror(*argv); /* Well, that is just unfortunate, but we cannot really do anything. */\
+		} else {\
+			dfd = dirfd(dir);\
+			while ((file = readdir(dir))) {\
+				if (strcmp(file->d_name, ".") && strcmp(file->d_name, "..")) {\
+					fd = atoi(file->d_name);\
+					if (fd != dfd)\
+						if (condition)\
+							xclose(fd);\
+				}\
+			}\
+			closedir(dir);\
+		}\
+	} while (0)
 
 
 /**
@@ -467,14 +454,13 @@
  * @param  elements:size_t  The number of elements, in the array, to free
  * @scope  i:size_t         The variable `i` must be declared as `size_t` and avaiable for use
  */
-#define xfree(array, elements)		\
-  do					\
-    {					\
-      for (i = 0; i < (elements); i++)	\
-	free((array)[i]);		\
-      free(array), (array) = NULL;	\
-    }					\
-  while (0)
+#define xfree(array, elements)\
+	do {\
+		for (i = 0; i < (elements); i++)\
+			free((array)[i]);\
+		free(array);\
+		(array) = NULL;\
+	} while (0)
 
 
 /**
@@ -485,17 +471,17 @@
  * @param   type             The data type of the elements for which to create an allocation
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
-#define xmalloc(var, elements, type)  \
-  ((var = malloc((elements) * sizeof(type))) == NULL)
+#define xmalloc(var, elements, type)\
+	(!(var = malloc((elements) * sizeof(type))))
 /*
-#define xmalloc(var, elements, type)					\
-  ({									\
-    size_t _x_elements = (elements);					\
-    size_t _x_size = _x_elements * sizeof(type);			\
-    fprintf(stderr, "xmalloc(%s, %zu, %s)(=%zu) @ %s:%i\n",		\
-	    #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
-    ((var = malloc(_x_size)) == NULL);					\
-  })
+#define xmalloc(var, elements, type)\
+	({\
+		size_t _x_elements = (elements);\
+		size_t _x_size = _x_elements * sizeof(type);\
+		fprintf(stderr, "xmalloc(%s, %zu, %s)(=%zu) @ %s:%i\n",\
+		        #var, _x_elements, #type, _x_size, __FILE__, __LINE__);\
+		(!(var = malloc(_x_size)));\
+	})
 */
 
 
@@ -506,16 +492,16 @@
  * @param   bytes:size_t  The number of bytes to allocate
  * @return  :int          Evaluates to true if an only if the allocation failed
  */
-#define xbmalloc(var, bytes)  \
-  ((var = malloc(bytes)) == NULL)
+#define xbmalloc(var, bytes) \
+  (!(var = malloc(bytes)))
 /*
-#define xbmalloc(var, bytes)					\
-  ({								\
-    size_t _x_bytes = (bytes);					\
-    fprintf(stderr, "xbmalloc(%s, %zu) @ %s:%i\n",		\
-	    #var, _x_bytes, __FILE__, __LINE__);		\
-    ((var = malloc(_x_bytes)) == NULL);				\
-  })
+#define xbmalloc(var, bytes)\
+	({\
+		size_t _x_bytes = (bytes);\
+		fprintf(stderr, "xbmalloc(%s, %zu) @ %s:%i\n",\
+		        #var, _x_bytes, __FILE__, __LINE__);\
+		(!(var = malloc(_x_bytes)));\
+	})
 */
 
 
@@ -527,17 +513,17 @@
  * @param   type             The data type of the elements for which to create an allocation
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
-#define xcalloc(var, elements, type)  \
-  ((var = calloc(elements, sizeof(type))) == NULL)
+#define xcalloc(var, elements, type)\
+	(!(var = calloc(elements, sizeof(type))))
 /*
-#define xcalloc(var, elements, type)					\
-  ({									\
-    size_t _x_elements = (elements);					\
-    size_t _x_size = _x_elements * sizeof(type);			\
-    fprintf(stderr, "xcalloc(%s, %zu, %s)(=%zu) @ %s:%i\n",		\
-	    #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
-    ((var = calloc(_x_elements, sizeof(type))) == NULL);		\
-  })
+#define xcalloc(var, elements, type)\
+	({\
+		size_t _x_elements = (elements);\
+		size_t _x_size = _x_elements * sizeof(type);\
+		fprintf(stderr, "xcalloc(%s, %zu, %s)(=%zu) @ %s:%i\n",\
+		        #var, _x_elements, #type, _x_size, __FILE__, __LINE__);\
+		(!(var = calloc(_x_elements, sizeof(type))));\
+	})
 */
 
 
@@ -548,16 +534,16 @@
  * @param   bytes:size_t  The number of bytes to allocate
  * @return  :int          Evaluates to true if an only if the allocation failed
  */
-#define xbcalloc(var, bytes)  \
-  ((var = calloc(bytes, sizeof(char))) == NULL)
+#define xbcalloc(var, bytes)\
+	(!(var = calloc(bytes, sizeof(char))))
 /*
-#define xbcalloc(var, bytes)					\
-  ({								\
-    size_t _x_bytes = (bytes);					\
-    fprintf(stderr, "xbcalloc(%s, %zu) @ %s:%i\n",		\
-	    #var, _x_bytes, __FILE__, __LINE__);		\
-    ((var = calloc(_x_bytes, sizeof(char))) == NULL);		\
-  })
+#define xbcalloc(var, bytes)\
+	({\
+		size_t _x_bytes = (bytes);\
+		fprintf(stderr, "xbcalloc(%s, %zu) @ %s:%i\n",\
+			#var, _x_bytes, __FILE__, __LINE__);\
+		(!(var = calloc(_x_bytes, sizeof(char))));\
+	})
 */
 
 
@@ -570,16 +556,16 @@
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
 #define xrealloc(var, elements, type)  \
-  ((var = realloc(var, (elements) * sizeof(type))) == NULL)
+	(!(var = realloc(var, (elements) * sizeof(type))))
 /*
-#define xrealloc(var, elements, type)					\
-  ({									\
-    size_t _x_elements = (elements);					\
-    size_t _x_size = _x_elements * sizeof(type);			\
-    fprintf(stderr, "xrealloc(%s, %zu, %s)(=%zu) @ %s:%i\n",		\
-	    #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
-    ((var = realloc(var, _x_size)) == NULL);				\
-  })
+#define xrealloc(var, elements, type)\
+	({\
+		size_t _x_elements = (elements);\
+		size_t _x_size = _x_elements * sizeof(type);\
+		fprintf(stderr, "xrealloc(%s, %zu, %s)(=%zu) @ %s:%i\n",\
+		        #var, _x_elements, #type, _x_size, __FILE__, __LINE__);\
+		(!(var = realloc(var, _x_size)));\
+	})
 */
 
 
@@ -593,17 +579,17 @@
  * @param   type             The data type of the elements for which to create an allocation
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
-#define xxrealloc(old, var, elements, type)  \
-  (old = var, (((var = realloc(var, (elements) * sizeof(type))) == NULL) ? 1 : (old = NULL, 0)))
+#define xxrealloc(old, var, elements, type)\
+	(old = var, ((!(var = realloc(var, (elements) * sizeof(type)))) ? 1 : (old = NULL, 0)))
 /*
-#define xxrealloc(old, var, elements, type)						\
-  ({											\
-    size_t _x_elements = (elements);							\
-    size_t _x_size = _x_elements * sizeof(type);					\
-    fprintf(stderr, "xxrealloc(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",			\
-	    #old, #var, _x_elements, #type, _x_size, __FILE__, __LINE__);		\
-    (old = var, (((var = realloc(var, _x_size)) == NULL) ? 1 : (old = NULL, 0)));	\
-  })
+#define xxrealloc(old, var, elements, type)\
+	({\
+		size_t _x_elements = (elements);\
+		size_t _x_size = _x_elements * sizeof(type);\
+		fprintf(stderr, "xxrealloc(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",\
+			#old, #var, _x_elements, #type, _x_size, __FILE__, __LINE__);\
+		(old = var, ((!(var = realloc(var, _x_size))) ? 1 : (old = NULL, 0)));\
+	})
 */
 
 
@@ -616,19 +602,19 @@
  * @param   type             The data type of the elements for which to create an allocation
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
-#define yrealloc(tmp, var, elements, type)                               \
-  ((tmp = var, (var = realloc(var, (elements) * sizeof(type))) == NULL)  \
-   ? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0))
+#define yrealloc(tmp, var, elements, type)\
+	((tmp = var, !(var = realloc(var, (elements) * sizeof(type))))\
+	 ? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0))
 /*
-#define yrealloc(tmp, var, elements, type)					\
-  ({										\
-    size_t _x_elements = (elements);						\
-    size_t _x_size = _x_elements * sizeof(type);				\
-    fprintf(stderr, "yrealloc(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",		\
-	    #tmp, #var, _x_elements, #type, _x_size, __FILE__, __LINE__);	\
-    ((tmp = var, (var = realloc(var, _x_size)) == NULL)				\
-     ? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0));				\
-  })
+#define yrealloc(tmp, var, elements, type)\
+	({\
+		size_t _x_elements = (elements);\
+		size_t _x_size = _x_elements * sizeof(type);\
+		fprintf(stderr, "yrealloc(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",\
+		        #tmp, #var, _x_elements, #type, _x_size, __FILE__, __LINE__);\
+		((tmp = var, !(var = realloc(var, _x_size)))\
+		? (var = tmp, tmp = NULL, 1) : (tmp = NULL, 0));\
+	})
 */
 
 
@@ -641,17 +627,17 @@
  * @param   type             The data type of the elements for which to create an allocation
  * @return  :int             Evaluates to true if an only if the allocation failed
  */
-#define growalloc(old, var, elements, type)  \
-  (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, 1) : 0)
+#define growalloc(old, var, elements, type) \
+	(old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, 1) : 0)
 /*
-#define growalloc(old, var, elements, type)							\
-  ({												\
-    size_t _x_elements_ = (elements);								\
-    size_t _x_size_ = _x_elements_ * sizeof(type);						\
-    fprintf(stderr, "growalloc(%s, %s, %zu, %s)(=%zu)\n-->  ",					\
-	    #old, #var, _x_elements_, #type, _x_size_, __FILE__, __LINE__); 			\
-    (old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, 1) : 0);	\
-  })
+#define growalloc(old, var, elements, type)\
+	({\
+		size_t _x_elements_ = (elements);\
+		size_t _x_size_ = _x_elements_ * sizeof(type);\
+		fprintf(stderr, "growalloc(%s, %s, %zu, %s)(=%zu)\n-->  ",\
+		        #old, #var, _x_elements_, #type, _x_size_, __FILE__, __LINE__);\
+		(old = var, xrealloc(var, (elements) <<= 1, type) ? (var = old, (elements) >>= 1, 1) : 0);\
+	})
 */
 
 
@@ -662,16 +648,16 @@
  * @param   original:const char*  The string to duplicate, may be `NULL`
  * @return  :int                  Evaluates to true if an only if the allocation failed
  */
-#define xstrdup(var, original)  \
-  (original ? ((var = strdup(original)) == NULL) : (var = NULL, 0))
+#define xstrdup(var, original)\
+	(original ? !(var = strdup(original)) : (var = NULL, 0))
 /*
-#define xstrdup(var, original)									\
-  ({												\
-    size_t _x_size = original ? strlen(original) : 0;						\
-    fprintf(stderr, "xstrdup(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",				\
-	    #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__); 	\
-    (original ? ((var = strdup(original)) == NULL) : (var = NULL, 0));				\
-  })
+#define xstrdup(var, original)\
+	({\
+		size_t _x_size = original ? strlen(original) : 0;\
+		fprintf(stderr, "xstrdup(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",\
+		        #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__);\
+		(original ? ((var = strdup(original)) == NULL) : (var = NULL, 0));\
+	})
 */
 
 
@@ -685,16 +671,16 @@
  * @param   original:const char*  The string to duplicate, must not be `NULL`
  * @return  :int                  Evaluates to true if an only if the allocation failed
  */
-#define xstrdup_nn(var, original)  \
-  ((var = strdup(original)) == NULL)
+#define xstrdup_nn(var, original)\
+	(!(var = strdup(original)))
 /*
-#define xstrdup_nn(var, original)								\
-  ({												\
-    size_t _x_size = strlen(original);								\
-    fprintf(stderr, "xstrdup_nn(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",				\
-	    #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__); 	\
-    (var = strdup(original)) == NULL;								\
-  })
+#define xstrdup_nn(var, original)\
+	({\
+		size_t _x_size = strlen(original);\
+		fprintf(stderr, "xstrdup_nn(%s, %s(“%s”=%zu))(=%zu) @ %s:%i\n",\
+		        #var, #original, original, _x_size, _x_size + !!_x_size, __FILE__, __LINE__);\
+		!(var = strdup(original));\
+	})
 */
 
 
@@ -708,18 +694,18 @@
  * @param   type                  The data type of the elements to duplicate
  * @return  :int                  Evaluates to true if an only if the allocation failed
  */
-#define xmemdup(var, original, elements, type)	              \
-  (((var = malloc((elements) * sizeof(type))) == NULL) ? 1 :  \
-   (memcpy(var, original, (elements) * sizeof(type)), 0))
+#define xmemdup(var, original, elements, type)\
+	(!(var = malloc((elements) * sizeof(type))) ? 1 :\
+	 (memcpy(var, original, (elements) * sizeof(type)), 0))
 /*
-#define xmemdup(var, original, elements, type)						\
-  ({											\
-    size_t _x_elements = (elements);							\
-    size_t _x_size = _x_elements * sizeof(type);					\
-    fprintf(stderr, "xmemdup(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",				\
-	    #var, #original, _x_elements, #type, _x_size, __FILE__, __LINE__);		\
-    (((var = malloc(_x_size)) == NULL) ? 1 : (memcpy(var, original, _x_size), 0));	\
-  })
+#define xmemdup(var, original, elements, type)\
+	({\
+		size_t _x_elements = (elements);\
+		size_t _x_size = _x_elements * sizeof(type);\
+		fprintf(stderr, "xmemdup(%s, %s, %zu, %s)(=%zu) @ %s:%i\n",\
+		        #var, #original, _x_elements, #type, _x_size, __FILE__, __LINE__);\
+		!(var = malloc(_x_size)) ? 1 : (memcpy(var, original, _x_size), 0);\
+	})
 */
 
 

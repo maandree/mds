@@ -26,10 +26,9 @@ int argc;
 /**
  * The command line arguments
  */
-char** argv;
+char **argv;
 
 /**
  * Whether ‘--force’ is used
  */
 int argv_force = 0;
-

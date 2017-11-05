@@ -27,8 +27,8 @@
 /**
  * Add “called from here”-notes
  */
-#define DUMP_CALL_STACK			\
-  fail_if (mds_kbdc_call_stack_dump())
+#define DUMP_CALL_STACK\
+	fail_if (mds_kbdc_call_stack_dump())
 
 
 
@@ -44,7 +44,7 @@ int mds_kbdc_call_stack_dump(void);
  * 
  * @param  result  The `result` parameter of root procedure that requires the call-stack
  */
-void mds_kbdc_call_stack_begin(mds_kbdc_parsed_t* restrict result);
+void mds_kbdc_call_stack_begin(mds_kbdc_parsed_t *restrict result);
 
 /**
  * Cleanup after usage of call-stacks
@@ -59,7 +59,7 @@ void mds_kbdc_call_stack_end(void);
  * @param   end    The position of the line of the tree node where the call end
  * @return         Zero on success, -1 on error
  */
-int mds_kbdc_call_stack_push(const mds_kbdc_tree_t* restrict tree, size_t start, size_t end);
+int mds_kbdc_call_stack_push(const mds_kbdc_tree_t *restrict tree, size_t start, size_t end);
 
 /**
  * Undo the lasted not-undone call to `mds_kbdc_call_stack_push`
@@ -71,4 +71,3 @@ void mds_kbdc_call_stack_pop(void);
 
 
 #endif
-

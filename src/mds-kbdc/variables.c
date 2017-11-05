@@ -27,32 +27,30 @@
 /**
  * The state of a variable
  */
-typedef struct variable
-{
-  /**
-   * The current value of the variable
-   */
-  mds_kbdc_tree_t* value;
-  
-  /**
-   * The previous version of variable,
-   * before it was shadowed
-   */
-  struct variable* restrict previous;
-  
-  /**
-   * The original scope in which the current
-   * shadow of the variable was created
-   */
-  size_t scope;
-  
-  /**
-   * The latest scope the in which the
-   * variable has been used in a for-loop,
-   * `~0' if never, or below `scope`
-   */
-  size_t used_in_for;
-  
+typedef struct variable {
+	/**
+	 * The current value of the variable
+	 */
+	mds_kbdc_tree_t *value;
+
+	/**
+	 * The previous version of variable,
+	 * before it was shadowed
+	 */
+	struct variable *restrict previous;
+
+	/**
+	 * The original scope in which the current
+	 * shadow of the variable was created
+	 */
+	size_t scope;
+
+	/**
+	 * The latest scope the in which the
+	 * variable has been used in a for-loop,
+	 * `~0' if never, or below `scope`
+	 */
+	size_t used_in_for;
 } variable_t;
 
 
@@ -60,7 +58,7 @@ typedef struct variable
 /**
  * Map (by index) of defined variables
  */
-static variable_t** restrict variables = NULL;
+static variable_t **restrict variables = NULL;
 
 /**
  * The size of `variables`
@@ -79,20 +77,21 @@ static size_t current_scope = 0;
 /**
  * Destroy the variable storage
  */
-void variables_terminate(void)
+void
+variables_terminate(void)
 {
-  size_t i;
-  variable_t* old;
-  for (i = 0; i < variable_count; i++)
-    while (variables[i])
-      {
-	old = variables[i];
-	variables[i] = variables[i]->previous;
-	mds_kbdc_tree_free(old->value);
-	free(old);
-      }
-  free(variables), variables = NULL;
-  variable_count = current_scope = 0;
+	size_t i;
+	variable_t *old;
+	for (i = 0; i < variable_count; i++) {
+		while (variables[i]) {
+			old = variables[i];
+			variables[i] = variables[i]->previous;
+			mds_kbdc_tree_free(old->value);
+			free(old);
+		}
+	}
+	free(variables), variables = NULL;
+	variable_count = current_scope = 0;
 }
 
 
@@ -100,9 +99,10 @@ void variables_terminate(void)
  * Push the variable-stack, making it
  * possible to shadow all variables
  */
-void variables_stack_push(void)
+void
+variables_stack_push(void)
 {
-  current_scope++;
+	current_scope++;
 }
 
 
@@ -112,19 +112,20 @@ void variables_stack_push(void)
  * since it was last called (without a
  * corresponding call to this function)
  */
-void variables_stack_pop(void)
+void
+variables_stack_pop(void)
 {
-  size_t i;
-  variable_t* old;
-  for (i = 0; i < variable_count; i++)
-    if (variables[i] && (variables[i]->scope == current_scope))
-      {
-	old = variables[i];
-	variables[i] = variables[i]->previous;
-	mds_kbdc_tree_free(old->value);
-	free(old);
-      }
-  current_scope--;
+	size_t i;
+	variable_t *old;
+	for (i = 0; i < variable_count; i++) {
+		if (variables[i] && variables[i]->scope == current_scope) {
+			old = variables[i];
+			variables[i] = variables[i]->previous;
+			mds_kbdc_tree_free(old->value);
+			free(old);
+		}
+	}
+	current_scope--;
 }
 
 
@@ -135,11 +136,12 @@ void variables_stack_pop(void)
  * @param   variable  The variable index
  * @return            Whether a let will override the variable
  */
-int variables_let_will_override(size_t variable)
+int
+variables_let_will_override(size_t variable)
 {
-  if (variable >= variable_count)   return 0;
-  if (variables[variable] == NULL)  return 0;
-  return variables[variable]->scope == current_scope;
+	if (variable >= variable_count) return 0;
+	if (!variables[variable])       return 0;
+	return variables[variable]->scope == current_scope;
 }
 
 
@@ -150,42 +152,39 @@ int variables_let_will_override(size_t variable)
  * @param   value     The variable's new value
  * @return            Zero on success, -1 on error
  */
-int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
+int
+variables_let(size_t variable, mds_kbdc_tree_t *restrict value)
 {
-  variable_t** new;
-  variable_t* previous;
+	variable_t **new;
+	variable_t *previous;
+
+	/* Grow the table if necessary to fit the variable. */
+	if (variable >= variable_count) {
+		new = variables;
+		fail_if (xrealloc(new, variable + 1, variable_t*));
+		variables = new;
+		memset(variables + variable_count, 0, (variable + 1 - variable_count) * sizeof(variable_t*));
+		variable_count = variable + 1;
+	}
+
+	if (variables_let_will_override(variable)) {
+		/* Override. */
+		mds_kbdc_tree_free(variables[variable]->value);
+		variables[variable]->value = value;
+	} else {
+		/* Shadow or define. */
+		previous = variables[variable];
+		if (xmalloc(variables[variable], 1, variable_t))
+			fail_if (variables[variable] = previous, 1);
+		variables[variable]->value = value;
+		variables[variable]->previous = previous;
+		variables[variable]->scope = current_scope;
+		variables[variable]->used_in_for = (size_t)(~0LL);
+	}
   
-  /* Grow the table if necessary to fit the variable. */
-  if (variable >= variable_count)
-    {
-      new = variables;
-      fail_if (xrealloc(new, variable + 1, variable_t*));
-      variables = new;
-      memset(variables + variable_count, 0, (variable + 1 - variable_count) * sizeof(variable_t*));
-      variable_count = variable + 1;
-    }
-  
-  if (variables_let_will_override(variable))
-    {
-      /* Override. */
-      mds_kbdc_tree_free(variables[variable]->value);
-      variables[variable]->value = value;
-    }
-  else
-    {
-      /* Shadow or define. */
-      previous = variables[variable];
-      if (xmalloc(variables[variable], 1, variable_t))
-	fail_if (variables[variable] = previous, 1);
-      variables[variable]->value = value;
-      variables[variable]->previous = previous;
-      variables[variable]->scope = current_scope;
-      variables[variable]->used_in_for = (size_t)(~0LL);
-    }
-  
-  return 0;
- fail:
-  return -1;
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -198,11 +197,12 @@ int variables_let(size_t variable, mds_kbdc_tree_t* restrict value)
  * @param   variable  The variable index
  * @return            The variable's value, `NULL` if not defined
  */
-mds_kbdc_tree_t* variables_get(size_t variable)
+mds_kbdc_tree_t *
+variables_get(size_t variable)
 {
-  if (variable >= variable_count)   return NULL;
-  if (variables[variable] == NULL)  return NULL;
-  return variables[variable]->value;
+	if (variable >= variable_count) return NULL;
+	if (!variables[variable])       return NULL;
+	return variables[variable]->value;
 }
 
 
@@ -212,31 +212,32 @@ mds_kbdc_tree_t* variables_get(size_t variable)
  * @param   variable  The variable index, must already be defined
  * @return            Zero on success, -1 on error
  */
-int variables_was_used_in_for(size_t variable)
+int
+variables_was_used_in_for(size_t variable)
 {
-  variable_t* previous;
-  
-  /* Already marked. */
-  if (variables[variable]->used_in_for == current_scope)
-    return 0;
-  
-  /* Not marked. */
-  if (variables[variable]->used_in_for == (size_t)(~0LL))
-    return variables[variable]->used_in_for = current_scope, 0;
-  
-  /* Marked for another scope. */
-  previous = variables[variable];
-  if (xmalloc(variables[variable], 1, variable_t))
-    fail_if (variables[variable] = previous, 1);
-  variables[variable]->value = mds_kbdc_tree_dup(previous->value);
-  fail_if (variables[variable]->value == NULL);
-  variables[variable]->previous = previous;
-  variables[variable]->scope = current_scope;
-  variables[variable]->used_in_for = current_scope;
-  
-  return 0;
- fail:
-  return -1;
+	variable_t *previous;
+
+	/* Already marked. */
+	if (variables[variable]->used_in_for == current_scope)
+		return 0;
+
+	/* Not marked. */
+	if (variables[variable]->used_in_for == (size_t)(~0LL))
+		return variables[variable]->used_in_for = current_scope, 0;
+
+	/* Marked for another scope. */
+	previous = variables[variable];
+	if (xmalloc(variables[variable], 1, variable_t))
+		fail_if (variables[variable] = previous, 1);
+	variables[variable]->value = mds_kbdc_tree_dup(previous->value);
+	fail_if (variables[variable]->value == NULL);
+	variables[variable]->previous = previous;
+	variables[variable]->scope = current_scope;
+	variables[variable]->used_in_for = current_scope;
+
+	return 0;
+fail:
+	return -1;
 }
 
 
@@ -246,8 +247,8 @@ int variables_was_used_in_for(size_t variable)
  * @param   variable  The variable index, must already be defined
  * @return            Whether `variables_was_used_in_for` has been unused on the variable
  */
-int variables_has_been_used_in_for(size_t variable)
+int
+variables_has_been_used_in_for(size_t variable)
 {
-  return variables[variable]->used_in_for == current_scope;
+	return variables[variable]->used_in_for == current_scope;
 }
-

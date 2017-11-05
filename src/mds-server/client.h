@@ -36,8 +36,7 @@
 /**
  * Client information structure
  */
-typedef struct client
-{
+typedef struct client {
 	/**
 	 * The client's entry in the list of clients
 	 */
@@ -134,7 +133,6 @@ typedef struct client
 	 * Whether `modify_cond` has been initialised
 	 */
 	int modify_cond_created;
-
 } client_t;
 
 
