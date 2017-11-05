@@ -109,7 +109,7 @@ int handle_set_colour(const char *recv_name, const char *recv_remove, const char
  *                  non-existent colour does not constitute an error
  */
 __attribute__((nonnull(1)))
-int set_colour(const char* name, const colour_t *colour);
+int set_colour(const char *name, const colour_t *colour);
 
 /**
  * Broadcast a colour list update event
